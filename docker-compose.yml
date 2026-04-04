@@ -1,0 +1,20 @@
+services:
+  autoeval:
+    build: .
+    env_file: .env
+    environment:
+      - AGENT_MODEL=${AGENT_MODEL:-gpt-5.4}
+      - TAU2_DATA_DIR=/tau2_data
+    volumes:
+      # Mount all editable files so changes take effect without rebuilding
+      - ./agent:/app/agent
+      - ./workspace:/app/workspace
+      - ./experiment_config.yaml:/app/experiment_config.yaml
+      - ./benchmark.py:/app/benchmark.py
+      - ./gating.py:/app/gating.py
+      - ./prepare.py:/app/prepare.py
+      - ./record.py:/app/record.py
+      # Mount tau2 data directory (set TAU2_DATA_DIR in .env)
+      - ${TAU2_DATA_DIR:-/tmp}:/tau2_data
+    stdin_open: true
+    tty: true

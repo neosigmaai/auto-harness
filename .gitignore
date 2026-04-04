@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.env
+.DS_Store
+*.log
+
+# agent working directory (runtime state, not committed)
+workspace/
+
+# local coding agent config
+.claude/
+
+# local experiment config (copy from experiment_config.yaml.template)
+experiment_config.yaml

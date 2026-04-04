@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "auto-harness"
+version = "0.1.0"
+description = "autoagent + autoevals framework for production agents"
+requires-python = ">=3.12"
+dependencies = [
+    "openai",
+    "pyyaml",
+    "tau2",
+]
+
+[tool.uv.sources]
+tau2 = { git = "https://github.com/sierra-research/tau2-bench.git", rev = "73dc24445d28762075e69465d966aee4a9dcbfcb" }

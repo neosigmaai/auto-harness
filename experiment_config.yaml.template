@@ -1,0 +1,21 @@
+# Experiment configuration — copy to experiment_config.yaml and edit before running.
+#
+#   cp experiment_config.yaml.template experiment_config.yaml
+
+# Model used by the agent under optimization
+agent_model: "gpt-5.4"
+
+# Pass rate threshold for the eval suite gate (Step 1 of gating.py)
+threshold: 0.8
+
+# tau-bench domain to run (e.g. "retail", "airline")
+domain: "retail"
+
+# Split used by benchmark.py (typically "train" for iteration, "test" for final eval)
+split: "train"
+
+# Split used by gating.py for the full-benchmark gate
+gate_split: "test"
+
+# Max concurrent tasks during benchmark / gate runs
+max_concurrency: 3
