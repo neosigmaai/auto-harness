@@ -2,7 +2,7 @@
 
 > Give a coding agent a benchmark and an agent file. Let it iterate overnight. It reads failures, improves the system prompt and tools, gates every change against a self-maintained eval suite, and repeats.
 
-This repo is meant to be a simplified version of our auto-harness agent setup. Here is the full article for more information - https://x.com/gauri__gupta/status/2040251170099524025?s=20.
+This repo is a simplified version of our auto-harness agent setup. Here is the full article for more information - https://x.com/gauri__gupta/status/2040251170099524025?s=20.
 
 The loop is defined in `PROGRAM.md`. The only file the coding agent edits is `agent/agent.py`.
 
