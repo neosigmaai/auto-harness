@@ -8,7 +8,7 @@ You are an autonomous coding agent optimizing `agent/agent.py` to perform better
 run benchmark → analyze failures → improve agent → gate → commit → repeat
 ```
 
-Your only edit target is `agent/agent.py`. Everything else is infrastructure.
+Your edit targets are `agent/agent.py` and `workspace/learnings.md`. Everything else is infrastructure.
 
 ---
 
@@ -16,8 +16,8 @@ Your only edit target is `agent/agent.py`. Everything else is infrastructure.
 
 | File | Purpose |
 |------|---------|
-| `agent/agent.py` | The agent you optimize — **only file you may edit** |
-| `workspace/learnings.md` | Persistent learnings log — patterns, hypotheses, requests to the human |
+| `agent/agent.py` | The agent you optimize |
+| `workspace/learnings.md` | Persistent learnings log — patterns, hypotheses, requests to the human — **append after every iteration** |
 | `workspace/results.tsv` | Iteration history — written by `record.py` after each successful gate |
 
 **Read-only workspace files** (managed automatically — do not edit):
@@ -146,7 +146,7 @@ Go to step 1.
 
 ## Rules
 
-1. **Only edit `agent/agent.py`** — you own the whole file; never touch `benchmark.py`, `gating.py`, `record.py`, `prepare.py`, or workspace files
+1. **Only edit `agent/agent.py` and `workspace/learnings.md`** — never touch `benchmark.py`, `gating.py`, `record.py`, `prepare.py`, `workspace/suite.json`, or `workspace/train_results.json`
 2. **Never skip the gate** — every committed change must pass all three steps
 3. **One hypothesis per iteration** — keep changes small and reversible
 4. **Always update `learnings.md`** — even on failure; the log is your memory
