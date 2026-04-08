@@ -1,0 +1,50 @@
+Previous command:
+keystrokes='y\n' is_blocking=True timeout_sec=30.0
+
+The previous command timed out after 30.0 seconds
+
+It is possible that the command is not yet finished executing. If that is the case, then do nothing. It is also possible that you have entered an interactive shell and should continue sending keystrokes as normal.
+
+Here is the current state of the terminal:
+
+transformers 4.40.2 requires huggingface-hub<1.0,>=0.19.3, but you have huggingface-hub 0.0.19 which is incompatible.
+Successfully installed numpy-2.2.6
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your syst
+em unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you a
+re doing and want to suppress this warning.
+root@ceebef5ecae8:/app/UPET# python run.py --model_name roberta-base --task_name rte --do_train --do_eval --max_seq_length 128 --per_device_train_batch_size 8 -
+-learning_rate 2e-5 --num_train_epochs 1 --output_dir ./results --seed 42 --overwrite_output_dir --examples_per_label 5; tmux wait -S done
+Traceback (most recent call last):
+  File "/app/UPET/run.py", line 7, in <module>
+    import datasets
+  File "/usr/local/lib/python3.10/site-packages/datasets/__init__.py", line 33, in <module>
+    from .arrow_dataset import Dataset, concatenate_datasets
+  File "/usr/local/lib/python3.10/site-packages/datasets/arrow_dataset.py", line 42, in <module>
+    from datasets.tasks.text_classification import TextClassification
+  File "/usr/local/lib/python3.10/site-packages/datasets/tasks/__init__.py", line 4, in <module>
+    from .automatic_speech_recognition import AutomaticSpeechRecognition
+  File "/usr/local/lib/python3.10/site-packages/datasets/tasks/automatic_speech_recognition.py", line 4, in <module>
+    from ..features import Features, Value
+  File "/usr/local/lib/python3.10/site-packages/datasets/features.py", line 331, in <module>
+    class _ArrayXDExtensionType(pa.PyExtensionType):
+AttributeError: module 'pyarrow' has no attribute 'PyExtensionType'. Did you mean: 'ExtensionType'?
+root@ceebef5ecae8:/app/UPET# pip uninstall numpy; tmux wait -S done
+Found existing installation: numpy 2.2.6
+Uninstalling numpy-2.2.6:
+  Would remove:
+    /usr/local/bin/f2py
+    /usr/local/bin/numpy-config
+    /usr/local/lib/python3.10/site-packages/numpy-2.2.6.dist-info/*
+    /usr/local/lib/python3.10/site-packages/numpy.libs/libgfortran-daac5196-038a5e3c.so.5.0.0
+    /usr/local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-128b20d9.so
+    /usr/local/lib/python3.10/site-packages/numpy/*
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)?
+ 

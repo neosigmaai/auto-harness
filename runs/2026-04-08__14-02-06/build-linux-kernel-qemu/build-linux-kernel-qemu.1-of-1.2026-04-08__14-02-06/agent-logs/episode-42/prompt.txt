@@ -1,0 +1,40 @@
+root@f86ff438af79:/app# cd /path/to/linux-6.9; tmux wait -S done
+bash: cd: /path/to/linux-6.9: No such file or directory
+root@f86ff438af79:/app# sed -i '/void __init start_kernel(void)/a printk(KERN_INFO \make -j$(nproc); tmux wait -S done
+> find / -type d -name 'linux-6.9'; tmux wait -S done
+>
+> find / -type d -name 'linux-6.9' 2>/dev/null; tmux wait -S done
+>
+> find /usr/src /home /opt -type d -name 'linux-6.9' 2>/dev/null; tmux wait -S done
+>
+> find /app -type d -name 'linux-6.9' 2>/dev/null; tmux wait -S done
+> ls -l /app; tmux wait -S done
+>
+> ls -l; tmux wait -S done
+>
+> ls -l /app
+> ls -l /usr/src
+> ls -l /var
+> ls -l /opt
+> ls -l /app; tmux wait -S done
+>
+> ls; tmux wait -S done
+>
+> ls -1 | head -n 20; tmux wait -S done
+> cd /; tmux wait -S done
+> C-c
+> reset; tmux wait -S done
+> C-d
+> exit
+> pwd; tmux wait -S done
+> C-c
+> echo "check"; tmux wait -S done
+> C-d
+> exit
+>
+
+
+
+
+
+

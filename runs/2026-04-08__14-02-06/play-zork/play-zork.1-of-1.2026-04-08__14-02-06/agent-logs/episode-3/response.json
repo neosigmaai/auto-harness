@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The leaflet has been read, providing an introductory message about the adventure in Zork. There's no further actionable information from the leaflet itself.",
+    "explanation": "The next logical step is to explore the surroundings by moving around. Since the front door of the house is boarded, an alternative entrance should be sought.",
+    "commands": [
+        {
+            "keystrokes": "north\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

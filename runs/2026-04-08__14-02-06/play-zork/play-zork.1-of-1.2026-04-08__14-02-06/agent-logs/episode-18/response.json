@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player has climbed the stairs to the attic, but it is pitch black, and there is a risk of encountering a grue, a dangerous creature in Zork.",
+    "explanation": "To safely navigate the attic, light is needed to avoid danger. Use any available light source or return to the kitchen to find an alternative solution.",
+    "commands": [
+        {
+            "keystrokes": "go down\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

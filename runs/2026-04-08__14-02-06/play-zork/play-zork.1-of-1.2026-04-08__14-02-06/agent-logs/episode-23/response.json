@@ -1,0 +1,22 @@
+{
+    "state_analysis": "The player has collected both the coil of rope and the nasty-looking knife from the attic. The attic is now empty, with the only exit being the stairway leading down.",
+    "explanation": "With the items collected from the attic, return to the living room to investigate the wooden door with gothic lettering, as it might lead to new areas or opportunities.",
+    "commands": [
+        {
+            "keystrokes": "go down\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        },
+        {
+            "keystrokes": "west\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        },
+        {
+            "keystrokes": "examine door\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

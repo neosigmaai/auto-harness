@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The window behind the house has been successfully opened, providing an entry point into the house.",
+    "explanation": "Enter the house through the now open window to explore the interior, which may contain valuable items or clues necessary to achieve the maximum score in the game.",
+    "commands": [
+        {
+            "keystrokes": "enter window\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

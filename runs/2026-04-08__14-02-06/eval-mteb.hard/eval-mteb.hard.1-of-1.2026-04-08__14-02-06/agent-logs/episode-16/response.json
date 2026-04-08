@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The `mteb` module provides several subcommands: `run`, `available_tasks`, `available_benchmarks`, and `create_meta`. The `run` subcommand is used to execute a model on a set of tasks. However, the task name `STS12` is not directly displayed in the list or documentation.",
+    "explanation": "We should use the `run` subcommand with a correct task name or benchmark if 'STS12' is not directly accessible. The best course of action now is to attempt using the `run` subcommand with a sample task from the list to ensure correct command structure and execution.",
+    "commands": [
+        {
+            "keystrokes": "python -m mteb run --task NanoMSMARCORetrieval --model all-MiniLM-L6-v2 --output results\n",
+            "is_blocking": true,
+            "timeout_sec": 300
+        }
+    ],
+    "is_task_complete": false
+}

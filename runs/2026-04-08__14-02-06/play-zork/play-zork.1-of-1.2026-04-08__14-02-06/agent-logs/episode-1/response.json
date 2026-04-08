@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The game Zork has started, and the player is currently at the starting location, West of House. The objective is to navigate through the game and reach the end with the maximum possible score.",
+    "explanation": "The initial steps in Zork often involve exploring the immediate surroundings to acquire useful items or gain more information. We will interact with the mailbox first.",
+    "commands": [
+        {
+            "keystrokes": "open mailbox\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

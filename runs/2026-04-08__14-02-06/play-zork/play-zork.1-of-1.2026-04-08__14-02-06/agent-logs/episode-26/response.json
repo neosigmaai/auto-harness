@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The trap door in the living room has been successfully opened, revealing a rickety staircase descending into darkness. This presents a new area to explore.",
+    "explanation": "Descend the staircase to explore the area below. Use the lantern to ensure visibility and safety as you navigate the dark space.",
+    "commands": [
+        {
+            "keystrokes": "descend stairs\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

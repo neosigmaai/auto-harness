@@ -1,86 +1,47 @@
-"""HarnessAgent — this is the file the coding agent optimizes."""
+"""BaseHarnessAgent — this is the file the coding agent optimizes."""
 
 import os
 from dataclasses import dataclass, field
-from typing import cast
-
-from tau2.agent.base_agent import ValidAgentInputMessage, is_valid_agent_history_message
-from tau2.agent.llm_agent import LLMAgent
-from tau2.data_model.message import (
-    AssistantMessage,
-    Message,
-    MultiToolMessage,
-    SystemMessage,
-)
-from tau2.utils.llm_utils import generate
 
 if "AGENT_MODEL" not in os.environ:
     raise RuntimeError("AGENT_MODEL env var is not set")
 AGENT_MODEL: str = os.environ["AGENT_MODEL"]
 AGENT_REASONING_EFFORT: str = os.environ.get("AGENT_REASONING_EFFORT", "")
+MAX_TURNS: int = 30
 
-AGENT_INSTRUCTION = """
-You are a helpful assistant that completes tasks according to the <policy> provided below.
+# ── editable by Claude Code ───────────────────────────────────────
 
-Additional rules:
-- When a user says multiple items (e.g. "a backpack and a desk lamp") are in the same order, check ALL orders to find the one that contains ALL the mentioned items. Do not stop at the first order that contains only some of them.
-- When calling exchange or modify tools, include ONLY the items the user has explicitly confirmed in their last message. If the user confirms only specific items from a list you presented, submit only those items — not the full list.
-- You cannot exchange an item for itself. If the requested new item has the same item_id as the current item, inform the user that this is not a valid exchange (a different variant is required) and offer available alternatives.
+SYSTEM_PROMPT = """
+You are a helpful assistant that completes tasks.
 """.strip()
 
 
 @dataclass
 class HarnessState:
-    messages: list[Message] = field(default_factory=list)
+    messages: list = field(default_factory=list)
 
 
-class HarnessAgent(LLMAgent):
-    """Agent under optimization."""
+class BaseHarnessAgent:
+    """
+    Generic agent base — Claude Code optimizes this.
+    Benchmark-specific wrappers subclass this in agent_tau.py, agent_harbor.py etc.
+    """
 
-    @property
-    def system_prompt(self) -> str:
-        if self.domain_policy:
-            return (
-                "<instructions>\n"
-                f"{AGENT_INSTRUCTION}\n"
-                "</instructions>\n"
-                "<policy>\n"
-                f"{self.domain_policy}\n"
-                "</policy>"
-            )
-        return AGENT_INSTRUCTION
+    def __init__(self, system_prompt: str = SYSTEM_PROMPT):
+        self.system_prompt = system_prompt
+        self.state = HarnessState()
 
-    def get_init_state(
-        self, message_history: list[Message] | None = None
-    ) -> HarnessState:
-        if message_history is None:
-            message_history = []
-        assert all(is_valid_agent_history_message(m) for m in message_history)
-        return HarnessState(messages=list(message_history))
+    def get_generate_kwargs(self) -> dict:
+        if AGENT_REASONING_EFFORT:
+            return {"reasoning_effort": AGENT_REASONING_EFFORT}
+        return {}
 
-    def generate_next_message(
-        self,
-        message: ValidAgentInputMessage,
-        state: HarnessState,
-    ) -> tuple[AssistantMessage, HarnessState]:
-        if isinstance(message, MultiToolMessage):
-            state.messages.extend(message.tool_messages)
-        else:
-            state.messages.append(message)
+    def get_init_state(self) -> HarnessState:
+        return HarnessState()
 
-        system = SystemMessage(role="system", content=self.system_prompt)
-        generate_kwargs = (
-            {"reasoning_effort": AGENT_REASONING_EFFORT} if AGENT_REASONING_EFFORT else {}
-        )
-        generate_kwargs.update(self.llm_args)
-        response = cast(
-            AssistantMessage,
-            generate(
-                model=self.llm or AGENT_MODEL,
-                tools=self.tools,
-                messages=[system, *state.messages],
-                **generate_kwargs,
-            ),
-        )
-        state.messages.append(response)
-        return response, state
+    def generate_next_message(self, message, state: HarnessState):
+        """Generate next message — benchmark wrappers call this."""
+        raise NotImplementedError
+
+
+__all__ = ["BaseHarnessAgent", "HarnessState", "AGENT_MODEL", "MAX_TURNS", "SYSTEM_PROMPT"]

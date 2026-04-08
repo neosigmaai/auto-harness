@@ -1,0 +1,965 @@
+root@8ffc784fe78e:/app/filesystem_spec# bash /tests/run-tests.sh; tmux wait -S done
+Hit:1 http://deb.debian.org/debian bookworm InRelease
+Hit:2 http://deb.debian.org/debian bookworm-updates InRelease
+Hit:3 http://deb.debian.org/debian-security bookworm-security InRelease
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  binutils binutils-aarch64-linux-gnu binutils-common cpp cpp-12 fontconfig-config fonts-dejavu-core gcc-12 libabsl20220623 libaom3 libasan8 libatomic1
+  libavif15 libbinutils libc-dev-bin libc-devtools libc6-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 libdav1d6 libde265-0 libdeflate0 libfontconfig1
+  libfreetype6 libgav1-1 libgcc-12-dev libgd3 libgomp1 libgprofng0 libheif1 libhwasan0 libisl23 libitm1 libjansson4 libjbig0 libjpeg62-turbo liblerc4 liblsan0
+  libmpc3 libmpfr6 libnsl-dev libnuma1 libpng16-16 librav1e0 libsvtav1enc1 libtiff6 libtirpc-dev libtsan2 libubsan1 libwebp7 libx265-199 libxpm4 libyuv0
+  linux-libc-dev manpages manpages-dev rpcsvc-proto
+Suggested packages:
+  binutils-doc cpp-doc gcc-12-locales cpp-12-doc gcc-multilib make autoconf automake libtool flex bison gdb gcc-doc gcc-12-doc glibc-doc libgd-tools
+  man-browser
+The following NEW packages will be installed:
+  binutils binutils-aarch64-linux-gnu binutils-common cpp cpp-12 fontconfig-config fonts-dejavu-core gcc gcc-12 libabsl20220623 libaom3 libasan8 libatomic1
+  libavif15 libbinutils libc-dev-bin libc-devtools libc6-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 libdav1d6 libde265-0 libdeflate0 libfontconfig1
+  libfreetype6 libgav1-1 libgcc-12-dev libgd3 libgomp1 libgprofng0 libheif1 libhwasan0 libisl23 libitm1 libjansson4 libjbig0 libjpeg62-turbo liblerc4 liblsan0
+  libmpc3 libmpfr6 libnsl-dev libnuma1 libpng16-16 librav1e0 libsvtav1enc1 libtiff6 libtirpc-dev libtsan2 libubsan1 libwebp7 libx265-199 libxpm4 libyuv0
+  linux-libc-dev manpages manpages-dev rpcsvc-proto
+0 upgraded, 60 newly installed, 0 to remove and 13 not upgraded.
+Need to get 57.1 MB of archives.
+After this operation, 222 MB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian bookworm/main arm64 manpages all 6.03-2 [1332 kB]
+Get:2 http://deb.debian.org/debian bookworm/main arm64 binutils-common arm64 2.40-2 [2487 kB]
+Get:3 http://deb.debian.org/debian bookworm/main arm64 libbinutils arm64 2.40-2 [645 kB]
+Get:4 http://deb.debian.org/debian bookworm/main arm64 libctf-nobfd0 arm64 2.40-2 [144 kB]
+Get:5 http://deb.debian.org/debian bookworm/main arm64 libctf0 arm64 2.40-2 [79.2 kB]
+Get:6 http://deb.debian.org/debian bookworm/main arm64 libgprofng0 arm64 2.40-2 [680 kB]
+Get:7 http://deb.debian.org/debian bookworm/main arm64 libjansson4 arm64 2.14-2 [40.2 kB]
+Get:8 http://deb.debian.org/debian bookworm/main arm64 binutils-aarch64-linux-gnu arm64 2.40-2 [2637 kB]
+Get:9 http://deb.debian.org/debian bookworm/main arm64 binutils arm64 2.40-2 [64.9 kB]
+Get:10 http://deb.debian.org/debian bookworm/main arm64 libisl23 arm64 0.25-1.1 [610 kB]
+Get:11 http://deb.debian.org/debian bookworm/main arm64 libmpfr6 arm64 4.2.0-1 [600 kB]
+Get:12 http://deb.debian.org/debian bookworm/main arm64 libmpc3 arm64 1.3.1-1 [49.2 kB]
+Get:13 http://deb.debian.org/debian bookworm/main arm64 cpp-12 arm64 12.2.0-14+deb12u1 [8228 kB]
+Get:14 http://deb.debian.org/debian bookworm/main arm64 cpp arm64 4:12.2.0-3 [6832 B]
+Get:15 http://deb.debian.org/debian bookworm/main arm64 fonts-dejavu-core all 2.37-6 [1068 kB]
+Get:16 http://deb.debian.org/debian bookworm/main arm64 fontconfig-config arm64 2.14.1-4 [315 kB]
+Get:17 http://deb.debian.org/debian bookworm/main arm64 libcc1-0 arm64 12.2.0-14+deb12u1 [37.7 kB]
+Get:18 http://deb.debian.org/debian bookworm/main arm64 libgomp1 arm64 12.2.0-14+deb12u1 [104 kB]
+Get:19 http://deb.debian.org/debian bookworm/main arm64 libitm1 arm64 12.2.0-14+deb12u1 [24.0 kB]
+Get:20 http://deb.debian.org/debian bookworm/main arm64 libatomic1 arm64 12.2.0-14+deb12u1 [9568 B]
+Get:21 http://deb.debian.org/debian bookworm/main arm64 libasan8 arm64 12.2.0-14+deb12u1 [2096 kB]
+Get:22 http://deb.debian.org/debian bookworm/main arm64 liblsan0 arm64 12.2.0-14+deb12u1 [926 kB]
+Get:23 http://deb.debian.org/debian bookworm/main arm64 libtsan2 arm64 12.2.0-14+deb12u1 [2178 kB]
+Get:24 http://deb.debian.org/debian bookworm/main arm64 libubsan1 arm64 12.2.0-14+deb12u1 [862 kB]
+Get:25 http://deb.debian.org/debian bookworm/main arm64 libhwasan0 arm64 12.2.0-14+deb12u1 [999 kB]
+Get:26 http://deb.debian.org/debian bookworm/main arm64 libgcc-12-dev arm64 12.2.0-14+deb12u1 [956 kB]
+Get:27 http://deb.debian.org/debian bookworm/main arm64 gcc-12 arm64 12.2.0-14+deb12u1 [16.3 MB]
+Get:28 http://deb.debian.org/debian bookworm/main arm64 gcc arm64 4:12.2.0-3 [5244 B]
+Get:29 http://deb.debian.org/debian bookworm/main arm64 libabsl20220623 arm64 20220623.1-1+deb12u2 [363 kB]
+Get:30 http://deb.debian.org/debian bookworm/main arm64 libaom3 arm64 3.6.0-1+deb12u2 [1373 kB]
+Get:31 http://deb.debian.org/debian bookworm/main arm64 libdav1d6 arm64 1.0.0-2+deb12u1 [275 kB]
+Get:32 http://deb.debian.org/debian bookworm/main arm64 libgav1-1 arm64 0.18.0-1+b1 [425 kB]
+Get:33 http://deb.debian.org/debian bookworm/main arm64 librav1e0 arm64 0.5.1-6 [552 kB]
+Get:34 http://deb.debian.org/debian bookworm/main arm64 libsvtav1enc1 arm64 1.4.1+dfsg-1 [1074 kB]
+Get:35 http://deb.debian.org/debian bookworm/main arm64 libjpeg62-turbo arm64 1:2.1.5-2 [171 kB]
+Get:36 http://deb.debian.org/debian bookworm/main arm64 libyuv0 arm64 0.0~git20230123.b2528b0-1 [122 kB]
+Get:37 http://deb.debian.org/debian bookworm/main arm64 libavif15 arm64 0.11.1-1+deb12u1 [88.4 kB]
+Get:38 http://deb.debian.org/debian bookworm/main arm64 libc-dev-bin arm64 2.36-9+deb12u13 [46.5 kB]
+Get:39 http://deb.debian.org/debian-security bookworm-security/main arm64 libpng16-16 arm64 1.6.39-2+deb12u4 [270 kB]
+Get:40 http://deb.debian.org/debian bookworm/main arm64 libfreetype6 arm64 2.12.1+dfsg-5+deb12u4 [368 kB]
+Get:41 http://deb.debian.org/debian bookworm/main arm64 libfontconfig1 arm64 2.14.1-4 [381 kB]
+Get:42 http://deb.debian.org/debian bookworm/main arm64 libde265-0 arm64 1.0.11-1+deb12u2 [148 kB]
+Get:43 http://deb.debian.org/debian bookworm/main arm64 libnuma1 arm64 2.0.16-1 [20.3 kB]
+Get:44 http://deb.debian.org/debian bookworm/main arm64 libx265-199 arm64 3.5-2+b1 [603 kB]
+Get:45 http://deb.debian.org/debian bookworm/main arm64 libheif1 arm64 1.15.1-1+deb12u1 [191 kB]
+Get:46 http://deb.debian.org/debian bookworm/main arm64 libdeflate0 arm64 1.14-1 [54.3 kB]
+Get:47 http://deb.debian.org/debian bookworm/main arm64 libjbig0 arm64 2.1-6.1 [30.0 kB]
+Get:48 http://deb.debian.org/debian bookworm/main arm64 liblerc4 arm64 4.0.0+ds-2 [138 kB]
+Get:49 http://deb.debian.org/debian bookworm/main arm64 libwebp7 arm64 1.2.4-0.2+deb12u1 [260 kB]
+Get:50 http://deb.debian.org/debian-security bookworm-security/main arm64 libtiff6 arm64 4.5.0-6+deb12u4 [301 kB]
+Get:51 http://deb.debian.org/debian bookworm/main arm64 libxpm4 arm64 1:3.5.12-1.1+deb12u1 [45.4 kB]
+Get:52 http://deb.debian.org/debian bookworm/main arm64 libgd3 arm64 2.3.3-9 [113 kB]
+Get:53 http://deb.debian.org/debian bookworm/main arm64 libc-devtools arm64 2.36-9+deb12u13 [53.8 kB]
+Get:54 http://deb.debian.org/debian-security bookworm-security/main arm64 linux-libc-dev arm64 6.1.164-1 [2217 kB]
+Get:55 http://deb.debian.org/debian bookworm/main arm64 libcrypt-dev arm64 1:4.4.33-2 [121 kB]
+Get:56 http://deb.debian.org/debian bookworm/main arm64 libtirpc-dev arm64 1.3.3+ds-1 [194 kB]
+Get:57 http://deb.debian.org/debian bookworm/main arm64 libnsl-dev arm64 1.3.0-2 [66.1 kB]
+Get:58 http://deb.debian.org/debian bookworm/main arm64 rpcsvc-proto arm64 1.4.3-1 [59.7 kB]
+Get:59 http://deb.debian.org/debian bookworm/main arm64 libc6-dev arm64 2.36-9+deb12u13 [1435 kB]
+Get:60 http://deb.debian.org/debian bookworm/main arm64 manpages-dev all 6.03-2 [2030 kB]
+Fetched 57.1 MB in 4s (14.0 MB/s)
+debconf: delaying package configuration, since apt-utils is not installed
+Selecting previously unselected package manpages.
+(Reading database ... 11230 files and directories currently installed.)
+Preparing to unpack .../00-manpages_6.03-2_all.deb ...
+Unpacking manpages (6.03-2) ...
+Selecting previously unselected package binutils-common:arm64.
+Preparing to unpack .../01-binutils-common_2.40-2_arm64.deb ...
+Unpacking binutils-common:arm64 (2.40-2) ...
+Selecting previously unselected package libbinutils:arm64.
+Preparing to unpack .../02-libbinutils_2.40-2_arm64.deb ...
+Unpacking libbinutils:arm64 (2.40-2) ...
+Selecting previously unselected package libctf-nobfd0:arm64.
+Preparing to unpack .../03-libctf-nobfd0_2.40-2_arm64.deb ...
+Unpacking libctf-nobfd0:arm64 (2.40-2) ...
+Selecting previously unselected package libctf0:arm64.
+Preparing to unpack .../04-libctf0_2.40-2_arm64.deb ...
+Unpacking libctf0:arm64 (2.40-2) ...
+Selecting previously unselected package libgprofng0:arm64.
+Preparing to unpack .../05-libgprofng0_2.40-2_arm64.deb ...
+Unpacking libgprofng0:arm64 (2.40-2) ...
+Selecting previously unselected package libjansson4:arm64.
+Preparing to unpack .../06-libjansson4_2.14-2_arm64.deb ...
+Unpacking libjansson4:arm64 (2.14-2) ...
+Selecting previously unselected package binutils-aarch64-linux-gnu.
+Preparing to unpack .../07-binutils-aarch64-linux-gnu_2.40-2_arm64.deb ...
+Unpacking binutils-aarch64-linux-gnu (2.40-2) ...
+Selecting previously unselected package binutils.
+Preparing to unpack .../08-binutils_2.40-2_arm64.deb ...
+Unpacking binutils (2.40-2) ...
+Selecting previously unselected package libisl23:arm64.
+Preparing to unpack .../09-libisl23_0.25-1.1_arm64.deb ...
+Unpacking libisl23:arm64 (0.25-1.1) ...
+Selecting previously unselected package libmpfr6:arm64.
+Preparing to unpack .../10-libmpfr6_4.2.0-1_arm64.deb ...
+Unpacking libmpfr6:arm64 (4.2.0-1) ...
+Selecting previously unselected package libmpc3:arm64.
+Preparing to unpack .../11-libmpc3_1.3.1-1_arm64.deb ...
+Unpacking libmpc3:arm64 (1.3.1-1) ...
+Selecting previously unselected package cpp-12.
+Preparing to unpack .../12-cpp-12_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking cpp-12 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package cpp.
+Preparing to unpack .../13-cpp_4%3a12.2.0-3_arm64.deb ...
+Unpacking cpp (4:12.2.0-3) ...
+Selecting previously unselected package fonts-dejavu-core.
+Preparing to unpack .../14-fonts-dejavu-core_2.37-6_all.deb ...
+Unpacking fonts-dejavu-core (2.37-6) ...
+Selecting previously unselected package fontconfig-config.
+Preparing to unpack .../15-fontconfig-config_2.14.1-4_arm64.deb ...
+Unpacking fontconfig-config (2.14.1-4) ...
+Selecting previously unselected package libcc1-0:arm64.
+Preparing to unpack .../16-libcc1-0_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libcc1-0:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libgomp1:arm64.
+Preparing to unpack .../17-libgomp1_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libgomp1:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libitm1:arm64.
+Preparing to unpack .../18-libitm1_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libitm1:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libatomic1:arm64.
+Preparing to unpack .../19-libatomic1_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libatomic1:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libasan8:arm64.
+Preparing to unpack .../20-libasan8_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libasan8:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package liblsan0:arm64.
+Preparing to unpack .../21-liblsan0_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking liblsan0:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libtsan2:arm64.
+Preparing to unpack .../22-libtsan2_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libtsan2:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libubsan1:arm64.
+Preparing to unpack .../23-libubsan1_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libubsan1:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libhwasan0:arm64.
+Preparing to unpack .../24-libhwasan0_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libhwasan0:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libgcc-12-dev:arm64.
+Preparing to unpack .../25-libgcc-12-dev_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libgcc-12-dev:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package gcc-12.
+Preparing to unpack .../26-gcc-12_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking gcc-12 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package gcc.
+Preparing to unpack .../27-gcc_4%3a12.2.0-3_arm64.deb ...
+Unpacking gcc (4:12.2.0-3) ...
+Selecting previously unselected package libabsl20220623:arm64.
+Preparing to unpack .../28-libabsl20220623_20220623.1-1+deb12u2_arm64.deb ...
+Unpacking libabsl20220623:arm64 (20220623.1-1+deb12u2) ...
+Selecting previously unselected package libaom3:arm64.
+Preparing to unpack .../29-libaom3_3.6.0-1+deb12u2_arm64.deb ...
+Unpacking libaom3:arm64 (3.6.0-1+deb12u2) ...
+Selecting previously unselected package libdav1d6:arm64.
+Preparing to unpack .../30-libdav1d6_1.0.0-2+deb12u1_arm64.deb ...
+Unpacking libdav1d6:arm64 (1.0.0-2+deb12u1) ...
+Selecting previously unselected package libgav1-1:arm64.
+Preparing to unpack .../31-libgav1-1_0.18.0-1+b1_arm64.deb ...
+Unpacking libgav1-1:arm64 (0.18.0-1+b1) ...
+Selecting previously unselected package librav1e0:arm64.
+Preparing to unpack .../32-librav1e0_0.5.1-6_arm64.deb ...
+Unpacking librav1e0:arm64 (0.5.1-6) ...
+Selecting previously unselected package libsvtav1enc1:arm64.
+Preparing to unpack .../33-libsvtav1enc1_1.4.1+dfsg-1_arm64.deb ...
+Unpacking libsvtav1enc1:arm64 (1.4.1+dfsg-1) ...
+Selecting previously unselected package libjpeg62-turbo:arm64.
+Preparing to unpack .../34-libjpeg62-turbo_1%3a2.1.5-2_arm64.deb ...
+Unpacking libjpeg62-turbo:arm64 (1:2.1.5-2) ...
+Selecting previously unselected package libyuv0:arm64.
+Preparing to unpack .../35-libyuv0_0.0~git20230123.b2528b0-1_arm64.deb ...
+Unpacking libyuv0:arm64 (0.0~git20230123.b2528b0-1) ...
+Selecting previously unselected package libavif15:arm64.
+Preparing to unpack .../36-libavif15_0.11.1-1+deb12u1_arm64.deb ...
+Unpacking libavif15:arm64 (0.11.1-1+deb12u1) ...
+Selecting previously unselected package libc-dev-bin.
+Preparing to unpack .../37-libc-dev-bin_2.36-9+deb12u13_arm64.deb ...
+Unpacking libc-dev-bin (2.36-9+deb12u13) ...
+Selecting previously unselected package libpng16-16:arm64.
+Preparing to unpack .../38-libpng16-16_1.6.39-2+deb12u4_arm64.deb ...
+Unpacking libpng16-16:arm64 (1.6.39-2+deb12u4) ...
+Selecting previously unselected package libfreetype6:arm64.
+Preparing to unpack .../39-libfreetype6_2.12.1+dfsg-5+deb12u4_arm64.deb ...
+Unpacking libfreetype6:arm64 (2.12.1+dfsg-5+deb12u4) ...
+Selecting previously unselected package libfontconfig1:arm64.
+Preparing to unpack .../40-libfontconfig1_2.14.1-4_arm64.deb ...
+Unpacking libfontconfig1:arm64 (2.14.1-4) ...
+Selecting previously unselected package libde265-0:arm64.
+Preparing to unpack .../41-libde265-0_1.0.11-1+deb12u2_arm64.deb ...
+Unpacking libde265-0:arm64 (1.0.11-1+deb12u2) ...
+Selecting previously unselected package libnuma1:arm64.
+Preparing to unpack .../42-libnuma1_2.0.16-1_arm64.deb ...
+Unpacking libnuma1:arm64 (2.0.16-1) ...
+Selecting previously unselected package libx265-199:arm64.
+Preparing to unpack .../43-libx265-199_3.5-2+b1_arm64.deb ...
+Unpacking libx265-199:arm64 (3.5-2+b1) ...
+Selecting previously unselected package libheif1:arm64.
+Preparing to unpack .../44-libheif1_1.15.1-1+deb12u1_arm64.deb ...
+Unpacking libheif1:arm64 (1.15.1-1+deb12u1) ...
+Selecting previously unselected package libdeflate0:arm64.
+Preparing to unpack .../45-libdeflate0_1.14-1_arm64.deb ...
+Unpacking libdeflate0:arm64 (1.14-1) ...
+Selecting previously unselected package libjbig0:arm64.
+Preparing to unpack .../46-libjbig0_2.1-6.1_arm64.deb ...
+Unpacking libjbig0:arm64 (2.1-6.1) ...
+Selecting previously unselected package liblerc4:arm64.
+Preparing to unpack .../47-liblerc4_4.0.0+ds-2_arm64.deb ...
+Unpacking liblerc4:arm64 (4.0.0+ds-2) ...
+Selecting previously unselected package libwebp7:arm64.
+Preparing to unpack .../48-libwebp7_1.2.4-0.2+deb12u1_arm64.deb ...
+Unpacking libwebp7:arm64 (1.2.4-0.2+deb12u1) ...
+Selecting previously unselected package libtiff6:arm64.
+Preparing to unpack .../49-libtiff6_4.5.0-6+deb12u4_arm64.deb ...
+Unpacking libtiff6:arm64 (4.5.0-6+deb12u4) ...
+Selecting previously unselected package libxpm4:arm64.
+Preparing to unpack .../50-libxpm4_1%3a3.5.12-1.1+deb12u1_arm64.deb ...
+Unpacking libxpm4:arm64 (1:3.5.12-1.1+deb12u1) ...
+Selecting previously unselected package libgd3:arm64.
+Preparing to unpack .../51-libgd3_2.3.3-9_arm64.deb ...
+Unpacking libgd3:arm64 (2.3.3-9) ...
+Selecting previously unselected package libc-devtools.
+Preparing to unpack .../52-libc-devtools_2.36-9+deb12u13_arm64.deb ...
+Unpacking libc-devtools (2.36-9+deb12u13) ...
+Selecting previously unselected package linux-libc-dev:arm64.
+Preparing to unpack .../53-linux-libc-dev_6.1.164-1_arm64.deb ...
+Unpacking linux-libc-dev:arm64 (6.1.164-1) ...
+Selecting previously unselected package libcrypt-dev:arm64.
+Preparing to unpack .../54-libcrypt-dev_1%3a4.4.33-2_arm64.deb ...
+Unpacking libcrypt-dev:arm64 (1:4.4.33-2) ...
+Selecting previously unselected package libtirpc-dev:arm64.
+Preparing to unpack .../55-libtirpc-dev_1.3.3+ds-1_arm64.deb ...
+Unpacking libtirpc-dev:arm64 (1.3.3+ds-1) ...
+Selecting previously unselected package libnsl-dev:arm64.
+Preparing to unpack .../56-libnsl-dev_1.3.0-2_arm64.deb ...
+Unpacking libnsl-dev:arm64 (1.3.0-2) ...
+Selecting previously unselected package rpcsvc-proto.
+Preparing to unpack .../57-rpcsvc-proto_1.4.3-1_arm64.deb ...
+Unpacking rpcsvc-proto (1.4.3-1) ...
+Selecting previously unselected package libc6-dev:arm64.
+Preparing to unpack .../58-libc6-dev_2.36-9+deb12u13_arm64.deb ...
+Unpacking libc6-dev:arm64 (2.36-9+deb12u13) ...
+Selecting previously unselected package manpages-dev.
+Preparing to unpack .../59-manpages-dev_6.03-2_all.deb ...
+Unpacking manpages-dev (6.03-2) ...
+Setting up libaom3:arm64 (3.6.0-1+deb12u2) ...
+Setting up libabsl20220623:arm64 (20220623.1-1+deb12u2) ...
+Setting up liblerc4:arm64 (4.0.0+ds-2) ...
+Setting up libxpm4:arm64 (1:3.5.12-1.1+deb12u1) ...
+Setting up manpages (6.03-2) ...
+Setting up binutils-common:arm64 (2.40-2) ...
+Setting up libdeflate0:arm64 (1.14-1) ...
+Setting up linux-libc-dev:arm64 (6.1.164-1) ...
+Setting up libctf-nobfd0:arm64 (2.40-2) ...
+Setting up libsvtav1enc1:arm64 (1.4.1+dfsg-1) ...
+Setting up libgomp1:arm64 (12.2.0-14+deb12u1) ...
+Setting up libjbig0:arm64 (2.1-6.1) ...
+Setting up librav1e0:arm64 (0.5.1-6) ...
+Setting up libjansson4:arm64 (2.14-2) ...
+Setting up libtirpc-dev:arm64 (1.3.3+ds-1) ...
+Setting up rpcsvc-proto (1.4.3-1) ...
+Setting up libjpeg62-turbo:arm64 (1:2.1.5-2) ...
+Setting up libmpfr6:arm64 (4.2.0-1) ...
+Setting up libpng16-16:arm64 (1.6.39-2+deb12u4) ...
+Setting up libmpc3:arm64 (1.3.1-1) ...
+Setting up libatomic1:arm64 (12.2.0-14+deb12u1) ...
+Setting up fonts-dejavu-core (2.37-6) ...
+Setting up libgav1-1:arm64 (0.18.0-1+b1) ...
+Setting up libdav1d6:arm64 (1.0.0-2+deb12u1) ...
+Setting up libwebp7:arm64 (1.2.4-0.2+deb12u1) ...
+Setting up libubsan1:arm64 (12.2.0-14+deb12u1) ...
+Setting up libnuma1:arm64 (2.0.16-1) ...
+Setting up libnsl-dev:arm64 (1.3.0-2) ...
+Setting up libhwasan0:arm64 (12.2.0-14+deb12u1) ...
+Setting up libcrypt-dev:arm64 (1:4.4.33-2) ...
+Setting up libtiff6:arm64 (4.5.0-6+deb12u4) ...
+Setting up libasan8:arm64 (12.2.0-14+deb12u1) ...
+Setting up libtsan2:arm64 (12.2.0-14+deb12u1) ...
+Setting up libbinutils:arm64 (2.40-2) ...
+Setting up libisl23:arm64 (0.25-1.1) ...
+Setting up libde265-0:arm64 (1.0.11-1+deb12u2) ...
+Setting up libc-dev-bin (2.36-9+deb12u13) ...
+Setting up libyuv0:arm64 (0.0~git20230123.b2528b0-1) ...
+Setting up libcc1-0:arm64 (12.2.0-14+deb12u1) ...
+Setting up liblsan0:arm64 (12.2.0-14+deb12u1) ...
+Setting up libitm1:arm64 (12.2.0-14+deb12u1) ...
+Setting up libctf0:arm64 (2.40-2) ...
+Setting up manpages-dev (6.03-2) ...
+Setting up cpp-12 (12.2.0-14+deb12u1) ...
+Setting up libavif15:arm64 (0.11.1-1+deb12u1) ...
+Setting up fontconfig-config (2.14.1-4) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used. at /usr/share/perl5/Debconf/FrontEnd/Dialog.pm line 78.)
+debconf: falling back to frontend: Readline
+Setting up libgprofng0:arm64 (2.40-2) ...
+Setting up libfreetype6:arm64 (2.12.1+dfsg-5+deb12u4) ...
+Setting up libgcc-12-dev:arm64 (12.2.0-14+deb12u1) ...
+Setting up libx265-199:arm64 (3.5-2+b1) ...
+Setting up cpp (4:12.2.0-3) ...
+Setting up libc6-dev:arm64 (2.36-9+deb12u13) ...
+Setting up libfontconfig1:arm64 (2.14.1-4) ...
+Setting up libheif1:arm64 (1.15.1-1+deb12u1) ...
+Setting up binutils-aarch64-linux-gnu (2.40-2) ...
+Setting up binutils (2.40-2) ...
+Setting up gcc-12 (12.2.0-14+deb12u1) ...
+Setting up libgd3:arm64 (2.3.3-9) ...
+Setting up libc-devtools (2.36-9+deb12u13) ...
+Setting up gcc (4:12.2.0-3) ...
+Processing triggers for libc-bin (2.36-9+deb12u13) ...
+patching file fsspec/implementations/tests/test_dirfs.py
+Using pip 23.0.1 from /app/filesystem_spec/tests-venv/lib/python3.9/site-packages/pip (python 3.9)
+Obtaining file:///app/filesystem_spec
+  Running command pip subprocess to install build dependencies
+  Collecting hatchling
+    Downloading hatchling-1.27.0-py3-none-any.whl (75 kB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 75.8/75.8 kB 2.3 MB/s eta 0:00:00
+  Collecting hatch-vcs
+    Downloading hatch_vcs-0.5.0-py3-none-any.whl (8.5 kB)
+  Collecting packaging>=24.2
+    Downloading packaging-26.0-py3-none-any.whl (74 kB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 74.4/74.4 kB 8.3 MB/s eta 0:00:00
+  Collecting pathspec>=0.10.1
+    Downloading pathspec-1.0.4-py3-none-any.whl (55 kB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 55.2/55.2 kB 18.2 MB/s eta 0:00:00
+  Collecting pluggy>=1.0.0
+    Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+  Collecting trove-classifiers
+    Downloading trove_classifiers-2026.1.14.14-py3-none-any.whl (14 kB)
+  Collecting tomli>=1.2.2
+    Downloading tomli-2.4.1-py3-none-any.whl (14 kB)
+  Collecting setuptools-scm>=8.2.0
+    Downloading setuptools_scm-9.2.2-py3-none-any.whl (62 kB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 63.0/63.0 kB 23.9 MB/s eta 0:00:00
+  Collecting typing-extensions
+    Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.6/44.6 kB 13.5 MB/s eta 0:00:00
+  Collecting setuptools
+    Downloading setuptools-82.0.1-py3-none-any.whl (1.0 MB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.0/1.0 MB 13.6 MB/s eta 0:00:00
+  Installing collected packages: trove-classifiers, typing-extensions, tomli, setuptools, pluggy, pathspec, packaging, setuptools-scm, hatchling, hatch-vcs
+  Successfully installed hatch-vcs-0.5.0 hatchling-1.27.0 packaging-26.0 pathspec-1.0.4 pluggy-1.6.0 setuptools-82.0.1 setuptools-scm-9.2.2 tomli-2.4.1 trove-cl
+assifiers-2026.1.14.14 typing-extensions-4.15.0
+
+  [notice] A new release of pip is available: 23.0.1 -> 26.0.1
+  [notice] To update, run: pip install --upgrade pip
+  Installing build dependencies ... done
+  Running command Checking if build backend supports build_editable
+  Checking if build backend supports build_editable ... done
+  Running command Getting requirements to build editable
+  Getting requirements to build editable ... done
+  Running command pip subprocess to install backend dependencies
+  Collecting editables~=0.3
+    Downloading editables-0.5-py3-none-any.whl (5.1 kB)
+  Installing collected packages: editables
+  Successfully installed editables-0.5
+
+  [notice] A new release of pip is available: 23.0.1 -> 26.0.1
+  [notice] To update, run: pip install --upgrade pip
+  Installing backend dependencies ... done
+  Running command Preparing editable metadata (pyproject.toml)
+  Preparing editable metadata (pyproject.toml) ... done
+Collecting pytest-mock
+  Downloading pytest_mock-3.15.1-py3-none-any.whl (10 kB)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/e5/35/f8b19922b6a25bc0880171a2f1a003eaeb93657475193ab516fd
+87cac9da/pytest_asyncio-1.3.0-py3-none-any.whl (from https://pypi.org/simple/pytest-asyncio/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/90/2c/8af215c0f776415f3590cac4f9086ccefd6fd463befeae41cd4d
+3f193e5a/pytest_asyncio-1.3.0.tar.gz (from https://pypi.org/simple/pytest-asyncio/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/3b/af/38a81f596577a895d928f37c02ba406ea7d3c1fabcf9a0492282
+6db6a86d/pytest_asyncio-1.4.0a0-py3-none-any.whl (from https://pypi.org/simple/pytest-asyncio/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/bc/8c/8c198e4f4bbd6c5cba04be9fa27aec05472d49d349ae800df725
+533151af/pytest_asyncio-1.4.0a0.tar.gz (from https://pypi.org/simple/pytest-asyncio/) (requires-python:>=3.10)
+Collecting pytest-asyncio!=0.22.0
+  Downloading pytest_asyncio-1.2.0-py3-none-any.whl (15 kB)
+Collecting aiohttp!=4.0.0a0,!=4.0.0a1
+  Downloading aiohttp-3.13.5-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (1.7 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.7/1.7 MB 16.6 MB/s eta 0:00:00
+Collecting pytest-recording
+  Downloading pytest_recording-0.13.4-py3-none-any.whl (13 kB)
+Collecting pytest-benchmark
+  Downloading pytest_benchmark-5.2.3-py3-none-any.whl (45 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.3/45.3 kB 19.1 MB/s eta 0:00:00
+Collecting pytest-cov
+  Downloading pytest_cov-7.1.0-py3-none-any.whl (22 kB)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/56/5d/c814546c2333ceea4ba42262d8c4d55763003e767fa169adc693
+bd524478/requests-2.33.0-py3-none-any.whl (from https://pypi.org/simple/requests/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/34/64/8860370b167a9721e8956ae116825caff829224fbca0ca6e7bf8
+ddef8430/requests-2.33.0.tar.gz (from https://pypi.org/simple/requests/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d7/8e/7540e8a2036f79a125c1d2ebadf69ed7901608859186c856fa03
+88ef4197/requests-2.33.1-py3-none-any.whl (from https://pypi.org/simple/requests/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/5f/a4/98b9c7c6428a668bf7e42ebb7c79d576a1c3c1e3ae2d47e674b4
+68388871/requests-2.33.1.tar.gz (from https://pypi.org/simple/requests/) (requires-python:>=3.10)
+Collecting requests
+  Downloading requests-2.32.5-py3-none-any.whl (64 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.7/64.7 kB 26.5 MB/s eta 0:00:00
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/77/54/60eabb34445e3db3d3d874dc1dfa72751bfec3265bd611cb13c8
+b290adea/pytest_rerunfailures-16.1-py3-none-any.whl (from https://pypi.org/simple/pytest-rerunfailures/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/de/04/71e9520551fc8fe2cf5c1a1842e4e600265b0815f2016b7c27ec
+85688682/pytest_rerunfailures-16.1.tar.gz (from https://pypi.org/simple/pytest-rerunfailures/) (requires-python:>=3.10)
+Collecting pytest-rerunfailures
+  Downloading pytest_rerunfailures-16.0.1-py3-none-any.whl (13 kB)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/72/99/cafef234114a3b6d9f3aaed0723b437c40c57bdb7b3e4c3a575b
+c4890052/pytest-9.0.0-py3-none-any.whl (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/da/1d/eb34f286b164c5e431a810a38697409cca1112cee04b287bb56a
+c486730b/pytest-9.0.0.tar.gz (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/0b/8b/6300fb80f858cda1c51ffa17075df5d846757081d11ab4aa35ce
+f9e6258b/pytest-9.0.1-py3-none-any.whl (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/07/56/f013048ac4bc4c1d9be45afd4ab209ea62822fb1598f40687e6b
+f45dcea4/pytest-9.0.1.tar.gz (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/3b/ab/b3226f0bd7cdcf710fbede2b3548584366da3b19b5021e74f5bd
+e2a8fa3f/pytest-9.0.2-py3-none-any.whl (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d1/db/7ef3487e0fb0049ddb5ce41d3a49c235bf9ad299b6a25d5780a8
+9f19230f/pytest-9.0.2.tar.gz (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d4/24/a372aaf5c9b7208e7112038812994107bc65a84cd00e0354a88c
+2c77a617/pytest-9.0.3-py3-none-any.whl (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/7d/0d/549bd94f1a0a402dc8cf64563a117c0f3765662e2e668477624b
+aeec44d5/pytest-9.0.3.tar.gz (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+Collecting pytest
+  Downloading pytest-8.4.2-py3-none-any.whl (365 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 365.8/365.8 kB 105.1 MB/s eta 0:00:00
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/54/a4/f8188c4f3e07f7737683588210c073478abcb542048cf4ab6fed
+ad0b458a/numpy-2.1.0.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/59/5f/9003bb3e632f2b58f5e3a3378902dcc73c5518070736c6740fe5
+2454e8e1/numpy-2.1.1.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/4b/d1/8a730ea07f4a37d94f9172f4ce1d81064b7a64766b460378be27
+8952de75/numpy-2.1.2.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/25/ca/1166b75c21abd1da445b97bf1fa2f14f423c6cfb4fc7c4ef31dc
+cf9f6a94/numpy-2.1.3.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/47/1b/1d565e0f6e156e1522ab564176b8b29d71e13d8caf003a08768d
+f3d5cec5/numpy-2.2.0.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/f2/a5/fdbf6a7871703df6160b5cf3dd774074b086d278172285c52c27
+58b76305/numpy-2.2.1.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/ec/d0/c12ddfd3a02274be06ffc71f3efc6d0e457b0409c4481596881e
+748cb264/numpy-2.2.2.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/fb/90/8956572f5c4ae52201fdec7ba2044b2c882832dcec7d5d0922c9
+e9acf2de/numpy-2.2.3.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/e1/78/31103410a57bc2c2b93a3597340a8119588571f6a4539067546c
+b9a0bfac/numpy-2.2.4.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/dc/b2/ce4b867d8cd9c0ee84938ae1e6a6f7926ebf928c9090d036fc3c
+6a04f946/numpy-2.2.5.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/76/21/7d2a95e4bba9dc13d043ee156a356c0a8f0c6309dff6b21b4d71
+a073b8a8/numpy-2.2.6.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.11'): https://files.pythonhosted.org/packages/f3/db/8e12381333aea300890829a0a36bfa738cac95475d88982d5387
+25143fd9/numpy-2.3.0.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.11)
+  Link requires a different Python (3.9.25 not in: '>=3.11'): https://files.pythonhosted.org/packages/2e/19/d7c972dfe90a353dbd3efbbe1d14a5951de80c99c9dc1b93cd99
+8d51dc0f/numpy-2.3.1.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.11)
+  Link requires a different Python (3.9.25 not in: '>=3.11'): https://files.pythonhosted.org/packages/37/7d/3fec4199c5ffb892bed55cff901e4f39a58c81df9c44c280499e
+92cad264/numpy-2.3.2.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.11)
+  Link requires a different Python (3.9.25 not in: '>=3.11'): https://files.pythonhosted.org/packages/d0/19/95b3d357407220ed24c139018d2518fab0a61a948e68286a25f1
+a4d049ff/numpy-2.3.3.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.11)
+  Link requires a different Python (3.9.25 not in: '>=3.11'): https://files.pythonhosted.org/packages/b5/f4/098d2270d52b41f1bd7db9fc288aaa0400cb48c2a3e2af6fa365
+d9720947/numpy-2.3.4.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.11)
+  Link requires a different Python (3.9.25 not in: '>=3.11'): https://files.pythonhosted.org/packages/76/65/21b3bc86aac7b8f2862db1e808f1ea22b028e30a225a34a5ede9
+bf8678f2/numpy-2.3.5.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.11)
+  Link requires a different Python (3.9.25 not in: '>=3.11'): https://files.pythonhosted.org/packages/12/02/7111f298e24a44d6fa4b75b47d93eccf444e5afbcee5b04aac76
+0ee48935/numpy-2.4.0rc1.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.11)
+  Link requires a different Python (3.9.25 not in: '>=3.11'): https://files.pythonhosted.org/packages/a4/7a/6a3d14e205d292b738db449d0de649b373a59edb0d0b4493821d
+0a3e8718/numpy-2.4.0.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.11)
+  Link requires a different Python (3.9.25 not in: '>=3.11'): https://files.pythonhosted.org/packages/24/62/ae72ff66c0f1fd959925b4c11f8c2dea61f47f6acaea75a08512
+cdfe3fed/numpy-2.4.1.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.11)
+  Link requires a different Python (3.9.25 not in: '>=3.11'): https://files.pythonhosted.org/packages/57/fd/0005efbd0af48e55eb3c7208af93f2862d4b1a56cd78e84309a2
+d959208d/numpy-2.4.2.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.11)
+  Link requires a different Python (3.9.25 not in: '>=3.11'): https://files.pythonhosted.org/packages/10/8b/c265f4823726ab832de836cdd184d0986dcf94480f81e8739692
+a7ac7af2/numpy-2.4.3.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.11)
+  Link requires a different Python (3.9.25 not in: '>=3.11'): https://files.pythonhosted.org/packages/d7/9f/b8cef5bffa569759033adda9481211426f12f53299629b410340
+795c2514/numpy-2.4.4.tar.gz (from https://pypi.org/simple/numpy/) (requires-python:>=3.11)
+Collecting numpy
+  Downloading numpy-2.0.2-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (13.9 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 13.9/13.9 MB 43.9 MB/s eta 0:00:00
+Collecting attrs>=17.3.0
+  Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 67.5/67.5 kB 28.9 MB/s eta 0:00:00
+Collecting multidict<7.0,>=4.5
+  Downloading multidict-6.7.1-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (240 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 240.1/240.1 kB 67.7 MB/s eta 0:00:00
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/69/68/c8739671f5699c7dc470580a4f821ef37c32c4cb0b047ce223a7
+f115757f/yarl-1.23.0-py3-none-any.whl (from https://pypi.org/simple/yarl/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/23/6e/beb1beec874a72f23815c1434518bfc4ed2175065173fb138c37
+05f658d4/yarl-1.23.0.tar.gz (from https://pypi.org/simple/yarl/) (requires-python:>=3.10)
+Collecting yarl<2.0,>=1.17.0
+  Downloading yarl-1.22.0-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (347 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 347.1/347.1 kB 51.9 MB/s eta 0:00:00
+Collecting async-timeout<6.0,>=4.0
+  Downloading async_timeout-5.0.1-py3-none-any.whl (6.2 kB)
+Collecting aiosignal>=1.4.0
+  Downloading aiosignal-1.4.0-py3-none-any.whl (7.5 kB)
+Collecting propcache>=0.2.0
+  Downloading propcache-0.4.1-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (201 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 201.1/201.1 kB 36.0 MB/s eta 0:00:00
+Collecting aiohappyeyeballs>=2.5.0
+  Downloading aiohappyeyeballs-2.6.1-py3-none-any.whl (15 kB)
+Collecting frozenlist>=1.1.1
+  Downloading frozenlist-1.8.0-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (221 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 221.5/221.5 kB 39.0 MB/s eta 0:00:00
+Collecting backports-asyncio-runner<2,>=1.1
+  Downloading backports_asyncio_runner-1.2.0-py3-none-any.whl (12 kB)
+Collecting typing-extensions>=4.12
+  Using cached typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+Collecting pygments>=2.7.2
+  Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 8.2 MB/s eta 0:00:00
+Collecting packaging>=20
+  Using cached packaging-26.0-py3-none-any.whl (74 kB)
+Collecting tomli>=1
+  Using cached tomli-2.4.1-py3-none-any.whl (14 kB)
+Collecting exceptiongroup>=1
+  Downloading exceptiongroup-1.3.1-py3-none-any.whl (16 kB)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/13/71/3970abe530a7a15e406874a30ed6cf1ead266444b4503ebb2f68
+b4d98f30/iniconfig-2.2.0-py3-none-any.whl (from https://pypi.org/simple/iniconfig/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/8e/11/2f7713979d561602e14b8fdd99a0e2e8ff2d901de1041c42a23a
+4c33f2c3/iniconfig-2.2.0.tar.gz (from https://pypi.org/simple/iniconfig/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/cb/b1/3846dd7f199d53cb17f49cba7e651e9ce294d8497c8c150530ed
+11865bb8/iniconfig-2.3.0-py3-none-any.whl (from https://pypi.org/simple/iniconfig/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/72/34/14ca021ce8e5dfedc35312d08ba8bf51fdd999c576889fc2c24c
+b97f4f10/iniconfig-2.3.0.tar.gz (from https://pypi.org/simple/iniconfig/) (requires-python:>=3.10)
+Collecting iniconfig>=1
+  Downloading iniconfig-2.1.0-py3-none-any.whl (6.0 kB)
+Collecting pluggy<2,>=1.5
+  Using cached pluggy-1.6.0-py3-none-any.whl (20 kB)
+Collecting py-cpuinfo
+  Downloading py_cpuinfo-9.0.0-py3-none-any.whl (22 kB)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/5f/04/642c1d8a448ae5ea1369eac8495740a79eb4e581a9fb0cbdce56
+bbf56da1/coverage-7.11.0-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/1c/38/ee22495420457259d2f3390309505ea98f98a5eed40901cf6219
+6abad006/coverage-7.11.0.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/76/32/bd9f48c28e23b2f08946f8e83983617b00619f5538dbd7e1045f
+a7e88c00/coverage-7.11.1-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/89/12/3e2d2ec71796e0913178478e693a06af6a3bc9f7f9cb899bf85a
+426d8370/coverage-7.11.1.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/05/7a/99766a75c88e576f47c2d9a06416ff5d95be9b42faca5c37e1ab
+77c4cd1a/coverage-7.11.2-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/32/e6/7c4006cf689ed7a4aa75dcf1f14acbc04e585714c220b5cc6d23
+1096685a/coverage-7.11.2.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/19/8f/92bdd27b067204b99f396a1414d6342122f3e2663459baf78710
+8a6b8b84/coverage-7.11.3-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d2/59/9698d57a3b11704c7b89b21d69e9d23ecf80d538cabb536c8b63
+f4a12322/coverage-7.11.3.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/1e/40/3559920734fa9a5b8efafee0d84a64c0ea4ed41d1b8fbb5627c0
+f0c67dac/coverage-7.11.4a0.dev1-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/a8/49/426dfb3d39702b8f59f6e3d9fa7e45b21f6343f871edb8565804
+78121af1/coverage-7.11.4a0.dev1.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/ce/a3/43b749004e3c09452e39bb56347a008f0a0668aad37324a99b5c
+8ca91d9e/coverage-7.12.0-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/89/26/4a96807b193b011588099c3b5c89fbb05294e5b90e71018e0654
+65f34eb6/coverage-7.12.0.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/1b/1b/cd5c3391a04a101767961e3e3ccf5a0c987b08d8434d97073dbb
+d132a049/coverage-7.12.1b1-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/57/0b/c212490af3d8526225ee4f277ab249810ca108232d840d0a093e
+4f35931c/coverage-7.12.1b1.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/8d/4c/1968f32fb9a2604645827e11ff84a31e59d532e01995f904723b
+4f5328b3/coverage-7.13.0-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/b6/45/2c665ca77ec32ad67e25c77daf1cee28ee4558f3bc571cdbaf88
+a00b9f23/coverage-7.13.0.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/cc/48/d9f421cb8da5afaa1a64570d9989e00fb7955e6acddc5a12979f
+7666ef60/coverage-7.13.1-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/23/f9/e92df5e07f3fc8d4c7f9a0f146ef75446bf870351cd37b788cf5
+897f8079/coverage-7.13.1.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d2/db/d291e30fdf7ea617a335531e72294e0c723356d7fdde8fba0061
+0a76bda9/coverage-7.13.2-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/ad/49/349848445b0e53660e258acbcc9b0d014895b673923792088667
+2240f84b/coverage-7.13.2.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/7d/fb/70af542d2d938c778c9373ce253aa4116dbe7c0a5672f78b2b2a
+e0e1b94b/coverage-7.13.3-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/11/43/3e4ac666cc35f231fa70c94e9f38459299de1a152813f9d2f60f
+c5f3ecaf/coverage-7.13.3.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/0d/4a/331fe2caf6799d591109bb9c08083080f6de90a823695d412a93
+5622abb2/coverage-7.13.4-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/24/56/95b7e30fa389756cb56630faa728da46a27b8c6eb46f9d557c68
+fff12b65/coverage-7.13.4.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/9e/ee/a4cf96b8ce1e566ed238f0659ac2d3f007ed1d14b181bcb684e1
+9561a69a/coverage-7.13.5-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/9d/e0/70553e3000e345daff267cec284ce4cbf3fc141b6da229ac5277
+5b5428f1/coverage-7.13.5.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+Collecting coverage[toml]>=7.10.6
+  Downloading coverage-7.10.7-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (248 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 248.4/248.4 kB 36.0 MB/s eta 0:00:00
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d9/08/a66c3156a10ab360986a38a7e5c05ec46a654bae5e2df2b2084c
+b0563701/vcrpy-8.0.0-py2.py3-none-any.whl (from https://pypi.org/simple/vcrpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/f4/a5/f041a00e7a0b2de5b348aa6dbd8217bfc60787c06dfe985a4f83
+dec924d0/vcrpy-8.0.0.tar.gz (from https://pypi.org/simple/vcrpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/09/77/892bcd82445ac949816205b51ab80deb86a492a315f2e290ed4e
+ab35021c/vcrpy-8.1.0-py3-none-any.whl (from https://pypi.org/simple/vcrpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/23/74/4200cb68d59e86849992eb6512d969cd561051f034e017428e04
+0b113974/vcrpy-8.1.0.tar.gz (from https://pypi.org/simple/vcrpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/3a/d7/f79b05a5d728f8786876a7d75dfb0c5cae27e428081b2d60152f
+b52f155f/vcrpy-8.1.1-py3-none-any.whl (from https://pypi.org/simple/vcrpy/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/b3/07/bcfd5ebd7cb308026ab78a353e091bd699593358be49197d39d0
+04e5ad83/vcrpy-8.1.1.tar.gz (from https://pypi.org/simple/vcrpy/) (requires-python:>=3.10)
+Collecting vcrpy>=2.0.1
+  Downloading vcrpy-7.0.0-py2.py3-none-any.whl (42 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 42.3/42.3 kB 9.7 MB/s eta 0:00:00
+Collecting idna<4,>=2.5
+  Downloading idna-3.11-py3-none-any.whl (71 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 71.0/71.0 kB 32.7 MB/s eta 0:00:00
+Collecting urllib3<3,>=1.21.1
+  Downloading urllib3-2.6.3-py3-none-any.whl (131 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 131.6/131.6 kB 23.2 MB/s eta 0:00:00
+Collecting charset_normalizer<4,>=2
+  Downloading charset_normalizer-3.4.7-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (200 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 200.6/200.6 kB 25.3 MB/s eta 0:00:00
+Collecting certifi>=2017.4.17
+  Downloading certifi-2026.2.25-py3-none-any.whl (153 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 153.7/153.7 kB 54.7 MB/s eta 0:00:00
+Collecting PyYAML
+  Downloading pyyaml-6.0.3-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (737 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 737.6/737.6 kB 76.5 MB/s eta 0:00:00
+Collecting urllib3<3,>=1.21.1
+  Downloading urllib3-1.26.20-py2.py3-none-any.whl (144 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 144.2/144.2 kB 45.8 MB/s eta 0:00:00
+Collecting wrapt
+  Downloading wrapt-2.1.2-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (115 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 115.3/115.3 kB 22.3 MB/s eta 0:00:00
+Building wheels for collected packages: fsspec
+  Running command Building editable for fsspec (pyproject.toml)
+  Building editable for fsspec (pyproject.toml) ... done
+  Created wheel for fsspec: filename=fsspec-2024.9.0.post4+gb842cf4cc.d20260408-py3-none-any.whl size=5780 sha256=c945cf0e5cfc920f4d13382748044bae881e693bb6faff
+0c0be64ce14bd1bd0d
+  Stored in directory: /tmp/pip-ephem-wheel-cache-mtfmj4xv/wheels/98/df/b1/9e7bd2333f9e0ced00eea5f5f1cb0dbb53178e29557b4f89e1
+Successfully built fsspec
+Installing collected packages: py-cpuinfo, wrapt, urllib3, typing-extensions, tomli, PyYAML, pygments, propcache, pluggy, packaging, numpy, iniconfig, idna, fss
+pec, frozenlist, coverage, charset_normalizer, certifi, backports-asyncio-runner, attrs, async-timeout, aiohappyeyeballs, requests, multidict, exceptiongroup, a
+iosignal, yarl, pytest, vcrpy, pytest-rerunfailures, pytest-mock, pytest-cov, pytest-benchmark, pytest-asyncio, aiohttp, pytest-recording
+  changing mode of /app/filesystem_spec/tests-venv/bin/cpuinfo to 755
+  changing mode of /app/filesystem_spec/tests-venv/bin/pygmentize to 755
+  changing mode of /app/filesystem_spec/tests-venv/bin/f2py to 755
+  changing mode of /app/filesystem_spec/tests-venv/bin/numpy-config to 755
+  changing mode of /app/filesystem_spec/tests-venv/bin/coverage to 755
+  changing mode of /app/filesystem_spec/tests-venv/bin/coverage-3.9 to 755
+  changing mode of /app/filesystem_spec/tests-venv/bin/coverage3 to 755
+  changing mode of /app/filesystem_spec/tests-venv/bin/normalizer to 755
+  changing mode of /app/filesystem_spec/tests-venv/bin/py.test to 755
+  changing mode of /app/filesystem_spec/tests-venv/bin/pytest to 755
+  changing mode of /app/filesystem_spec/tests-venv/bin/py.test-benchmark to 755
+  changing mode of /app/filesystem_spec/tests-venv/bin/pytest-benchmark to 755
+Successfully installed PyYAML-6.0.3 aiohappyeyeballs-2.6.1 aiohttp-3.13.5 aiosignal-1.4.0 async-timeout-5.0.1 attrs-26.1.0 backports-asyncio-runner-1.2.0 certif
+i-2026.2.25 charset_normalizer-3.4.7 coverage-7.10.7 exceptiongroup-1.3.1 frozenlist-1.8.0 fsspec-2024.9.0.post4+gb842cf4cc.d20260408 idna-3.11 iniconfig-2.1.0
+multidict-6.7.1 numpy-2.0.2 packaging-26.0 pluggy-1.6.0 propcache-0.4.1 py-cpuinfo-9.0.0 pygments-2.20.0 pytest-8.4.2 pytest-asyncio-1.2.0 pytest-benchmark-5.2.
+3 pytest-cov-7.1.0 pytest-mock-3.15.1 pytest-recording-0.13.4 pytest-rerunfailures-16.0.1 requests-2.32.5 tomli-2.4.1 typing-extensions-4.15.0 urllib3-1.26.20 v
+crpy-7.0.0 wrapt-2.1.2 yarl-1.22.0
+
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.9.25, pytest-8.4.2, pluggy-1.6.0 -- /app/filesystem_spec/tests-venv/bin/python
+cachedir: .pytest_cache
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_it
+erations=100000)
+rootdir: /app/filesystem_spec
+configfile: pyproject.toml
+plugins: rerunfailures-16.0.1, benchmark-5.2.3, recording-0.13.4, cov-7.1.0, mock-3.15.1, asyncio-1.2.0
+asyncio: mode=strict, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 134 items
+
+fsspec/implementations/tests/test_dirfs.py::test_dirfs[sync] PASSED                                                                                      [  0%]
+fsspec/implementations/tests/test_dirfs.py::test_dirfs[async] PASSED                                                                                     [  1%]
+fsspec/implementations/tests/test_dirfs.py::test_path[sync---] PASSED                                                                                    [  2%]
+fsspec/implementations/tests/test_dirfs.py::test_path[sync--foo-foo] PASSED                                                                              [  2%]
+fsspec/implementations/tests/test_dirfs.py::test_path[sync-root--root] PASSED                                                                            [  3%]
+fsspec/implementations/tests/test_dirfs.py::test_path[sync-root-foo-root/foo] PASSED                                                                     [  4%]
+fsspec/implementations/tests/test_dirfs.py::test_path[sync-/root--/root] PASSED                                                                          [  5%]
+fsspec/implementations/tests/test_dirfs.py::test_path[sync-/root-foo-/root/foo] PASSED                                                                   [  5%]
+fsspec/implementations/tests/test_dirfs.py::test_path[async---] PASSED                                                                                   [  6%]
+fsspec/implementations/tests/test_dirfs.py::test_path[async--foo-foo] PASSED                                                                             [  7%]
+fsspec/implementations/tests/test_dirfs.py::test_path[async-root--root] PASSED                                                                           [  8%]
+fsspec/implementations/tests/test_dirfs.py::test_path[async-root-foo-root/foo] PASSED                                                                    [  8%]
+fsspec/implementations/tests/test_dirfs.py::test_path[async-/root--/root] PASSED                                                                         [  9%]
+fsspec/implementations/tests/test_dirfs.py::test_path[async-/root-foo-/root/foo] PASSED                                                                  [ 10%]
+fsspec/implementations/tests/test_dirfs.py::test_path_no_leading_slash[sync-/root-foo-root/foo] PASSED                                                   [ 11%]
+fsspec/implementations/tests/test_dirfs.py::test_path_no_leading_slash[sync-/root--root] PASSED                                                          [ 11%]
+fsspec/implementations/tests/test_dirfs.py::test_path_no_leading_slash[async-/root-foo-root/foo] PASSED                                                  [ 12%]
+fsspec/implementations/tests/test_dirfs.py::test_path_no_leading_slash[async-/root--root] PASSED                                                         [ 13%]
+fsspec/implementations/tests/test_dirfs.py::test_sep[sync] PASSED                                                                                        [ 14%]
+fsspec/implementations/tests/test_dirfs.py::test_sep[async] PASSED                                                                                       [ 14%]
+fsspec/implementations/tests/test_dirfs.py::test_set_session PASSED                                                                                      [ 15%]
+fsspec/implementations/tests/test_dirfs.py::test_async_rm_file PASSED                                                                                    [ 16%]
+fsspec/implementations/tests/test_dirfs.py::test_rm_file[sync] PASSED                                                                                    [ 17%]
+fsspec/implementations/tests/test_dirfs.py::test_rm_file[async] PASSED                                                                                   [ 17%]
+fsspec/implementations/tests/test_dirfs.py::test_async_rm PASSED                                                                                         [ 18%]
+fsspec/implementations/tests/test_dirfs.py::test_rm[sync] PASSED                                                                                         [ 19%]
+fsspec/implementations/tests/test_dirfs.py::test_rm[async] PASSED                                                                                        [ 20%]
+fsspec/implementations/tests/test_dirfs.py::test_async_cp_file PASSED                                                                                    [ 20%]
+fsspec/implementations/tests/test_dirfs.py::test_cp_file[sync] PASSED                                                                                    [ 21%]
+fsspec/implementations/tests/test_dirfs.py::test_cp_file[async] PASSED                                                                                   [ 22%]
+fsspec/implementations/tests/test_dirfs.py::test_async_copy PASSED                                                                                       [ 23%]
+fsspec/implementations/tests/test_dirfs.py::test_copy[sync] PASSED                                                                                       [ 23%]
+fsspec/implementations/tests/test_dirfs.py::test_copy[async] PASSED                                                                                      [ 24%]
+fsspec/implementations/tests/test_dirfs.py::test_async_pipe PASSED                                                                                       [ 25%]
+fsspec/implementations/tests/test_dirfs.py::test_pipe[sync] PASSED                                                                                       [ 26%]
+fsspec/implementations/tests/test_dirfs.py::test_pipe[async] PASSED                                                                                      [ 26%]
+fsspec/implementations/tests/test_dirfs.py::test_pipe_dict[sync] PASSED                                                                                  [ 27%]
+fsspec/implementations/tests/test_dirfs.py::test_pipe_dict[async] PASSED                                                                                 [ 28%]
+fsspec/implementations/tests/test_dirfs.py::test_async_pipe_file PASSED                                                                                  [ 29%]
+fsspec/implementations/tests/test_dirfs.py::test_pipe_file[sync] PASSED                                                                                  [ 29%]
+fsspec/implementations/tests/test_dirfs.py::test_pipe_file[async] PASSED                                                                                 [ 30%]
+fsspec/implementations/tests/test_dirfs.py::test_async_cat_file PASSED                                                                                   [ 31%]
+fsspec/implementations/tests/test_dirfs.py::test_cat_file[sync] PASSED                                                                                   [ 32%]
+fsspec/implementations/tests/test_dirfs.py::test_cat_file[async] PASSED                                                                                  [ 32%]
+fsspec/implementations/tests/test_dirfs.py::test_async_cat PASSED                                                                                        [ 33%]
+fsspec/implementations/tests/test_dirfs.py::test_cat[sync] PASSED                                                                                        [ 34%]
+fsspec/implementations/tests/test_dirfs.py::test_cat[async] PASSED                                                                                       [ 35%]
+fsspec/implementations/tests/test_dirfs.py::test_async_cat_list PASSED                                                                                   [ 35%]
+fsspec/implementations/tests/test_dirfs.py::test_cat_list[sync] PASSED                                                                                   [ 36%]
+fsspec/implementations/tests/test_dirfs.py::test_cat_list[async] PASSED                                                                                  [ 37%]
+fsspec/implementations/tests/test_dirfs.py::test_async_put_file PASSED                                                                                   [ 38%]
+fsspec/implementations/tests/test_dirfs.py::test_put_file[sync] PASSED                                                                                   [ 38%]
+fsspec/implementations/tests/test_dirfs.py::test_put_file[async] PASSED                                                                                  [ 39%]
+fsspec/implementations/tests/test_dirfs.py::test_async_put PASSED                                                                                        [ 40%]
+fsspec/implementations/tests/test_dirfs.py::test_put[sync] PASSED                                                                                        [ 41%]
+fsspec/implementations/tests/test_dirfs.py::test_put[async] PASSED                                                                                       [ 41%]
+fsspec/implementations/tests/test_dirfs.py::test_async_get_file PASSED                                                                                   [ 42%]
+fsspec/implementations/tests/test_dirfs.py::test_get_file[sync] PASSED                                                                                   [ 43%]
+fsspec/implementations/tests/test_dirfs.py::test_get_file[async] PASSED                                                                                  [ 44%]
+fsspec/implementations/tests/test_dirfs.py::test_async_get PASSED                                                                                        [ 44%]
+fsspec/implementations/tests/test_dirfs.py::test_get[sync] PASSED                                                                                        [ 45%]
+fsspec/implementations/tests/test_dirfs.py::test_get[async] PASSED                                                                                       [ 46%]
+fsspec/implementations/tests/test_dirfs.py::test_async_isfile PASSED                                                                                     [ 47%]
+fsspec/implementations/tests/test_dirfs.py::test_isfile[sync] PASSED                                                                                     [ 47%]
+fsspec/implementations/tests/test_dirfs.py::test_isfile[async] PASSED                                                                                    [ 48%]
+fsspec/implementations/tests/test_dirfs.py::test_async_isdir PASSED                                                                                      [ 49%]
+fsspec/implementations/tests/test_dirfs.py::test_isdir[sync] PASSED                                                                                      [ 50%]
+fsspec/implementations/tests/test_dirfs.py::test_isdir[async] PASSED                                                                                     [ 50%]
+fsspec/implementations/tests/test_dirfs.py::test_async_size PASSED                                                                                       [ 51%]
+fsspec/implementations/tests/test_dirfs.py::test_size[sync] PASSED                                                                                       [ 52%]
+fsspec/implementations/tests/test_dirfs.py::test_size[async] PASSED                                                                                      [ 52%]
+fsspec/implementations/tests/test_dirfs.py::test_async_exists PASSED                                                                                     [ 53%]
+fsspec/implementations/tests/test_dirfs.py::test_exists[sync] PASSED                                                                                     [ 54%]
+fsspec/implementations/tests/test_dirfs.py::test_exists[async] PASSED                                                                                    [ 55%]
+fsspec/implementations/tests/test_dirfs.py::test_async_info PASSED                                                                                       [ 55%]
+fsspec/implementations/tests/test_dirfs.py::test_info[sync] PASSED                                                                                       [ 56%]
+fsspec/implementations/tests/test_dirfs.py::test_info[async] PASSED                                                                                      [ 57%]
+fsspec/implementations/tests/test_dirfs.py::test_async_ls PASSED                                                                                         [ 58%]
+fsspec/implementations/tests/test_dirfs.py::test_ls[sync] PASSED                                                                                         [ 58%]
+fsspec/implementations/tests/test_dirfs.py::test_ls[async] PASSED                                                                                        [ 59%]
+fsspec/implementations/tests/test_dirfs.py::test_async_ls_detail PASSED                                                                                  [ 60%]
+fsspec/implementations/tests/test_dirfs.py::test_ls_detail[sync] PASSED                                                                                  [ 61%]
+fsspec/implementations/tests/test_dirfs.py::test_ls_detail[async] PASSED                                                                                 [ 61%]
+fsspec/implementations/tests/test_dirfs.py::test_async_walk PASSED                                                                                       [ 62%]
+fsspec/implementations/tests/test_dirfs.py::test_walk[sync] PASSED                                                                                       [ 63%]
+fsspec/implementations/tests/test_dirfs.py::test_walk[async] PASSED                                                                                      [ 64%]
+fsspec/implementations/tests/test_dirfs.py::test_async_glob PASSED                                                                                       [ 64%]
+fsspec/implementations/tests/test_dirfs.py::test_glob[sync] PASSED                                                                                       [ 65%]
+fsspec/implementations/tests/test_dirfs.py::test_glob[async] PASSED                                                                                      [ 66%]
+fsspec/implementations/tests/test_dirfs.py::test_glob_with_protocol[sync] PASSED                                                                         [ 67%]
+fsspec/implementations/tests/test_dirfs.py::test_glob_with_protocol[async] PASSED                                                                        [ 67%]
+fsspec/implementations/tests/test_dirfs.py::test_async_glob_detail PASSED                                                                                [ 68%]
+fsspec/implementations/tests/test_dirfs.py::test_glob_detail[sync] PASSED                                                                                [ 69%]
+fsspec/implementations/tests/test_dirfs.py::test_glob_detail[async] PASSED                                                                               [ 70%]
+fsspec/implementations/tests/test_dirfs.py::test_async_du PASSED                                                                                         [ 70%]
+fsspec/implementations/tests/test_dirfs.py::test_du[sync] PASSED                                                                                         [ 71%]
+fsspec/implementations/tests/test_dirfs.py::test_du[async] PASSED                                                                                        [ 72%]
+fsspec/implementations/tests/test_dirfs.py::test_async_du_granular PASSED                                                                                [ 73%]
+fsspec/implementations/tests/test_dirfs.py::test_du_granular[sync] PASSED                                                                                [ 73%]
+fsspec/implementations/tests/test_dirfs.py::test_du_granular[async] PASSED                                                                               [ 74%]
+fsspec/implementations/tests/test_dirfs.py::test_async_find PASSED                                                                                       [ 75%]
+fsspec/implementations/tests/test_dirfs.py::test_find[sync] PASSED                                                                                       [ 76%]
+fsspec/implementations/tests/test_dirfs.py::test_find[async] PASSED                                                                                      [ 76%]
+fsspec/implementations/tests/test_dirfs.py::test_async_find_detail PASSED                                                                                [ 77%]
+fsspec/implementations/tests/test_dirfs.py::test_find_detail[sync] PASSED                                                                                [ 78%]
+fsspec/implementations/tests/test_dirfs.py::test_find_detail[async] PASSED                                                                               [ 79%]
+fsspec/implementations/tests/test_dirfs.py::test_async_expand_path PASSED                                                                                [ 79%]
+fsspec/implementations/tests/test_dirfs.py::test_expand_path[sync] PASSED                                                                                [ 80%]
+fsspec/implementations/tests/test_dirfs.py::test_expand_path[async] PASSED                                                                               [ 81%]
+fsspec/implementations/tests/test_dirfs.py::test_async_expand_path_list PASSED                                                                           [ 82%]
+fsspec/implementations/tests/test_dirfs.py::test_expand_path_list[sync] PASSED                                                                           [ 82%]
+fsspec/implementations/tests/test_dirfs.py::test_expand_path_list[async] PASSED                                                                          [ 83%]
+fsspec/implementations/tests/test_dirfs.py::test_async_mkdir PASSED                                                                                      [ 84%]
+fsspec/implementations/tests/test_dirfs.py::test_mkdir[sync] PASSED                                                                                      [ 85%]
+fsspec/implementations/tests/test_dirfs.py::test_mkdir[async] PASSED                                                                                     [ 85%]
+fsspec/implementations/tests/test_dirfs.py::test_async_makedirs PASSED                                                                                   [ 86%]
+fsspec/implementations/tests/test_dirfs.py::test_makedirs[sync] PASSED                                                                                   [ 87%]
+fsspec/implementations/tests/test_dirfs.py::test_makedirs[async] PASSED                                                                                  [ 88%]
+fsspec/implementations/tests/test_dirfs.py::test_rmdir[sync] PASSED                                                                                      [ 88%]
+fsspec/implementations/tests/test_dirfs.py::test_rmdir[async] PASSED                                                                                     [ 89%]
+fsspec/implementations/tests/test_dirfs.py::test_mv[sync] PASSED                                                                                         [ 90%]
+fsspec/implementations/tests/test_dirfs.py::test_mv[async] PASSED                                                                                        [ 91%]
+fsspec/implementations/tests/test_dirfs.py::test_touch[sync] PASSED                                                                                      [ 91%]
+fsspec/implementations/tests/test_dirfs.py::test_touch[async] PASSED                                                                                     [ 92%]
+fsspec/implementations/tests/test_dirfs.py::test_created[sync] PASSED                                                                                    [ 93%]
+fsspec/implementations/tests/test_dirfs.py::test_created[async] PASSED                                                                                   [ 94%]
+fsspec/implementations/tests/test_dirfs.py::test_modified[sync] PASSED                                                                                   [ 94%]
+fsspec/implementations/tests/test_dirfs.py::test_modified[async] PASSED                                                                                  [ 95%]
+fsspec/implementations/tests/test_dirfs.py::test_sign[sync] PASSED                                                                                       [ 96%]
+fsspec/implementations/tests/test_dirfs.py::test_sign[async] PASSED                                                                                      [ 97%]
+fsspec/implementations/tests/test_dirfs.py::test_open_async FAILED                                                                                       [ 97%]
+fsspec/implementations/tests/test_dirfs.py::test_open[sync] PASSED                                                                                       [ 98%]
+fsspec/implementations/tests/test_dirfs.py::test_open[async] PASSED                                                                                      [ 99%]
+fsspec/implementations/tests/test_dirfs.py::test_from_url PASSED                                                                                         [100%]
+
+=========================================================================== FAILURES ===========================================================================
+_______________________________________________________________________ test_open_async ________________________________________________________________________
+
+mocker = <pytest_mock.plugin.MockerFixture object at 0xffffa5cfeca0>
+adirfs = DirFileSystem(path='path/to/dir', fs=<MagicMock spec='AsyncFileSystem' id='281473463712640'>)
+
+    @pytest.mark.asyncio
+    async def test_open_async(mocker, adirfs):
+        adirfs.fs.open_async = mocker.AsyncMock()
+        assert (
+>           await adirfs.open_async("file", *ARGS, **KWARGS)
+            == adirfs.fs.open_async.return_value
+        )
+E       TypeError: open_async() takes from 2 to 3 positional arguments but 4 were given
+
+fsspec/implementations/tests/test_dirfs.py:596: TypeError
+============================================================================ PASSES ============================================================================
+=================================================================== short test summary info ====================================================================
+PASSED fsspec/implementations/tests/test_dirfs.py::test_dirfs[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_dirfs[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path[sync---]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path[sync--foo-foo]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path[sync-root--root]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path[sync-root-foo-root/foo]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path[sync-/root--/root]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path[sync-/root-foo-/root/foo]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path[async---]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path[async--foo-foo]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path[async-root--root]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path[async-root-foo-root/foo]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path[async-/root--/root]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path[async-/root-foo-/root/foo]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path_no_leading_slash[sync-/root-foo-root/foo]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path_no_leading_slash[sync-/root--root]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path_no_leading_slash[async-/root-foo-root/foo]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_path_no_leading_slash[async-/root--root]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_sep[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_sep[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_set_session
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_rm_file
+PASSED fsspec/implementations/tests/test_dirfs.py::test_rm_file[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_rm_file[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_rm
+PASSED fsspec/implementations/tests/test_dirfs.py::test_rm[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_rm[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_cp_file
+PASSED fsspec/implementations/tests/test_dirfs.py::test_cp_file[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_cp_file[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_copy
+PASSED fsspec/implementations/tests/test_dirfs.py::test_copy[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_copy[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_pipe
+PASSED fsspec/implementations/tests/test_dirfs.py::test_pipe[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_pipe[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_pipe_dict[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_pipe_dict[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_pipe_file
+PASSED fsspec/implementations/tests/test_dirfs.py::test_pipe_file[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_pipe_file[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_cat_file
+PASSED fsspec/implementations/tests/test_dirfs.py::test_cat_file[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_cat_file[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_cat
+PASSED fsspec/implementations/tests/test_dirfs.py::test_cat[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_cat[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_cat_list
+PASSED fsspec/implementations/tests/test_dirfs.py::test_cat_list[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_cat_list[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_put_file
+PASSED fsspec/implementations/tests/test_dirfs.py::test_put_file[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_put_file[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_put
+PASSED fsspec/implementations/tests/test_dirfs.py::test_put[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_put[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_get_file
+PASSED fsspec/implementations/tests/test_dirfs.py::test_get_file[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_get_file[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_get
+PASSED fsspec/implementations/tests/test_dirfs.py::test_get[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_get[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_isfile
+PASSED fsspec/implementations/tests/test_dirfs.py::test_isfile[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_isfile[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_isdir
+PASSED fsspec/implementations/tests/test_dirfs.py::test_isdir[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_isdir[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_size
+PASSED fsspec/implementations/tests/test_dirfs.py::test_size[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_size[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_exists
+PASSED fsspec/implementations/tests/test_dirfs.py::test_exists[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_exists[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_info
+PASSED fsspec/implementations/tests/test_dirfs.py::test_info[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_info[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_ls
+PASSED fsspec/implementations/tests/test_dirfs.py::test_ls[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_ls[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_ls_detail
+PASSED fsspec/implementations/tests/test_dirfs.py::test_ls_detail[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_ls_detail[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_walk
+PASSED fsspec/implementations/tests/test_dirfs.py::test_walk[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_walk[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_glob
+PASSED fsspec/implementations/tests/test_dirfs.py::test_glob[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_glob[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_glob_with_protocol[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_glob_with_protocol[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_glob_detail
+PASSED fsspec/implementations/tests/test_dirfs.py::test_glob_detail[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_glob_detail[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_du
+PASSED fsspec/implementations/tests/test_dirfs.py::test_du[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_du[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_du_granular
+PASSED fsspec/implementations/tests/test_dirfs.py::test_du_granular[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_du_granular[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_find
+PASSED fsspec/implementations/tests/test_dirfs.py::test_find[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_find[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_find_detail
+PASSED fsspec/implementations/tests/test_dirfs.py::test_find_detail[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_find_detail[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_expand_path
+PASSED fsspec/implementations/tests/test_dirfs.py::test_expand_path[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_expand_path[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_expand_path_list
+PASSED fsspec/implementations/tests/test_dirfs.py::test_expand_path_list[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_expand_path_list[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_mkdir
+PASSED fsspec/implementations/tests/test_dirfs.py::test_mkdir[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_mkdir[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_async_makedirs
+PASSED fsspec/implementations/tests/test_dirfs.py::test_makedirs[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_makedirs[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_rmdir[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_rmdir[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_mv[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_mv[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_touch[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_touch[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_created[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_created[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_modified[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_modified[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_sign[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_sign[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_open[sync]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_open[async]
+PASSED fsspec/implementations/tests/test_dirfs.py::test_from_url
+FAILED fsspec/implementations/tests/test_dirfs.py::test_open_async - TypeError: open_async() takes from 2 to 3 positional arguments but 4 were given
+================================================================ 1 failed, 133 passed in 0.73s =================================================================
+root@8ffc784fe78e:/app/filesystem_spec#

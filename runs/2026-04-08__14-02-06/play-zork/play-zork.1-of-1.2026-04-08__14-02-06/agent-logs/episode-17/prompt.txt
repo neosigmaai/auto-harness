@@ -1,0 +1,40 @@
+ Kitchen                                                                                                                          Score: 15       Moves: 16
+
+>examine leaves
+There's nothing special about the pile of leaves.
+
+>search clearing
+I don't know the word "clearing".
+
+>south
+Forest Path
+
+>south
+North of House
+
+>east
+Behind House
+You are behind the white house. A path leads into the forest to the east. In one corner of the house there is a small window which is slightly ajar.
+
+>open window
+With great effort, you open the window far enough to allow entry.
+
+>enter window
+Kitchen
+You are in the kitchen of the white house. A table seems to have been used recently for the preparation of food. A passage leads to the west and a dark
+staircase can be seen leading upward. A dark chimney leads down and to the east is a small window which is open.
+On the table is an elongated brown sack, smelling of hot peppers.
+A bottle is sitting on the table.
+The glass bottle contains:
+  A quantity of water
+
+>take sack
+Taken.
+
+>take bottle
+Taken.
+
+>go upstairs
+I don't know the word "upstairs".
+
+>

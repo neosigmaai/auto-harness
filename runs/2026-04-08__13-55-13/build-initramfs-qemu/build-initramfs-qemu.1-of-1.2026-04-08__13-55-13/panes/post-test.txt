@@ -1,0 +1,76 @@
+root@63b4f089050f:/app# bash /tests/run-tests.sh; tmux wait -S done
+Hit:1 http://ports.ubuntu.com/ubuntu-ports noble InRelease
+Hit:2 http://ports.ubuntu.com/ubuntu-ports noble-updates InRelease
+Hit:3 http://ports.ubuntu.com/ubuntu-ports noble-backports InRelease
+Hit:4 http://ports.ubuntu.com/ubuntu-ports noble-security InRelease
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  libcurl4t64
+The following NEW packages will be installed:
+  curl libcurl4t64
+0 upgraded, 2 newly installed, 0 to remove and 22 not upgraded.
+Need to get 556 kB of archives.
+After this operation, 1526 kB of additional disk space will be used.
+Get:1 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libcurl4t64 arm64 8.5.0-2ubuntu10.8 [334 kB]
+Get:2 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 curl arm64 8.5.0-2ubuntu10.8 [222 kB]
+Fetched 556 kB in 2s (326 kB/s)
+debconf: delaying package configuration, since apt-utils is not installed
+Selecting previously unselected package libcurl4t64:arm64.
+(Reading database ... 35667 files and directories currently installed.)
+Preparing to unpack .../libcurl4t64_8.5.0-2ubuntu10.8_arm64.deb ...
+Unpacking libcurl4t64:arm64 (8.5.0-2ubuntu10.8) ...
+Selecting previously unselected package curl.
+Preparing to unpack .../curl_8.5.0-2ubuntu10.8_arm64.deb ...
+Unpacking curl (8.5.0-2ubuntu10.8) ...
+Setting up libcurl4t64:arm64 (8.5.0-2ubuntu10.8) ...
+Setting up curl (8.5.0-2ubuntu10.8) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+downloading uv 0.11.5 aarch64-unknown-linux-gnu
+installing to /root/.local/bin
+  uv
+  uvx
+everything's installed!
+
+To add $HOME/.local/bin to your PATH, either restart your shell or run:
+
+    source $HOME/.local/bin/env (sh, bash, zsh)
+    source $HOME/.local/bin/env.fish (fish)
+Initialized project `app`
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: .venv
+Resolved 7 packages in 386ms
+Prepared 5 packages in 508ms
+Installed 5 packages in 8ms
+ + iniconfig==2.3.0
+ + packaging==26.0
+ + pluggy==1.6.0
+ + pygments==2.20.0
+ + pytest==9.0.3
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0
+rootdir: /tests
+collected 0 items / 1 error
+
+============================================================================ ERRORS ============================================================================
+_______________________________________________________________ ERROR collecting test_outputs.py _______________________________________________________________
+/tests/test_outputs.py:46: in <module>
+    test_expect()
+/tests/test_outputs.py:41: in test_expect
+    assert expected_output in actual_output, (
+E   AssertionError: Expected 'Hello, this is a custom kernel' to be in post-agent.txt
+E   assert 'Hello, this is a custom kernel' in "spawn qemu-system-x86_64 -kernel ./linux-6.9/arch/x86/boot/bzImage -initrd ramfs/initramfs.cpio.gz -append conso
+le=ttyS0 -nographic\nqemu: could not open kernel file './linux-6.9/arch/x86/boot/bzImage': No such file or directory\n"
+----------------------------------------------------------------------- Captured stderr ------------------------------------------------------------------------
+send: spawn id exp4 not open
+    while executing
+"send "root
+""
+    (file "a.exp" line 12)
+=================================================================== short test summary info ====================================================================
+ERROR ../tests/test_outputs.py - AssertionError: Expected 'Hello, this is a custom kernel' to be in post-agent.txt
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+======================================================================= 1 error in 0.17s =======================================================================
+root@63b4f089050f:/app#

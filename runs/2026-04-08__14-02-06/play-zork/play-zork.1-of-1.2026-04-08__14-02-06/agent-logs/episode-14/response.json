@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player is behind the house and has discovered a small window that is slightly ajar, indicating a potential entrance into the house. There is also a path leading into the forest to the east.",
+    "explanation": "Attempt to open the window fully and enter the house to explore the interior and find items or locations that contribute to completing the game.",
+    "commands": [
+        {
+            "keystrokes": "open window\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

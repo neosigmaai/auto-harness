@@ -1,0 +1,22 @@
+{
+    "state_analysis": "The player has successfully entered the kitchen of the white house. The kitchen has several notable features: a table with a brown sack and a bottle of water, a passage leading west, a staircase leading upward, and a dark chimney leading down.",
+    "explanation": "Collect the items on the table as they may be useful later in the adventure. Then, explore further by examining the staircase that leads upward.",
+    "commands": [
+        {
+            "keystrokes": "take sack\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        },
+        {
+            "keystrokes": "take bottle\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        },
+        {
+            "keystrokes": "go upstairs\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

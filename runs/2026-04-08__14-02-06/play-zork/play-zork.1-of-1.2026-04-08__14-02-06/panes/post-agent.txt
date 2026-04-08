@@ -1,0 +1,40 @@
+ Loud Room                                                                                                                        Score: 45       Moves: 51
+
+>take platinum bar
+bar bar ...
+
+>west
+Round Room
+
+>east
+Loud Room
+On the ground is a large platinum bar.
+
+>down
+down down ...
+
+>examine platinum bar
+bar bar ...
+
+>echo
+The acoustics of the room change subtly.
+
+Loud Room
+On the ground is a large platinum bar.
+
+>take platinum bar
+Your load is too heavy, especially in light of your condition.
+
+>drop knife
+Dropped.
+
+>take platinum bar
+Your load is too heavy, especially in light of your condition.
+
+>drop rope
+Dropped.
+
+>take platinum bar
+Your load is too heavy, especially in light of your condition.
+
+>

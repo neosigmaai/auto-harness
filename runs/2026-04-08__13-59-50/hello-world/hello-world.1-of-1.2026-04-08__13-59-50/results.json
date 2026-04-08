@@ -1,0 +1,21 @@
+{
+    "id": "aa31e657-5aca-446e-a2c3-7b407bc9051e",
+    "trial_name": "hello-world.1-of-1.2026-04-08__13-59-50",
+    "task_id": "hello-world",
+    "instruction": "Create a file called hello.txt in the current directory. Write \"Hello, world!\" to it. Make sure it ends in a newline. Don't make any other files or folders.",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_hello_file_exists": "failed",
+        "test_hello_file_content": "failed"
+    },
+    "recording_path": "2026-04-08__13-59-50/hello-world/hello-world.1-of-1.2026-04-08__13-59-50/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T21:29:48.472506+00:00",
+    "trial_ended_at": "2026-04-08T21:30:05.826905+00:00",
+    "agent_started_at": "2026-04-08T21:29:52.957475+00:00",
+    "agent_ended_at": "2026-04-08T21:29:53.047359+00:00",
+    "test_started_at": "2026-04-08T21:29:56.326842+00:00",
+    "test_ended_at": "2026-04-08T21:30:03.220863+00:00"
+}

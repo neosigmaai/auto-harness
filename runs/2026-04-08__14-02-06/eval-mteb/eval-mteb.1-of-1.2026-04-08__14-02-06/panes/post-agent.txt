@@ -1,0 +1,1091 @@
+root@da999e52426a:/app# python -m mteb.run --hf-model bge-small-en-v1.5 --hf-commit-id 5c38ec7c405ec4b44b94cc5a9bb96e735b38267a --task sts12 --output-dir result
+s/hf_model_org__bge-small-en-v1.5/5c38ec7c405ec4b44b94cc5a9bb96e735b38267a/sts12.json; tmux wait -S done
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/usr/local/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/usr/local/lib/python3.10/site-packages/mteb/__init__.py", line 5, in <module>
+    from mteb.benchmarks.benchmarks import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/__init__.py", line 3, in <module>
+    from mteb.benchmarks.benchmark import Benchmark
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/benchmark.py", line 9, in <module>
+    from mteb.load_results.load_results import load_results
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/__init__.py", line 3, in <module>
+    from .benchmark_results import BenchmarkResults, ModelResult
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/benchmark_results.py", line 15, in <module>
+    from mteb.abstasks.AbsTask import AbsTask, ScoresDict
+  File "/usr/local/lib/python3.10/site-packages/mteb/abstasks/__init__.py", line 3, in <module>
+    from ..evaluation.LangMapping import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/__init__.py", line 3, in <module>
+    from .MTEB import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/MTEB.py", line 23, in <module>
+    from mteb.models import model_meta_from_sentence_transformers
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/__init__.py", line 5, in <module>
+    from mteb.models.overview import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/overview.py", line 14, in <module>
+    from mteb.models import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/gme_v_models.py", line 13, in <module>
+    from transformers import AutoModelForVision2Seq, AutoProcessor
+ImportError: cannot import name 'AutoModelForVision2Seq' from 'transformers' (/usr/local/lib/python3.10/site-packages/transformers/__init__.py)
+root@da999e52426a:/app# pip install --upgrade transformers; tmux wait -S done
+Requirement already satisfied: transformers in /usr/local/lib/python3.10/site-packages (5.5.0)
+Requirement already satisfied: regex>=2025.10.22 in /usr/local/lib/python3.10/site-packages (from transformers) (2026.4.4)
+Requirement already satisfied: numpy>=1.17 in /usr/local/lib/python3.10/site-packages (from transformers) (2.2.6)
+Requirement already satisfied: tokenizers<=0.23.0,>=0.22.0 in /usr/local/lib/python3.10/site-packages (from transformers) (0.22.2)
+Requirement already satisfied: typer in /usr/local/lib/python3.10/site-packages (from transformers) (0.24.1)
+Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.10/site-packages (from transformers) (26.0)
+Requirement already satisfied: pyyaml>=5.1 in /usr/local/lib/python3.10/site-packages (from transformers) (6.0.3)
+Requirement already satisfied: safetensors>=0.4.3 in /usr/local/lib/python3.10/site-packages (from transformers) (0.7.0)
+Requirement already satisfied: huggingface-hub<2.0,>=1.5.0 in /usr/local/lib/python3.10/site-packages (from transformers) (1.9.2)
+Requirement already satisfied: tqdm>=4.27 in /usr/local/lib/python3.10/site-packages (from transformers) (4.67.3)
+Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers) (2024.6.1)
+Requirement already satisfied: typing-extensions>=4.1.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers) (4.15.0)
+Requirement already satisfied: hf-xet<2.0.0,>=1.4.3 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers) (1.4.3)
+Requirement already satisfied: filelock>=3.10.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers) (3.25.2)
+Requirement already satisfied: httpx<1,>=0.23.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers) (0.28.1)
+Requirement already satisfied: annotated-doc>=0.0.2 in /usr/local/lib/python3.10/site-packages (from typer->transformers) (0.0.4)
+Requirement already satisfied: click>=8.2.1 in /usr/local/lib/python3.10/site-packages (from typer->transformers) (8.3.2)
+Requirement already satisfied: shellingham>=1.3.0 in /usr/local/lib/python3.10/site-packages (from typer->transformers) (1.5.4)
+Requirement already satisfied: rich>=12.3.0 in /usr/local/lib/python3.10/site-packages (from typer->transformers) (14.3.3)
+Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers) (1.0.
+9)
+Requirement already satisfied: idna in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers) (3.11)
+Requirement already satisfied: anyio in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers) (4.13.0)
+Requirement already satisfied: certifi in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers) (2026.2.25)
+Requirement already satisfied: h11>=0.16 in /usr/local/lib/python3.10/site-packages (from httpcore==1.*->httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transfor
+mers) (0.16.0)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /usr/local/lib/python3.10/site-packages (from rich>=12.3.0->typer->transformers) (4.0.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.10/site-packages (from rich>=12.3.0->typer->transformers) (2.20.0)
+Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich>=12.3.0->typer->transformers) (0.1.2)
+Requirement already satisfied: exceptiongroup>=1.0.2 in /usr/local/lib/python3.10/site-packages (from anyio->httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->tran
+sformers) (1.3.1)
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a v
+irtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+root@da999e52426a:/app# python -m mteb.run --hf-model bge-small-en-v1.5 --hf-commit-id 5c38ec7c405ec4b44b94cc5a9bb96e735b38267a --task sts12 --output-dir result
+s/hf_model_org__bge-small-en-v1.5/5c38ec7c405ec4b44b94cc5a9bb96e735b38267a/sts12.json; tmux wait -S done
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/usr/local/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/usr/local/lib/python3.10/site-packages/mteb/__init__.py", line 5, in <module>
+    from mteb.benchmarks.benchmarks import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/__init__.py", line 3, in <module>
+    from mteb.benchmarks.benchmark import Benchmark
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/benchmark.py", line 9, in <module>
+    from mteb.load_results.load_results import load_results
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/__init__.py", line 3, in <module>
+    from .benchmark_results import BenchmarkResults, ModelResult
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/benchmark_results.py", line 15, in <module>
+    from mteb.abstasks.AbsTask import AbsTask, ScoresDict
+  File "/usr/local/lib/python3.10/site-packages/mteb/abstasks/__init__.py", line 3, in <module>
+    from ..evaluation.LangMapping import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/__init__.py", line 3, in <module>
+    from .MTEB import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/MTEB.py", line 23, in <module>
+    from mteb.models import model_meta_from_sentence_transformers
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/__init__.py", line 5, in <module>
+    from mteb.models.overview import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/overview.py", line 14, in <module>
+    from mteb.models import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/gme_v_models.py", line 13, in <module>
+    from transformers import AutoModelForVision2Seq, AutoProcessor
+ImportError: cannot import name 'AutoModelForVision2Seq' from 'transformers' (/usr/local/lib/python3.10/site-packages/transformers/__init__.py)
+root@da999e52426a:/app# pip install transformers==4.10.0; tmux wait -S done
+Collecting transformers==4.10.0
+  Downloading transformers-4.10.0-py3-none-any.whl (2.8 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.8/2.8 MB 7.3 MB/s eta 0:00:00
+Requirement already satisfied: regex!=2019.12.17 in /usr/local/lib/python3.10/site-packages (from transformers==4.10.0) (2026.4.4)
+Requirement already satisfied: pyyaml>=5.1 in /usr/local/lib/python3.10/site-packages (from transformers==4.10.0) (6.0.3)
+Collecting sacremoses
+  Downloading sacremoses-0.1.1-py3-none-any.whl (897 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 897.5/897.5 kB 6.8 MB/s eta 0:00:00
+Requirement already satisfied: numpy>=1.17 in /usr/local/lib/python3.10/site-packages (from transformers==4.10.0) (2.2.6)
+Requirement already satisfied: huggingface-hub>=0.0.12 in /usr/local/lib/python3.10/site-packages (from transformers==4.10.0) (1.9.2)
+Requirement already satisfied: requests in /usr/local/lib/python3.10/site-packages (from transformers==4.10.0) (2.33.1)
+Collecting tokenizers<0.11,>=0.10.1
+  Downloading tokenizers-0.10.3.tar.gz (212 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 212.7/212.7 kB 5.5 MB/s eta 0:00:00
+  Installing build dependencies ... done
+  Getting requirements to build wheel ... done
+  Preparing metadata (pyproject.toml) ... done
+Requirement already satisfied: packaging in /usr/local/lib/python3.10/site-packages (from transformers==4.10.0) (26.0)
+Requirement already satisfied: filelock in /usr/local/lib/python3.10/site-packages (from transformers==4.10.0) (3.25.2)
+Requirement already satisfied: tqdm>=4.27 in /usr/local/lib/python3.10/site-packages (from transformers==4.10.0) (4.67.3)
+Requirement already satisfied: httpx<1,>=0.23.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub>=0.0.12->transformers==4.10.0) (0.28.1)
+Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub>=0.0.12->transformers==4.10.0) (2024.6.1)
+Requirement already satisfied: typer in /usr/local/lib/python3.10/site-packages (from huggingface-hub>=0.0.12->transformers==4.10.0) (0.24.1)
+Requirement already satisfied: typing-extensions>=4.1.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub>=0.0.12->transformers==4.10.0) (4.15.0)
+Requirement already satisfied: hf-xet<2.0.0,>=1.4.3 in /usr/local/lib/python3.10/site-packages (from huggingface-hub>=0.0.12->transformers==4.10.0) (1.4.3)
+Requirement already satisfied: urllib3<3,>=1.26 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.10.0) (2.6.3)
+Requirement already satisfied: certifi>=2023.5.7 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.10.0) (2026.2.25)
+Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.10.0) (3.11)
+Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.10.0) (3.4.7)
+Requirement already satisfied: click in /usr/local/lib/python3.10/site-packages (from sacremoses->transformers==4.10.0) (8.3.2)
+Requirement already satisfied: joblib in /usr/local/lib/python3.10/site-packages (from sacremoses->transformers==4.10.0) (1.5.3)
+Requirement already satisfied: anyio in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub>=0.0.12->transformers==4.10.0) (4.13.0)
+Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub>=0.0.12->transformers==4.10.0) (
+1.0.9)
+Requirement already satisfied: h11>=0.16 in /usr/local/lib/python3.10/site-packages (from httpcore==1.*->httpx<1,>=0.23.0->huggingface-hub>=0.0.12->transformers
+==4.10.0) (0.16.0)
+Requirement already satisfied: shellingham>=1.3.0 in /usr/local/lib/python3.10/site-packages (from typer->huggingface-hub>=0.0.12->transformers==4.10.0) (1.5.4)
+Requirement already satisfied: annotated-doc>=0.0.2 in /usr/local/lib/python3.10/site-packages (from typer->huggingface-hub>=0.0.12->transformers==4.10.0) (0.0.
+4)
+Requirement already satisfied: rich>=12.3.0 in /usr/local/lib/python3.10/site-packages (from typer->huggingface-hub>=0.0.12->transformers==4.10.0) (14.3.3)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.10/site-packages (from rich>=12.3.0->typer->huggingface-hub>=0.0.12->transforme
+rs==4.10.0) (2.20.0)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /usr/local/lib/python3.10/site-packages (from rich>=12.3.0->typer->huggingface-hub>=0.0.12->transformers
+==4.10.0) (4.0.0)
+Requirement already satisfied: exceptiongroup>=1.0.2 in /usr/local/lib/python3.10/site-packages (from anyio->httpx<1,>=0.23.0->huggingface-hub>=0.0.12->transfor
+mers==4.10.0) (1.3.1)
+Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich>=12.3.0->typer->huggingface-hub>=0.0.12->
+transformers==4.10.0) (0.1.2)
+Building wheels for collected packages: tokenizers
+  Building wheel for tokenizers (pyproject.toml) ... error
+  error: subprocess-exited-with-error
+
+  × Building wheel for tokenizers (pyproject.toml) did not run successfully.
+  │ exit code: 1
+  ╰─> [62 lines of output]
+      /tmp/pip-build-env-bm95ux2g/overlay/lib/python3.10/site-packages/setuptools/dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+      !!
+
+              ********************************************************************************
+              Please consider removing the following classifiers in favor of a SPDX license expression:
+
+              License :: OSI Approved :: Apache Software License
+
+              See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+              ********************************************************************************
+
+      !!
+        self._finalize_license_expression()
+      running bdist_wheel
+      running build
+      running build_py
+      creating build/lib.linux-aarch64-cpython-310/tokenizers
+      copying py_src/tokenizers/__init__.py -> build/lib.linux-aarch64-cpython-310/tokenizers
+      creating build/lib.linux-aarch64-cpython-310/tokenizers/models
+      copying py_src/tokenizers/models/__init__.py -> build/lib.linux-aarch64-cpython-310/tokenizers/models
+      creating build/lib.linux-aarch64-cpython-310/tokenizers/decoders
+      copying py_src/tokenizers/decoders/__init__.py -> build/lib.linux-aarch64-cpython-310/tokenizers/decoders
+      creating build/lib.linux-aarch64-cpython-310/tokenizers/normalizers
+      copying py_src/tokenizers/normalizers/__init__.py -> build/lib.linux-aarch64-cpython-310/tokenizers/normalizers
+      creating build/lib.linux-aarch64-cpython-310/tokenizers/pre_tokenizers
+      copying py_src/tokenizers/pre_tokenizers/__init__.py -> build/lib.linux-aarch64-cpython-310/tokenizers/pre_tokenizers
+      creating build/lib.linux-aarch64-cpython-310/tokenizers/processors
+      copying py_src/tokenizers/processors/__init__.py -> build/lib.linux-aarch64-cpython-310/tokenizers/processors
+      creating build/lib.linux-aarch64-cpython-310/tokenizers/trainers
+      copying py_src/tokenizers/trainers/__init__.py -> build/lib.linux-aarch64-cpython-310/tokenizers/trainers
+      creating build/lib.linux-aarch64-cpython-310/tokenizers/implementations
+      copying py_src/tokenizers/implementations/char_level_bpe.py -> build/lib.linux-aarch64-cpython-310/tokenizers/implementations
+      copying py_src/tokenizers/implementations/base_tokenizer.py -> build/lib.linux-aarch64-cpython-310/tokenizers/implementations
+      copying py_src/tokenizers/implementations/byte_level_bpe.py -> build/lib.linux-aarch64-cpython-310/tokenizers/implementations
+      copying py_src/tokenizers/implementations/__init__.py -> build/lib.linux-aarch64-cpython-310/tokenizers/implementations
+      copying py_src/tokenizers/implementations/bert_wordpiece.py -> build/lib.linux-aarch64-cpython-310/tokenizers/implementations
+      copying py_src/tokenizers/implementations/sentencepiece_bpe.py -> build/lib.linux-aarch64-cpython-310/tokenizers/implementations
+      copying py_src/tokenizers/implementations/sentencepiece_unigram.py -> build/lib.linux-aarch64-cpython-310/tokenizers/implementations
+      creating build/lib.linux-aarch64-cpython-310/tokenizers/tools
+      copying py_src/tokenizers/tools/visualizer.py -> build/lib.linux-aarch64-cpython-310/tokenizers/tools
+      copying py_src/tokenizers/tools/__init__.py -> build/lib.linux-aarch64-cpython-310/tokenizers/tools
+      copying py_src/tokenizers/__init__.pyi -> build/lib.linux-aarch64-cpython-310/tokenizers
+      copying py_src/tokenizers/models/__init__.pyi -> build/lib.linux-aarch64-cpython-310/tokenizers/models
+      copying py_src/tokenizers/decoders/__init__.pyi -> build/lib.linux-aarch64-cpython-310/tokenizers/decoders
+      copying py_src/tokenizers/normalizers/__init__.pyi -> build/lib.linux-aarch64-cpython-310/tokenizers/normalizers
+      copying py_src/tokenizers/pre_tokenizers/__init__.pyi -> build/lib.linux-aarch64-cpython-310/tokenizers/pre_tokenizers
+      copying py_src/tokenizers/processors/__init__.pyi -> build/lib.linux-aarch64-cpython-310/tokenizers/processors
+      copying py_src/tokenizers/trainers/__init__.pyi -> build/lib.linux-aarch64-cpython-310/tokenizers/trainers
+      copying py_src/tokenizers/tools/visualizer-styles.css -> build/lib.linux-aarch64-cpython-310/tokenizers/tools
+      running build_ext
+      running build_rust
+      error: can't find Rust compiler
+
+      If you are using an outdated pip version, it is possible a prebuilt wheel is available for this package but pip is not able to install from it. Installing
+ from the wheel would avoid the need for a Rust compiler.
+
+      To update pip, run:
+
+          pip install --upgrade pip
+
+      and then retry package installation.
+
+      If you did intend to build this package from source, try installing a Rust compiler from your system package manager and ensure it is on the PATH during i
+nstallation. Alternatively, rustup (available at https://rustup.rs) is the recommended way to download and update the Rust compiler toolchain.
+      [end of output]
+
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for tokenizers
+Failed to build tokenizers
+ERROR: Could not build wheels for tokenizers, which is required to install pyproject.toml-based projects
+
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+root@da999e52426a:/app# python -m mteb.run --hf-model bge-small-en-v1.5 --hf-commit-id 5c38ec7c405ec4b44b94cc5a9bb96e735b38267a --task sts12 --output-dir result
+s/hf_model_org__bge-small-en-v1.5/5c38ec7c405ec4b44b94cc5a9bb96e735b38267a/sts12.json; tmux wait -S done
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/usr/local/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/usr/local/lib/python3.10/site-packages/mteb/__init__.py", line 5, in <module>
+    from mteb.benchmarks.benchmarks import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/__init__.py", line 3, in <module>
+    from mteb.benchmarks.benchmark import Benchmark
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/benchmark.py", line 9, in <module>
+    from mteb.load_results.load_results import load_results
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/__init__.py", line 3, in <module>
+    from .benchmark_results import BenchmarkResults, ModelResult
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/benchmark_results.py", line 15, in <module>
+    from mteb.abstasks.AbsTask import AbsTask, ScoresDict
+  File "/usr/local/lib/python3.10/site-packages/mteb/abstasks/__init__.py", line 3, in <module>
+    from ..evaluation.LangMapping import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/__init__.py", line 3, in <module>
+    from .MTEB import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/MTEB.py", line 23, in <module>
+    from mteb.models import model_meta_from_sentence_transformers
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/__init__.py", line 5, in <module>
+    from mteb.models.overview import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/overview.py", line 14, in <module>
+    from mteb.models import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/gme_v_models.py", line 13, in <module>
+    from transformers import AutoModelForVision2Seq, AutoProcessor
+ImportError: cannot import name 'AutoModelForVision2Seq' from 'transformers' (/usr/local/lib/python3.10/site-packages/transformers/__init__.py)
+root@da999e52426a:/app# pip install --upgrade pip; tmux wait -S done
+Requirement already satisfied: pip in /usr/local/lib/python3.10/site-packages (23.0.1)
+Collecting pip
+  Downloading pip-26.0.1-py3-none-any.whl (1.8 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 4.5 MB/s eta 0:00:00
+Installing collected packages: pip
+  Attempting uninstall: pip
+    Found existing installation: pip 23.0.1
+    Uninstalling pip-23.0.1:
+      Successfully uninstalled pip-23.0.1
+Successfully installed pip-26.0.1
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a v
+irtual environment instead: https://pip.pypa.io/warnings/venv
+root@da999e52426a:/app# pip install --upgrade tokenizers; tmux wait -S done
+Requirement already satisfied: tokenizers in /usr/local/lib/python3.10/site-packages (0.22.2)
+Requirement already satisfied: huggingface-hub<2.0,>=0.16.4 in /usr/local/lib/python3.10/site-packages (from tokenizers) (1.9.2)
+Requirement already satisfied: filelock>=3.10.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=0.16.4->tokenizers) (3.25.2)
+Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=0.16.4->tokenizers) (2024.6.1)
+Requirement already satisfied: hf-xet<2.0.0,>=1.4.3 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=0.16.4->tokenizers) (1.4.3)
+Requirement already satisfied: httpx<1,>=0.23.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=0.16.4->tokenizers) (0.28.1)
+Requirement already satisfied: packaging>=20.9 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=0.16.4->tokenizers) (26.0)
+Requirement already satisfied: pyyaml>=5.1 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=0.16.4->tokenizers) (6.0.3)
+Requirement already satisfied: tqdm>=4.42.1 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=0.16.4->tokenizers) (4.67.3)
+Requirement already satisfied: typer in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=0.16.4->tokenizers) (0.24.1)
+Requirement already satisfied: typing-extensions>=4.1.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=0.16.4->tokenizers) (4.15.0)
+Requirement already satisfied: anyio in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=0.16.4->tokenizers) (4.13.0)
+Requirement already satisfied: certifi in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=0.16.4->tokenizers) (2026.2.25)
+Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=0.16.4->tokenizers) (1.0.9
+)
+Requirement already satisfied: idna in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=0.16.4->tokenizers) (3.11)
+Requirement already satisfied: h11>=0.16 in /usr/local/lib/python3.10/site-packages (from httpcore==1.*->httpx<1,>=0.23.0->huggingface-hub<2.0,>=0.16.4->tokeniz
+ers) (0.16.0)
+Requirement already satisfied: exceptiongroup>=1.0.2 in /usr/local/lib/python3.10/site-packages (from anyio->httpx<1,>=0.23.0->huggingface-hub<2.0,>=0.16.4->tok
+enizers) (1.3.1)
+Requirement already satisfied: click>=8.2.1 in /usr/local/lib/python3.10/site-packages (from typer->huggingface-hub<2.0,>=0.16.4->tokenizers) (8.3.2)
+Requirement already satisfied: shellingham>=1.3.0 in /usr/local/lib/python3.10/site-packages (from typer->huggingface-hub<2.0,>=0.16.4->tokenizers) (1.5.4)
+Requirement already satisfied: rich>=12.3.0 in /usr/local/lib/python3.10/site-packages (from typer->huggingface-hub<2.0,>=0.16.4->tokenizers) (14.3.3)
+Requirement already satisfied: annotated-doc>=0.0.2 in /usr/local/lib/python3.10/site-packages (from typer->huggingface-hub<2.0,>=0.16.4->tokenizers) (0.0.4)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /usr/local/lib/python3.10/site-packages (from rich>=12.3.0->typer->huggingface-hub<2.0,>=0.16.4->tokeniz
+ers) (4.0.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.10/site-packages (from rich>=12.3.0->typer->huggingface-hub<2.0,>=0.16.4->token
+izers) (2.20.0)
+Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich>=12.3.0->typer->huggingface-hub<2.0,>=0.1
+6.4->tokenizers) (0.1.2)
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your syst
+em unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you a
+re doing and want to suppress this warning.
+root@da999e52426a:/app# pip install --upgrade transformers; tmux wait -S done
+Requirement already satisfied: transformers in /usr/local/lib/python3.10/site-packages (5.5.0)
+Requirement already satisfied: huggingface-hub<2.0,>=1.5.0 in /usr/local/lib/python3.10/site-packages (from transformers) (1.9.2)
+Requirement already satisfied: numpy>=1.17 in /usr/local/lib/python3.10/site-packages (from transformers) (2.2.6)
+Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.10/site-packages (from transformers) (26.0)
+Requirement already satisfied: pyyaml>=5.1 in /usr/local/lib/python3.10/site-packages (from transformers) (6.0.3)
+Requirement already satisfied: regex>=2025.10.22 in /usr/local/lib/python3.10/site-packages (from transformers) (2026.4.4)
+Requirement already satisfied: tokenizers<=0.23.0,>=0.22.0 in /usr/local/lib/python3.10/site-packages (from transformers) (0.22.2)
+Requirement already satisfied: typer in /usr/local/lib/python3.10/site-packages (from transformers) (0.24.1)
+Requirement already satisfied: safetensors>=0.4.3 in /usr/local/lib/python3.10/site-packages (from transformers) (0.7.0)
+Requirement already satisfied: tqdm>=4.27 in /usr/local/lib/python3.10/site-packages (from transformers) (4.67.3)
+Requirement already satisfied: filelock>=3.10.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers) (3.25.2)
+Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers) (2024.6.1)
+Requirement already satisfied: hf-xet<2.0.0,>=1.4.3 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers) (1.4.3)
+Requirement already satisfied: httpx<1,>=0.23.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers) (0.28.1)
+Requirement already satisfied: typing-extensions>=4.1.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers) (4.15.0)
+Requirement already satisfied: anyio in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers) (4.13.0)
+Requirement already satisfied: certifi in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers) (2026.2.25)
+Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers) (1.0.
+9)
+Requirement already satisfied: idna in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers) (3.11)
+Requirement already satisfied: h11>=0.16 in /usr/local/lib/python3.10/site-packages (from httpcore==1.*->httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transfor
+mers) (0.16.0)
+Requirement already satisfied: exceptiongroup>=1.0.2 in /usr/local/lib/python3.10/site-packages (from anyio->httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->tran
+sformers) (1.3.1)
+Requirement already satisfied: click>=8.2.1 in /usr/local/lib/python3.10/site-packages (from typer->transformers) (8.3.2)
+Requirement already satisfied: shellingham>=1.3.0 in /usr/local/lib/python3.10/site-packages (from typer->transformers) (1.5.4)
+Requirement already satisfied: rich>=12.3.0 in /usr/local/lib/python3.10/site-packages (from typer->transformers) (14.3.3)
+Requirement already satisfied: annotated-doc>=0.0.2 in /usr/local/lib/python3.10/site-packages (from typer->transformers) (0.0.4)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /usr/local/lib/python3.10/site-packages (from rich>=12.3.0->typer->transformers) (4.0.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.10/site-packages (from rich>=12.3.0->typer->transformers) (2.20.0)
+Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich>=12.3.0->typer->transformers) (0.1.2)
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your syst
+em unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you a
+re doing and want to suppress this warning.
+root@da999e52426a:/app# python -m mteb.run --hf-model bge-small-en-v1.5 --hf-commit-id 5c38ec7c405ec4b44b94cc5a9bb96e735b38267a --task sts12 --output-dir result
+s/hf_model_org__bge-small-en-v1.5/5c38ec7c405ec4b44b94cc5a9bb96e735b38267a/sts12.json; tmux wait -S done
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/usr/local/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/usr/local/lib/python3.10/site-packages/mteb/__init__.py", line 5, in <module>
+    from mteb.benchmarks.benchmarks import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/__init__.py", line 3, in <module>
+    from mteb.benchmarks.benchmark import Benchmark
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/benchmark.py", line 9, in <module>
+    from mteb.load_results.load_results import load_results
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/__init__.py", line 3, in <module>
+    from .benchmark_results import BenchmarkResults, ModelResult
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/benchmark_results.py", line 15, in <module>
+    from mteb.abstasks.AbsTask import AbsTask, ScoresDict
+  File "/usr/local/lib/python3.10/site-packages/mteb/abstasks/__init__.py", line 3, in <module>
+    from ..evaluation.LangMapping import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/__init__.py", line 3, in <module>
+    from .MTEB import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/MTEB.py", line 23, in <module>
+    from mteb.models import model_meta_from_sentence_transformers
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/__init__.py", line 5, in <module>
+    from mteb.models.overview import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/overview.py", line 14, in <module>
+    from mteb.models import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/gme_v_models.py", line 13, in <module>
+    from transformers import AutoModelForVision2Seq, AutoProcessor
+ImportError: cannot import name 'AutoModelForVision2Seq' from 'transformers' (/usr/local/lib/python3.10/site-packages/transformers/__init__.py)
+root@da999e52426a:/app# pip install transformers==4.30.0; tmux wait -S done
+Collecting transformers==4.30.0
+  Downloading transformers-4.30.0-py3-none-any.whl.metadata (113 kB)
+Requirement already satisfied: filelock in /usr/local/lib/python3.10/site-packages (from transformers==4.30.0) (3.25.2)
+Collecting huggingface-hub<1.0,>=0.14.1 (from transformers==4.30.0)
+  Downloading huggingface_hub-0.36.2-py3-none-any.whl.metadata (15 kB)
+Requirement already satisfied: numpy>=1.17 in /usr/local/lib/python3.10/site-packages (from transformers==4.30.0) (2.2.6)
+Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.10/site-packages (from transformers==4.30.0) (26.0)
+Requirement already satisfied: pyyaml>=5.1 in /usr/local/lib/python3.10/site-packages (from transformers==4.30.0) (6.0.3)
+Requirement already satisfied: regex!=2019.12.17 in /usr/local/lib/python3.10/site-packages (from transformers==4.30.0) (2026.4.4)
+Requirement already satisfied: requests in /usr/local/lib/python3.10/site-packages (from transformers==4.30.0) (2.33.1)
+Collecting tokenizers!=0.11.3,<0.14,>=0.11.1 (from transformers==4.30.0)
+  Downloading tokenizers-0.13.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (6.7 kB)
+Requirement already satisfied: safetensors>=0.3.1 in /usr/local/lib/python3.10/site-packages (from transformers==4.30.0) (0.7.0)
+Requirement already satisfied: tqdm>=4.27 in /usr/local/lib/python3.10/site-packages (from transformers==4.30.0) (4.67.3)
+Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.14.1->transformers==4.30.0) (2024.6.1)
+Requirement already satisfied: hf-xet<2.0.0,>=1.1.3 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.14.1->transformers==4.30.0) (1.4.3)
+Requirement already satisfied: typing-extensions>=3.7.4.3 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.14.1->transformers==4.30.0) (
+4.15.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.30.0) (3.4.7)
+Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.30.0) (3.11)
+Requirement already satisfied: urllib3<3,>=1.26 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.30.0) (2.6.3)
+Requirement already satisfied: certifi>=2023.5.7 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.30.0) (2026.2.25)
+Downloading transformers-4.30.0-py3-none-any.whl (7.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.2/7.2 MB 22.8 MB/s  0:00:00
+Downloading huggingface_hub-0.36.2-py3-none-any.whl (566 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 566.4/566.4 kB 24.1 MB/s  0:00:00
+Downloading tokenizers-0.13.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (7.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.5/7.5 MB 43.2 MB/s  0:00:00
+Installing collected packages: tokenizers, huggingface-hub, transformers
+  Attempting uninstall: tokenizers
+    Found existing installation: tokenizers 0.22.2
+    Uninstalling tokenizers-0.22.2:
+      Successfully uninstalled tokenizers-0.22.2
+  Attempting uninstall: huggingface-hub
+    Found existing installation: huggingface_hub 1.9.2
+    Uninstalling huggingface_hub-1.9.2:
+      Successfully uninstalled huggingface_hub-1.9.2
+  Attempting uninstall: transformers
+    Found existing installation: transformers 5.5.0
+    Uninstalling transformers-5.5.0:
+      Successfully uninstalled transformers-5.5.0
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following depende
+ncy conflicts.
+sentence-transformers 5.3.0 requires transformers<6.0.0,>=4.41.0, but you have transformers 4.30.0 which is incompatible.
+Successfully installed huggingface-hub-0.36.2 tokenizers-0.13.3 transformers-4.30.0
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your syst
+em unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you a
+re doing and want to suppress this warning.
+root@da999e52426a:/app# python -m mteb.run --hf-model bge-small-en-v1.5 --hf-commit-id 5c38ec7c405ec4b44b94cc5a9bb96e735b38267a --task sts12 --output-dir result
+s/hf_model_org__bge-small-en-v1.5/5c38ec7c405ec4b44b94cc5a9bb96e735b38267a/sts12.json; tmux wait -S done
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/usr/local/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/usr/local/lib/python3.10/site-packages/mteb/__init__.py", line 5, in <module>
+    from mteb.benchmarks.benchmarks import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/__init__.py", line 3, in <module>
+    from mteb.benchmarks.benchmark import Benchmark
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/benchmark.py", line 9, in <module>
+    from mteb.load_results.load_results import load_results
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/__init__.py", line 3, in <module>
+    from .benchmark_results import BenchmarkResults, ModelResult
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/benchmark_results.py", line 15, in <module>
+    from mteb.abstasks.AbsTask import AbsTask, ScoresDict
+  File "/usr/local/lib/python3.10/site-packages/mteb/abstasks/__init__.py", line 3, in <module>
+    from ..evaluation.LangMapping import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/__init__.py", line 3, in <module>
+    from .MTEB import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/MTEB.py", line 17, in <module>
+    from sentence_transformers import CrossEncoder, SentenceTransformer
+  File "/usr/local/lib/python3.10/site-packages/sentence_transformers/__init__.py", line 10, in <module>
+    from sentence_transformers.backend import (
+  File "/usr/local/lib/python3.10/site-packages/sentence_transformers/backend/__init__.py", line 5, in <module>
+    from .quantize import export_dynamic_quantized_onnx_model, export_static_quantized_openvino_model
+  File "/usr/local/lib/python3.10/site-packages/sentence_transformers/backend/quantize.py", line 7, in <module>
+    from sentence_transformers.util import disable_datasets_caching, is_datasets_available
+  File "/usr/local/lib/python3.10/site-packages/sentence_transformers/util/__init__.py", line 5, in <module>
+    from .environment import (
+  File "/usr/local/lib/python3.10/site-packages/sentence_transformers/util/environment.py", line 9, in <module>
+    from transformers import is_torch_npu_available
+ImportError: cannot import name 'is_torch_npu_available' from 'transformers' (/usr/local/lib/python3.10/site-packages/transformers/__init__.py)
+root@da999e52426a:/app# pip install transformers==4.41.0; tmux wait -S done
+Collecting transformers==4.41.0
+  Downloading transformers-4.41.0-py3-none-any.whl.metadata (43 kB)
+Requirement already satisfied: filelock in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (3.25.2)
+Requirement already satisfied: huggingface-hub<1.0,>=0.23.0 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (0.36.2)
+Requirement already satisfied: numpy>=1.17 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (2.2.6)
+Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (26.0)
+Requirement already satisfied: pyyaml>=5.1 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (6.0.3)
+Requirement already satisfied: regex!=2019.12.17 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (2026.4.4)
+Requirement already satisfied: requests in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (2.33.1)
+Collecting tokenizers<0.20,>=0.19 (from transformers==4.41.0)
+  Downloading tokenizers-0.19.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (6.7 kB)
+Requirement already satisfied: safetensors>=0.4.1 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (0.7.0)
+Requirement already satisfied: tqdm>=4.27 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (4.67.3)
+Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.23.0->transformers==4.41.0) (2024.6.1)
+Requirement already satisfied: hf-xet<2.0.0,>=1.1.3 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.23.0->transformers==4.41.0) (1.4.3)
+Requirement already satisfied: typing-extensions>=3.7.4.3 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.23.0->transformers==4.41.0) (
+4.15.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.41.0) (3.4.7)
+Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.41.0) (3.11)
+Requirement already satisfied: urllib3<3,>=1.26 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.41.0) (2.6.3)
+Requirement already satisfied: certifi>=2023.5.7 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.41.0) (2026.2.25)
+Downloading transformers-4.41.0-py3-none-any.whl (9.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.1/9.1 MB 27.6 MB/s  0:00:00
+Downloading tokenizers-0.19.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (3.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.6/3.6 MB 20.6 MB/s  0:00:00
+Installing collected packages: tokenizers, transformers
+  Attempting uninstall: tokenizers
+    Found existing installation: tokenizers 0.13.3
+    Uninstalling tokenizers-0.13.3:
+      Successfully uninstalled tokenizers-0.13.3
+  Attempting uninstall: transformers
+    Found existing installation: transformers 4.30.0
+    Uninstalling transformers-4.30.0:
+      Successfully uninstalled transformers-4.30.0
+Successfully installed tokenizers-0.19.1 transformers-4.41.0
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your syst
+em unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you a
+re doing and want to suppress this warning.
+root@da999e52426a:/app# python -m mteb.run --hf-model bge-small-en-v1.5 --hf-commit-id 5c38ec7c405ec4b44b94cc5a9bb96e735b38267a --task sts12 --output-dir result
+s/hf_model_org__bge-small-en-v1.5/5c38ec7c405ec4b44b94cc5a9bb96e735b38267a/sts12.json; tmux wait -S done
+/usr/local/bin/python: No module named mteb.run
+root@da999e52426a:/app# pip install --upgrade --force-reinstall mteb; tmux wait -S done
+Collecting mteb
+  Downloading mteb-2.12.15-py3-none-any.whl.metadata (16 kB)
+Collecting datasets>=2.19.0 (from mteb)
+  Downloading datasets-4.8.4-py3-none-any.whl.metadata (19 kB)
+Collecting numpy<3.0.0,>=1.23.0 (from mteb)
+  Downloading numpy-2.2.6-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (63 kB)
+Collecting requests>=2.26.0 (from mteb)
+  Downloading requests-2.33.1-py3-none-any.whl.metadata (4.8 kB)
+Collecting scikit-learn>=1.4.0 (from mteb)
+  Downloading scikit_learn-1.7.2-cp310-cp310-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl.metadata (11 kB)
+Collecting scipy>=1.14.0 (from mteb)
+  Downloading scipy-1.15.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (61 kB)
+Collecting sentence_transformers>=3.0.0 (from mteb)
+  Downloading sentence_transformers-5.3.0-py3-none-any.whl.metadata (16 kB)
+Collecting transformers<6.0.0,>=4.40.0 (from mteb)
+  Downloading transformers-5.5.0-py3-none-any.whl.metadata (32 kB)
+Collecting typing-extensions>=4.5.0 (from mteb)
+  Downloading typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting torch>=2.0.0 (from mteb)
+  Downloading torch-2.11.0-cp310-cp310-manylinux_2_28_aarch64.whl.metadata (29 kB)
+Collecting tqdm>1.0.0 (from mteb)
+  Downloading tqdm-4.67.3-py3-none-any.whl.metadata (57 kB)
+Collecting rich>=13.0.0 (from mteb)
+  Downloading rich-14.3.3-py3-none-any.whl.metadata (18 kB)
+Collecting pytrec-eval-terrier>=0.5.6 (from mteb)
+  Using cached pytrec_eval_terrier-0.5.10-cp310-cp310-linux_aarch64.whl
+Collecting pydantic>=2.11.0 (from mteb)
+  Downloading pydantic-2.12.5-py3-none-any.whl.metadata (90 kB)
+Collecting polars>=1.0.0 (from mteb)
+  Downloading polars-1.39.3-py3-none-any.whl.metadata (10 kB)
+Collecting huggingface-hub<2.0,>=1.5.0 (from transformers<6.0.0,>=4.40.0->mteb)
+  Downloading huggingface_hub-1.9.2-py3-none-any.whl.metadata (14 kB)
+Collecting packaging>=20.0 (from transformers<6.0.0,>=4.40.0->mteb)
+  Downloading packaging-26.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting pyyaml>=5.1 (from transformers<6.0.0,>=4.40.0->mteb)
+  Downloading pyyaml-6.0.3-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (2.4 kB)
+Collecting regex>=2025.10.22 (from transformers<6.0.0,>=4.40.0->mteb)
+  Downloading regex-2026.4.4-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (40 kB)
+Collecting tokenizers<=0.23.0,>=0.22.0 (from transformers<6.0.0,>=4.40.0->mteb)
+  Downloading tokenizers-0.22.2-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (7.3 kB)
+Collecting typer (from transformers<6.0.0,>=4.40.0->mteb)
+  Downloading typer-0.24.1-py3-none-any.whl.metadata (16 kB)
+Collecting safetensors>=0.4.3 (from transformers<6.0.0,>=4.40.0->mteb)
+  Downloading safetensors-0.7.0-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (4.1 kB)
+Collecting filelock>=3.10.0 (from huggingface-hub<2.0,>=1.5.0->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading filelock-3.25.2-py3-none-any.whl.metadata (2.0 kB)
+Collecting fsspec>=2023.5.0 (from huggingface-hub<2.0,>=1.5.0->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading fsspec-2026.3.0-py3-none-any.whl.metadata (10 kB)
+Collecting hf-xet<2.0.0,>=1.4.3 (from huggingface-hub<2.0,>=1.5.0->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading hf_xet-1.4.3-cp37-abi3-manylinux_2_28_aarch64.whl.metadata (4.9 kB)
+Collecting httpx<1,>=0.23.0 (from huggingface-hub<2.0,>=1.5.0->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+Collecting anyio (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading anyio-4.13.0-py3-none-any.whl.metadata (4.5 kB)
+Collecting certifi (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading certifi-2026.2.25-py3-none-any.whl.metadata (2.5 kB)
+Collecting httpcore==1.* (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+Collecting idna (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading idna-3.11-py3-none-any.whl.metadata (8.4 kB)
+Collecting h11>=0.16 (from httpcore==1.*->httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting pyarrow>=21.0.0 (from datasets>=2.19.0->mteb)
+  Downloading pyarrow-23.0.1-cp310-cp310-manylinux_2_28_aarch64.whl.metadata (3.1 kB)
+Collecting dill<0.4.2,>=0.3.0 (from datasets>=2.19.0->mteb)
+  Downloading dill-0.4.1-py3-none-any.whl.metadata (10 kB)
+Collecting pandas (from datasets>=2.19.0->mteb)
+  Downloading pandas-2.3.3-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl.metadata (91 kB)
+Collecting xxhash (from datasets>=2.19.0->mteb)
+  Downloading xxhash-3.6.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (13 kB)
+Collecting multiprocess<0.70.20 (from datasets>=2.19.0->mteb)
+  Downloading multiprocess-0.70.19-py310-none-any.whl.metadata (7.5 kB)
+Collecting fsspec>=2023.5.0 (from huggingface-hub<2.0,>=1.5.0->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading fsspec-2026.2.0-py3-none-any.whl.metadata (10 kB)
+Collecting aiohttp!=4.0.0a0,!=4.0.0a1 (from fsspec[http]<=2026.2.0,>=2023.1.0->datasets>=2.19.0->mteb)
+  Downloading aiohttp-3.13.5-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (8.1 kB)
+Collecting aiohappyeyeballs>=2.5.0 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets>=2.19.0->mteb)
+  Downloading aiohappyeyeballs-2.6.1-py3-none-any.whl.metadata (5.9 kB)
+Collecting aiosignal>=1.4.0 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets>=2.19.0->mteb)
+  Downloading aiosignal-1.4.0-py3-none-any.whl.metadata (3.7 kB)
+Collecting async-timeout<6.0,>=4.0 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets>=2.19.0->mteb)
+  Downloading async_timeout-5.0.1-py3-none-any.whl.metadata (5.1 kB)
+Collecting attrs>=17.3.0 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets>=2.19.0->mteb)
+  Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+Collecting frozenlist>=1.1.1 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets>=2.19.0->mteb)
+  Downloading frozenlist-1.8.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (20 kB)
+Collecting multidict<7.0,>=4.5 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets>=2.19.0->mteb)
+  Downloading multidict-6.7.1-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (5.3 kB)
+Collecting propcache>=0.2.0 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets>=2.19.0->mteb)
+  Downloading propcache-0.4.1-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (13 kB)
+Collecting yarl<2.0,>=1.17.0 (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2026.2.0,>=2023.1.0->datasets>=2.19.0->mteb)
+  Downloading yarl-1.23.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (79 kB)
+Collecting polars-runtime-32==1.39.3 (from polars>=1.0.0->mteb)
+  Downloading polars_runtime_32-1.39.3-cp310-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (1.5 kB)
+Collecting annotated-types>=0.6.0 (from pydantic>=2.11.0->mteb)
+  Downloading annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)
+Collecting pydantic-core==2.41.5 (from pydantic>=2.11.0->mteb)
+  Downloading pydantic_core-2.41.5-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (7.3 kB)
+Collecting typing-inspection>=0.4.2 (from pydantic>=2.11.0->mteb)
+  Downloading typing_inspection-0.4.2-py3-none-any.whl.metadata (2.6 kB)
+Collecting charset_normalizer<4,>=2 (from requests>=2.26.0->mteb)
+  Downloading charset_normalizer-3.4.7-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (40 kB)
+Collecting urllib3<3,>=1.26 (from requests>=2.26.0->mteb)
+  Downloading urllib3-2.6.3-py3-none-any.whl.metadata (6.9 kB)
+Collecting markdown-it-py>=2.2.0 (from rich>=13.0.0->mteb)
+  Downloading markdown_it_py-4.0.0-py3-none-any.whl.metadata (7.3 kB)
+Collecting pygments<3.0.0,>=2.13.0 (from rich>=13.0.0->mteb)
+  Downloading pygments-2.20.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich>=13.0.0->mteb)
+  Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+Collecting joblib>=1.2.0 (from scikit-learn>=1.4.0->mteb)
+  Downloading joblib-1.5.3-py3-none-any.whl.metadata (5.5 kB)
+Collecting threadpoolctl>=3.1.0 (from scikit-learn>=1.4.0->mteb)
+  Downloading threadpoolctl-3.6.0-py3-none-any.whl.metadata (13 kB)
+Collecting setuptools<82 (from torch>=2.0.0->mteb)
+  Downloading setuptools-81.0.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting sympy>=1.13.3 (from torch>=2.0.0->mteb)
+  Downloading sympy-1.14.0-py3-none-any.whl.metadata (12 kB)
+Collecting networkx>=2.5.1 (from torch>=2.0.0->mteb)
+  Downloading networkx-3.4.2-py3-none-any.whl.metadata (6.3 kB)
+Collecting jinja2 (from torch>=2.0.0->mteb)
+  Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting cuda-toolkit==13.0.2 (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system == "
+Linux"->torch>=2.0.0->mteb)
+  Downloading cuda_toolkit-13.0.2-py2.py3-none-any.whl.metadata (9.4 kB)
+Collecting cuda-bindings<14,>=13.0.3 (from torch>=2.0.0->mteb)
+  Downloading cuda_bindings-13.2.0-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl.metadata (2.3 kB)
+Collecting nvidia-cudnn-cu13==9.19.0.56 (from torch>=2.0.0->mteb)
+  Downloading nvidia_cudnn_cu13-9.19.0.56-py3-none-manylinux_2_27_aarch64.whl.metadata (1.9 kB)
+Collecting nvidia-cusparselt-cu13==0.8.0 (from torch>=2.0.0->mteb)
+  Downloading nvidia_cusparselt_cu13-0.8.0-py3-none-manylinux2014_aarch64.whl.metadata (12 kB)
+Collecting nvidia-nccl-cu13==2.28.9 (from torch>=2.0.0->mteb)
+  Downloading nvidia_nccl_cu13-2.28.9-py3-none-manylinux_2_18_aarch64.whl.metadata (2.0 kB)
+Collecting nvidia-nvshmem-cu13==3.4.5 (from torch>=2.0.0->mteb)
+  Downloading nvidia_nvshmem_cu13-3.4.5-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl.metadata (2.1 kB)
+Collecting triton==3.6.0 (from torch>=2.0.0->mteb)
+  Downloading triton-3.6.0-cp310-cp310-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl.metadata (1.7 kB)
+Collecting nvidia-curand==10.4.0.35.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_syste
+m == "Linux"->torch>=2.0.0->mteb)
+  Downloading nvidia_curand-10.4.0.35-py3-none-manylinux_2_27_aarch64.whl.metadata (1.7 kB)
+Collecting nvidia-cuda-nvrtc==13.0.88.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_sys
+tem == "Linux"->torch>=2.0.0->mteb)
+  Downloading nvidia_cuda_nvrtc-13.0.88-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl.metadata (1.7 kB)
+Collecting nvidia-cuda-cupti==13.0.85.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_sys
+tem == "Linux"->torch>=2.0.0->mteb)
+  Downloading nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_aarch64.whl.metadata (1.7 kB)
+Collecting nvidia-cufft==12.0.0.61.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system
+ == "Linux"->torch>=2.0.0->mteb)
+  Downloading nvidia_cufft-12.0.0.61-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl.metadata (1.8 kB)
+Collecting nvidia-cusparse==12.6.3.3.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_syst
+em == "Linux"->torch>=2.0.0->mteb)
+  Downloading nvidia_cusparse-12.6.3.3-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl.metadata (1.8 kB)
+Collecting nvidia-nvtx==13.0.85.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system ==
+ "Linux"->torch>=2.0.0->mteb)
+  Downloading nvidia_nvtx-13.0.85-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl.metadata (1.8 kB)
+Collecting nvidia-cufile==1.15.1.6.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system
+ == "Linux"->torch>=2.0.0->mteb)
+  Downloading nvidia_cufile-1.15.1.6-py3-none-manylinux_2_27_aarch64.whl.metadata (1.7 kB)
+Collecting nvidia-cublas==13.1.0.3.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_system
+ == "Linux"->torch>=2.0.0->mteb)
+  Downloading nvidia_cublas-13.1.0.3-py3-none-manylinux_2_27_aarch64.whl.metadata (1.7 kB)
+Collecting nvidia-cusolver==12.0.4.66.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_sys
+tem == "Linux"->torch>=2.0.0->mteb)
+  Downloading nvidia_cusolver-12.0.4.66-py3-none-manylinux_2_27_aarch64.whl.metadata (1.8 kB)
+Collecting nvidia-nvjitlink==13.0.88.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_syst
+em == "Linux"->torch>=2.0.0->mteb)
+  Downloading nvidia_nvjitlink-13.0.88-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl.metadata (1.7 kB)
+Collecting nvidia-cuda-runtime==13.0.96.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.2; platform_s
+ystem == "Linux"->torch>=2.0.0->mteb)
+  Downloading nvidia_cuda_runtime-13.0.96-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl.metadata (1.7 kB)
+Collecting cuda-pathfinder~=1.1 (from cuda-bindings<14,>=13.0.3->torch>=2.0.0->mteb)
+  Downloading cuda_pathfinder-1.5.2-py3-none-any.whl.metadata (1.9 kB)
+Collecting mpmath<1.4,>=1.1.0 (from sympy>=1.13.3->torch>=2.0.0->mteb)
+  Downloading mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+Collecting exceptiongroup>=1.0.2 (from anyio->httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading exceptiongroup-1.3.1-py3-none-any.whl.metadata (6.7 kB)
+Collecting MarkupSafe>=2.0 (from jinja2->torch>=2.0.0->mteb)
+  Downloading markupsafe-3.0.3-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (2.7 kB)
+Collecting python-dateutil>=2.8.2 (from pandas->datasets>=2.19.0->mteb)
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting pytz>=2020.1 (from pandas->datasets>=2.19.0->mteb)
+  Downloading pytz-2026.1.post1-py2.py3-none-any.whl.metadata (22 kB)
+Collecting tzdata>=2022.7 (from pandas->datasets>=2.19.0->mteb)
+  Downloading tzdata-2026.1-py2.py3-none-any.whl.metadata (1.4 kB)
+Collecting six>=1.5 (from python-dateutil>=2.8.2->pandas->datasets>=2.19.0->mteb)
+  Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting click>=8.2.1 (from typer->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading click-8.3.2-py3-none-any.whl.metadata (2.6 kB)
+Collecting shellingham>=1.3.0 (from typer->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading shellingham-1.5.4-py2.py3-none-any.whl.metadata (3.5 kB)
+Collecting annotated-doc>=0.0.2 (from typer->transformers<6.0.0,>=4.40.0->mteb)
+  Downloading annotated_doc-0.0.4-py3-none-any.whl.metadata (6.6 kB)
+Downloading mteb-2.12.15-py3-none-any.whl (5.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 22.0 MB/s  0:00:00
+Downloading numpy-2.2.6-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (14.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.3/14.3 MB 41.0 MB/s  0:00:00
+Downloading transformers-5.5.0-py3-none-any.whl (10.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.2/10.2 MB 61.6 MB/s  0:00:00
+Downloading huggingface_hub-1.9.2-py3-none-any.whl (637 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 637.3/637.3 kB 19.4 MB/s  0:00:00
+Downloading hf_xet-1.4.3-cp37-abi3-manylinux_2_28_aarch64.whl (4.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.0/4.0 MB 32.4 MB/s  0:00:00
+Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+Downloading tokenizers-0.22.2-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (3.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.3/3.3 MB 69.4 MB/s  0:00:00
+Downloading datasets-4.8.4-py3-none-any.whl (526 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 527.0/527.0 kB 21.2 MB/s  0:00:00
+Downloading dill-0.4.1-py3-none-any.whl (120 kB)
+Downloading fsspec-2026.2.0-py3-none-any.whl (202 kB)
+Downloading multiprocess-0.70.19-py310-none-any.whl (134 kB)
+Downloading aiohttp-3.13.5-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (1.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.7/1.7 MB 8.3 MB/s  0:00:00
+Downloading async_timeout-5.0.1-py3-none-any.whl (6.2 kB)
+Downloading multidict-6.7.1-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (242 kB)
+Downloading yarl-1.23.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (99 kB)
+Downloading aiohappyeyeballs-2.6.1-py3-none-any.whl (15 kB)
+Downloading aiosignal-1.4.0-py3-none-any.whl (7.5 kB)
+Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+Downloading filelock-3.25.2-py3-none-any.whl (26 kB)
+Downloading frozenlist-1.8.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (221 kB)
+Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+Downloading idna-3.11-py3-none-any.whl (71 kB)
+Downloading packaging-26.0-py3-none-any.whl (74 kB)
+Downloading polars-1.39.3-py3-none-any.whl (823 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 824.0/824.0 kB 25.4 MB/s  0:00:00
+Downloading polars_runtime_32-1.39.3-cp310-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (43.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 43.2/43.2 MB 32.9 MB/s  0:00:01
+Downloading propcache-0.4.1-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (201 kB)
+Downloading pyarrow-23.0.1-cp310-cp310-manylinux_2_28_aarch64.whl (44.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.5/44.5 MB 45.1 MB/s  0:00:01
+Downloading pydantic-2.12.5-py3-none-any.whl (463 kB)
+Downloading pydantic_core-2.41.5-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (1.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.9/1.9 MB 31.1 MB/s  0:00:00
+Downloading annotated_types-0.7.0-py3-none-any.whl (13 kB)
+Downloading pyyaml-6.0.3-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (740 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 740.6/740.6 kB 19.4 MB/s  0:00:00
+Downloading regex-2026.4.4-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (785 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 785.5/785.5 kB 22.1 MB/s  0:00:00
+Downloading requests-2.33.1-py3-none-any.whl (64 kB)
+Downloading charset_normalizer-3.4.7-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (209 kB)
+Downloading urllib3-2.6.3-py3-none-any.whl (131 kB)
+Downloading certifi-2026.2.25-py3-none-any.whl (153 kB)
+Downloading rich-14.3.3-py3-none-any.whl (310 kB)
+Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 47.5 MB/s  0:00:00
+Downloading markdown_it_py-4.0.0-py3-none-any.whl (87 kB)
+Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Downloading safetensors-0.7.0-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (491 kB)
+Downloading scikit_learn-1.7.2-cp310-cp310-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl (9.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.5/9.5 MB 37.7 MB/s  0:00:00
+Downloading joblib-1.5.3-py3-none-any.whl (309 kB)
+Downloading scipy-1.15.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (35.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 35.5/35.5 MB 37.0 MB/s  0:00:00
+Downloading sentence_transformers-5.3.0-py3-none-any.whl (512 kB)
+Downloading threadpoolctl-3.6.0-py3-none-any.whl (18 kB)
+Downloading torch-2.11.0-cp310-cp310-manylinux_2_28_aarch64.whl (419.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 419.7/419.7 MB 28.4 MB/s  0:00:14
+Downloading cuda_toolkit-13.0.2-py2.py3-none-any.whl (2.4 kB)
+Downloading nvidia_cudnn_cu13-9.19.0.56-py3-none-manylinux_2_27_aarch64.whl (433.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 433.8/433.8 MB 22.7 MB/s  0:00:18
+Downloading nvidia_cusparselt_cu13-0.8.0-py3-none-manylinux2014_aarch64.whl (220.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 220.8/220.8 MB 25.2 MB/s  0:00:08
+Downloading nvidia_nccl_cu13-2.28.9-py3-none-manylinux_2_18_aarch64.whl (196.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 196.6/196.6 MB 28.6 MB/s  0:00:06
+Downloading nvidia_nvshmem_cu13-3.4.5-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (60.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 60.2/60.2 MB 17.5 MB/s  0:00:03
+Downloading triton-3.6.0-cp310-cp310-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl (176.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 176.0/176.0 MB 28.3 MB/s  0:00:06
+Downloading cuda_bindings-13.2.0-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl (5.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.7/5.7 MB 40.0 MB/s  0:00:00
+Downloading cuda_pathfinder-1.5.2-py3-none-any.whl (49 kB)
+Downloading nvidia_cublas-13.1.0.3-py3-none-manylinux_2_27_aarch64.whl (542.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 542.9/542.9 MB 19.6 MB/s  0:00:26
+Downloading nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_aarch64.whl (10.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.3/10.3 MB 24.7 MB/s  0:00:00
+Downloading nvidia_cuda_nvrtc-13.0.88-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (43.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 43.0/43.0 MB 30.0 MB/s  0:00:01
+Downloading nvidia_cuda_runtime-13.0.96-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (2.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 40.6 MB/s  0:00:00
+Downloading nvidia_cufft-12.0.0.61-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (214.1 MB)
+   ━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━ 107.0/214.1 MB 34.4 MB/s eta 0:00:04# Wait for the current installation to complete; no further action required unti
+l installation finishes.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╺━━ 199.2/214.1 MB 32.3 MB/s eta 0:00:01# Continue waiting for the installation to finish before attempting further acti
+ons.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 214.1/214.1 MB 31.1 MB/s  0:00:06
+Downloading nvidia_cufile-1.15.1.6-py3-none-manylinux_2_27_aarch64.whl (1.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.1/1.1 MB 9.6 MB/s  0:00:00
+Downloading nvidia_curand-10.4.0.35-py3-none-manylinux_2_27_aarch64.whl (62.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━ 39.6/62.0 MB 38.8 MB/s eta 0:00:01# Wait for the completion of the current installation process.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.0/62.0 MB 35.8 MB/s  0:00:01
+Downloading nvidia_cusolver-12.0.4.66-py3-none-manylinux_2_27_aarch64.whl (223.5 MB)
+   ━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━ 68.4/223.5 MB 29.2 MB/s eta 0:00:06# Continue to wait until the installation process is fully completed.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╺ 219.7/223.5 MB 30.1 MB/s eta 0:00:01# Continue monitoring the installation process without interruption.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 223.5/223.5 MB 23.3 MB/s  0:00:09
+Downloading nvidia_cusparse-12.6.3.3-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (162.2 MB)
+   ━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/162.2 MB 35.4 MB/s eta 0:00:05# Wait for the installation process to fully complete before taking further action
+s.
+   ━━━━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━ 61.6/162.2 MB 29.7 MB/s eta 0:00:04# Wait for the current installation to complete.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━ 116.7/162.2 MB 26.6 MB/s eta 0:00:02# Continue to wait for the completion of the installation process.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╸━ 156.2/162.2 MB 22.6 MB/s eta 0:00:01# Continue to wait for the installation to fully complete.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 162.2/162.2 MB 18.1 MB/s  0:00:08
+Downloading nvidia_nvjitlink-13.0.88-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (38.8 MB)
+   ╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 0.5/38.8 MB 12.8 MB/s eta 0:00:03# Continue to wait for the completion of the installation process.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 38.8/38.8 MB 17.0 MB/s  0:00:02
+Downloading nvidia_nvtx-13.0.85-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (148 kB)
+Downloading setuptools-81.0.0-py3-none-any.whl (1.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.1/1.1 MB 8.4 MB/s  0:00:00
+Downloading networkx-3.4.2-py3-none-any.whl (1.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.7/1.7 MB 8.1 MB/s  0:00:00
+Downloading sympy-1.14.0-py3-none-any.whl (6.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.3/6.3 MB 24.5 MB/s  0:00:00
+Downloading mpmath-1.3.0-py3-none-any.whl (536 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 536.2/536.2 kB 8.0 MB/s  0:00:00
+Downloading tqdm-4.67.3-py3-none-any.whl (78 kB)
+Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+Downloading typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+Downloading anyio-4.13.0-py3-none-any.whl (114 kB)
+Downloading exceptiongroup-1.3.1-py3-none-any.whl (16 kB)
+Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+Downloading markupsafe-3.0.3-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (22 kB)
+Downloading pandas-2.3.3-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl (12.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.1/12.1 MB 18.8 MB/s  0:00:00
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Downloading pytz-2026.1.post1-py2.py3-none-any.whl (510 kB)
+Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Downloading tzdata-2026.1-py2.py3-none-any.whl (348 kB)
+Downloading typer-0.24.1-py3-none-any.whl (56 kB)
+Downloading annotated_doc-0.0.4-py3-none-any.whl (5.3 kB)
+Downloading click-8.3.2-py3-none-any.whl (108 kB)
+Downloading shellingham-1.5.4-py2.py3-none-any.whl (9.8 kB)
+Downloading xxhash-3.6.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (212 kB)
+# Continue monitoring the installation process until completion.
+# Continue to wait for the completion of the installation process.
+Installing collected packages: pytz, nvidia-cusparselt-cu13, mpmath, cuda-toolkit, xxhash, urllib3, tzdata, typing-extensions, triton, tqdm, threadpoolctl, symp
+y, six, shellingham, setuptools, safetensors, regex, pyyaml, pygments, pyarrow, propcache, polars-runtime-32, packaging, nvidia-nvtx, nvidia-nvshmem-cu13, nvidi
+a-nvjitlink, nvidia-nccl-cu13, nvidia-curand, nvidia-cufile, nvidia-cuda-runtime, nvidia-cuda-nvrtc, nvidia-cuda-cupti, nvidia-cublas, numpy, networkx, mdurl, M
+arkupSafe, joblib, idna, hf-xet, h11, fsspec, frozenlist, filelock, dill, cuda-pathfinder, click, charset_normalizer, certifi, attrs, async-timeout, annotated-t
+ypes, annotated-doc, aiohappyeyeballs, typing-inspection, scipy, requests, python-dateutil, pydantic-core, polars, nvidia-cusparse, nvidia-cufft, nvidia-cudnn-c
+u13, multiprocess, multidict, markdown-it-py, jinja2, httpcore, exceptiongroup, cuda-bindings, aiosignal, yarl, scikit-learn, rich, pytrec-eval-terrier, pydanti
+c, pandas, nvidia-cusolver, anyio, typer, httpx, aiohttp, torch, huggingface-hub, tokenizers, datasets, transformers, sentence_transformers, mteb
+  Attempting uninstall: pytz
+    Found existing installation: pytz 2026.1.post1
+    Uninstalling pytz-2026.1.post1:
+      Successfully uninstalled pytz-2026.1.post1
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  0/89 [pytz]# Continue monitoring the installation process until it is fully completed.
+  Attempting uninstall: nvidia-cusparselt-cu13
+    Found existing installation: nvidia-cusparselt-cu13 0.8.0
+    Uninstalling nvidia-cusparselt-cu13-0.8.0:
+      Successfully uninstalled nvidia-cusparselt-cu13-0.8.0
+  Attempting uninstall: mpmath
+    Found existing installation: mpmath 1.3.0
+    Uninstalling mpmath-1.3.0:
+      Successfully uninstalled mpmath-1.3.0
+  Attempting uninstall: cuda-toolkit
+    Found existing installation: cuda-toolkit 13.0.2
+    Uninstalling cuda-toolkit-13.0.2:
+      Successfully uninstalled cuda-toolkit-13.0.2
+  Attempting uninstall: xxhash
+    Found existing installation: xxhash 3.6.0
+    Uninstalling xxhash-3.6.0:
+      Successfully uninstalled xxhash-3.6.0
+  Attempting uninstall: urllib3
+    Found existing installation: urllib3 2.6.3
+    Uninstalling urllib3-2.6.3:
+      Successfully uninstalled urllib3-2.6.3
+  Attempting uninstall: tzdata
+    Found existing installation: tzdata 2026.1
+    Uninstalling tzdata-2026.1:
+   ━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  6/89 [tzdata]# Continue waiting for the installation to be fully completed.
+      Successfully uninstalled tzdata-2026.1
+  Attempting uninstall: typing-extensions
+    Found existing installation: typing_extensions 4.15.0
+    Uninstalling typing_extensions-4.15.0:
+   ━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  7/89 [typing-extensions]# Continue to wait until the installation is fully completed.
+      Successfully uninstalled typing_extensions-4.15.0
+  Attempting uninstall: triton
+    Found existing installation: triton 3.6.0
+    Uninstalling triton-3.6.0:
+   ━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  8/89 [triton]# Continue to wait until the installation is fully completed.
+   ━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  8/89 [triton]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled triton-3.6.0
+   ━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  8/89 [triton]# Continue to wait for the installation to fully complete.
+   ━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  8/89 [triton]# Continue to wait until the installation is fully completed.
+  Attempting uninstall: tqdm
+    Found existing installation: tqdm 4.67.3
+    Uninstalling tqdm-4.67.3:
+      Successfully uninstalled tqdm-4.67.3
+  Attempting uninstall: threadpoolctl
+    Found existing installation: threadpoolctl 3.6.0
+    Uninstalling threadpoolctl-3.6.0:
+      Successfully uninstalled threadpoolctl-3.6.0
+  Attempting uninstall: sympy
+    Found existing installation: sympy 1.14.0
+    Uninstalling sympy-1.14.0:
+   ━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/89 [sympy]# Continue waiting for the installation to fully complete.
+   ━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/89 [sympy]# Continue to wait for the installation to fully complete without interruption.
+   ━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/89 [sympy]# Continue to wait for the installation to fully complete without interruption.
+      Successfully uninstalled sympy-1.14.0
+   ━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/89 [sympy]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: six
+    Found existing installation: six 1.17.0
+    Uninstalling six-1.17.0:
+      Successfully uninstalled six-1.17.0
+  Attempting uninstall: shellingham
+    Found existing installation: shellingham 1.5.4
+    Uninstalling shellingham-1.5.4:
+      Successfully uninstalled shellingham-1.5.4
+  Attempting uninstall: setuptools
+    Found existing installation: setuptools 79.0.1
+    Uninstalling setuptools-79.0.1:
+      Successfully uninstalled setuptools-79.0.1
+  Attempting uninstall: safetensors
+    Found existing installation: safetensors 0.7.0
+    Uninstalling safetensors-0.7.0:
+      Successfully uninstalled safetensors-0.7.0
+  Attempting uninstall: regex
+    Found existing installation: regex 2026.4.4
+    Uninstalling regex-2026.4.4:
+      Successfully uninstalled regex-2026.4.4
+  Attempting uninstall: pyyaml
+    Found existing installation: PyYAML 6.0.3
+    Uninstalling PyYAML-6.0.3:
+      Successfully uninstalled PyYAML-6.0.3
+  Attempting uninstall: pygments
+    Found existing installation: Pygments 2.20.0
+    Uninstalling Pygments-2.20.0:
+      Successfully uninstalled Pygments-2.20.0
+   ━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 18/89 [pygments]# Continue to wait for the installation to fully complete.
+  Attempting uninstall: pyarrow
+    Found existing installation: pyarrow 23.0.1
+    Uninstalling pyarrow-23.0.1:
+   ━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 19/89 [pyarrow]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled pyarrow-23.0.1
+   ━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 19/89 [pyarrow]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: propcache
+    Found existing installation: propcache 0.4.1
+    Uninstalling propcache-0.4.1:
+      Successfully uninstalled propcache-0.4.1
+  Attempting uninstall: polars-runtime-32
+    Found existing installation: polars-runtime-32 1.39.3
+    Uninstalling polars-runtime-32-1.39.3:
+      Successfully uninstalled polars-runtime-32-1.39.3
+   ━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 21/89 [polars-runtime-32]# Continue to wait for the installation to fully complete.
+  Attempting uninstall: packaging
+    Found existing installation: packaging 26.0
+    Uninstalling packaging-26.0:
+      Successfully uninstalled packaging-26.0
+  Attempting uninstall: nvidia-nvtx
+    Found existing installation: nvidia-nvtx 13.0.85
+    Uninstalling nvidia-nvtx-13.0.85:
+      Successfully uninstalled nvidia-nvtx-13.0.85
+  Attempting uninstall: nvidia-nvshmem-cu13
+    Found existing installation: nvidia-nvshmem-cu13 3.4.5
+    Uninstalling nvidia-nvshmem-cu13-3.4.5:
+   ━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 24/89 [nvidia-nvshmem-cu13]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled nvidia-nvshmem-cu13-3.4.5
+  Attempting uninstall: nvidia-nvjitlink
+    Found existing installation: nvidia-nvjitlink 13.0.88
+    Uninstalling nvidia-nvjitlink-13.0.88:
+      Successfully uninstalled nvidia-nvjitlink-13.0.88
+   ━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 25/89 [nvidia-nvjitlink]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: nvidia-nccl-cu13
+    Found existing installation: nvidia-nccl-cu13 2.28.9
+    Uninstalling nvidia-nccl-cu13-2.28.9:
+   ━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 26/89 [nvidia-nccl-cu13]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled nvidia-nccl-cu13-2.28.9
+  Attempting uninstall: nvidia-curand
+    Found existing installation: nvidia-curand 10.4.0.35
+    Uninstalling nvidia-curand-10.4.0.35:
+      Successfully uninstalled nvidia-curand-10.4.0.35
+   ━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━ 27/89 [nvidia-curand]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: nvidia-cufile
+    Found existing installation: nvidia-cufile 1.15.1.6
+    Uninstalling nvidia-cufile-1.15.1.6:
+      Successfully uninstalled nvidia-cufile-1.15.1.6
+  Attempting uninstall: nvidia-cuda-runtime
+    Found existing installation: nvidia-cuda-runtime 13.0.96
+    Uninstalling nvidia-cuda-runtime-13.0.96:
+      Successfully uninstalled nvidia-cuda-runtime-13.0.96
+  Attempting uninstall: nvidia-cuda-nvrtc
+    Found existing installation: nvidia-cuda-nvrtc 13.0.88
+    Uninstalling nvidia-cuda-nvrtc-13.0.88:
+   ━━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━ 30/89 [nvidia-cuda-nvrtc]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled nvidia-cuda-nvrtc-13.0.88
+  Attempting uninstall: nvidia-cuda-cupti
+    Found existing installation: nvidia-cuda-cupti 13.0.85
+    Uninstalling nvidia-cuda-cupti-13.0.85:
+      Successfully uninstalled nvidia-cuda-cupti-13.0.85
+  Attempting uninstall: nvidia-cublas
+    Found existing installation: nvidia-cublas 13.1.0.3
+    Uninstalling nvidia-cublas-13.1.0.3:
+   ━━━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━ 32/89 [nvidia-cublas]# Continue to wait for the installation to fully complete without interruption.
+   ━━━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━ 32/89 [nvidia-cublas]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled nvidia-cublas-13.1.0.3
+   ━━━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━ 32/89 [nvidia-cublas]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: numpy
+    Found existing installation: numpy 2.2.6
+    Uninstalling numpy-2.2.6:
+   ━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━ 33/89 [numpy]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled numpy-2.2.6
+   ━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━ 33/89 [numpy]# Continue to wait for the installation to fully complete.
+  Attempting uninstall: networkx
+    Found existing installation: networkx 3.4.2
+    Uninstalling networkx-3.4.2:
+      Successfully uninstalled networkx-3.4.2
+   ━━━━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━ 34/89 [networkx]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: mdurl
+    Found existing installation: mdurl 0.1.2
+    Uninstalling mdurl-0.1.2:
+      Successfully uninstalled mdurl-0.1.2
+  Attempting uninstall: MarkupSafe
+    Found existing installation: MarkupSafe 3.0.3
+    Uninstalling MarkupSafe-3.0.3:
+      Successfully uninstalled MarkupSafe-3.0.3
+  Attempting uninstall: joblib
+    Found existing installation: joblib 1.5.3
+    Uninstalling joblib-1.5.3:
+      Successfully uninstalled joblib-1.5.3
+  Attempting uninstall: idna
+    Found existing installation: idna 3.11
+    Uninstalling idna-3.11:
+      Successfully uninstalled idna-3.11
+  Attempting uninstall: hf-xet
+    Found existing installation: hf-xet 1.4.3
+    Uninstalling hf-xet-1.4.3:
+      Successfully uninstalled hf-xet-1.4.3
+  Attempting uninstall: h11
+    Found existing installation: h11 0.16.0
+    Uninstalling h11-0.16.0:
+      Successfully uninstalled h11-0.16.0
+  Attempting uninstall: fsspec
+    Found existing installation: fsspec 2024.6.1
+    Uninstalling fsspec-2024.6.1:
+      Successfully uninstalled fsspec-2024.6.1
+   ━━━━━━━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━ 41/89 [fsspec]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: frozenlist
+    Found existing installation: frozenlist 1.8.0
+    Uninstalling frozenlist-1.8.0:
+      Successfully uninstalled frozenlist-1.8.0
+  Attempting uninstall: filelock
+    Found existing installation: filelock 3.25.2
+    Uninstalling filelock-3.25.2:
+      Successfully uninstalled filelock-3.25.2
+  Attempting uninstall: dill
+    Found existing installation: dill 0.3.8
+    Uninstalling dill-0.3.8:
+      Successfully uninstalled dill-0.3.8
+  Attempting uninstall: cuda-pathfinder
+    Found existing installation: cuda-pathfinder 1.5.2
+    Uninstalling cuda-pathfinder-1.5.2:
+      Successfully uninstalled cuda-pathfinder-1.5.2
+  Attempting uninstall: click
+    Found existing installation: click 8.3.2
+    Uninstalling click-8.3.2:
+      Successfully uninstalled click-8.3.2
+  Attempting uninstall: charset_normalizer
+    Found existing installation: charset-normalizer 3.4.7
+    Uninstalling charset-normalizer-3.4.7:
+      Successfully uninstalled charset-normalizer-3.4.7
+  Attempting uninstall: certifi
+    Found existing installation: certifi 2026.2.25
+    Uninstalling certifi-2026.2.25:
+      Successfully uninstalled certifi-2026.2.25
+  Attempting uninstall: attrs
+    Found existing installation: attrs 26.1.0
+    Uninstalling attrs-26.1.0:
+      Successfully uninstalled attrs-26.1.0
+  Attempting uninstall: async-timeout
+    Found existing installation: async-timeout 5.0.1
+    Uninstalling async-timeout-5.0.1:
+      Successfully uninstalled async-timeout-5.0.1
+  Attempting uninstall: annotated-types
+    Found existing installation: annotated-types 0.7.0
+    Uninstalling annotated-types-0.7.0:
+      Successfully uninstalled annotated-types-0.7.0
+   ━━━━━━━━━━━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━ 50/89 [async-timeout]# Continue to wait for the installation to fully complete.
+  Attempting uninstall: annotated-doc
+    Found existing installation: annotated-doc 0.0.4
+    Uninstalling annotated-doc-0.0.4:
+      Successfully uninstalled annotated-doc-0.0.4
+  Attempting uninstall: aiohappyeyeballs
+    Found existing installation: aiohappyeyeballs 2.6.1
+    Uninstalling aiohappyeyeballs-2.6.1:
+      Successfully uninstalled aiohappyeyeballs-2.6.1
+  Attempting uninstall: typing-inspection
+    Found existing installation: typing-inspection 0.4.2
+    Uninstalling typing-inspection-0.4.2:
+      Successfully uninstalled typing-inspection-0.4.2
+  Attempting uninstall: scipy
+    Found existing installation: scipy 1.15.3
+    Uninstalling scipy-1.15.3:
+   ━━━━━━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━ 55/89 [scipy]# Continue to wait for the installation to fully complete without interruption.
+      Successfully uninstalled scipy-1.15.3
+   ━━━━━━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━ 55/89 [scipy]# Continue to wait for the installation to fully complete.
+   ━━━━━━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━ 55/89 [scipy]# Continue to wait for the installation to fully complete.
+   ━━━━━━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━ 55/89 [scipy]

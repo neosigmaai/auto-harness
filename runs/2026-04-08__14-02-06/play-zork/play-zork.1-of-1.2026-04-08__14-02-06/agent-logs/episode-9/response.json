@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player is now in a clearing surrounded by forest, with a path leading back south. There is a pile of leaves on the ground, which could potentially hide something useful.",
+    "explanation": "Investigate the pile of leaves to see if there are any hidden items or paths beneath them.",
+    "commands": [
+        {
+            "keystrokes": "examine leaves\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

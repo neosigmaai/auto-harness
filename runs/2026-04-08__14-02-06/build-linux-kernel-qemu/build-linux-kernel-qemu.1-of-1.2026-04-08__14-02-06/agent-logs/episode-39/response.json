@@ -1,0 +1,6 @@
+{
+    "state_analysis": "The terminal session is entirely unresponsive. Repeated attempts to execute commands have resulted in failure and no output, suggesting a locked or stalled environment.",
+    "explanation": "The best course of action is to restart the Docker container or terminal session. This will reset the environment, clear any deadlocks, and restore functionality.",
+    "commands": [],
+    "is_task_complete": false
+}

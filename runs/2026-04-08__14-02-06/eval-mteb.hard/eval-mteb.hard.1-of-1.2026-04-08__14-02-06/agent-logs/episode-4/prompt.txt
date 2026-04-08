@@ -1,0 +1,40 @@
+root@b858e75d9142:/app# python -m mteb --task STS12 --model <model_name> --output results; tmux wait -S done
+bash: model_name: No such file or directory
+root@b858e75d9142:/app# python -c "from transformers import AutoModel; print(AutoModel.list())"; tmux wait -S done
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+AttributeError: type object 'AutoModel' has no attribute 'list'
+root@b858e75d9142:/app# huggingface-cli list models --filter sentence-transformers; tmux wait -S done
+bash: huggingface-cli: command not found
+root@b858e75d9142:/app# pip install huggingface-hub; tmux wait -S done
+Requirement already satisfied: huggingface-hub in /usr/local/lib/python3.10/site-packages (1.9.2)
+Requirement already satisfied: hf-xet<2.0.0,>=1.4.3 in /usr/local/lib/python3.10/site-packages (from huggingface-hub) (1.4.3)
+Requirement already satisfied: tqdm>=4.42.1 in /usr/local/lib/python3.10/site-packages (from huggingface-hub) (4.67.3)
+Requirement already satisfied: filelock>=3.10.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub) (3.25.2)
+Requirement already satisfied: typer in /usr/local/lib/python3.10/site-packages (from huggingface-hub) (0.24.1)
+Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub) (2024.6.1)
+Requirement already satisfied: pyyaml>=5.1 in /usr/local/lib/python3.10/site-packages (from huggingface-hub) (6.0.3)
+Requirement already satisfied: typing-extensions>=4.1.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub) (4.15.0)
+Requirement already satisfied: httpx<1,>=0.23.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub) (0.28.1)
+Requirement already satisfied: packaging>=20.9 in /usr/local/lib/python3.10/site-packages (from huggingface-hub) (26.0)
+Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub) (1.0.9)
+Requirement already satisfied: anyio in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub) (4.13.0)
+Requirement already satisfied: certifi in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub) (2026.2.25)
+Requirement already satisfied: idna in /usr/local/lib/python3.10/site-packages (from httpx<1,>=0.23.0->huggingface-hub) (3.11)
+Requirement already satisfied: h11>=0.16 in /usr/local/lib/python3.10/site-packages (from httpcore==1.*->httpx<1,>=0.23.0->huggingface-hub) (0.16.0)
+Requirement already satisfied: click>=8.2.1 in /usr/local/lib/python3.10/site-packages (from typer->huggingface-hub) (8.3.2)
+Requirement already satisfied: rich>=12.3.0 in /usr/local/lib/python3.10/site-packages (from typer->huggingface-hub) (14.3.3)
+Requirement already satisfied: shellingham>=1.3.0 in /usr/local/lib/python3.10/site-packages (from typer->huggingface-hub) (1.5.4)
+Requirement already satisfied: annotated-doc>=0.0.2 in /usr/local/lib/python3.10/site-packages (from typer->huggingface-hub) (0.0.4)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /usr/local/lib/python3.10/site-packages (from rich>=12.3.0->typer->huggingface-hub) (4.0.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.10/site-packages (from rich>=12.3.0->typer->huggingface-hub) (2.20.0)
+Requirement already satisfied: exceptiongroup>=1.0.2 in /usr/local/lib/python3.10/site-packages (from anyio->httpx<1,>=0.23.0->huggingface-hub) (1.3.1)
+Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich>=12.3.0->typer->huggingface-hub) (0.1.2)
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a v
+irtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+root@b858e75d9142:/app# huggingface-cli list models --filter sentence-transformers; tmux wait -S done
+bash: huggingface-cli: command not found
+root@b858e75d9142:/app#

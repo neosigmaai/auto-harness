@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player is back at the East-West Passage, and the crack at the chasm was too narrow to enter. The chasm and the passage offer multiple directions to explore.",
+    "explanation": "Continue exploring the passage by heading east to discover any new areas or opportunities.",
+    "commands": [
+        {
+            "keystrokes": "east\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

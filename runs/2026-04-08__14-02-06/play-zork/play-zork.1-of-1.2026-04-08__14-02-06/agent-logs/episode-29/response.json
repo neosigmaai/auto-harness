@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player has entered the Troll Room, which is guarded by a nasty-looking troll wielding a bloody axe. The glowing sword indicates danger, as the troll blocks all exits.",
+    "explanation": "Engage the troll using the elvish sword to attempt to defeat it and proceed through the passages.",
+    "commands": [
+        {
+            "keystrokes": "attack troll with sword\n",
+            "is_blocking": true,
+            "timeout_sec": 10
+        }
+    ],
+    "is_task_complete": false
+}

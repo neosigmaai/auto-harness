@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player is now on a forest path that is dimly lit, with the path continuing to the north and south. There is a large tree with low branches nearby.",
+    "explanation": "The next step is to explore the large tree to see if it has any items or routes of interest, such as climbing it for a better view or finding an object.",
+    "commands": [
+        {
+            "keystrokes": "climb tree\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

@@ -1,0 +1,23 @@
+{
+    "id": "c0c617f8-98f8-4153-afd0-b7dc8344d214",
+    "trial_name": "organization-json-generator.1-of-1.2026-04-08__13-55-13",
+    "task_id": "organization-json-generator",
+    "instruction": "Create a JSON processor that transforms CSV data into a structured JSON file following the schema defined in schema.json. Requirements: 1. Use the provided CSV files (departments.csv, employees.csv, projects.csv) as input data 2. Generate a file called 'organization.json' that follows the schema defined. 3. The output must include: Organization metadata, Department information with employees and projects, Statistical calculations",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_json_file_exists": "failed",
+        "test_organization_structure": "failed",
+        "test_relationships_integrity": "failed",
+        "test_statistics_calculations": "failed"
+    },
+    "recording_path": "2026-04-08__13-55-13/organization-json-generator/organization-json-generator.1-of-1.2026-04-08__13-55-13/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T22:10:22.982119+00:00",
+    "trial_ended_at": "2026-04-08T22:10:45.773697+00:00",
+    "agent_started_at": "2026-04-08T22:10:32.648901+00:00",
+    "agent_ended_at": "2026-04-08T22:10:32.732143+00:00",
+    "test_started_at": "2026-04-08T22:10:36.158923+00:00",
+    "test_ended_at": "2026-04-08T22:10:43.255129+00:00"
+}

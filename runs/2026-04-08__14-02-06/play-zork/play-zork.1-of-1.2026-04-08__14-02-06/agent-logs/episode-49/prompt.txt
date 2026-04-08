@@ -1,0 +1,40 @@
+ Loud Room                                                                                                                        Score: 45       Moves: 49
+
+>down
+Loud Room
+This is a large room with a ceiling which cannot be detected from the ground. There is a narrow passage from east to west and a stone stairway leading upward.
+The room is deafeningly loud with an undetermined rushing sound. The sound seems to reverberate from all of the walls, making it difficult even to think.
+On the ground is a large platinum bar.
+
+>take platinum bar
+bar bar ...
+
+>west
+Round Room
+
+>east
+Loud Room
+On the ground is a large platinum bar.
+
+>down
+down down ...
+
+>examine platinum bar
+bar bar ...
+
+>echo
+The acoustics of the room change subtly.
+
+Loud Room
+On the ground is a large platinum bar.
+
+>take platinum bar
+Your load is too heavy, especially in light of your condition.
+
+>drop knife
+Dropped.
+
+>take platinum bar
+Your load is too heavy, especially in light of your condition.
+
+>

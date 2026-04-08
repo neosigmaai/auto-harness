@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player is at the south edge of a deep canyon with passages leading east, northwest, and southwest. A stairway leads down, and the sound of flowing water can be heard from below.",
+    "explanation": "Explore the stairway leading down to investigate the source of the water and potentially find new areas or items of interest.",
+    "commands": [
+        {
+            "keystrokes": "down\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

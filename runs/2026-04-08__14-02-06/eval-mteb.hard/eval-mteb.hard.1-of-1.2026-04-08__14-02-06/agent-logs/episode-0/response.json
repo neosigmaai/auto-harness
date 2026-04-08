@@ -1,0 +1,17 @@
+{
+    "state_analysis": "The terminal is currently at the command prompt within the app directory. No previous commands or outputs are visible, indicating that the environment is ready for the next set of instructions.",
+    "explanation": "We will first ensure that the MTEB library is installed and then execute the evaluation of the embedding model on the STS12 dataset to achieve the desired score. We will block on the evaluation command to capture its output for analysis.",
+    "commands": [
+        {
+            "keystrokes": "pip install mteb\n",
+            "is_blocking": true,
+            "timeout_sec": 60
+        },
+        {
+            "keystrokes": "python -m mteb --task STS12 --model <model_name> --output results\n",
+            "is_blocking": true,
+            "timeout_sec": 300
+        }
+    ],
+    "is_task_complete": false
+}

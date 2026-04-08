@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player has returned to the north side of the house. The north side has no door, and all the windows are boarded up. The path to the dimly lit forest is to the north.",
+    "explanation": "Explore around the house to find an entrance. Since the north side offers no access, try moving east to see if an entrance is available there.",
+    "commands": [
+        {
+            "keystrokes": "east\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

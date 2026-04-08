@@ -9,8 +9,11 @@ description = "autoagent + autoevals framework for production agents"
 requires-python = ">=3.12"
 dependencies = [
     "openai",
+    "openai-agents",
     "pyyaml",
     "tau2",
+    "terminal_bench",
+    "harbor",
 ]
 
 [tool.uv.sources]

@@ -1,0 +1,111 @@
+root@aef70662a4f9:/app# bash /tests/run-tests.sh; tmux wait -S done
+Get:1 http://ports.ubuntu.com/ubuntu-ports noble InRelease [256 kB]
+Get:2 http://ports.ubuntu.com/ubuntu-ports noble-updates InRelease [126 kB]
+Get:3 http://ports.ubuntu.com/ubuntu-ports noble-backports InRelease [126 kB]
+Get:4 http://ports.ubuntu.com/ubuntu-ports noble-security InRelease [126 kB]
+Get:5 http://ports.ubuntu.com/ubuntu-ports noble/restricted arm64 Packages [113 kB]
+Get:6 http://ports.ubuntu.com/ubuntu-ports noble/multiverse arm64 Packages [274 kB]
+Get:7 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 Packages [1776 kB]
+Get:8 http://ports.ubuntu.com/ubuntu-ports noble/universe arm64 Packages [19.0 MB]
+Get:9 http://ports.ubuntu.com/ubuntu-ports noble-updates/restricted arm64 Packages [5151 kB]
+Get:10 http://ports.ubuntu.com/ubuntu-ports noble-updates/universe arm64 Packages [2114 kB]
+Get:11 http://ports.ubuntu.com/ubuntu-ports noble-updates/multiverse arm64 Packages [45.7 kB]
+Get:12 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 Packages [2495 kB]
+Get:13 http://ports.ubuntu.com/ubuntu-ports noble-backports/main arm64 Packages [49.5 kB]
+Get:14 http://ports.ubuntu.com/ubuntu-ports noble-backports/universe arm64 Packages [36.1 kB]
+Get:15 http://ports.ubuntu.com/ubuntu-ports noble-backports/multiverse arm64 Packages [695 B]
+Get:16 http://ports.ubuntu.com/ubuntu-ports noble-security/restricted arm64 Packages [4974 kB]
+Get:17 http://ports.ubuntu.com/ubuntu-ports noble-security/multiverse arm64 Packages [44.1 kB]
+Get:18 http://ports.ubuntu.com/ubuntu-ports noble-security/main arm64 Packages [2133 kB]
+Get:19 http://ports.ubuntu.com/ubuntu-ports noble-security/universe arm64 Packages [1505 kB]
+Fetched 40.4 MB in 4s (11.5 MB/s)
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  curl
+0 upgraded, 1 newly installed, 0 to remove and 40 not upgraded.
+Need to get 222 kB of archives.
+After this operation, 566 kB of additional disk space will be used.
+Get:1 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 curl arm64 8.5.0-2ubuntu10.8 [222 kB]
+Fetched 222 kB in 1s (391 kB/s)
+debconf: delaying package configuration, since apt-utils is not installed
+Selecting previously unselected package curl.
+(Reading database ... 10049 files and directories currently installed.)
+Preparing to unpack .../curl_8.5.0-2ubuntu10.8_arm64.deb ...
+Unpacking curl (8.5.0-2ubuntu10.8) ...
+Setting up curl (8.5.0-2ubuntu10.8) ...
+downloading uv 0.11.5 aarch64-unknown-linux-gnu
+installing to /root/.local/bin
+  uv
+  uvx
+everything's installed!
+
+To add $HOME/.local/bin to your PATH, either restart your shell or run:
+
+    source $HOME/.local/bin/env (sh, bash, zsh)
+    source $HOME/.local/bin/env.fish (fish)
+Initialized project `app`
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: .venv
+Resolved 7 packages in 256ms
+Prepared 5 packages in 180ms
+Installed 5 packages in 9ms
+ + iniconfig==2.3.0
+ + packaging==26.0
+ + pluggy==1.6.0
+ + pygments==2.20.0
+ + pytest==9.0.3
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0
+rootdir: /tests
+collected 2 items
+
+../tests/test_outputs.py FF                                                                                                                              [100%]
+
+=========================================================================== FAILURES ===========================================================================
+__________________________________________________________________ test_recovery_file_exists ___________________________________________________________________
+
+    def test_recovery_file_exists():
+        recovered_pass_path = Path("/app/recovered_passwords.txt")
+>       assert recovered_pass_path.exists(), "Recovery file not found"
+E       AssertionError: Recovery file not found
+E       assert False
+E        +  where False = exists()
+E        +    where exists = PosixPath('/app/recovered_passwords.txt').exists
+
+/tests/test_outputs.py:10: AssertionError
+_____________________________________________________________________ test_password_match ______________________________________________________________________
+
+    def test_password_match():
+>       guesses = Path("/app/recovered_passwords.txt").read_text().strip().split("\n")
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/tests/test_outputs.py:14:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+/usr/lib/python3.12/pathlib.py:1029: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = PosixPath('/app/recovered_passwords.txt'), mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/app/recovered_passwords.txt'
+
+/usr/lib/python3.12/pathlib.py:1015: FileNotFoundError
+=================================================================== short test summary info ====================================================================
+FAILED ../tests/test_outputs.py::test_recovery_file_exists - AssertionError: Recovery file not found
+FAILED ../tests/test_outputs.py::test_password_match - FileNotFoundError: [Errno 2] No such file or directory: '/app/recovered_passwords.txt'
+====================================================================== 2 failed in 0.04s =======================================================================
+root@aef70662a4f9:/app#

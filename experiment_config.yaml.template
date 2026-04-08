@@ -19,3 +19,6 @@ gate_split: "test"
 
 # Max concurrent tasks during benchmark / gate runs
 max_concurrency: 3
+
+#benchmark being used
+benchmark: terminal_bench  # or tau_bench

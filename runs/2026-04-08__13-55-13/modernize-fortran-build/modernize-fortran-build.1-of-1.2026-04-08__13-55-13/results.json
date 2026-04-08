@@ -1,0 +1,22 @@
+{
+    "id": "97d346d5-70e1-4717-8511-8d9a60a1e33e",
+    "trial_name": "modernize-fortran-build.1-of-1.2026-04-08__13-55-13",
+    "task_id": "modernize-fortran-build",
+    "instruction": "You are to update a Fortran project's build process to use gfortran. The existing build system, designed for a different compiler, needs modification.\n\nContext:\nOriginal Makefile: /app/src/Makefile\nFortran Library: /app/src/my_lib.f90\nMain Program: /app/src/test_main.f90\nYour Working Directory: /app/. All actions (copying, modifying, compiling, running) should be based here.\n\nYour objectives are:\n1. Modify the '/app/Makefile'so that the build process works\n2. Compile the project with the modified Makefile and execute test_program.",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_output_file_exists_and_content_is_correct": "failed",
+        "test_target_executable_was_created_and_is_executable": "failed",
+        "test_makefile_compilation_process": "failed"
+    },
+    "recording_path": "2026-04-08__13-55-13/modernize-fortran-build/modernize-fortran-build.1-of-1.2026-04-08__13-55-13/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T21:53:39.264665+00:00",
+    "trial_ended_at": "2026-04-08T21:54:45.778509+00:00",
+    "agent_started_at": "2026-04-08T21:54:25.728450+00:00",
+    "agent_ended_at": "2026-04-08T21:54:25.837865+00:00",
+    "test_started_at": "2026-04-08T21:54:29.196633+00:00",
+    "test_ended_at": "2026-04-08T21:54:43.770045+00:00"
+}

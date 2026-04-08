@@ -1,0 +1,40 @@
+ Attic                                                                                                                            Score: 15       Moves: 24
+>take bottle
+Taken.
+
+>go upstairs
+I don't know the word "upstairs".
+
+>climb stairs
+You have moved into a dark place.
+It is pitch black. You are likely to be eaten by a grue.
+
+>go down
+Kitchen
+
+>west
+Living Room
+You are in the living room. There is a doorway to the east, a wooden door with strange gothic lettering to the west, which appears to be nailed shut, a trophy
+case, and a large oriental rug in the center of the room.
+Above the trophy case hangs an elvish sword of great antiquity.
+A battery-powered brass lantern is on the trophy case.
+
+>take lantern
+Taken.
+
+>take sword
+Taken.
+
+>east
+Kitchen
+
+>turn on lantern
+The brass lantern is now on.
+
+>climb stairs
+Attic
+This is the attic. The only exit is a stairway leading down.
+A large coil of rope is lying in the corner.
+On a table is a nasty-looking knife.
+
+>

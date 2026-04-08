@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player is now at the north side of the house, where there are no doors and the windows are boarded. There is an option to follow a narrow path to the north through the trees.",
+    "explanation": "Since the house cannot be entered from the north side, the next step is to explore the narrow path to the north to potentially find an alternate entrance or useful items.",
+    "commands": [
+        {
+            "keystrokes": "north\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

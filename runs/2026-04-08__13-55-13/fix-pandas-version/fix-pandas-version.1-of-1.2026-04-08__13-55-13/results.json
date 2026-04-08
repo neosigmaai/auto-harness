@@ -1,0 +1,22 @@
+{
+    "id": "45c19fa5-c420-4d6a-abbe-2fe0fa05c743",
+    "trial_name": "fix-pandas-version.1-of-1.2026-04-08__13-55-13",
+    "task_id": "fix-pandas-version",
+    "instruction": "You are working on a data analysis project that processes customer\ntransaction data. The project's test suite is failing with the following error:\n\nInput:\npython -m src.data_processor\n\nOutput:\nTypeError: read_csv() got an\\\n\\ unexpected keyword argument 'dtype_backend'\n\nPlease fix to environment to\\\n\\ support the features used in the code. \n\"",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_pandas_version": "failed",
+        "test_load_and_process_data": "failed",
+        "test_analyze_customer_segments": "failed"
+    },
+    "recording_path": "2026-04-08__13-55-13/fix-pandas-version/fix-pandas-version.1-of-1.2026-04-08__13-55-13/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T21:59:19.519865+00:00",
+    "trial_ended_at": "2026-04-08T22:00:07.349782+00:00",
+    "agent_started_at": "2026-04-08T22:00:00.421079+00:00",
+    "agent_ended_at": "2026-04-08T22:00:00.499306+00:00",
+    "test_started_at": "2026-04-08T22:00:03.893168+00:00",
+    "test_ended_at": "2026-04-08T22:00:04.760095+00:00"
+}

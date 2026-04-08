@@ -1,0 +1,21 @@
+{
+    "id": "2ccd4d41-7c3e-4f11-88ef-10cad64e25aa",
+    "trial_name": "crack-7z-hash.hard.1-of-1.2026-04-08__13-55-13",
+    "task_id": "crack-7z-hash.hard",
+    "instruction": "You need to create a file called \"solution.txt\" with the word found \"secrete_file.txt\" in the \"secrets.7z\" archive.\nThe final \"solution.txt\" should be located at \"/app/solution.txt\".",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_solution_file": "failed",
+        "test_solution_content": "failed"
+    },
+    "recording_path": "2026-04-08__13-55-13/crack-7z-hash.hard/crack-7z-hash.hard.1-of-1.2026-04-08__13-55-13/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T21:55:19.983207+00:00",
+    "trial_ended_at": "2026-04-08T21:59:19.500205+00:00",
+    "agent_started_at": "2026-04-08T21:59:01.323353+00:00",
+    "agent_ended_at": "2026-04-08T21:59:01.629220+00:00",
+    "test_started_at": "2026-04-08T21:59:05.257637+00:00",
+    "test_ended_at": "2026-04-08T21:59:15.988127+00:00"
+}

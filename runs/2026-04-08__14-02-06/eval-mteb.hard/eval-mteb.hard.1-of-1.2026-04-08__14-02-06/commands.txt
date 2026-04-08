@@ -1,0 +1,37 @@
+['asciinema rec --stdin /logs/agent.cast', 'Enter']
+['clear', 'Enter']
+'pip install mteb\n'
+'python -m mteb --task STS12 --model <model_name> --output results\n'
+'python -c "from transformers import AutoModel; print(AutoModel.list())"\n'
+'huggingface-cli list models --filter sentence-transformers\n'
+'pip install huggingface-hub\n'
+'huggingface-cli list models --filter sentence-transformers\n'
+'pip install --upgrade huggingface-cli\n'
+'echo $PATH\n'
+'python -c "from transformers import AutoModel; model_names = [\'all-MiniLM-L6-v2\', \'multi-qa-MiniLM-L6-cos-v1\']; print(\'Available models:\', model_names)"\n'
+'python -m mteb --task STS12 --model all-MiniLM-L6-v2 --output results\n'
+'pip install --upgrade transformers\n'
+'python -m mteb --task STS12 --model all-MiniLM-L6-v2 --output results\n'
+'pip show transformers\n'
+'pip install transformers==4.30.0\n'
+'python -m mteb --task STS12 --model all-MiniLM-L6-v2 --output results\n'
+'pip install sentence-transformers==2.2.0\n'
+'pip install sentence-transformers==3.1.0\n'
+'python -m mteb --task STS12 --model all-MiniLM-L6-v2 --output results\n'
+'python -m mteb available_tasks\n'
+'python -m mteb available_benchmarks\n'
+'python -m mteb available_tasks\n'
+'python -m mteb available_benchmarks\n'
+'python -m mteb.run available_tasks\n'
+'python -m mteb.run available_benchmarks\n'
+'python -m mteb --help\n'
+'python -m mteb run --task NanoMSMARCORetrieval --model all-MiniLM-L6-v2 --output results\n'
+'python -m mteb run --tasks NanoMSMARCORetrieval --model all-MiniLM-L6-v2 --output_folder results\n'
+'python -m mteb available_tasks\n'
+'python -m mteb available_benchmarks\n'
+"echo 'Please consult MTEB documentation or community for STS12 access.'\n"
+['asciinema rec --stdin /logs/tests.cast', 'Enter']
+['clear', 'Enter']
+['bash ', '/tests/run-tests.sh', 'Enter']
+['C-d']
+['C-d']

@@ -1,0 +1,114 @@
+root@149c52581791:/app# asciinema rec --stdin /logs/tests.cast
+asciinema: recording asciicast to /logs/tests.cast
+asciinema: press <ctrl-d> or type "exit" when you're done
+root@149c52581791:/app# clear
+root@149c52581791:/app# bash /tests/run-tests.sh; tmux wait -S done
+Hit:1 http://deb.debian.org/debian bullseye InRelease
+Hit:2 http://deb.debian.org/debian-security bullseye-security InRelease
+Hit:3 http://deb.debian.org/debian bullseye-updates InRelease
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  libcurl4 libldap-2.4-2 libldap-common libnghttp2-14 librtmp1 libssh2-1
+The following NEW packages will be installed:
+  curl libcurl4 libldap-2.4-2 libldap-common libnghttp2-14 librtmp1 libssh2-1
+0 upgraded, 7 newly installed, 0 to remove and 0 not upgraded.
+Need to get 1193 kB of archives.
+After this operation, 2506 kB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian bullseye/main arm64 libldap-2.4-2 arm64 2.4.57+dfsg-3+deb11u1 [222 kB]
+Get:2 http://deb.debian.org/debian-security bullseye-security/main arm64 libnghttp2-14 arm64 1.43.0-1+deb11u2 [74.0 kB]
+Get:3 http://deb.debian.org/debian bullseye/main arm64 librtmp1 arm64 2.4+20151223.gitfa8646d.1-2+b2 [59.4 kB]
+Get:4 http://deb.debian.org/debian bullseye/main arm64 libssh2-1 arm64 1.9.0-2+deb11u1 [150 kB]
+Get:5 http://deb.debian.org/debian-security bullseye-security/main arm64 libcurl4 arm64 7.74.0-1.3+deb11u16 [327 kB]
+Get:6 http://deb.debian.org/debian-security bullseye-security/main arm64 curl arm64 7.74.0-1.3+deb11u16 [266 kB]
+Get:7 http://deb.debian.org/debian bullseye/main arm64 libldap-common all 2.4.57+dfsg-3+deb11u1 [95.8 kB]
+Fetched 1193 kB in 0s (4320 kB/s)
+debconf: delaying package configuration, since apt-utils is not installed
+Selecting previously unselected package libldap-2.4-2:arm64.
+(Reading database ... 22197 files and directories currently installed.)
+Preparing to unpack .../0-libldap-2.4-2_2.4.57+dfsg-3+deb11u1_arm64.deb ...
+Unpacking libldap-2.4-2:arm64 (2.4.57+dfsg-3+deb11u1) ...
+Selecting previously unselected package libnghttp2-14:arm64.
+Preparing to unpack .../1-libnghttp2-14_1.43.0-1+deb11u2_arm64.deb ...
+Unpacking libnghttp2-14:arm64 (1.43.0-1+deb11u2) ...
+Selecting previously unselected package librtmp1:arm64.
+Preparing to unpack .../2-librtmp1_2.4+20151223.gitfa8646d.1-2+b2_arm64.deb ...
+Unpacking librtmp1:arm64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+Selecting previously unselected package libssh2-1:arm64.
+Preparing to unpack .../3-libssh2-1_1.9.0-2+deb11u1_arm64.deb ...
+Unpacking libssh2-1:arm64 (1.9.0-2+deb11u1) ...
+Selecting previously unselected package libcurl4:arm64.
+Preparing to unpack .../4-libcurl4_7.74.0-1.3+deb11u16_arm64.deb ...
+Unpacking libcurl4:arm64 (7.74.0-1.3+deb11u16) ...
+Selecting previously unselected package curl.
+Preparing to unpack .../5-curl_7.74.0-1.3+deb11u16_arm64.deb ...
+Unpacking curl (7.74.0-1.3+deb11u16) ...
+Selecting previously unselected package libldap-common.
+Preparing to unpack .../6-libldap-common_2.4.57+dfsg-3+deb11u1_all.deb ...
+Unpacking libldap-common (2.4.57+dfsg-3+deb11u1) ...
+Setting up libnghttp2-14:arm64 (1.43.0-1+deb11u2) ...
+Setting up libldap-2.4-2:arm64 (2.4.57+dfsg-3+deb11u1) ...
+Setting up libldap-common (2.4.57+dfsg-3+deb11u1) ...
+Setting up librtmp1:arm64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+Setting up libssh2-1:arm64 (1.9.0-2+deb11u1) ...
+Setting up libcurl4:arm64 (7.74.0-1.3+deb11u16) ...
+Setting up curl (7.74.0-1.3+deb11u16) ...
+Processing triggers for libc-bin (2.31-13+deb11u13) ...
+downloading uv 0.11.5 aarch64-unknown-linux-gnu
+installing to /root/.local/bin
+  uv
+  uvx
+everything's installed!
+
+To add $HOME/.local/bin to your PATH, either restart your shell or run:
+
+    source $HOME/.local/bin/env (sh, bash, zsh)
+    source $HOME/.local/bin/env.fish (fish)
+Initialized project `app`
+Using CPython 3.14.4
+Creating virtual environment at: .venv
+Resolved 7 packages in 161ms
+Prepared 5 packages in 205ms
+Installed 5 packages in 5ms
+ + iniconfig==2.3.0
+ + packaging==26.0
+ + pluggy==1.6.0
+ + pygments==2.20.0
+ + pytest==9.0.3
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.14.4, pytest-9.0.3, pluggy-1.6.0
+rootdir: /tests
+collected 1 item
+
+../tests/test_outputs.py F                                                                                                                               [100%]
+
+=========================================================================== FAILURES ===========================================================================
+_________________________________________________________________________ test_sshpass _________________________________________________________________________
+
+    def test_sshpass():
+        # Reference the directory the agent operated in (the WORKDIR in the Docker env)
+
+        os.popen("apt install -y sshpass").read()
+
+        result = os.popen(
+            'sshpass -p "password123" ssh -o "StrictHostKeyChecking=no"'
+            + '-p 2222 root@localhost "uname -r"'
+        ).read()
+
+>       assert "6.6.4-1-lts" in result, "Output of ssh is wrong version"
+E       AssertionError: Output of ssh is wrong version
+E       assert '6.6.4-1-lts' in ''
+
+/tests/test_outputs.py:19: AssertionError
+--------------------------------------------------------------------- Captured stderr call ---------------------------------------------------------------------
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+debconf: delaying package configuration, since apt-utils is not installed
+command-line line 0: unsupported option "no-p".
+=================================================================== short test summary info ====================================================================
+FAILED ../tests/test_outputs.py::test_sshpass - AssertionError: Output of ssh is wrong version
+====================================================================== 1 failed in 0.58s =======================================================================
+root@149c52581791:/app#

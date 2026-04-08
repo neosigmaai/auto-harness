@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player is now in the cellar, which is dark and damp. There are two passageways: one leading north and a crawlway to the south. The presence of a glowing sword suggests potential danger nearby.",
+    "explanation": "Given the sword's glow indicating danger, proceed cautiously. Explore the narrow passageway to the north first to uncover what lies in that direction.",
+    "commands": [
+        {
+            "keystrokes": "north\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

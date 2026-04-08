@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player is now in the Round Room, which is a circular stone room with passages leading in all directions. However, several passages are blocked by cave-ins, limiting exploration options.",
+    "explanation": "Explore the open passages to discover where they lead, starting with one of the unblocked exits.",
+    "commands": [
+        {
+            "keystrokes": "north\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

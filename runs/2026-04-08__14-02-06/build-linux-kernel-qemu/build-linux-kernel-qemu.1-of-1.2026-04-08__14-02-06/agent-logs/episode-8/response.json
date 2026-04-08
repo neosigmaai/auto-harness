@@ -1,0 +1,27 @@
+{
+    "state_analysis": "The prompt indicates multiple directory listings, but none have returned output, suggesting the commands are being entered incorrectly or directory contents are too large to process quickly.",
+    "explanation": "Attempt to execute directory listing commands one by one to identify the location of the linux-6.9 directory or verify if the kernel source is present in a compressed format.",
+    "commands": [
+        {
+            "keystrokes": "ls -l /app\n",
+            "is_blocking": true,
+            "timeout_sec": 10
+        },
+        {
+            "keystrokes": "ls -l /usr/src\n",
+            "is_blocking": true,
+            "timeout_sec": 10
+        },
+        {
+            "keystrokes": "ls -l /var\n",
+            "is_blocking": true,
+            "timeout_sec": 10
+        },
+        {
+            "keystrokes": "ls -l /opt\n",
+            "is_blocking": true,
+            "timeout_sec": 10
+        }
+    ],
+    "is_task_complete": false
+}

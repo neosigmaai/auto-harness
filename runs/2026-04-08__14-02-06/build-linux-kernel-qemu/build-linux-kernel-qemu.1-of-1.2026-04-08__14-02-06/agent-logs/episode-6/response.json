@@ -1,0 +1,17 @@
+{
+    "state_analysis": "The command to list the contents of `/app` is stuck at a continuation prompt, indicating either a syntax error or the command is not completing due to large directory size or filesystem issues.",
+    "explanation": "Clear the command prompt and execute a simpler command to identify where the `linux-6.9` directory might be located or if the kernel source is present as a compressed file.",
+    "commands": [
+        {
+            "keystrokes": "\n",
+            "is_blocking": false,
+            "timeout_sec": 1
+        },
+        {
+            "keystrokes": "ls -l\n",
+            "is_blocking": true,
+            "timeout_sec": 10
+        }
+    ],
+    "is_task_complete": false
+}

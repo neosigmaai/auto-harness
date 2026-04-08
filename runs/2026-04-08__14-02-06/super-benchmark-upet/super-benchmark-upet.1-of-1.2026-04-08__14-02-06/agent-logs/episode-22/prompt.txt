@@ -1,0 +1,40 @@
+            gcc: numpy/core/src/multiarray/methods.c
+            gcc: build/src.linux-aarch64-3.10/numpy/core/src/umath/matmul.c
+            gcc: build/src.linux-aarch64-3.10/numpy/core/src/umath/clip.c
+            error: Command "gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DNPY_INTERNAL_BUILD=1 -DHAVE_NPY_CONFIG_H=1 -D_FILE_OFFSE
+T_BITS=64 -D_LARGEFILE_SOURCE=1 -D_LARGEFILE64_SOURCE=1 -DHAVE_CBLAS -Ibuild/src.linux-aarch64-3.10/numpy/core/src/umath -Ibuild/src.linux-aarch64-3.10/numpy/co
+re/src/npymath -Ibuild/src.linux-aarch64-3.10/numpy/core/src/common -Inumpy/core/include -Ibuild/src.linux-aarch64-3.10/numpy/core/include/numpy -Inumpy/core/sr
+c/common -Inumpy/core/src -Inumpy/core -Inumpy/core/src/npymath -Inumpy/core/src/multiarray -Inumpy/core/src/umath -Inumpy/core/src/npysort -I/usr/local/include
+/python3.10 -Ibuild/src.linux-aarch64-3.10/numpy/core/src/common -Ibuild/src.linux-aarch64-3.10/numpy/core/src/npymath -c build/src.linux-aarch64-3.10/numpy/cor
+e/src/multiarray/scalartypes.c -o build/temp.linux-aarch64-3.10/build/src.linux-aarch64-3.10/numpy/core/src/multiarray/scalartypes.o -MMD -MF build/temp.linux-a
+arch64-3.10/build/src.linux-aarch64-3.10/numpy/core/src/multiarray/scalartypes.o.d -std=c99" failed with exit status 1
+            [end of output]
+
+        note: This error originates from a subprocess, and is likely not a problem with pip.
+        ERROR: Failed building wheel for numpy
+      Failed to build numpy
+      error: failed-wheel-build-for-install
+
+      × Failed to build installable wheels for some pyproject.toml based projects
+      ╰─> numpy
+      [end of output]
+
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+ERROR: Failed to build 'pyarrow' when installing build dependencies for pyarrow
+root@ceebef5ecae8:/app/UPET# python run.py --model_name roberta-base --task_name rte --do_train --do_eval --max_seq_length 128 --per_device_train_batch_size 8 -
+-learning_rate 2e-5 --num_train_epochs 1 --output_dir ./results --seed 42 --overwrite_output_dir --examples_per_label 5; tmux wait -S done
+Traceback (most recent call last):
+  File "/app/UPET/run.py", line 7, in <module>
+    import datasets
+  File "/usr/local/lib/python3.10/site-packages/datasets/__init__.py", line 33, in <module>
+    from .arrow_dataset import Dataset, concatenate_datasets
+  File "/usr/local/lib/python3.10/site-packages/datasets/arrow_dataset.py", line 42, in <module>
+    from datasets.tasks.text_classification import TextClassification
+  File "/usr/local/lib/python3.10/site-packages/datasets/tasks/__init__.py", line 4, in <module>
+    from .automatic_speech_recognition import AutomaticSpeechRecognition
+  File "/usr/local/lib/python3.10/site-packages/datasets/tasks/automatic_speech_recognition.py", line 4, in <module>
+    from ..features import Features, Value
+  File "/usr/local/lib/python3.10/site-packages/datasets/features.py", line 331, in <module>
+    class _ArrayXDExtensionType(pa.PyExtensionType):
+AttributeError: module 'pyarrow' has no attribute 'PyExtensionType'. Did you mean: 'ExtensionType'?
+root@ceebef5ecae8:/app/UPET#

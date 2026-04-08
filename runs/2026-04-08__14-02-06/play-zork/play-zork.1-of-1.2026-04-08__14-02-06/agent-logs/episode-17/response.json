@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player has collected the brown sack and the bottle of water from the kitchen table. The staircase leading upward is still unexplored.",
+    "explanation": "Since the command 'go upstairs' was not understood, try using 'climb stairs' instead to explore the area above the kitchen.",
+    "commands": [
+        {
+            "keystrokes": "climb stairs\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

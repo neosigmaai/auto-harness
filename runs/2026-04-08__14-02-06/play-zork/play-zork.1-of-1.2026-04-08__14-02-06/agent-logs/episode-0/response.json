@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The terminal is currently at the root directory of the app container with no active processes or outputs.",
+    "explanation": "Initialize and launch the Zork game. The command will navigate to the frotz directory and execute the game file 'zork1.z5'.",
+    "commands": [
+        {
+            "keystrokes": "cd frotz && ./frotz zork1.z5\n",
+            "is_blocking": false,
+            "timeout_sec": 30
+        }
+    ],
+    "is_task_complete": false
+}

@@ -1,0 +1,40 @@
+[notice] To update, run: pip install --upgrade pip
+root@ceebef5ecae8:/app/UPET# python run.py --model_name roberta-base --task_name rte --do_train --do_eval --max_seq_length 128 --per_device_train_batch_size 8 -
+-learning_rate 2e-5 --num_train_epochs 1 --output_dir ./results --seed 42 --overwrite_output_dir --examples_per_label 5; tmux wait -S done
+Traceback (most recent call last):
+  File "/app/UPET/run.py", line 7, in <module>
+    import datasets
+  File "/usr/local/lib/python3.10/site-packages/datasets/__init__.py", line 23, in <module>
+    import pyarrow
+ModuleNotFoundError: No module named 'pyarrow'
+root@ceebef5ecae8:/app/UPET# pip install -U pip; tmux wait -S done
+Requirement already satisfied: pip in /usr/local/lib/python3.10/site-packages (23.0.1)
+Collecting pip
+  Downloading pip-26.0.1-py3-none-any.whl (1.8 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 13.1 MB/s eta 0:00:00
+Installing collected packages: pip
+  Attempting uninstall: pip
+    Found existing installation: pip 23.0.1
+    Uninstalling pip-23.0.1:
+      Successfully uninstalled pip-23.0.1
+Successfully installed pip-26.0.1
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a v
+irtual environment instead: https://pip.pypa.io/warnings/venv
+root@ceebef5ecae8:/app/UPET# pip install numpy==1.21.6 --only-binary=:all:; tmux wait -S done
+Requirement already satisfied: numpy==1.21.6 in /usr/local/lib/python3.10/site-packages (1.21.6)
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your syst
+em unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you a
+re doing and want to suppress this warning.
+root@ceebef5ecae8:/app/UPET# pip install pyarrow==4.0.1 --only-binary=:all:; tmux wait -S done
+ERROR: Could not find a version that satisfies the requirement pyarrow==4.0.1 (from versions: 6.0.0, 6.0.1, 7.0.0, 8.0.0, 9.0.0, 10.0.0, 10.0.1, 11.0.0, 12.0.0,
+ 12.0.1, 13.0.0, 14.0.0, 14.0.1, 14.0.2, 15.0.0, 15.0.1, 15.0.2, 16.0.0, 16.1.0, 17.0.0, 18.0.0, 18.1.0, 19.0.0, 19.0.1, 20.0.0, 21.0.0, 22.0.0, 23.0.0, 23.0.1)
+ERROR: No matching distribution found for pyarrow==4.0.1
+root@ceebef5ecae8:/app/UPET# python run.py --model_name roberta-base --task_name rte --do_train --do_eval --max_seq_length 128 --per_device_train_batch_size 8 -
+-learning_rate 2e-5 --num_train_epochs 1 --output_dir ./results --seed 42 --overwrite_output_dir --examples_per_label 5; tmux wait -S done
+Traceback (most recent call last):
+  File "/app/UPET/run.py", line 7, in <module>
+    import datasets
+  File "/usr/local/lib/python3.10/site-packages/datasets/__init__.py", line 23, in <module>
+    import pyarrow
+ModuleNotFoundError: No module named 'pyarrow'
+root@ceebef5ecae8:/app/UPET#

@@ -1,0 +1,20 @@
+{
+    "id": "0ab1b625-ed74-4bb5-88ff-4e539f586b42",
+    "trial_name": "super-benchmark-upet.1-of-1.2026-04-08__13-59-50",
+    "task_id": "super-benchmark-upet",
+    "instruction": "Train a roberta-base model on the RTE dataset using the UPET method with the `run.py` script. Report eval accuracy as a json structured as follows: {\"eval_accuracy\": 0.0} (replace 0.0 with the actual value).\n\nAdditional instructions:\n1. Run for only 1 epoch. 2. Set 5 examples per label, seed=42, and other hyperparameters taken from the example in the repository readme file.\n\nGit repository: https://github.com/wjn1996/UPET\nCommit hash: 4701c3c62441077cc44a6553bf6ae909d99b8351",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_right_output": "failed"
+    },
+    "recording_path": "2026-04-08__13-59-50/super-benchmark-upet/super-benchmark-upet.1-of-1.2026-04-08__13-59-50/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T20:59:50.227101+00:00",
+    "trial_ended_at": "2026-04-08T21:00:27.853670+00:00",
+    "agent_started_at": "2026-04-08T21:00:13.234253+00:00",
+    "agent_ended_at": "2026-04-08T21:00:13.530810+00:00",
+    "test_started_at": "2026-04-08T21:00:16.917270+00:00",
+    "test_ended_at": "2026-04-08T21:00:24.337608+00:00"
+}

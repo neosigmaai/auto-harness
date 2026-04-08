@@ -1,0 +1,40 @@
+    - SpartQA, s2s
+    - TempReasonL1, s2s
+    - TempReasonL2Context, s2s
+    - TempReasonL2Fact, s2s
+    - TempReasonL2Pure, s2s
+    - TempReasonL3Context, s2s
+    - TempReasonL3Fact, s2s
+    - TempReasonL3Pure, s2s
+    - WinoGrande, s2s
+
+
+root@b858e75d9142:/app# python -m mteb.run available_tasks; tmux wait -S done
+/usr/local/bin/python: No module named mteb.run
+root@b858e75d9142:/app# python -m mteb.run available_benchmarks; tmux wait -S done
+/usr/local/bin/python: No module named mteb.run
+root@b858e75d9142:/app# python -m mteb --help; tmux wait -S done
+usage: __main__.py [-h] {run,available_tasks,available_benchmarks,create_meta} ...
+
+The MTEB Command line interface.
+
+options:
+  -h, --help            show this help message and exit
+
+subcommands:
+  valid subcommands
+
+  {run,available_tasks,available_benchmarks,create_meta}
+                        additional help
+    run                 Run a model on a set of tasks
+    available_tasks     List the available tasks within MTEB
+    available_benchmarks
+                        List the available benchmarks within MTEB
+    create_meta         Create model metadata from a folder of results
+root@b858e75d9142:/app# python -m mteb run --task NanoMSMARCORetrieval --model all-MiniLM-L6-v2 --output results; tmux wait -S done
+usage: __main__.py run [-h] [-m MODEL] [--task_types TASK_TYPES [TASK_TYPES ...]] [--categories CATEGORIES [CATEGORIES ...]] [-t TASKS [TASKS ...]]
+                       [-l [LANGUAGES ...]] [-b BENCHMARKS [BENCHMARKS ...]] [--device DEVICE] [--output_folder OUTPUT_FOLDER] [-v VERBOSITY]
+                       [--co2_tracker CO2_TRACKER] [--eval_splits EVAL_SPLITS [EVAL_SPLITS ...]] [--model_revision MODEL_REVISION] [--batch_size BATCH_SIZE]
+                       [--overwrite] [--save_predictions]
+__main__.py run: error: ambiguous option: --task could match --task_types, --tasks
+root@b858e75d9142:/app#

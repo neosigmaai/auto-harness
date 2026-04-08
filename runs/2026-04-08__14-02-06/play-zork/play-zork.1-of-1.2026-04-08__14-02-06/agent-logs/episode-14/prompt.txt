@@ -1,0 +1,40 @@
+ Behind House                                                                                                                     Score: 5        Moves: 12
+
+>climb tree
+Up a Tree
+You are about 10 feet above the ground nestled among some large branches. The nearest branch above you is above your reach.
+Beside you on the branch is a small bird's nest.
+In the bird's nest is a large egg encrusted with precious jewels, apparently scavenged by a childless songbird. The egg is covered with fine gold inlay, and
+ornamented in lapis lazuli and mother-of-pearl. Unlike most eggs, this one is hinged and closed with a delicate looking clasp. The egg appears extremely
+fragile.
+You hear in the distance the chirping of a song bird.
+
+>take egg
+Taken.
+
+>down
+Forest Path
+You hear in the distance the chirping of a song bird.
+
+>north
+Clearing
+You are in a clearing, with a forest surrounding you on all sides. A path leads south.
+On the ground is a pile of leaves.
+
+>examine leaves
+There's nothing special about the pile of leaves.
+
+>search clearing
+I don't know the word "clearing".
+
+>south
+Forest Path
+
+>south
+North of House
+
+>east
+Behind House
+You are behind the white house. A path leads into the forest to the east. In one corner of the house there is a small window which is slightly ajar.
+
+>

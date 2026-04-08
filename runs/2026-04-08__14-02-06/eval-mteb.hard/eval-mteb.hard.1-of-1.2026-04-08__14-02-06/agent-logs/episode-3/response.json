@@ -1,0 +1,17 @@
+{
+    "state_analysis": "The attempt to list available models using the Hugging Face CLI failed because the CLI is not installed or not found in the current PATH. This prevents us from determining available models directly from the command line.",
+    "explanation": "We will install the Hugging Face CLI tool and then attempt to list available sentence-transformer models. Once we identify a suitable model, we will retry the evaluation command with that model.",
+    "commands": [
+        {
+            "keystrokes": "pip install huggingface-hub\n",
+            "is_blocking": true,
+            "timeout_sec": 60
+        },
+        {
+            "keystrokes": "huggingface-cli list models --filter sentence-transformers\n",
+            "is_blocking": true,
+            "timeout_sec": 60
+        }
+    ],
+    "is_task_complete": false
+}

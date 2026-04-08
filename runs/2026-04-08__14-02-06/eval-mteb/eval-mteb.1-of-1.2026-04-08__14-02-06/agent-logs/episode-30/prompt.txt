@@ -1,0 +1,40 @@
+      Successfully uninstalled xxhash-3.6.0
+  Attempting uninstall: urllib3
+    Found existing installation: urllib3 2.6.3
+    Uninstalling urllib3-2.6.3:
+      Successfully uninstalled urllib3-2.6.3
+  Attempting uninstall: tzdata
+    Found existing installation: tzdata 2026.1
+    Uninstalling tzdata-2026.1:
+   ━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  6/89 [tzdata]# Continue waiting for the installation to be fully completed.
+      Successfully uninstalled tzdata-2026.1
+  Attempting uninstall: typing-extensions
+    Found existing installation: typing_extensions 4.15.0
+    Uninstalling typing_extensions-4.15.0:
+   ━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  7/89 [typing-extensions]# Continue to wait until the installation is fully completed.
+      Successfully uninstalled typing_extensions-4.15.0
+  Attempting uninstall: triton
+    Found existing installation: triton 3.6.0
+    Uninstalling triton-3.6.0:
+   ━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  8/89 [triton]# Continue to wait until the installation is fully completed.
+   ━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  8/89 [triton]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled triton-3.6.0
+   ━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  8/89 [triton]# Continue to wait for the installation to fully complete.
+   ━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  8/89 [triton]# Continue to wait until the installation is fully completed.
+  Attempting uninstall: tqdm
+    Found existing installation: tqdm 4.67.3
+    Uninstalling tqdm-4.67.3:
+      Successfully uninstalled tqdm-4.67.3
+  Attempting uninstall: threadpoolctl
+    Found existing installation: threadpoolctl 3.6.0
+    Uninstalling threadpoolctl-3.6.0:
+      Successfully uninstalled threadpoolctl-3.6.0
+  Attempting uninstall: sympy
+    Found existing installation: sympy 1.14.0
+    Uninstalling sympy-1.14.0:
+   ━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/89 [sympy]# Continue waiting for the installation to fully complete.
+   ━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/89 [sympy]# Continue to wait for the installation to fully complete without interruption.
+   ━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/89 [sympy]# Continue to wait for the installation to fully complete without interruption.
+      Successfully uninstalled sympy-1.14.0
+   ━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/89 [sympy]# Continue to wait for the installation to fully complete without interruption.
+   ━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/89 [sympy]

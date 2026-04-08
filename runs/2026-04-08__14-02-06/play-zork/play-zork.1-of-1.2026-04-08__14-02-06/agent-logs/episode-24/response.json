@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player is in the living room, having examined the wooden door with gothic lettering which simply translates to \"This space intentionally left blank.\" The door is nailed shut, suggesting it is not meant to be opened as part of the game.",
+    "explanation": "Since the door doesn't appear to lead anywhere useful, the next step is to explore underneath the oriental rug in the living room, which might hide a trapdoor or passage.",
+    "commands": [
+        {
+            "keystrokes": "move rug\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

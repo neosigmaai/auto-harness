@@ -1,0 +1,119 @@
+root@50f81b5c8083:/app/personal-site# bash /tests/run-tests.sh; tmux wait -S done
+Hit:1 http://deb.debian.org/debian bookworm InRelease
+Hit:2 http://deb.debian.org/debian bookworm-updates InRelease
+Hit:3 http://deb.debian.org/debian-security bookworm-security InRelease
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  libcurl4
+The following NEW packages will be installed:
+  curl libcurl4
+0 upgraded, 2 newly installed, 0 to remove and 41 not upgraded.
+Need to get 676 kB of archives.
+After this operation, 1431 kB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian bookworm/main arm64 libcurl4 arm64 7.88.1-10+deb12u14 [367 kB]
+Get:2 http://deb.debian.org/debian bookworm/main arm64 curl arm64 7.88.1-10+deb12u14 [309 kB]
+Fetched 676 kB in 0s (4228 kB/s)
+debconf: delaying package configuration, since apt-utils is not installed
+Selecting previously unselected package libcurl4:arm64.
+(Reading database ... 11229 files and directories currently installed.)
+Preparing to unpack .../libcurl4_7.88.1-10+deb12u14_arm64.deb ...
+Unpacking libcurl4:arm64 (7.88.1-10+deb12u14) ...
+Selecting previously unselected package curl.
+Preparing to unpack .../curl_7.88.1-10+deb12u14_arm64.deb ...
+Unpacking curl (7.88.1-10+deb12u14) ...
+Setting up libcurl4:arm64 (7.88.1-10+deb12u14) ...
+Setting up curl (7.88.1-10+deb12u14) ...
+Processing triggers for libc-bin (2.36-9+deb12u9) ...
+downloading uv 0.11.5 aarch64-unknown-linux-gnu
+installing to /root/.local/bin
+  uv
+  uvx
+everything's installed!
+
+To add $HOME/.local/bin to your PATH, either restart your shell or run:
+
+    source $HOME/.local/bin/env (sh, bash, zsh)
+    source $HOME/.local/bin/env.fish (fish)
+Initialized project `personal-site`
+Using CPython 3.13.1 interpreter at: /usr/local/bin/python3.13
+Creating virtual environment at: .venv
+Resolved 7 packages in 171ms
+Prepared 5 packages in 190ms
+Installed 5 packages in 8ms
+ + iniconfig==2.3.0
+ + packaging==26.0
+ + pluggy==1.6.0
+ + pygments==2.20.0
+ + pytest==9.0.3
+Resolved 14 packages in 214ms
+Prepared 7 packages in 831ms
+Installed 7 packages in 80ms
+ + boto3==1.42.85
+ + botocore==1.42.85
+ + jmespath==1.1.0
+ + python-dateutil==2.9.0.post0
+ + s3transfer==0.16.0
+ + six==1.17.0
+ + urllib3==2.6.3
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.13.1, pytest-9.0.3, pluggy-1.6.0
+rootdir: /tests
+collected 2 items
+
+../../tests/test_outputs.py FF                                                                                                                           [100%]
+
+=========================================================================== FAILURES ===========================================================================
+_______________________________________________________________________ test_about_file ________________________________________________________________________
+
+    def test_about_file():
+        ABOUT_FILE_PATH_OLD = "/app/resources/patch_files/about.md"
+        ABOUT_FILE_PATH_NEW = "/app/personal-site/_includes/about.md"
+>       compare_file_hashes(ABOUT_FILE_PATH_OLD, ABOUT_FILE_PATH_NEW)
+
+/tests/test_outputs.py:27:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path_a = '/app/resources/patch_files/about.md', path_b = '/app/personal-site/_includes/about.md'
+
+    def compare_file_hashes(path_a, path_b):
+>       assert hash_file(path_a) == hash_file(path_b), (
+            f"File {path_a} is not in the correct state"
+        )
+E       AssertionError: File /app/resources/patch_files/about.md is not in the correct state
+E       assert '83a57206238e...e5f3d78424e0d' == 'f4ceac3e627e...e4dcf42e413bb'
+E
+E         - f4ceac3e627e672d2d7e4dcf42e413bb
+E         + 83a57206238e7f9b073e5f3d78424e0d
+
+/tests/test_outputs.py:19: AssertionError
+_______________________________________________________________________ test_layout_file _______________________________________________________________________
+
+    def test_layout_file():
+        LAYOUT_FILE_PATH_OLD = "/app/resources/patch_files/default.html"
+        LAYOUT_FILE_PATH_NEW = "/app/personal-site/_layouts/default.html"
+>       compare_file_hashes(LAYOUT_FILE_PATH_OLD, LAYOUT_FILE_PATH_NEW)
+
+/tests/test_outputs.py:33:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path_a = '/app/resources/patch_files/default.html', path_b = '/app/personal-site/_layouts/default.html'
+
+    def compare_file_hashes(path_a, path_b):
+>       assert hash_file(path_a) == hash_file(path_b), (
+            f"File {path_a} is not in the correct state"
+        )
+E       AssertionError: File /app/resources/patch_files/default.html is not in the correct state
+E       assert '0f879389f666...6e393a71c5f2f' == '13158a07cd18...2ee4de1ac9d44'
+E
+E         - 13158a07cd183a605272ee4de1ac9d44
+E         + 0f879389f66640f45316e393a71c5f2f
+
+/tests/test_outputs.py:19: AssertionError
+=================================================================== short test summary info ====================================================================
+FAILED ../../tests/test_outputs.py::test_about_file - AssertionError: File /app/resources/patch_files/about.md is not in the correct state
+FAILED ../../tests/test_outputs.py::test_layout_file - AssertionError: File /app/resources/patch_files/default.html is not in the correct state
+====================================================================== 2 failed in 0.03s =======================================================================
+root@50f81b5c8083:/app/personal-site#

@@ -1,0 +1,17 @@
+{
+    "state_analysis": "The lantern is now on, illuminating the attic. The player can now see a large coil of rope and a nasty-looking knife on a table in the attic. The only exit is the stairway leading down.",
+    "explanation": "Collect the rope and the knife as they may prove useful later in the adventure. After gathering these items, the player can decide on the next course of action based on the items in possession.",
+    "commands": [
+        {
+            "keystrokes": "take rope\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        },
+        {
+            "keystrokes": "take knife\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

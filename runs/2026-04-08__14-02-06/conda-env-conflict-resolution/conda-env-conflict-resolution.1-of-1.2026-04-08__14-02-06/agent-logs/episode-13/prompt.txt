@@ -1,0 +1,40 @@
+│  │     ├─ python 3.10.19, which can be installed (as previously explained);
+│  │     ├─ python 3.10.20, which can be installed (as previously explained);
+│  │     ├─ python [3.10.0|3.10.1|...|3.10.8], which can be installed (as previously explained);
+│  │     ├─ python [3.10.0|3.10.10|...|3.10.9], which can be installed;
+│  │     └─ python [3.10.8|3.10.9], which can be installed (as previously explained);
+│  ├─ scikit-learn 1.0.2 would require
+│  │  └─ python_abi ==3.7 *_pypy37_pp73, which requires
+│  │     └─ python =3.7 *_73_pypy, which conflicts with any installable versions previously reported;
+│  ├─ scikit-learn 1.0.2 would require
+│  │  └─ python >=3.7,<3.8.0a0 *, which conflicts with any installable versions previously reported;
+│  ├─ scikit-learn 1.0.2 would require
+│  │  └─ python >=3.8,<3.9.0a0 *, which conflicts with any installable versions previously reported;
+│  └─ scikit-learn 1.0.2 would require
+│     └─ python >=3.9,<3.10.0a0 *, which conflicts with any installable versions previously reported;
+└─ tensorflow =2.8.0 * is not installable because there are no viable options
+   ├─ tensorflow 2.8.0 would require
+   │  ├─ tensorflow-base ==2.8.0 cpu_py37h4373017_0, which requires
+   │  │  └─ libprotobuf >=3.19.4,<3.20.0a0 *, which conflicts with any installable versions previously reported;
+   │  └─ tensorflow-estimator ==2.8.0 cpu_py37h813ee39_0, which requires
+   │     └─ python >=3.7,<3.8.0a0 *, which conflicts with any installable versions previously reported;
+   ├─ tensorflow 2.8.0 would require
+   │  ├─ tensorflow-base ==2.8.0 cpu_py310h75e90da_0, which cannot be installed (as previously explained);
+   │  └─ tensorflow-estimator ==2.8.0 cpu_py310had6d012_0, which requires
+   │     └─ openssl >=1.1.1o,<1.1.2a *, which conflicts with any installable versions previously reported;
+   ├─ tensorflow 2.8.0 would require
+   │  ├─ tensorflow-base ==2.8.0 cpu_py38hdf8f09a_0, which cannot be installed (as previously explained);
+   │  └─ tensorflow-estimator ==2.8.0 cpu_py38h4e23bc6_0, which requires
+   │     └─ python_abi =3.8 *_cp38 but there are no viable options
+   │        ├─ python_abi 3.8, which cannot be installed (as previously explained);
+   │        └─ python_abi 3.8 conflicts with any installable versions previously reported;
+   ├─ tensorflow 2.8.0 would require
+   │  ├─ tensorflow-base ==2.8.0 cpu_py39h7e02d9e_0, which cannot be installed (as previously explained);
+   │  └─ tensorflow-estimator ==2.8.0 cpu_py39heaff504_0, which requires
+   │     └─ python_abi =3.9 *_cp39 but there are no viable options
+   │        ├─ python_abi 3.9, which cannot be installed (as previously explained);
+   │        └─ python_abi 3.9 conflicts with any installable versions previously reported;
+   └─ tensorflow 2.8.0 would require
+      └─ __cuda =* *, which is missing on the system.
+
+root@c9d4f39bd0b4:/app/project#

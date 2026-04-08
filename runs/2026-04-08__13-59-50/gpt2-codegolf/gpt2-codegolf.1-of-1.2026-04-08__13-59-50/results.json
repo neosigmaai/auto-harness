@@ -1,0 +1,20 @@
+{
+    "id": "846aec1d-1fbe-42be-a78a-580f70df6951",
+    "trial_name": "gpt2-codegolf.1-of-1.2026-04-08__13-59-50",
+    "task_id": "gpt2-codegolf",
+    "instruction": "I have downloaded the gpt-2 weights stored as a TF .ckpt. Write me a dependency-free C file that samples from the model with arg-max sampling. Call your program gpt2.c, I will compile with gcc -O3 -lm. It should read the .ckpt and the .bpe file. Your c program must be <5000 bytes. I will run it ./a.out gpt2-124M.ckpt vocab.bpe \"[input string here]\" and you should continue the output under whatever GPT-2 would print for the next 20 tokens.",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_gpt2_implementation": "failed"
+    },
+    "recording_path": "2026-04-08__13-59-50/gpt2-codegolf/gpt2-codegolf.1-of-1.2026-04-08__13-59-50/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T21:40:23.010937+00:00",
+    "trial_ended_at": "2026-04-08T21:42:16.847660+00:00",
+    "agent_started_at": "2026-04-08T21:42:05.149405+00:00",
+    "agent_ended_at": "2026-04-08T21:42:05.303242+00:00",
+    "test_started_at": "2026-04-08T21:42:08.761106+00:00",
+    "test_ended_at": "2026-04-08T21:42:14.578243+00:00"
+}

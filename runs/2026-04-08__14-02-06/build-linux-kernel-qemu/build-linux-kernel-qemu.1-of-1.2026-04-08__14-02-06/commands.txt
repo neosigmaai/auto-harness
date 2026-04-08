@@ -1,0 +1,40 @@
+['asciinema rec --stdin /logs/agent.cast', 'Enter']
+['clear', 'Enter']
+'cd /path/to/linux-6.9\n'
+"sed -i '/void __init start_kernel(void)/a printk(KERN_INFO \\"
+'make -j$(nproc)\n'
+"find / -type d -name 'linux-6.9'\n"
+'\n'
+"find / -type d -name 'linux-6.9' 2>/dev/null\n"
+'\n'
+"find /usr/src /home /opt -type d -name 'linux-6.9' 2>/dev/null\n"
+'\n'
+"find /app -type d -name 'linux-6.9' 2>/dev/null\n"
+'ls -l /app\n'
+'\n'
+'ls -l\n'
+'\n'
+'ls -l /app\n'
+'ls -l /usr/src\n'
+'ls -l /var\n'
+'ls -l /opt\n'
+'ls -l /app\n'
+'\n'
+'ls\n'
+'\n'
+'ls -1 | head -n 20\n'
+'cd /\n'
+'C-c\n'
+'reset\n'
+'C-d\n'
+'exit\n'
+'pwd\n'
+'C-c\n'
+'echo "check"\n'
+'C-d\n'
+'exit\n'
+['asciinema rec --stdin /logs/tests.cast', 'Enter']
+['clear', 'Enter']
+['bash ', '/tests/run-tests.sh', 'Enter']
+['C-d']
+['C-d']

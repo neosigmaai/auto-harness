@@ -1,0 +1,40 @@
+ Living Room                                                                                                                      Score: 15       Moves: 30
+A battery-powered brass lantern is on the trophy case.
+
+>take lantern
+Taken.
+
+>take sword
+Taken.
+
+>east
+Kitchen
+
+>turn on lantern
+The brass lantern is now on.
+
+>climb stairs
+Attic
+This is the attic. The only exit is a stairway leading down.
+A large coil of rope is lying in the corner.
+On a table is a nasty-looking knife.
+
+>take rope
+Taken.
+
+>take knife
+Taken.
+
+>go down
+Kitchen
+
+>west
+Living Room
+
+>examine door
+The engravings translate to "This space intentionally left blank."
+
+>move rug
+With a great effort, the rug is moved to one side of the room, revealing the dusty cover of a closed trap door.
+
+>

@@ -1,0 +1,40 @@
+  File "/usr/local/lib/python3.10/site-packages/pandas/__init__.py", line 31, in <module>
+    raise ImportError(
+ImportError: C extension: None not built. If you want to import pandas from the source directory, you may need to run 'python setup.py build_ext' to build the C
+ extensions first.
+root@ceebef5ecae8:/app/UPET# pip install numpy==1.22.4; tmux wait -S done
+Collecting numpy==1.22.4
+  Downloading numpy-1.22.4-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (13.3 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 13.3/13.3 MB 8.9 MB/s eta 0:00:00
+Installing collected packages: numpy
+  Attempting uninstall: numpy
+    Found existing installation: numpy 1.21.6
+    Uninstalling numpy-1.21.6:
+      Successfully uninstalled numpy-1.21.6
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following depende
+ncy conflicts.
+datasets 1.11.0 requires huggingface-hub<0.1.0, but you have huggingface-hub 0.19.3 which is incompatible.
+contourpy 1.3.2 requires numpy>=1.23, but you have numpy 1.22.4 which is incompatible.
+Successfully installed numpy-1.22.4
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a v
+irtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+root@ceebef5ecae8:/app/UPET# python run.py --model_name roberta-base --task_name rte --do_train --do_eval --max_seq_length 128 --per_device_train_batch_size 8 -
+-learning_rate 2e-5 --num_train_epochs 1 --output_dir ./results --seed 42 --overwrite_output_dir --examples_per_label 5; tmux wait -S done
+Traceback (most recent call last):
+  File "/app/UPET/run.py", line 7, in <module>
+    import datasets
+  File "/usr/local/lib/python3.10/site-packages/datasets/__init__.py", line 33, in <module>
+    from .arrow_dataset import Dataset, concatenate_datasets
+  File "/usr/local/lib/python3.10/site-packages/datasets/arrow_dataset.py", line 42, in <module>
+    from datasets.tasks.text_classification import TextClassification
+  File "/usr/local/lib/python3.10/site-packages/datasets/tasks/__init__.py", line 4, in <module>
+    from .automatic_speech_recognition import AutomaticSpeechRecognition
+  File "/usr/local/lib/python3.10/site-packages/datasets/tasks/automatic_speech_recognition.py", line 4, in <module>
+    from ..features import Features, Value
+  File "/usr/local/lib/python3.10/site-packages/datasets/features.py", line 331, in <module>
+    class _ArrayXDExtensionType(pa.PyExtensionType):
+AttributeError: module 'pyarrow' has no attribute 'PyExtensionType'. Did you mean: 'ExtensionType'?
+root@ceebef5ecae8:/app/UPET#

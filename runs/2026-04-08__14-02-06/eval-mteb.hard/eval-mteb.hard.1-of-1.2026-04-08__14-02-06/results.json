@@ -1,0 +1,20 @@
+{
+    "id": "0bc49cdd-bbec-4268-80a9-7f6270cc78d8",
+    "trial_name": "eval-mteb.hard.1-of-1.2026-04-08__14-02-06",
+    "task_id": "eval-mteb.hard",
+    "instruction": "Evaluate an embedding model on STS12 with mteb such that it achieves a cosine_spearman score of > 0.7. The result file should follow the default MTEB format i.e. `results/{{hf model org}__{hf model name}}/{model commit id}/{task name}.json`.",
+    "is_resolved": false,
+    "failure_mode": "unset",
+    "parser_results": {
+        "test_mteb_performance": "failed"
+    },
+    "recording_path": "2026-04-08__14-02-06/eval-mteb.hard/eval-mteb.hard.1-of-1.2026-04-08__14-02-06/sessions/agent.cast",
+    "total_input_tokens": 303184,
+    "total_output_tokens": 3562,
+    "trial_started_at": "2026-04-08T21:52:42.661278+00:00",
+    "trial_ended_at": "2026-04-08T22:04:58.761941+00:00",
+    "agent_started_at": "2026-04-08T21:59:57.978329+00:00",
+    "agent_ended_at": "2026-04-08T22:04:41.290817+00:00",
+    "test_started_at": "2026-04-08T22:04:44.919411+00:00",
+    "test_ended_at": "2026-04-08T22:04:54.597998+00:00"
+}

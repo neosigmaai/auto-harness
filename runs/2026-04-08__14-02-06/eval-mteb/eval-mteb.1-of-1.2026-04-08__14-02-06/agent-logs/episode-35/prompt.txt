@@ -1,0 +1,40 @@
+    Found existing installation: regex 2026.4.4
+    Uninstalling regex-2026.4.4:
+      Successfully uninstalled regex-2026.4.4
+  Attempting uninstall: pyyaml
+    Found existing installation: PyYAML 6.0.3
+    Uninstalling PyYAML-6.0.3:
+      Successfully uninstalled PyYAML-6.0.3
+  Attempting uninstall: pygments
+    Found existing installation: Pygments 2.20.0
+    Uninstalling Pygments-2.20.0:
+      Successfully uninstalled Pygments-2.20.0
+   ━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 18/89 [pygments]# Continue to wait for the installation to fully complete.
+  Attempting uninstall: pyarrow
+    Found existing installation: pyarrow 23.0.1
+    Uninstalling pyarrow-23.0.1:
+   ━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 19/89 [pyarrow]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled pyarrow-23.0.1
+   ━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 19/89 [pyarrow]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: propcache
+    Found existing installation: propcache 0.4.1
+    Uninstalling propcache-0.4.1:
+      Successfully uninstalled propcache-0.4.1
+  Attempting uninstall: polars-runtime-32
+    Found existing installation: polars-runtime-32 1.39.3
+    Uninstalling polars-runtime-32-1.39.3:
+      Successfully uninstalled polars-runtime-32-1.39.3
+   ━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 21/89 [polars-runtime-32]# Continue to wait for the installation to fully complete.
+  Attempting uninstall: packaging
+    Found existing installation: packaging 26.0
+    Uninstalling packaging-26.0:
+      Successfully uninstalled packaging-26.0
+  Attempting uninstall: nvidia-nvtx
+    Found existing installation: nvidia-nvtx 13.0.85
+    Uninstalling nvidia-nvtx-13.0.85:
+      Successfully uninstalled nvidia-nvtx-13.0.85
+  Attempting uninstall: nvidia-nvshmem-cu13
+    Found existing installation: nvidia-nvshmem-cu13 3.4.5
+    Uninstalling nvidia-nvshmem-cu13-3.4.5:
+   ━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 24/89 [nvidia-nvshmem-cu13]# Continue to wait for the installation to fully complete.
+   ━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 24/89 [nvidia-nvshmem-cu13]

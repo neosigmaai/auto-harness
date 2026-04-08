@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The installation process is in the final phase, where the packages are being installed. Some packages are being uninstalled and replaced with newer versions as part of the update.",
+    "explanation": "Allow the installation process to complete as it is finalizing the package updates. Once done, we can proceed to run the MTEB command.",
+    "commands": [
+        {
+            "keystrokes": "# Continue waiting for the installation to be fully completed.\n",
+            "is_blocking": false,
+            "timeout_sec": 0
+        }
+    ],
+    "is_task_complete": false
+}

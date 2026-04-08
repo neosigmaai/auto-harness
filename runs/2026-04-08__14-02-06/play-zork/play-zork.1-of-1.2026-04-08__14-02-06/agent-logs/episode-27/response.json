@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The game does not recognize the command 'descend stairs'. The trap door has been opened revealing a staircase leading down into darkness.",
+    "explanation": "Use a different command to go down the stairs into the basement.",
+    "commands": [
+        {
+            "keystrokes": "down\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

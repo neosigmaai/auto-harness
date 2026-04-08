@@ -1,0 +1,192 @@
+root@8437ad057904:/app# bash /tests/run-tests.sh; tmux wait -S done
+Looking in indexes: https://download.pytorch.org/whl/cpu
+Requirement already satisfied: torch==2.7.0 in /usr/local/lib/python3.13/site-packages (2.7.0+cpu)
+Requirement already satisfied: filelock in /usr/local/lib/python3.13/site-packages (from torch==2.7.0) (3.25.2)
+Requirement already satisfied: typing-extensions>=4.10.0 in /usr/local/lib/python3.13/site-packages (from torch==2.7.0) (4.15.0)
+Requirement already satisfied: setuptools in /usr/local/lib/python3.13/site-packages (from torch==2.7.0) (70.2.0)
+Requirement already satisfied: sympy>=1.13.3 in /usr/local/lib/python3.13/site-packages (from torch==2.7.0) (1.14.0)
+Requirement already satisfied: networkx in /usr/local/lib/python3.13/site-packages (from torch==2.7.0) (3.6.1)
+Requirement already satisfied: jinja2 in /usr/local/lib/python3.13/site-packages (from torch==2.7.0) (3.1.6)
+Requirement already satisfied: fsspec in /usr/local/lib/python3.13/site-packages (from torch==2.7.0) (2026.2.0)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in /usr/local/lib/python3.13/site-packages (from sympy>=1.13.3->torch==2.7.0) (1.3.0)
+Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.13/site-packages (from jinja2->torch==2.7.0) (3.0.3)
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your syst
+em unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you ar
+e doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 24.3.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+Requirement already satisfied: numpy in /usr/local/lib/python3.13/site-packages (2.4.4)
+Requirement already satisfied: gymnasium in /usr/local/lib/python3.13/site-packages (1.2.3)
+Collecting pytest
+  Downloading pytest-9.0.3-py3-none-any.whl.metadata (7.6 kB)
+Requirement already satisfied: cloudpickle>=1.2.0 in /usr/local/lib/python3.13/site-packages (from gymnasium) (3.1.2)
+Requirement already satisfied: typing-extensions>=4.3.0 in /usr/local/lib/python3.13/site-packages (from gymnasium) (4.15.0)
+Requirement already satisfied: farama-notifications>=0.0.1 in /usr/local/lib/python3.13/site-packages (from gymnasium) (0.0.4)
+Collecting iniconfig>=1.0.1 (from pytest)
+  Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting packaging>=22 (from pytest)
+  Downloading packaging-26.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting pluggy<2,>=1.5 (from pytest)
+  Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+Collecting pygments>=2.7.2 (from pytest)
+  Downloading pygments-2.20.0-py3-none-any.whl.metadata (2.5 kB)
+Downloading pytest-9.0.3-py3-none-any.whl (375 kB)
+Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+Downloading packaging-26.0-py3-none-any.whl (74 kB)
+Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 863.4 kB/s eta 0:00:00
+Installing collected packages: pygments, pluggy, packaging, iniconfig, pytest
+Successfully installed iniconfig-2.3.0 packaging-26.0 pluggy-1.6.0 pygments-2.20.0 pytest-9.0.3
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your syst
+em unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you ar
+e doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 24.3.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.13.1, pytest-9.0.3, pluggy-1.6.0
+rootdir: /tests
+collected 5 items
+
+../tests/test_outputs.py FFFFF                                                                                                                           [100%]
+
+=========================================================================== FAILURES ===========================================================================
+________________________________________________________________ test_check_if_model_dir_exists ________________________________________________________________
+
+    def test_check_if_model_dir_exists():
+        model_dir = Path("/app/trained_model")
+
+>       assert model_dir.exists(), f"Model directory {model_dir} does not exist"
+E       AssertionError: Model directory /app/trained_model does not exist
+E       assert False
+E        +  where False = exists()
+E        +    where exists = PosixPath('/app/trained_model').exists
+
+/tests/test_outputs.py:15: AssertionError
+__________________________________________________________________ test_check_model_dir_size ___________________________________________________________________
+
+    def test_check_model_dir_size():
+        # check if the model dir is smaller than 100KB
+        model_dir = Path("/app/trained_model")
+
+>       total_size = subprocess.check_output(
+            ["du", "-sb", str(model_dir)], text=True
+        ).split()[0]
+
+/tests/test_outputs.py:22:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+/usr/local/lib/python3.13/subprocess.py:472: in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+input = None, capture_output = False, timeout = None, check = True, popenargs = (['du', '-sb', '/app/trained_model'],), kwargs = {'stdout': -1, 'text': True}
+process = <Popen: returncode: 1 args: ['du', '-sb', '/app/trained_model']>, stdout = '', stderr = None, retcode = 1
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+
+        If timeout is given, and the process takes too long, a TimeoutExpired
+        exception will be raised.
+
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['du', '-sb', '/app/trained_model']' returned non-zero exit status 1.
+
+/usr/local/lib/python3.13/subprocess.py:577: CalledProcessError
+--------------------------------------------------------------------- Captured stderr call ---------------------------------------------------------------------
+du: cannot access '/app/trained_model': No such file or directory
+___________________________________________________________________ test_check_agent_import ____________________________________________________________________
+
+    def test_check_agent_import():
+        # The agent should be imported from the /app/agent.py file
+        sys.path.append("/app")
+>       from agent import Agent
+E       ModuleNotFoundError: No module named 'agent'
+
+/tests/test_outputs.py:36: ModuleNotFoundError
+_______________________________________________________________________ test_agent_save ________________________________________________________________________
+
+    def test_agent_save():
+        # The agent should be able to save the model
+>       from agent import Agent
+E       ModuleNotFoundError: No module named 'agent'
+
+/tests/test_outputs.py:45: ModuleNotFoundError
+_________________________________________________________________ test_check_model_performance _________________________________________________________________
+
+    def test_check_model_performance():
+        # The mean reward should be greater than 400
+>       from agent import Agent
+E       ModuleNotFoundError: No module named 'agent'
+
+/tests/test_outputs.py:59: ModuleNotFoundError
+=================================================================== short test summary info ====================================================================
+FAILED ../tests/test_outputs.py::test_check_if_model_dir_exists - AssertionError: Model directory /app/trained_model does not exist
+FAILED ../tests/test_outputs.py::test_check_model_dir_size - subprocess.CalledProcessError: Command '['du', '-sb', '/app/trained_model']' returned non-zero exit
+ status 1.
+FAILED ../tests/test_outputs.py::test_check_agent_import - ModuleNotFoundError: No module named 'agent'
+FAILED ../tests/test_outputs.py::test_agent_save - ModuleNotFoundError: No module named 'agent'
+FAILED ../tests/test_outputs.py::test_check_model_performance - ModuleNotFoundError: No module named 'agent'
+====================================================================== 5 failed in 0.23s =======================================================================
+root@8437ad057904:/app#

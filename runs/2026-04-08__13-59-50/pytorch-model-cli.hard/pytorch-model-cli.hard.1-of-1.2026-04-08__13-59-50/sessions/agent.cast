@@ -1,0 +1,8 @@
+{"version": 2, "width": 160, "height": 40, "timestamp": 1775683481, "env": {"SHELL": "/bin/bash", "TERM": "tmux-256color"}}
+[0.002353, "o", "\u001b[?2004hroot@0a329542354f:/app# "]
+[3.002048, "i", "clear\r"]
+[3.002379, "o", "clear\r\n\u001b[?2004l\r"]
+[3.003537, "o", "\u001b[H\u001b[J\u001b[3J"]
+[3.003762, "o", "\u001b[?2004hroot@0a329542354f:/app# "]
+[69.343959, "i", "\u0004"]
+[69.344255, "o", "\u001b[?2004l\r\r\nexit\r\n"]

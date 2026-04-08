@@ -1,0 +1,40 @@
+
+────────────────────────────────────────────────────────────────────────── NanoBEIR  ───────────────────────────────────────────────────────────────────────────
+Retrieval
+    - NanoArguAnaRetrieval, s2p
+    - NanoClimateFeverRetrieval, s2p
+    - NanoDBPediaRetrieval, s2p
+    - NanoFEVERRetrieval, s2p
+    - NanoFiQA2018Retrieval, s2p
+    - NanoHotpotQARetrieval, s2p
+    - NanoMSMARCORetrieval, s2p
+    - NanoNFCorpusRetrieval, s2p
+    - NanoNQRetrieval, s2p
+    - NanoQuoraRetrieval, s2s
+    - NanoSCIDOCSRetrieval, s2p
+    - NanoSciFactRetrieval, s2p
+    - NanoTouche2020Retrieval, s2p
+
+
+──────────────────────────────────────────────────────────────────────────── RAR-b  ────────────────────────────────────────────────────────────────────────────
+Retrieval
+    - AlphaNLI, s2s
+    - ARCChallenge, s2s
+    - HellaSwag, s2s
+    - PIQA, s2s
+    - Quail, s2s
+    - RARbCode, s2p
+    - RARbMath, s2p
+    - SIQA, s2s
+    - SpartQA, s2s
+    - TempReasonL1, s2s
+    - TempReasonL2Context, s2s
+    - TempReasonL2Fact, s2s
+    - TempReasonL2Pure, s2s
+    - TempReasonL3Context, s2s
+    - TempReasonL3Fact, s2s
+    - TempReasonL3Pure, s2s
+    - WinoGrande, s2s
+
+
+root@b858e75d9142:/app#

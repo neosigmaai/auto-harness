@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player successfully landed a hit on the troll, stunning it momentarily, but the troll is regaining its footing. This presents an opportunity to either continue the attack or try to escape to another passage.",
+    "explanation": "Continue attacking the troll to defeat it while it's vulnerable, as it is still a threat in this room.",
+    "commands": [
+        {
+            "keystrokes": "attack troll with sword\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

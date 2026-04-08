@@ -18,7 +18,7 @@ import sys
 
 import yaml
 
-from benchmark import BenchmarkRunner, TauBenchRunner  # swap for your runner
+from benchmark import BenchmarkRunner, TauBenchRunner, TerminalBenchRunner # swap for your runner
 
 CONFIG_FILE = "experiment_config.yaml"
 
@@ -61,6 +61,46 @@ def best_val_score() -> float | None:
         rows = list(csv.DictReader(f, delimiter="\t"))
     scores = [float(r["val_score"]) for r in rows if r.get("val_score")]
     return max(scores) if scores else None
+
+def make_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
+    """
+    Build train and gate runners based on benchmark config.
+    
+    For tau_bench: train split for iteration, gate_split for validation.
+    For terminal_bench: same runner for both since there's no split concept.
+    """
+    benchmark = cfg.get("benchmark", "tau_bench")
+
+    if benchmark == "tau_bench":
+        if "domain" not in cfg:
+            print("ERROR: 'domain' not set in experiment_config.yaml")
+            sys.exit(1)
+        train_runner = TauBenchRunner(
+            domain=cfg["domain"],
+            split=cfg.get("split", "train"),
+            max_concurrency=cfg.get("max_concurrency", 3),
+        )
+        gate_runner = TauBenchRunner(
+            domain=cfg["domain"],
+            split=cfg.get("gate_split", "test"),
+            max_concurrency=cfg.get("max_concurrency", 3),
+        )
+
+    elif benchmark == "terminal_bench":
+        train_runner = TerminalBenchRunner(
+            agent_model=cfg.get("agent_model"),
+            n_concurrent=cfg.get("max_concurrency", 8),
+        )
+        gate_runner = TerminalBenchRunner(
+            agent_model=cfg.get("agent_model"),
+            n_concurrent=cfg.get("max_concurrency", 8),
+        )
+
+    else:
+        print(f"ERROR: unknown benchmark '{benchmark}'")
+        sys.exit(1)
+
+    return train_runner, gate_runner
 
 
 def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int:
@@ -142,14 +182,6 @@ if __name__ == "__main__":
         print("ERROR: 'domain' not set in experiment_config.yaml")
         sys.exit(1)
     # Step 1 uses train split (same tasks as benchmark.py); step 2 uses gate_split (test)
-    train_runner = TauBenchRunner(
-        domain=cfg["domain"],
-        split=cfg.get("split", "train"),
-        max_concurrency=cfg.get("max_concurrency", 3),
-    )
-    gate_runner = TauBenchRunner(
-        domain=cfg["domain"],
-        split=cfg.get("gate_split", "test"),
-        max_concurrency=cfg.get("max_concurrency", 3),
-    )
+    cfg = load_config()
+    train_runner, gate_runner = make_runners(cfg)
     sys.exit(run_gate(train_runner, gate_runner))

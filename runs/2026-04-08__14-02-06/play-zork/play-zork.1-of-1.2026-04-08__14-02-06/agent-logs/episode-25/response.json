@@ -1,0 +1,12 @@
+{
+    "state_analysis": "Moving the rug has revealed a dusty trap door in the living room. This could lead to new areas or opportunities within the game.",
+    "explanation": "The next step is to open the trap door and explore what lies beneath, which could be crucial for progressing in the game.",
+    "commands": [
+        {
+            "keystrokes": "open trap door\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

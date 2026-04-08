@@ -1,0 +1,40 @@
+Collecting aiohappyeyeballs>=2.5.0
+  Downloading aiohappyeyeballs-2.6.1-py3-none-any.whl (15 kB)
+Collecting async-timeout<6.0,>=4.0
+  Downloading async_timeout-5.0.1-py3-none-any.whl (6.2 kB)
+Collecting frozenlist>=1.1.1
+  Downloading frozenlist-1.8.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (221 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 221.6/221.6 kB 78.4 MB/s eta 0:00:00
+Collecting attrs>=17.3.0
+  Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 67.5/67.5 kB 26.8 MB/s eta 0:00:00
+Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.10/site-packages (from python-dateutil>=2.8.2->pandas->datasets) (1.17.0)
+Collecting exceptiongroup>=1.0.2
+  Downloading exceptiongroup-1.3.1-py3-none-any.whl (16 kB)
+Installing collected packages: xxhash, requests, pyarrow, propcache, multidict, h11, frozenlist, exceptiongroup, dill, attrs, async-timeout, aiohappyeyeballs, y
+arl, multiprocess, httpcore, anyio, aiosignal, httpx, aiohttp, datasets
+  Attempting uninstall: requests
+    Found existing installation: requests 2.31.0
+    Uninstalling requests-2.31.0:
+      Successfully uninstalled requests-2.31.0
+Successfully installed aiohappyeyeballs-2.6.1 aiohttp-3.13.5 aiosignal-1.4.0 anyio-4.13.0 async-timeout-5.0.1 attrs-26.1.0 datasets-4.8.4 dill-0.4.1 exceptiongr
+oup-1.3.1 frozenlist-1.8.0 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 multidict-6.7.1 multiprocess-0.70.19 propcache-0.4.1 pyarrow-23.0.1 requests-2.33.1 xxhash-3.6
+.0 yarl-1.23.0
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a v
+irtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+root@ceebef5ecae8:/app/UPET# python run.py --model_name roberta-base --task_name rte --do_train --do_eval --max_seq_length 128 --per_device_train_batch_size 8 -
+-learning_rate 2e-5 --num_train_epochs 1 --output_dir ./results --seed 42 --overwrite_output_dir --examples_per_label 5; tmux wait -S done
+Traceback (most recent call last):
+  File "/app/UPET/run.py", line 12, in <module>
+    from arguments import get_args
+  File "/app/UPET/arguments.py", line 9, in <module>
+    from tasks.utils import *
+  File "/app/UPET/tasks/utils.py", line 1, in <module>
+    from tasks.glue.dataset import task_to_keys as glue_tasks
+  File "/app/UPET/tasks/glue/dataset.py", line 5, in <module>
+    from datasets.load import load_dataset, load_metric
+ImportError: cannot import name 'load_metric' from 'datasets.load' (/usr/local/lib/python3.10/site-packages/datasets/load.py)
+root@ceebef5ecae8:/app/UPET#

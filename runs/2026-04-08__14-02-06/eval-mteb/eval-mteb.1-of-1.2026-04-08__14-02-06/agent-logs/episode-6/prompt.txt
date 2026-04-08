@@ -1,0 +1,40 @@
+Requirement already satisfied: filelock in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (3.25.2)
+Requirement already satisfied: huggingface-hub<1.0,>=0.23.0 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (0.36.2)
+Requirement already satisfied: numpy>=1.17 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (2.2.6)
+Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (26.0)
+Requirement already satisfied: pyyaml>=5.1 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (6.0.3)
+Requirement already satisfied: regex!=2019.12.17 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (2026.4.4)
+Requirement already satisfied: requests in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (2.33.1)
+Collecting tokenizers<0.20,>=0.19 (from transformers==4.41.0)
+  Downloading tokenizers-0.19.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (6.7 kB)
+Requirement already satisfied: safetensors>=0.4.1 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (0.7.0)
+Requirement already satisfied: tqdm>=4.27 in /usr/local/lib/python3.10/site-packages (from transformers==4.41.0) (4.67.3)
+Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.23.0->transformers==4.41.0) (2024.6.1)
+Requirement already satisfied: hf-xet<2.0.0,>=1.1.3 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.23.0->transformers==4.41.0) (1.4.3)
+Requirement already satisfied: typing-extensions>=3.7.4.3 in /usr/local/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.23.0->transformers==4.41.0) (
+4.15.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.41.0) (3.4.7)
+Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.41.0) (3.11)
+Requirement already satisfied: urllib3<3,>=1.26 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.41.0) (2.6.3)
+Requirement already satisfied: certifi>=2023.5.7 in /usr/local/lib/python3.10/site-packages (from requests->transformers==4.41.0) (2026.2.25)
+Downloading transformers-4.41.0-py3-none-any.whl (9.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.1/9.1 MB 27.6 MB/s  0:00:00
+Downloading tokenizers-0.19.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (3.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.6/3.6 MB 20.6 MB/s  0:00:00
+Installing collected packages: tokenizers, transformers
+  Attempting uninstall: tokenizers
+    Found existing installation: tokenizers 0.13.3
+    Uninstalling tokenizers-0.13.3:
+      Successfully uninstalled tokenizers-0.13.3
+  Attempting uninstall: transformers
+    Found existing installation: transformers 4.30.0
+    Uninstalling transformers-4.30.0:
+      Successfully uninstalled transformers-4.30.0
+Successfully installed tokenizers-0.19.1 transformers-4.41.0
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your syst
+em unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you a
+re doing and want to suppress this warning.
+root@da999e52426a:/app# python -m mteb.run --hf-model bge-small-en-v1.5 --hf-commit-id 5c38ec7c405ec4b44b94cc5a9bb96e735b38267a --task sts12 --output-dir result
+s/hf_model_org__bge-small-en-v1.5/5c38ec7c405ec4b44b94cc5a9bb96e735b38267a/sts12.json; tmux wait -S done
+/usr/local/bin/python: No module named mteb.run
+root@da999e52426a:/app#

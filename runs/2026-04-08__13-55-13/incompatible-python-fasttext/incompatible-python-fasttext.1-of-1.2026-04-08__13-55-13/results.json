@@ -1,0 +1,22 @@
+{
+    "id": "4c511926-f4e3-4e4b-89dc-989ddd27520e",
+    "trial_name": "incompatible-python-fasttext.1-of-1.2026-04-08__13-55-13",
+    "task_id": "incompatible-python-fasttext",
+    "instruction": "For some reason the fasttext python package is not currently working for me.\n\nCan you please help me figure out why and fix it?\n\nI need to be able to use it with the default python interpreter.",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_correct_output": "passed",
+        "test_site_packages_not_overly_changed": "passed",
+        "test_predict_raises_no_error": "failed"
+    },
+    "recording_path": "2026-04-08__13-55-13/incompatible-python-fasttext/incompatible-python-fasttext.1-of-1.2026-04-08__13-55-13/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T21:19:33.147010+00:00",
+    "trial_ended_at": "2026-04-08T21:20:03.287242+00:00",
+    "agent_started_at": "2026-04-08T21:19:54.997594+00:00",
+    "agent_ended_at": "2026-04-08T21:19:55.104095+00:00",
+    "test_started_at": "2026-04-08T21:19:58.386700+00:00",
+    "test_ended_at": "2026-04-08T21:20:00.931998+00:00"
+}

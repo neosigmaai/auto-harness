@@ -1,0 +1,40 @@
+ Chasm                                                                                                                            Score: 45       Moves: 39
+walls.
+A nasty-looking troll, brandishing a bloody axe, blocks all passages out of the room.
+Your sword has begun to glow very brightly.
+
+>attack troll with sword; tmux wait -S done
+I don't know the word "tmux".
+
+>attack troll; tmux wait -S done
+I don't know the word "tmux".
+
+>attack troll with sword
+The quickness of your thrust knocks the troll back, stunned.
+The troll slowly regains his feet.
+
+>attack troll with sword
+The troll is confused and can't fight back.
+The troll slowly regains his feet.
+
+>attack troll with sword
+A good slash, but it misses the troll by a mile.
+The troll's swing almost knocks you over as you barely parry in time.
+
+>attack troll with sword
+The fatal blow strikes the troll square in the heart:  He dies.
+Almost as soon as the troll breathes his last breath, a cloud of sinister black fog envelops him, and when the fog lifts, the carcass has disappeared.
+Your sword is no longer glowing.
+
+>search room
+I don't know the word "room".
+
+>east
+East-West Passage
+This is a narrow east-west passageway. There is a narrow stairway leading down at the north end of the room.
+
+>down
+Chasm
+A chasm runs southwest to northeast and the path follows it. You are on the south side of the chasm, where a crack opens into a passage.
+
+>

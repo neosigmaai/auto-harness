@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player is in a narrow east-west passageway with a stairway leading down at the north end of the room. This passage likely connects to other areas of the underground setting.",
+    "explanation": "Explore the stairway leading down to discover what's below, potentially uncovering new areas or valuable items.",
+    "commands": [
+        {
+            "keystrokes": "down\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

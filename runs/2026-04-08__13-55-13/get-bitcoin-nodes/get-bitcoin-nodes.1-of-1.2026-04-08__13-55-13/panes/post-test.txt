@@ -1,0 +1,86 @@
+root@01dc32ef4e7e:/app# bash /tests/run-tests.sh; tmux wait -S done
+Collecting pytest
+  Downloading pytest-9.0.3-py3-none-any.whl.metadata (7.6 kB)
+Collecting requests
+  Downloading requests-2.33.1-py3-none-any.whl.metadata (4.8 kB)
+Collecting psutil
+  Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl.metadata (22 kB)
+Collecting iniconfig>=1.0.1 (from pytest)
+  Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting packaging>=22 (from pytest)
+  Downloading packaging-26.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting pluggy<2,>=1.5 (from pytest)
+  Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+Collecting pygments>=2.7.2 (from pytest)
+  Downloading pygments-2.20.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting charset_normalizer<4,>=2 (from requests)
+  Downloading charset_normalizer-3.4.7-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+Collecting idna<4,>=2.5 (from requests)
+  Downloading idna-3.11-py3-none-any.whl.metadata (8.4 kB)
+Collecting urllib3<3,>=1.26 (from requests)
+  Downloading urllib3-2.6.3-py3-none-any.whl.metadata (6.9 kB)
+Collecting certifi>=2023.5.7 (from requests)
+  Downloading certifi-2026.2.25-py3-none-any.whl.metadata (2.5 kB)
+Downloading pytest-9.0.3-py3-none-any.whl (375 kB)
+Downloading requests-2.33.1-py3-none-any.whl (64 kB)
+Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl (155 kB)
+Downloading certifi-2026.2.25-py3-none-any.whl (153 kB)
+Downloading charset_normalizer-3.4.7-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (215 kB)
+Downloading idna-3.11-py3-none-any.whl (71 kB)
+Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+Downloading packaging-26.0-py3-none-any.whl (74 kB)
+Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 42.1 MB/s eta 0:00:00
+Downloading urllib3-2.6.3-py3-none-any.whl (131 kB)
+Installing collected packages: urllib3, pygments, psutil, pluggy, packaging, iniconfig, idna, charset_normalizer, certifi, requests, pytest
+Successfully installed certifi-2026.2.25 charset_normalizer-3.4.7 idna-3.11 iniconfig-2.3.0 packaging-26.0 pluggy-1.6.0 psutil-7.2.2 pygments-2.20.0 pytest-9.0.
+3 requests-2.33.1 urllib3-2.6.3
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your syst
+em unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you ar
+e doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 24.3.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.13.1, pytest-9.0.3, pluggy-1.6.0 -- /usr/local/bin/python3.13
+cachedir: .pytest_cache
+rootdir: /tests
+collected 5 items
+
+../tests/test_outputs.py::test_service_process_running FAILED                                                                                            [ 20%]
+../tests/test_outputs.py::test_service_responding SKIPPED (Bitcoin service does not appear to be running)                                                [ 40%]
+../tests/test_outputs.py::test_block_endpoint SKIPPED (Bitcoin service does not appear to be running)                                                    [ 60%]
+../tests/test_outputs.py::test_transaction_endpoint SKIPPED (Bitcoin service does not appear to be running)                                              [ 80%]
+../tests/test_outputs.py::test_error_handling SKIPPED (Bitcoin service does not appear to be running)                                                    [100%]
+
+=========================================================================== FAILURES ===========================================================================
+_________________________________________________________________ test_service_process_running _________________________________________________________________
+
+    def test_service_process_running():
+        """Test that the Bitcoin service process is running"""
+        for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+            try:
+                cmdline = " ".join(proc.info["cmdline"] if proc.info["cmdline"] else [])
+                if (
+                    "python" in proc.info["name"].lower()
+                    and "bitcoin_service.py" in cmdline
+                ):
+                    assert True
+                    return
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                continue
+
+>       assert False, "Bitcoin service process not found"
+E       AssertionError: Bitcoin service process not found
+E       assert False
+
+/tests/test_outputs.py:45: AssertionError
+=================================================================== short test summary info ====================================================================
+SKIPPED [1] ../tests/test_outputs.py:48: Bitcoin service does not appear to be running
+SKIPPED [1] ../tests/test_outputs.py:61: Bitcoin service does not appear to be running
+SKIPPED [1] ../tests/test_outputs.py:93: Bitcoin service does not appear to be running
+SKIPPED [1] ../tests/test_outputs.py:132: Bitcoin service does not appear to be running
+FAILED ../tests/test_outputs.py::test_service_process_running - AssertionError: Bitcoin service process not found
+================================================================ 1 failed, 4 skipped in 50.40s =================================================================
+root@01dc32ef4e7e:/app#

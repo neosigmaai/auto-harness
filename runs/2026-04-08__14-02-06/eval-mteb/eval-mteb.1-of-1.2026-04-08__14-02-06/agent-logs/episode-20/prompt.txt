@@ -1,0 +1,40 @@
+Downloading sympy-1.14.0-py3-none-any.whl (6.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.3/6.3 MB 24.5 MB/s  0:00:00
+Downloading mpmath-1.3.0-py3-none-any.whl (536 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 536.2/536.2 kB 8.0 MB/s  0:00:00
+Downloading tqdm-4.67.3-py3-none-any.whl (78 kB)
+Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+Downloading typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+Downloading anyio-4.13.0-py3-none-any.whl (114 kB)
+Downloading exceptiongroup-1.3.1-py3-none-any.whl (16 kB)
+Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+Downloading markupsafe-3.0.3-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (22 kB)
+Downloading pandas-2.3.3-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl (12.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.1/12.1 MB 18.8 MB/s  0:00:00
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Downloading pytz-2026.1.post1-py2.py3-none-any.whl (510 kB)
+Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Downloading tzdata-2026.1-py2.py3-none-any.whl (348 kB)
+Downloading typer-0.24.1-py3-none-any.whl (56 kB)
+Downloading annotated_doc-0.0.4-py3-none-any.whl (5.3 kB)
+Downloading click-8.3.2-py3-none-any.whl (108 kB)
+Downloading shellingham-1.5.4-py2.py3-none-any.whl (9.8 kB)
+Downloading xxhash-3.6.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (212 kB)
+# Continue monitoring the installation process until completion.
+# Continue to wait for the completion of the installation process.
+Installing collected packages: pytz, nvidia-cusparselt-cu13, mpmath, cuda-toolkit, xxhash, urllib3, tzdata, typing-extensions, triton, tqdm, threadpoolctl, symp
+y, six, shellingham, setuptools, safetensors, regex, pyyaml, pygments, pyarrow, propcache, polars-runtime-32, packaging, nvidia-nvtx, nvidia-nvshmem-cu13, nvidi
+a-nvjitlink, nvidia-nccl-cu13, nvidia-curand, nvidia-cufile, nvidia-cuda-runtime, nvidia-cuda-nvrtc, nvidia-cuda-cupti, nvidia-cublas, numpy, networkx, mdurl, M
+arkupSafe, joblib, idna, hf-xet, h11, fsspec, frozenlist, filelock, dill, cuda-pathfinder, click, charset_normalizer, certifi, attrs, async-timeout, annotated-t
+ypes, annotated-doc, aiohappyeyeballs, typing-inspection, scipy, requests, python-dateutil, pydantic-core, polars, nvidia-cusparse, nvidia-cufft, nvidia-cudnn-c
+u13, multiprocess, multidict, markdown-it-py, jinja2, httpcore, exceptiongroup, cuda-bindings, aiosignal, yarl, scikit-learn, rich, pytrec-eval-terrier, pydanti
+c, pandas, nvidia-cusolver, anyio, typer, httpx, aiohttp, torch, huggingface-hub, tokenizers, datasets, transformers, sentence_transformers, mteb
+  Attempting uninstall: pytz
+    Found existing installation: pytz 2026.1.post1
+    Uninstalling pytz-2026.1.post1:
+      Successfully uninstalled pytz-2026.1.post1
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  0/89 [pytz]# Continue monitoring the installation process until it is fully completed.
+  Attempting uninstall: nvidia-cusparselt-cu13
+    Found existing installation: nvidia-cusparselt-cu13 0.8.0
+    Uninstalling nvidia-cusparselt-cu13-0.8.0:
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  0/89 [pytz]

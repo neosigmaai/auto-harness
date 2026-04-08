@@ -1,0 +1,23 @@
+{
+    "id": "2f67e3bf-868a-4383-a660-b356a3a9a888",
+    "trial_name": "prove-plus-comm.1-of-1.2026-04-08__13-55-13",
+    "task_id": "prove-plus-comm",
+    "instruction": "Fix the incomplete proof of addition commutativity in the file plus_comm.v. The file contains a partial proof that needs to be completed.\n\nThe theorem states that addition is commutative for natural numbers (forall n m : nat, n + m = m + n).\nThe proof attempt uses induction but is missing some crucial steps.\n\nYour task is to:\n1. Analyze the incomplete proof in plus_comm.v\n2. Add the missing steps to complete the proof\n3. Compile the completed proof using coqc\n\nThe proof should be completed using Coq's tactics and the final compiled proof should be in plus_comm.vo.",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_proof_file_exists": "passed",
+        "test_compiled_proof_exists": "failed",
+        "test_proof_contents": "failed",
+        "test_compiled_proof_content": "failed"
+    },
+    "recording_path": "2026-04-08__13-55-13/prove-plus-comm/prove-plus-comm.1-of-1.2026-04-08__13-55-13/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T22:10:45.780600+00:00",
+    "trial_ended_at": "2026-04-08T22:14:43.207632+00:00",
+    "agent_started_at": "2026-04-08T22:14:05.880709+00:00",
+    "agent_ended_at": "2026-04-08T22:14:06.211362+00:00",
+    "test_started_at": "2026-04-08T22:14:10.388176+00:00",
+    "test_ended_at": "2026-04-08T22:14:38.513897+00:00"
+}

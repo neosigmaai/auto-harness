@@ -1,0 +1,40 @@
+  Attempting uninstall: charset_normalizer
+    Found existing installation: charset-normalizer 3.4.7
+    Uninstalling charset-normalizer-3.4.7:
+      Successfully uninstalled charset-normalizer-3.4.7
+  Attempting uninstall: certifi
+    Found existing installation: certifi 2026.2.25
+    Uninstalling certifi-2026.2.25:
+      Successfully uninstalled certifi-2026.2.25
+  Attempting uninstall: attrs
+    Found existing installation: attrs 26.1.0
+    Uninstalling attrs-26.1.0:
+      Successfully uninstalled attrs-26.1.0
+  Attempting uninstall: async-timeout
+    Found existing installation: async-timeout 5.0.1
+    Uninstalling async-timeout-5.0.1:
+      Successfully uninstalled async-timeout-5.0.1
+  Attempting uninstall: annotated-types
+    Found existing installation: annotated-types 0.7.0
+    Uninstalling annotated-types-0.7.0:
+      Successfully uninstalled annotated-types-0.7.0
+   ━━━━━━━━━━━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━ 50/89 [async-timeout]# Continue to wait for the installation to fully complete.
+  Attempting uninstall: annotated-doc
+    Found existing installation: annotated-doc 0.0.4
+    Uninstalling annotated-doc-0.0.4:
+      Successfully uninstalled annotated-doc-0.0.4
+  Attempting uninstall: aiohappyeyeballs
+    Found existing installation: aiohappyeyeballs 2.6.1
+    Uninstalling aiohappyeyeballs-2.6.1:
+      Successfully uninstalled aiohappyeyeballs-2.6.1
+  Attempting uninstall: typing-inspection
+    Found existing installation: typing-inspection 0.4.2
+    Uninstalling typing-inspection-0.4.2:
+      Successfully uninstalled typing-inspection-0.4.2
+  Attempting uninstall: scipy
+    Found existing installation: scipy 1.15.3
+    Uninstalling scipy-1.15.3:
+   ━━━━━━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━ 55/89 [scipy]# Continue to wait for the installation to fully complete without interruption.
+      Successfully uninstalled scipy-1.15.3
+   ━━━━━━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━ 55/89 [scipy]# Continue to wait for the installation to fully complete.
+   ━━━━━━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━ 55/89 [scipy]

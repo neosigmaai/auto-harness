@@ -1,0 +1,40 @@
+    - STS14VisualSTS, i2i
+    - STS15VisualSTS, i2i
+    - STS16VisualSTS, i2i
+
+
+VisualSTS(multi)
+    - VisualSTS17Multilingual, i2i
+    - VisualSTS-b-Multilingual, i2i
+    - STS17MultilingualVisualSTS, i2i, multilingual 11 / 11 Subsets
+    - STSBenchmarkMultilingualVisualSTS, i2i, multilingual 10 / 10 Subsets
+
+
+ZeroShotClassification
+    - BirdsnapZeroShot, i2t
+    - Caltech101ZeroShot, i2t
+    - CIFAR10ZeroShot, i2t
+    - CIFAR100ZeroShot, i2t
+    - CLEVRZeroShot, i2t
+    - CLEVRCountZeroShot, i2t
+    - Country211ZeroShot, i2t
+    - DTDZeroShot, i2t
+    - EuroSATZeroShot, i2t
+    - FER2013ZeroShot, i2t
+    - FGVCAircraftZeroShot, i2t
+    - Food101ZeroShot, i2t
+    - GTSRBZeroShot, i2t
+    - Imagenet1kZeroShot, i2t
+    - MNISTZeroShot, i2t
+    - OxfordPetsZeroShot, i2t
+    - PatchCamelyonZeroShot, i2t
+    - RenderedSST2, i2t
+    - RESISC45ZeroShot, i2t
+    - SciMMIR, i2t
+    - StanfordCarsZeroShot, i2t
+    - STL10ZeroShot, i2t
+    - SUN397ZeroShot, i2t
+    - UCF101ZeroShot, i2t
+
+
+root@b858e75d9142:/app#

@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player attempted another attack but missed the troll, and narrowly avoided a counterattack. The troll remains a threat in the room.",
+    "explanation": "Continue to attack the troll to try and defeat it, while remaining cautious of its counterattacks.",
+    "commands": [
+        {
+            "keystrokes": "attack troll with sword\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

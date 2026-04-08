@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player is now up a tree, next to a bird's nest containing a large, jeweled egg. The egg is fragile, hinged, and clasped, indicating it may open to reveal something inside.",
+    "explanation": "The next action is to take the egg, as it might be valuable or contain something useful for the adventure.",
+    "commands": [
+        {
+            "keystrokes": "take egg\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

@@ -1,0 +1,40 @@
+irtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+root@b858e75d9142:/app# python -m mteb --task STS12 --model all-MiniLM-L6-v2 --output results; tmux wait -S done
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/usr/local/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/usr/local/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/usr/local/lib/python3.10/site-packages/mteb/__init__.py", line 5, in <module>
+    from mteb.benchmarks.benchmarks import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/__init__.py", line 3, in <module>
+    from mteb.benchmarks.benchmark import Benchmark
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/benchmark.py", line 9, in <module>
+    from mteb.load_results.load_results import load_results
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/__init__.py", line 3, in <module>
+    from .benchmark_results import BenchmarkResults, ModelResult
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/benchmark_results.py", line 15, in <module>
+    from mteb.abstasks.AbsTask import AbsTask, ScoresDict
+  File "/usr/local/lib/python3.10/site-packages/mteb/abstasks/__init__.py", line 3, in <module>
+    from ..evaluation.LangMapping import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/__init__.py", line 3, in <module>
+    from .MTEB import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/MTEB.py", line 17, in <module>
+    from sentence_transformers import CrossEncoder, SentenceTransformer
+  File "/usr/local/lib/python3.10/site-packages/sentence_transformers/__init__.py", line 10, in <module>
+    from sentence_transformers.backend import (
+  File "/usr/local/lib/python3.10/site-packages/sentence_transformers/backend/__init__.py", line 5, in <module>
+    from .quantize import export_dynamic_quantized_onnx_model, export_static_quantized_openvino_model
+  File "/usr/local/lib/python3.10/site-packages/sentence_transformers/backend/quantize.py", line 7, in <module>
+    from sentence_transformers.util import disable_datasets_caching, is_datasets_available
+  File "/usr/local/lib/python3.10/site-packages/sentence_transformers/util/__init__.py", line 5, in <module>
+    from .environment import (
+  File "/usr/local/lib/python3.10/site-packages/sentence_transformers/util/environment.py", line 9, in <module>
+    from transformers import is_torch_npu_available
+ImportError: cannot import name 'is_torch_npu_available' from 'transformers' (/usr/local/lib/python3.10/site-packages/transformers/__init__.py)
+root@b858e75d9142:/app#

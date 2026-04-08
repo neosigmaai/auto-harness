@@ -1,0 +1,20 @@
+{
+    "id": "154efb88-d313-40fe-bb3b-e11163e7ca9f",
+    "trial_name": "configure-git-webserver.1-of-1.2026-04-08__13-59-50",
+    "task_id": "configure-git-webserver",
+    "instruction": "Configure a git server so that I can run on my computer\n    git clone user@server:/git/server\n    echo \"hello world\" > hello.html\n    git add index.html\n    git commit -m \"add index\"\n    git push origin webserver\nAnd have this data then be pushed to a webserver running on port 8080 so if I run\n    curl https://server:8080/hello.html\nthen I see the output \"hello world\"",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_hello_file_exists_example": "failed"
+    },
+    "recording_path": "2026-04-08__13-59-50/configure-git-webserver/configure-git-webserver.1-of-1.2026-04-08__13-59-50/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T22:32:49.850307+00:00",
+    "trial_ended_at": "2026-04-08T22:33:28.950445+00:00",
+    "agent_started_at": "2026-04-08T22:32:55.048817+00:00",
+    "agent_ended_at": "2026-04-08T22:32:55.216142+00:00",
+    "test_started_at": "2026-04-08T22:32:58.753632+00:00",
+    "test_ended_at": "2026-04-08T22:33:26.104239+00:00"
+}

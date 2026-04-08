@@ -1,0 +1,40 @@
+INFO:mteb.models.sentence_transformer_wrapper:Encoding 5043 sentences.
+Batches: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 40/40 [01:04<00:00,  1.61s/it]
+INFO:mteb.abstasks.AbsTaskRetrieval:Time taken to retrieve: 65.04 seconds
+INFO:mteb.evaluation.MTEB:Evaluation for NanoMSMARCORetrieval on train took 65.17 seconds
+INFO:mteb.evaluation.MTEB:Scores: {'default': {'ndcg_at_1': 0.36, 'ndcg_at_3': 0.45833, 'ndcg_at_5': 0.48329, 'ndcg_at_10': 0.55398, 'ndcg_at_20': 0.58837, 'ndc
+g_at_100': 0.60091, 'ndcg_at_1000': 0.60091, 'map_at_1': 0.36, 'map_at_3': 0.43667, 'map_at_5': 0.45067, 'map_at_10': 0.4796, 'map_at_20': 0.48848, 'map_at_100'
+: 0.49076, 'map_at_1000': 0.49076, 'recall_at_1': 0.36, 'recall_at_3': 0.52, 'recall_at_5': 0.58, 'recall_at_10': 0.8, 'recall_at_20': 0.94, 'recall_at_100': 1.
+0, 'recall_at_1000': 1.0, 'precision_at_1': 0.36, 'precision_at_3': 0.17333, 'precision_at_5': 0.116, 'precision_at_10': 0.08, 'precision_at_20': 0.047, 'precis
+ion_at_100': 0.01, 'precision_at_1000': 0.001, 'mrr_at_1': 0.36, 'mrr_at_3': 0.4366666666666667, 'mrr_at_5': 0.4506666666666667, 'mrr_at_10': 0.4796031746031746
+4, 'mrr_at_20': 0.4884799253034548, 'mrr_at_100': 0.4907628900864196, 'mrr_at_1000': 0.4907628900864196, 'nauc_ndcg_at_1_max': -0.11342045872041122, 'nauc_ndcg_
+at_1_std': -0.3871831207683829, 'nauc_ndcg_at_1_diff1': 0.7644203012648924, 'nauc_ndcg_at_3_max': -0.05659801570074564, 'nauc_ndcg_at_3_std': -0.392083311136207
+5, 'nauc_ndcg_at_3_diff1': 0.6090510249606186, 'nauc_ndcg_at_5_max': -0.035678975204745035, 'nauc_ndcg_at_5_std': -0.458227526002294, 'nauc_ndcg_at_5_diff1': 0.
+6038276549749171, 'nauc_ndcg_at_10_max': -0.05906025797369859, 'nauc_ndcg_at_10_std': -0.5300869438950614, 'nauc_ndcg_at_10_diff1': 0.6113189825209093, 'nauc_nd
+cg_at_20_max': -0.09301831021896871, 'nauc_ndcg_at_20_std': -0.49681449234534353, 'nauc_ndcg_at_20_diff1': 0.6292644752027028, 'nauc_ndcg_at_100_max': -0.065376
+68047198406, 'nauc_ndcg_at_100_std': -0.4544166352743155, 'nauc_ndcg_at_100_diff1': 0.6381973774083364, 'nauc_ndcg_at_1000_max': -0.06537668047198406, 'nauc_ndc
+g_at_1000_std': -0.4544166352743155, 'nauc_ndcg_at_1000_diff1': 0.6381973774083364, 'nauc_map_at_1_max': -0.11342045872041122, 'nauc_map_at_1_std': -0.387183120
+7683829, 'nauc_map_at_1_diff1': 0.7644203012648924, 'nauc_map_at_3_max': -0.06720388358130819, 'nauc_map_at_3_std': -0.38926335313876964, 'nauc_map_at_3_diff1':
+ 0.642264120802808, 'nauc_map_at_5_max': -0.05460309285776003, 'nauc_map_at_5_std': -0.42574467357169604, 'nauc_map_at_5_diff1': 0.6392114617246247, 'nauc_map_a
+t_10_max': -0.06418954516482772, 'nauc_map_at_10_std': -0.45204444437927643, 'nauc_map_at_10_diff1': 0.6427334166252817, 'nauc_map_at_20_max': -0.07198135824725
+417, 'nauc_map_at_20_std': -0.4434015819270101, 'nauc_map_at_20_diff1': 0.6474189998657894, 'nauc_map_at_100_max': -0.06744080990052409, 'nauc_map_at_100_std':
+-0.4367794589033249, 'nauc_map_at_100_diff1': 0.6493561196247808, 'nauc_map_at_1000_max': -0.06744080990052409, 'nauc_map_at_1000_std': -0.4367794589033249, 'na
+uc_map_at_1000_diff1': 0.6493561196247808, 'nauc_recall_at_1_max': -0.11342045872041122, 'nauc_recall_at_1_std': -0.3871831207683829, 'nauc_recall_at_1_diff1':
+0.7644203012648924, 'nauc_recall_at_3_max': -0.026715272865770735, 'nauc_recall_at_3_std': -0.40108275749496697, 'nauc_recall_at_3_diff1': 0.5131399967354047, '
+nauc_recall_at_5_max': 0.0229561482427371, 'nauc_recall_at_5_std': -0.5693763241141132, 'nauc_recall_at_5_diff1': 0.4963868009403024, 'nauc_recall_at_10_max': -
+0.050699300699300946, 'nauc_recall_at_10_std': -0.9915584415584417, 'nauc_recall_at_10_diff1': 0.46568431568431545, 'nauc_recall_at_20_max': -0.6288515406162452
+, 'nauc_recall_at_20_std': -1.347805788982259, 'nauc_recall_at_20_diff1': 0.4788359788359812, 'nauc_recall_at_100_max': nan, 'nauc_recall_at_100_std': nan, 'nau
+c_recall_at_100_diff1': nan, 'nauc_recall_at_1000_max': nan, 'nauc_recall_at_1000_std': nan, 'nauc_recall_at_1000_diff1': nan, 'nauc_precision_at_1_max': -0.113
+42045872041122, 'nauc_precision_at_1_std': -0.3871831207683829, 'nauc_precision_at_1_diff1': 0.7644203012648924, 'nauc_precision_at_3_max': -0.02671527286577101
+2, 'nauc_precision_at_3_std': -0.4010827574949672, 'nauc_precision_at_3_diff1': 0.5131399967354039, 'nauc_precision_at_5_max': 0.022956148242736996, 'nauc_preci
+sion_at_5_std': -0.5693763241141133, 'nauc_precision_at_5_diff1': 0.49638680094030224, 'nauc_precision_at_10_max': -0.05069930069930091, 'nauc_precision_at_10_s
+td': -0.9915584415584405, 'nauc_precision_at_10_diff1': 0.4656843156843146, 'nauc_precision_at_20_max': -0.628851540616243, 'nauc_precision_at_20_std': -1.34780
+57889822475, 'nauc_precision_at_20_diff1': 0.4788359788359775, 'nauc_precision_at_100_max': 1.0, 'nauc_precision_at_100_std': 1.0, 'nauc_precision_at_100_diff1'
+: 1.0, 'nauc_precision_at_1000_max': nan, 'nauc_precision_at_1000_std': nan, 'nauc_precision_at_1000_diff1': nan, 'nauc_mrr_at_1_max': -0.11342045872041122, 'na
+uc_mrr_at_1_std': -0.3871831207683829, 'nauc_mrr_at_1_diff1': 0.7644203012648924, 'nauc_mrr_at_3_max': -0.06720388358130819, 'nauc_mrr_at_3_std': -0.38926335313
+876964, 'nauc_mrr_at_3_diff1': 0.642264120802808, 'nauc_mrr_at_5_max': -0.05460309285776003, 'nauc_mrr_at_5_std': -0.42574467357169604, 'nauc_mrr_at_5_diff1': 0
+.6392114617246247, 'nauc_mrr_at_10_max': -0.06418954516482772, 'nauc_mrr_at_10_std': -0.45204444437927643, 'nauc_mrr_at_10_diff1': 0.6427334166252817, 'nauc_mrr
+_at_20_max': -0.07198135824725417, 'nauc_mrr_at_20_std': -0.4434015819270101, 'nauc_mrr_at_20_diff1': 0.6474189998657894, 'nauc_mrr_at_100_max': -0.067440809900
+52409, 'nauc_mrr_at_100_std': -0.4367794589033249, 'nauc_mrr_at_100_diff1': 0.6493561196247808, 'nauc_mrr_at_1000_max': -0.06744080990052409, 'nauc_mrr_at_1000_
+std': -0.4367794589033249, 'nauc_mrr_at_1000_diff1': 0.6493561196247808, 'main_score': 0.55398}}
+root@b858e75d9142:/app#

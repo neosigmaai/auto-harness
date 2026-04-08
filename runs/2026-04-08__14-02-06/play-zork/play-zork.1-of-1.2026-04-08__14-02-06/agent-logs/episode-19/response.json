@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player returned safely to the kitchen from the dark attic. There is a need for a light source to explore the attic further.",
+    "explanation": "Explore the passage leading west from the kitchen to find a light source or other useful items.",
+    "commands": [
+        {
+            "keystrokes": "west\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

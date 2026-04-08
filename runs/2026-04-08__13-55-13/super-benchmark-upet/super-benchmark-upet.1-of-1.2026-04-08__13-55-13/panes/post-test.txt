@@ -1,0 +1,61 @@
+root@5676df56e50d:/app# bash /tests/run-tests.sh; tmux wait -S done
+Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [48.0 kB]
+Get:4 http://deb.debian.org/debian bookworm/main arm64 Packages [8691 kB]
+Get:5 http://deb.debian.org/debian bookworm-updates/main arm64 Packages [6936 B]
+Get:6 http://deb.debian.org/debian-security bookworm-security/main arm64 Packages [290 kB]
+Fetched 9242 kB in 1s (7392 kB/s)
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+curl is already the newest version (7.88.1-10+deb12u14).
+0 upgraded, 0 newly installed, 0 to remove and 2 not upgraded.
+downloading uv 0.11.5 aarch64-unknown-linux-gnu
+installing to /root/.local/bin
+  uv
+  uvx
+everything's installed!
+
+To add $HOME/.local/bin to your PATH, either restart your shell or run:
+
+    source $HOME/.local/bin/env (sh, bash, zsh)
+    source $HOME/.local/bin/env.fish (fish)
+Initialized project `app`
+Using CPython 3.10.20 interpreter at: /usr/local/bin/python3.10
+Creating virtual environment at: .venv
+Resolved 10 packages in 227ms
+Prepared 8 packages in 198ms
+Installed 8 packages in 8ms
+ + exceptiongroup==1.3.1
+ + iniconfig==2.3.0
+ + packaging==26.0
+ + pluggy==1.6.0
+ + pygments==2.20.0
+ + pytest==9.0.3
+ + tomli==2.4.1
+ + typing-extensions==4.15.0
+Resolved 12 packages in 288ms
+Prepared 1 package in 932ms
+Installed 1 package in 21ms
+ + numpy==2.2.6
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.10.20, pytest-9.0.3, pluggy-1.6.0
+rootdir: /tests
+collected 1 item
+
+../tests/test_outputs.py F                                                                                                                               [100%]
+
+=========================================================================== FAILURES ===========================================================================
+______________________________________________________________________ test_right_output _______________________________________________________________________
+
+    def test_right_output():
+>       with open("/app/results.txt", "r") as f:
+E       FileNotFoundError: [Errno 2] No such file or directory: '/app/results.txt'
+
+/tests/test_outputs.py:9: FileNotFoundError
+=================================================================== short test summary info ====================================================================
+FAILED ../tests/test_outputs.py::test_right_output - FileNotFoundError: [Errno 2] No such file or directory: '/app/results.txt'
+====================================================================== 1 failed in 0.15s =======================================================================
+root@5676df56e50d:/app#

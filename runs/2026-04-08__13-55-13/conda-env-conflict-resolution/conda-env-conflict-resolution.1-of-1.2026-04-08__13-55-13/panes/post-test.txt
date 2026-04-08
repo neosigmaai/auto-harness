@@ -1,0 +1,119 @@
+root@3f87129d749d:/app# bash /tests/run-tests.sh; tmux wait -S done
+Collecting pytest
+  Downloading pytest-9.0.3-py3-none-any.whl.metadata (7.6 kB)
+Collecting iniconfig>=1.0.1 (from pytest)
+  Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting packaging>=22 (from pytest)
+  Downloading packaging-26.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting pluggy<2,>=1.5 (from pytest)
+  Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+Collecting pygments>=2.7.2 (from pytest)
+  Downloading pygments-2.20.0-py3-none-any.whl.metadata (2.5 kB)
+Downloading pytest-9.0.3-py3-none-any.whl (375 kB)
+Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+Downloading packaging-26.0-py3-none-any.whl (74 kB)
+Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 12.4 MB/s eta 0:00:00
+Installing collected packages: pygments, pluggy, packaging, iniconfig, pytest
+Successfully installed iniconfig-2.3.0 packaging-26.0 pluggy-1.6.0 pygments-2.20.0 pytest-9.0.3
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your syst
+em unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you ar
+e doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 24.3.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.13.1, pytest-9.0.3, pluggy-1.6.0 -- /usr/local/bin/python3.13
+cachedir: .pytest_cache
+rootdir: /tests
+collected 3 items
+
+../tests/test_outputs.py::test_environment_exists FAILED                                                                                                 [ 33%]
+../tests/test_outputs.py::test_environment_yml_modified FAILED                                                                                           [ 66%]
+../tests/test_outputs.py::test_imports_script_runs FAILED                                                                                                [100%]
+
+=========================================================================== FAILURES ===========================================================================
+___________________________________________________________________ test_environment_exists ____________________________________________________________________
+
+    def test_environment_exists():
+        """Test that the datasci conda environment exists."""
+        result = subprocess.run(["conda", "env", "list"], capture_output=True, text=True)
+>       assert "datasci" in result.stdout, "datasci environment does not exist"
+E       AssertionError: datasci environment does not exist
+E       assert 'datasci' in '\n# conda environments:\n#\nbase                   /opt/conda\n\n'
+E        +  where '\n# conda environments:\n#\nbase                   /opt/conda\n\n' = CompletedProcess(args=['conda', 'env', 'list'], returncode=0, stdout='\n
+# conda environments:\n#\nbase                   /opt/conda\n\n', stderr='').stdout
+
+/tests/test_outputs.py:11: AssertionError
+________________________________________________________________ test_environment_yml_modified _________________________________________________________________
+
+    def test_environment_yml_modified():
+        """Test that the environment.yml file was modified to fix the conflicts."""
+        with open("/app/project/environment.yml", "r") as f:
+            content = f.read()
+
+        # Check that the numpy version is compatible with scipy
+        numpy_match = re.search(r"numpy=([0-9.]+)", content)
+        scipy_match = re.search(r"scipy=([0-9.]+)", content)
+
+        if numpy_match and scipy_match:
+            numpy_version = numpy_match.group(1)
+            scipy_version = scipy_match.group(1)
+
+            # Either numpy was upgraded or scipy was downgraded
+>           assert not (numpy_version == "1.22.0" and scipy_version == "1.9.0"), (
+                "The numpy and scipy version conflict was not resolved"
+            )
+E           AssertionError: The numpy and scipy version conflict was not resolved
+E           assert not ('1.22.0' == '1.22.0'
+E
+E               1.22.0 and '1.9.0' == '1.9.0'
+E
+E               1.9.0)
+
+/tests/test_outputs.py:28: AssertionError
+___________________________________________________________________ test_imports_script_runs ___________________________________________________________________
+
+    def test_imports_script_runs():
+        """Test that the test_imports.py script can run successfully."""
+        # First ensure we're in the datasci environment
+        test_dir = os.environ["TEST_DIR"]
+        print("Contents of test directory:")
+        result = subprocess.run(["ls", "-la", test_dir], capture_output=True, text=True)
+        print(result.stdout)
+        result = subprocess.run(
+            ["conda", "run", "-n", "datasci", "python", f"{test_dir}/test_imports.py"],
+            capture_output=True,
+            text=True,
+        )
+
+        # Check for successful execution
+>       assert result.returncode == 0, f"test_imports.py failed with error: {result.stderr}"
+E       AssertionError: test_imports.py failed with error:
+E         EnvironmentLocationNotFound: Not a conda environment: /opt/conda/envs/datasci
+E
+E
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['conda', 'run', '-n', 'datasci', 'python', '/tests/test_imports.py'], returncode=1, stdout='', stderr='\nEnvironmen
+tLocationNotFound: Not a conda environment: /opt/conda/envs/datasci\n\n').returncode
+
+/tests/test_outputs.py:59: AssertionError
+--------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------
+Contents of test directory:
+total 32
+drwxr-xr-x 3 root root    4096 Apr  8 21:12 .
+drwxr-xr-x 1 root root    4096 Apr  8 21:12 ..
+drwxr-xr-x 2 root root    4096 Apr  8 21:12 __pycache__
+-rw-r--r-- 1  501 dialout   70 Apr  8 20:55 run-tests.sh
+-rw-r--r-- 1  501 dialout   58 Apr  8 20:55 run-uv-pytest.sh
+-rw-r--r-- 1  501 dialout  380 Apr  8 20:55 setup-uv-pytest.sh
+-rw-r--r-- 1  501 dialout 1203 Apr  8 20:55 test_imports.py
+-rw-r--r-- 1  501 dialout 2856 Apr  8 20:55 test_outputs.py
+
+=================================================================== short test summary info ====================================================================
+FAILED ../tests/test_outputs.py::test_environment_exists - AssertionError: datasci environment does not exist
+FAILED ../tests/test_outputs.py::test_environment_yml_modified - AssertionError: The numpy and scipy version conflict was not resolved
+FAILED ../tests/test_outputs.py::test_imports_script_runs - AssertionError: test_imports.py failed with error:
+====================================================================== 3 failed in 1.85s =======================================================================
+root@3f87129d749d:/app#

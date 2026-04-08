@@ -1,0 +1,40 @@
+            |                                 ~~~~~~^~~~~
+            |                                       |
+            |                                       PyObject * {aka struct _object *}
+      /tmp/pip-build-env-jj1ocwi0/overlay/lib/python3.10/site-packages/numpy/_core/include/numpy/ndarrayobject.h:139:62: note: in definition of macro ‘PyArray_G
+ETPTR1’
+        139 |                                          (i)*PyArray_STRIDES(obj)[0]))
+            |                                                              ^~~
+      /tmp/pip-build-env-jj1ocwi0/overlay/lib/python3.10/site-packages/numpy/_core/include/numpy/ndarraytypes.h:1530:38: note: expected ‘const PyArrayObject *’
+{aka ‘const struct tagPyArrayObject_fields *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+       1530 | PyArray_STRIDES(const PyArrayObject *arr)
+            |                 ~~~~~~~~~~~~~~~~~~~~~^~~
+      pandas/_libs/src/ujson/python/JSONtoObj.c:319:31: warning: passing argument 1 of ‘PyArray_SETITEM’ from incompatible pointer type [-Wincompatible-pointer-
+types]
+        319 |         PyArray_SETITEM(npyarr->ret, item, value) == -1) {
+            |                         ~~~~~~^~~~~
+            |                               |
+            |                               PyObject * {aka struct _object *}
+      /tmp/pip-build-env-jj1ocwi0/overlay/lib/python3.10/site-packages/numpy/_core/include/numpy/ndarrayobject.h:292:32: note: expected ‘PyArrayObject *’ {aka ‘
+struct tagPyArrayObject_fields *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+        292 | PyArray_SETITEM(PyArrayObject *arr, char *itemptr, PyObject *v)
+            |                 ~~~~~~~~~~~~~~~^~~
+      error: command '/usr/bin/gcc' failed with exit code 1
+      [end of output]
+
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for pandas
+Failed to build pandas
+error: failed-wheel-build-for-install
+
+× Failed to build installable wheels for some pyproject.toml based projects
+╰─> pandas
+root@ceebef5ecae8:/app/UPET# ; tmux wait -S done
+bash: syntax error near unexpected token `;'
+root@ceebef5ecae8:/app/UPET# ; tmux wait -S done
+bash: syntax error near unexpected token `;'
+root@ceebef5ecae8:/app/UPET# ; tmux wait -S done
+bash: syntax error near unexpected token `;'
+root@ceebef5ecae8:/app/UPET# ; tmux wait -S done
+bash: syntax error near unexpected token `;'
+root@ceebef5ecae8:/app/UPET#

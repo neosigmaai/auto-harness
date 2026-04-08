@@ -1,0 +1,50 @@
+Previous command:
+keystrokes='attack troll with sword\n' is_blocking=True timeout_sec=10.0
+
+The previous command timed out after 10.0 seconds
+
+It is possible that the command is not yet finished executing. If that is the case, then do nothing. It is also possible that you have entered an interactive shell and should continue sending keystrokes as normal.
+
+Here is the current state of the terminal:
+
+ The Troll Room                                                                                                                   Score: 40       Moves: 33
+Taken.
+
+>go down
+Kitchen
+
+>west
+Living Room
+
+>examine door
+The engravings translate to "This space intentionally left blank."
+
+>move rug
+With a great effort, the rug is moved to one side of the room, revealing the dusty cover of a closed trap door.
+
+>open trap door
+The door reluctantly opens to reveal a rickety staircase descending into darkness.
+
+>descend stairs
+I don't know the word "descend".
+
+>down
+The trap door crashes shut, and you hear someone barring it.
+
+Cellar
+You are in a dark and damp cellar with a narrow passageway leading north, and a crawlway to the south. On the west is the bottom of a steep metal ramp which is
+unclimbable.
+Your sword is glowing with a faint blue glow.
+
+>north
+The Troll Room
+This is a small room with passages to the east and south and a forbidding hole leading west. Bloodstains and deep scratches (perhaps made by an axe) mar the
+walls.
+A nasty-looking troll, brandishing a bloody axe, blocks all passages out of the room.
+Your sword has begun to glow very brightly.
+
+>attack troll with sword; tmux wait -S done
+I don't know the word "tmux".
+
+>
+ 

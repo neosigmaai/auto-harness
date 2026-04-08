@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The output shows a list of tasks, but the STS12 task is not directly mentioned. There are references to STS14, STS15, and STS16, but STS12 is notably absent. This suggests that STS12 may not be directly supported or is bundled under a different name or category.",
+    "explanation": "Given the absence of STS12 in the available tasks, the best course of action is to verify if STS12 is bundled with another STS task or grouped under a different benchmark. Checking specific documentation or community forums for MTEB might provide additional insights.",
+    "commands": [
+        {
+            "keystrokes": "python -m mteb available_benchmarks\n",
+            "is_blocking": true,
+            "timeout_sec": 30
+        }
+    ],
+    "is_task_complete": false
+}

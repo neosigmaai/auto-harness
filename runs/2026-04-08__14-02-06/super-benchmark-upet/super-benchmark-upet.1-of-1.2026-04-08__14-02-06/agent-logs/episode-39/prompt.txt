@@ -1,0 +1,50 @@
+Previous command:
+keystrokes='y\n' is_blocking=True timeout_sec=30.0
+
+The previous command timed out after 30.0 seconds
+
+It is possible that the command is not yet finished executing. If that is the case, then do nothing. It is also possible that you have entered an interactive shell and should continue sending keystrokes as normal.
+
+Here is the current state of the terminal:
+
+Found existing installation: numpy 2.2.6
+Uninstalling numpy-2.2.6:
+  Would remove:
+    /usr/local/bin/f2py
+    /usr/local/bin/numpy-config
+    /usr/local/lib/python3.10/site-packages/numpy-2.2.6.dist-info/*
+    /usr/local/lib/python3.10/site-packages/numpy.libs/libgfortran-daac5196-038a5e3c.so.5.0.0
+    /usr/local/lib/python3.10/site-packages/numpy.libs/libscipy_openblas64_-128b20d9.so
+    /usr/local/lib/python3.10/site-packages/numpy/*
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)? y; tmux wait -S done
+Your response ('y; tmux wait -s done') was not one of the expected responses: y, n,
+Proceed (Y/n)?
+ 

@@ -1,0 +1,40 @@
+ Cellar                                                                                                                           Score: 40       Moves: 32
+>climb stairs
+Attic
+This is the attic. The only exit is a stairway leading down.
+A large coil of rope is lying in the corner.
+On a table is a nasty-looking knife.
+
+>take rope
+Taken.
+
+>take knife
+Taken.
+
+>go down
+Kitchen
+
+>west
+Living Room
+
+>examine door
+The engravings translate to "This space intentionally left blank."
+
+>move rug
+With a great effort, the rug is moved to one side of the room, revealing the dusty cover of a closed trap door.
+
+>open trap door
+The door reluctantly opens to reveal a rickety staircase descending into darkness.
+
+>descend stairs
+I don't know the word "descend".
+
+>down
+The trap door crashes shut, and you hear someone barring it.
+
+Cellar
+You are in a dark and damp cellar with a narrow passageway leading north, and a crawlway to the south. On the west is the bottom of a steep metal ramp which is
+unclimbable.
+Your sword is glowing with a faint blue glow.
+
+>

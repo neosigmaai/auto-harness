@@ -1,0 +1,1899 @@
+root@96bc7b887a86:/app/astropy# bash /tests/run-tests.sh; tmux wait -S done
+Hit:1 http://deb.debian.org/debian bookworm InRelease
+Hit:2 http://deb.debian.org/debian bookworm-updates InRelease
+Hit:3 http://deb.debian.org/debian-security bookworm-security InRelease
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  binutils binutils-aarch64-linux-gnu binutils-common cpp cpp-12 fontconfig-config fonts-dejavu-core gcc-12 libabsl20220623 libaom3 libasan8 libatomic1
+  libavif15 libbinutils libc-dev-bin libc-devtools libc6-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 libdav1d6 libde265-0 libdeflate0 libfontconfig1
+  libfreetype6 libgav1-1 libgcc-12-dev libgd3 libgomp1 libgprofng0 libheif1 libhwasan0 libisl23 libitm1 libjansson4 libjbig0 libjpeg62-turbo liblerc4 liblsan0
+  libmpc3 libmpfr6 libnsl-dev libnuma1 libpng16-16 librav1e0 libsvtav1enc1 libtiff6 libtirpc-dev libtsan2 libubsan1 libwebp7 libx265-199 libxpm4 libyuv0
+  linux-libc-dev manpages manpages-dev rpcsvc-proto
+Suggested packages:
+  binutils-doc cpp-doc gcc-12-locales cpp-12-doc gcc-multilib make autoconf automake libtool flex bison gdb gcc-doc gcc-12-doc glibc-doc libgd-tools
+  man-browser
+The following NEW packages will be installed:
+  binutils binutils-aarch64-linux-gnu binutils-common cpp cpp-12 fontconfig-config fonts-dejavu-core gcc gcc-12 libabsl20220623 libaom3 libasan8 libatomic1
+  libavif15 libbinutils libc-dev-bin libc-devtools libc6-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 libdav1d6 libde265-0 libdeflate0 libfontconfig1
+  libfreetype6 libgav1-1 libgcc-12-dev libgd3 libgomp1 libgprofng0 libheif1 libhwasan0 libisl23 libitm1 libjansson4 libjbig0 libjpeg62-turbo liblerc4 liblsan0
+  libmpc3 libmpfr6 libnsl-dev libnuma1 libpng16-16 librav1e0 libsvtav1enc1 libtiff6 libtirpc-dev libtsan2 libubsan1 libwebp7 libx265-199 libxpm4 libyuv0
+  linux-libc-dev manpages manpages-dev rpcsvc-proto
+0 upgraded, 60 newly installed, 0 to remove and 13 not upgraded.
+Need to get 57.1 MB of archives.
+After this operation, 222 MB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian bookworm/main arm64 manpages all 6.03-2 [1332 kB]
+Get:2 http://deb.debian.org/debian bookworm/main arm64 binutils-common arm64 2.40-2 [2487 kB]
+Get:3 http://deb.debian.org/debian bookworm/main arm64 libbinutils arm64 2.40-2 [645 kB]
+Get:4 http://deb.debian.org/debian bookworm/main arm64 libctf-nobfd0 arm64 2.40-2 [144 kB]
+Get:5 http://deb.debian.org/debian bookworm/main arm64 libctf0 arm64 2.40-2 [79.2 kB]
+Get:6 http://deb.debian.org/debian bookworm/main arm64 libgprofng0 arm64 2.40-2 [680 kB]
+Get:7 http://deb.debian.org/debian bookworm/main arm64 libjansson4 arm64 2.14-2 [40.2 kB]
+Get:8 http://deb.debian.org/debian bookworm/main arm64 binutils-aarch64-linux-gnu arm64 2.40-2 [2637 kB]
+Get:9 http://deb.debian.org/debian bookworm/main arm64 binutils arm64 2.40-2 [64.9 kB]
+Get:10 http://deb.debian.org/debian bookworm/main arm64 libisl23 arm64 0.25-1.1 [610 kB]
+Get:11 http://deb.debian.org/debian bookworm/main arm64 libmpfr6 arm64 4.2.0-1 [600 kB]
+Get:12 http://deb.debian.org/debian bookworm/main arm64 libmpc3 arm64 1.3.1-1 [49.2 kB]
+Get:13 http://deb.debian.org/debian bookworm/main arm64 cpp-12 arm64 12.2.0-14+deb12u1 [8228 kB]
+Get:14 http://deb.debian.org/debian bookworm/main arm64 cpp arm64 4:12.2.0-3 [6832 B]
+Get:15 http://deb.debian.org/debian bookworm/main arm64 fonts-dejavu-core all 2.37-6 [1068 kB]
+Get:16 http://deb.debian.org/debian bookworm/main arm64 fontconfig-config arm64 2.14.1-4 [315 kB]
+Get:17 http://deb.debian.org/debian bookworm/main arm64 libcc1-0 arm64 12.2.0-14+deb12u1 [37.7 kB]
+Get:18 http://deb.debian.org/debian bookworm/main arm64 libgomp1 arm64 12.2.0-14+deb12u1 [104 kB]
+Get:19 http://deb.debian.org/debian bookworm/main arm64 libitm1 arm64 12.2.0-14+deb12u1 [24.0 kB]
+Get:20 http://deb.debian.org/debian bookworm/main arm64 libatomic1 arm64 12.2.0-14+deb12u1 [9568 B]
+Get:21 http://deb.debian.org/debian bookworm/main arm64 libasan8 arm64 12.2.0-14+deb12u1 [2096 kB]
+Get:22 http://deb.debian.org/debian bookworm/main arm64 liblsan0 arm64 12.2.0-14+deb12u1 [926 kB]
+Get:23 http://deb.debian.org/debian bookworm/main arm64 libtsan2 arm64 12.2.0-14+deb12u1 [2178 kB]
+Get:24 http://deb.debian.org/debian bookworm/main arm64 libubsan1 arm64 12.2.0-14+deb12u1 [862 kB]
+Get:25 http://deb.debian.org/debian bookworm/main arm64 libhwasan0 arm64 12.2.0-14+deb12u1 [999 kB]
+Get:26 http://deb.debian.org/debian bookworm/main arm64 libgcc-12-dev arm64 12.2.0-14+deb12u1 [956 kB]
+Get:27 http://deb.debian.org/debian bookworm/main arm64 gcc-12 arm64 12.2.0-14+deb12u1 [16.3 MB]
+Get:28 http://deb.debian.org/debian bookworm/main arm64 gcc arm64 4:12.2.0-3 [5244 B]
+Get:29 http://deb.debian.org/debian bookworm/main arm64 libabsl20220623 arm64 20220623.1-1+deb12u2 [363 kB]
+Get:30 http://deb.debian.org/debian bookworm/main arm64 libaom3 arm64 3.6.0-1+deb12u2 [1373 kB]
+Get:31 http://deb.debian.org/debian bookworm/main arm64 libdav1d6 arm64 1.0.0-2+deb12u1 [275 kB]
+Get:32 http://deb.debian.org/debian bookworm/main arm64 libgav1-1 arm64 0.18.0-1+b1 [425 kB]
+Get:33 http://deb.debian.org/debian bookworm/main arm64 librav1e0 arm64 0.5.1-6 [552 kB]
+Get:34 http://deb.debian.org/debian bookworm/main arm64 libsvtav1enc1 arm64 1.4.1+dfsg-1 [1074 kB]
+Get:35 http://deb.debian.org/debian bookworm/main arm64 libjpeg62-turbo arm64 1:2.1.5-2 [171 kB]
+Get:36 http://deb.debian.org/debian bookworm/main arm64 libyuv0 arm64 0.0~git20230123.b2528b0-1 [122 kB]
+Get:37 http://deb.debian.org/debian bookworm/main arm64 libavif15 arm64 0.11.1-1+deb12u1 [88.4 kB]
+Get:38 http://deb.debian.org/debian bookworm/main arm64 libc-dev-bin arm64 2.36-9+deb12u13 [46.5 kB]
+Get:39 http://deb.debian.org/debian-security bookworm-security/main arm64 libpng16-16 arm64 1.6.39-2+deb12u4 [270 kB]
+Get:40 http://deb.debian.org/debian bookworm/main arm64 libfreetype6 arm64 2.12.1+dfsg-5+deb12u4 [368 kB]
+Get:41 http://deb.debian.org/debian bookworm/main arm64 libfontconfig1 arm64 2.14.1-4 [381 kB]
+Get:42 http://deb.debian.org/debian bookworm/main arm64 libde265-0 arm64 1.0.11-1+deb12u2 [148 kB]
+Get:43 http://deb.debian.org/debian bookworm/main arm64 libnuma1 arm64 2.0.16-1 [20.3 kB]
+Get:44 http://deb.debian.org/debian bookworm/main arm64 libx265-199 arm64 3.5-2+b1 [603 kB]
+Get:45 http://deb.debian.org/debian bookworm/main arm64 libheif1 arm64 1.15.1-1+deb12u1 [191 kB]
+Get:46 http://deb.debian.org/debian bookworm/main arm64 libdeflate0 arm64 1.14-1 [54.3 kB]
+Get:47 http://deb.debian.org/debian bookworm/main arm64 libjbig0 arm64 2.1-6.1 [30.0 kB]
+Get:48 http://deb.debian.org/debian bookworm/main arm64 liblerc4 arm64 4.0.0+ds-2 [138 kB]
+Get:49 http://deb.debian.org/debian bookworm/main arm64 libwebp7 arm64 1.2.4-0.2+deb12u1 [260 kB]
+Get:50 http://deb.debian.org/debian-security bookworm-security/main arm64 libtiff6 arm64 4.5.0-6+deb12u4 [301 kB]
+Get:51 http://deb.debian.org/debian bookworm/main arm64 libxpm4 arm64 1:3.5.12-1.1+deb12u1 [45.4 kB]
+Get:52 http://deb.debian.org/debian bookworm/main arm64 libgd3 arm64 2.3.3-9 [113 kB]
+Get:53 http://deb.debian.org/debian bookworm/main arm64 libc-devtools arm64 2.36-9+deb12u13 [53.8 kB]
+Get:54 http://deb.debian.org/debian-security bookworm-security/main arm64 linux-libc-dev arm64 6.1.164-1 [2217 kB]
+Get:55 http://deb.debian.org/debian bookworm/main arm64 libcrypt-dev arm64 1:4.4.33-2 [121 kB]
+Get:56 http://deb.debian.org/debian bookworm/main arm64 libtirpc-dev arm64 1.3.3+ds-1 [194 kB]
+Get:57 http://deb.debian.org/debian bookworm/main arm64 libnsl-dev arm64 1.3.0-2 [66.1 kB]
+Get:58 http://deb.debian.org/debian bookworm/main arm64 rpcsvc-proto arm64 1.4.3-1 [59.7 kB]
+Get:59 http://deb.debian.org/debian bookworm/main arm64 libc6-dev arm64 2.36-9+deb12u13 [1435 kB]
+Get:60 http://deb.debian.org/debian bookworm/main arm64 manpages-dev all 6.03-2 [2030 kB]
+Fetched 57.1 MB in 3s (18.5 MB/s)
+debconf: delaying package configuration, since apt-utils is not installed
+Selecting previously unselected package manpages.
+(Reading database ... 11230 files and directories currently installed.)
+Preparing to unpack .../00-manpages_6.03-2_all.deb ...
+Unpacking manpages (6.03-2) ...
+Selecting previously unselected package binutils-common:arm64.
+Preparing to unpack .../01-binutils-common_2.40-2_arm64.deb ...
+Unpacking binutils-common:arm64 (2.40-2) ...
+Selecting previously unselected package libbinutils:arm64.
+Preparing to unpack .../02-libbinutils_2.40-2_arm64.deb ...
+Unpacking libbinutils:arm64 (2.40-2) ...
+Selecting previously unselected package libctf-nobfd0:arm64.
+Preparing to unpack .../03-libctf-nobfd0_2.40-2_arm64.deb ...
+Unpacking libctf-nobfd0:arm64 (2.40-2) ...
+Selecting previously unselected package libctf0:arm64.
+Preparing to unpack .../04-libctf0_2.40-2_arm64.deb ...
+Unpacking libctf0:arm64 (2.40-2) ...
+Selecting previously unselected package libgprofng0:arm64.
+Preparing to unpack .../05-libgprofng0_2.40-2_arm64.deb ...
+Unpacking libgprofng0:arm64 (2.40-2) ...
+Selecting previously unselected package libjansson4:arm64.
+Preparing to unpack .../06-libjansson4_2.14-2_arm64.deb ...
+Unpacking libjansson4:arm64 (2.14-2) ...
+Selecting previously unselected package binutils-aarch64-linux-gnu.
+Preparing to unpack .../07-binutils-aarch64-linux-gnu_2.40-2_arm64.deb ...
+Unpacking binutils-aarch64-linux-gnu (2.40-2) ...
+Selecting previously unselected package binutils.
+Preparing to unpack .../08-binutils_2.40-2_arm64.deb ...
+Unpacking binutils (2.40-2) ...
+Selecting previously unselected package libisl23:arm64.
+Preparing to unpack .../09-libisl23_0.25-1.1_arm64.deb ...
+Unpacking libisl23:arm64 (0.25-1.1) ...
+Selecting previously unselected package libmpfr6:arm64.
+Preparing to unpack .../10-libmpfr6_4.2.0-1_arm64.deb ...
+Unpacking libmpfr6:arm64 (4.2.0-1) ...
+Selecting previously unselected package libmpc3:arm64.
+Preparing to unpack .../11-libmpc3_1.3.1-1_arm64.deb ...
+Unpacking libmpc3:arm64 (1.3.1-1) ...
+Selecting previously unselected package cpp-12.
+Preparing to unpack .../12-cpp-12_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking cpp-12 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package cpp.
+Preparing to unpack .../13-cpp_4%3a12.2.0-3_arm64.deb ...
+Unpacking cpp (4:12.2.0-3) ...
+Selecting previously unselected package fonts-dejavu-core.
+Preparing to unpack .../14-fonts-dejavu-core_2.37-6_all.deb ...
+Unpacking fonts-dejavu-core (2.37-6) ...
+Selecting previously unselected package fontconfig-config.
+Preparing to unpack .../15-fontconfig-config_2.14.1-4_arm64.deb ...
+Unpacking fontconfig-config (2.14.1-4) ...
+Selecting previously unselected package libcc1-0:arm64.
+Preparing to unpack .../16-libcc1-0_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libcc1-0:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libgomp1:arm64.
+Preparing to unpack .../17-libgomp1_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libgomp1:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libitm1:arm64.
+Preparing to unpack .../18-libitm1_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libitm1:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libatomic1:arm64.
+Preparing to unpack .../19-libatomic1_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libatomic1:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libasan8:arm64.
+Preparing to unpack .../20-libasan8_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libasan8:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package liblsan0:arm64.
+Preparing to unpack .../21-liblsan0_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking liblsan0:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libtsan2:arm64.
+Preparing to unpack .../22-libtsan2_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libtsan2:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libubsan1:arm64.
+Preparing to unpack .../23-libubsan1_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libubsan1:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libhwasan0:arm64.
+Preparing to unpack .../24-libhwasan0_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libhwasan0:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libgcc-12-dev:arm64.
+Preparing to unpack .../25-libgcc-12-dev_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libgcc-12-dev:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package gcc-12.
+Preparing to unpack .../26-gcc-12_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking gcc-12 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package gcc.
+Preparing to unpack .../27-gcc_4%3a12.2.0-3_arm64.deb ...
+Unpacking gcc (4:12.2.0-3) ...
+Selecting previously unselected package libabsl20220623:arm64.
+Preparing to unpack .../28-libabsl20220623_20220623.1-1+deb12u2_arm64.deb ...
+Unpacking libabsl20220623:arm64 (20220623.1-1+deb12u2) ...
+Selecting previously unselected package libaom3:arm64.
+Preparing to unpack .../29-libaom3_3.6.0-1+deb12u2_arm64.deb ...
+Unpacking libaom3:arm64 (3.6.0-1+deb12u2) ...
+Selecting previously unselected package libdav1d6:arm64.
+Preparing to unpack .../30-libdav1d6_1.0.0-2+deb12u1_arm64.deb ...
+Unpacking libdav1d6:arm64 (1.0.0-2+deb12u1) ...
+Selecting previously unselected package libgav1-1:arm64.
+Preparing to unpack .../31-libgav1-1_0.18.0-1+b1_arm64.deb ...
+Unpacking libgav1-1:arm64 (0.18.0-1+b1) ...
+Selecting previously unselected package librav1e0:arm64.
+Preparing to unpack .../32-librav1e0_0.5.1-6_arm64.deb ...
+Unpacking librav1e0:arm64 (0.5.1-6) ...
+Selecting previously unselected package libsvtav1enc1:arm64.
+Preparing to unpack .../33-libsvtav1enc1_1.4.1+dfsg-1_arm64.deb ...
+Unpacking libsvtav1enc1:arm64 (1.4.1+dfsg-1) ...
+Selecting previously unselected package libjpeg62-turbo:arm64.
+Preparing to unpack .../34-libjpeg62-turbo_1%3a2.1.5-2_arm64.deb ...
+Unpacking libjpeg62-turbo:arm64 (1:2.1.5-2) ...
+Selecting previously unselected package libyuv0:arm64.
+Preparing to unpack .../35-libyuv0_0.0~git20230123.b2528b0-1_arm64.deb ...
+Unpacking libyuv0:arm64 (0.0~git20230123.b2528b0-1) ...
+Selecting previously unselected package libavif15:arm64.
+Preparing to unpack .../36-libavif15_0.11.1-1+deb12u1_arm64.deb ...
+Unpacking libavif15:arm64 (0.11.1-1+deb12u1) ...
+Selecting previously unselected package libc-dev-bin.
+Preparing to unpack .../37-libc-dev-bin_2.36-9+deb12u13_arm64.deb ...
+Unpacking libc-dev-bin (2.36-9+deb12u13) ...
+Selecting previously unselected package libpng16-16:arm64.
+Preparing to unpack .../38-libpng16-16_1.6.39-2+deb12u4_arm64.deb ...
+Unpacking libpng16-16:arm64 (1.6.39-2+deb12u4) ...
+Selecting previously unselected package libfreetype6:arm64.
+Preparing to unpack .../39-libfreetype6_2.12.1+dfsg-5+deb12u4_arm64.deb ...
+Unpacking libfreetype6:arm64 (2.12.1+dfsg-5+deb12u4) ...
+Selecting previously unselected package libfontconfig1:arm64.
+Preparing to unpack .../40-libfontconfig1_2.14.1-4_arm64.deb ...
+Unpacking libfontconfig1:arm64 (2.14.1-4) ...
+Selecting previously unselected package libde265-0:arm64.
+Preparing to unpack .../41-libde265-0_1.0.11-1+deb12u2_arm64.deb ...
+Unpacking libde265-0:arm64 (1.0.11-1+deb12u2) ...
+Selecting previously unselected package libnuma1:arm64.
+Preparing to unpack .../42-libnuma1_2.0.16-1_arm64.deb ...
+Unpacking libnuma1:arm64 (2.0.16-1) ...
+Selecting previously unselected package libx265-199:arm64.
+Preparing to unpack .../43-libx265-199_3.5-2+b1_arm64.deb ...
+Unpacking libx265-199:arm64 (3.5-2+b1) ...
+Selecting previously unselected package libheif1:arm64.
+Preparing to unpack .../44-libheif1_1.15.1-1+deb12u1_arm64.deb ...
+Unpacking libheif1:arm64 (1.15.1-1+deb12u1) ...
+Selecting previously unselected package libdeflate0:arm64.
+Preparing to unpack .../45-libdeflate0_1.14-1_arm64.deb ...
+Unpacking libdeflate0:arm64 (1.14-1) ...
+Selecting previously unselected package libjbig0:arm64.
+Preparing to unpack .../46-libjbig0_2.1-6.1_arm64.deb ...
+Unpacking libjbig0:arm64 (2.1-6.1) ...
+Selecting previously unselected package liblerc4:arm64.
+Preparing to unpack .../47-liblerc4_4.0.0+ds-2_arm64.deb ...
+Unpacking liblerc4:arm64 (4.0.0+ds-2) ...
+Selecting previously unselected package libwebp7:arm64.
+Preparing to unpack .../48-libwebp7_1.2.4-0.2+deb12u1_arm64.deb ...
+Unpacking libwebp7:arm64 (1.2.4-0.2+deb12u1) ...
+Selecting previously unselected package libtiff6:arm64.
+Preparing to unpack .../49-libtiff6_4.5.0-6+deb12u4_arm64.deb ...
+Unpacking libtiff6:arm64 (4.5.0-6+deb12u4) ...
+Selecting previously unselected package libxpm4:arm64.
+Preparing to unpack .../50-libxpm4_1%3a3.5.12-1.1+deb12u1_arm64.deb ...
+Unpacking libxpm4:arm64 (1:3.5.12-1.1+deb12u1) ...
+Selecting previously unselected package libgd3:arm64.
+Preparing to unpack .../51-libgd3_2.3.3-9_arm64.deb ...
+Unpacking libgd3:arm64 (2.3.3-9) ...
+Selecting previously unselected package libc-devtools.
+Preparing to unpack .../52-libc-devtools_2.36-9+deb12u13_arm64.deb ...
+Unpacking libc-devtools (2.36-9+deb12u13) ...
+Selecting previously unselected package linux-libc-dev:arm64.
+Preparing to unpack .../53-linux-libc-dev_6.1.164-1_arm64.deb ...
+Unpacking linux-libc-dev:arm64 (6.1.164-1) ...
+Selecting previously unselected package libcrypt-dev:arm64.
+Preparing to unpack .../54-libcrypt-dev_1%3a4.4.33-2_arm64.deb ...
+Unpacking libcrypt-dev:arm64 (1:4.4.33-2) ...
+Selecting previously unselected package libtirpc-dev:arm64.
+Preparing to unpack .../55-libtirpc-dev_1.3.3+ds-1_arm64.deb ...
+Unpacking libtirpc-dev:arm64 (1.3.3+ds-1) ...
+Selecting previously unselected package libnsl-dev:arm64.
+Preparing to unpack .../56-libnsl-dev_1.3.0-2_arm64.deb ...
+Unpacking libnsl-dev:arm64 (1.3.0-2) ...
+Selecting previously unselected package rpcsvc-proto.
+Preparing to unpack .../57-rpcsvc-proto_1.4.3-1_arm64.deb ...
+Unpacking rpcsvc-proto (1.4.3-1) ...
+Selecting previously unselected package libc6-dev:arm64.
+Preparing to unpack .../58-libc6-dev_2.36-9+deb12u13_arm64.deb ...
+Unpacking libc6-dev:arm64 (2.36-9+deb12u13) ...
+Selecting previously unselected package manpages-dev.
+Preparing to unpack .../59-manpages-dev_6.03-2_all.deb ...
+Unpacking manpages-dev (6.03-2) ...
+Setting up libaom3:arm64 (3.6.0-1+deb12u2) ...
+Setting up libabsl20220623:arm64 (20220623.1-1+deb12u2) ...
+Setting up liblerc4:arm64 (4.0.0+ds-2) ...
+Setting up libxpm4:arm64 (1:3.5.12-1.1+deb12u1) ...
+Setting up manpages (6.03-2) ...
+Setting up binutils-common:arm64 (2.40-2) ...
+Setting up libdeflate0:arm64 (1.14-1) ...
+Setting up linux-libc-dev:arm64 (6.1.164-1) ...
+Setting up libctf-nobfd0:arm64 (2.40-2) ...
+Setting up libsvtav1enc1:arm64 (1.4.1+dfsg-1) ...
+Setting up libgomp1:arm64 (12.2.0-14+deb12u1) ...
+Setting up libjbig0:arm64 (2.1-6.1) ...
+Setting up librav1e0:arm64 (0.5.1-6) ...
+Setting up libjansson4:arm64 (2.14-2) ...
+Setting up libtirpc-dev:arm64 (1.3.3+ds-1) ...
+Setting up rpcsvc-proto (1.4.3-1) ...
+Setting up libjpeg62-turbo:arm64 (1:2.1.5-2) ...
+Setting up libmpfr6:arm64 (4.2.0-1) ...
+Setting up libpng16-16:arm64 (1.6.39-2+deb12u4) ...
+Setting up libmpc3:arm64 (1.3.1-1) ...
+Setting up libatomic1:arm64 (12.2.0-14+deb12u1) ...
+Setting up fonts-dejavu-core (2.37-6) ...
+Setting up libgav1-1:arm64 (0.18.0-1+b1) ...
+Setting up libdav1d6:arm64 (1.0.0-2+deb12u1) ...
+Setting up libwebp7:arm64 (1.2.4-0.2+deb12u1) ...
+Setting up libubsan1:arm64 (12.2.0-14+deb12u1) ...
+Setting up libnuma1:arm64 (2.0.16-1) ...
+Setting up libnsl-dev:arm64 (1.3.0-2) ...
+Setting up libhwasan0:arm64 (12.2.0-14+deb12u1) ...
+Setting up libcrypt-dev:arm64 (1:4.4.33-2) ...
+Setting up libtiff6:arm64 (4.5.0-6+deb12u4) ...
+Setting up libasan8:arm64 (12.2.0-14+deb12u1) ...
+Setting up libtsan2:arm64 (12.2.0-14+deb12u1) ...
+Setting up libbinutils:arm64 (2.40-2) ...
+Setting up libisl23:arm64 (0.25-1.1) ...
+Setting up libde265-0:arm64 (1.0.11-1+deb12u2) ...
+Setting up libc-dev-bin (2.36-9+deb12u13) ...
+Setting up libyuv0:arm64 (0.0~git20230123.b2528b0-1) ...
+Setting up libcc1-0:arm64 (12.2.0-14+deb12u1) ...
+Setting up liblsan0:arm64 (12.2.0-14+deb12u1) ...
+Setting up libitm1:arm64 (12.2.0-14+deb12u1) ...
+Setting up libctf0:arm64 (2.40-2) ...
+Setting up manpages-dev (6.03-2) ...
+Setting up cpp-12 (12.2.0-14+deb12u1) ...
+Setting up libavif15:arm64 (0.11.1-1+deb12u1) ...
+Setting up fontconfig-config (2.14.1-4) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used. at /usr/share/perl5/Debconf/FrontEnd/Dialog.pm line 78.)
+debconf: falling back to frontend: Readline
+Setting up libgprofng0:arm64 (2.40-2) ...
+Setting up libfreetype6:arm64 (2.12.1+dfsg-5+deb12u4) ...
+Setting up libgcc-12-dev:arm64 (12.2.0-14+deb12u1) ...
+Setting up libx265-199:arm64 (3.5-2+b1) ...
+Setting up cpp (4:12.2.0-3) ...
+Setting up libc6-dev:arm64 (2.36-9+deb12u13) ...
+Setting up libfontconfig1:arm64 (2.14.1-4) ...
+Setting up libheif1:arm64 (1.15.1-1+deb12u1) ...
+Setting up binutils-aarch64-linux-gnu (2.40-2) ...
+Setting up binutils (2.40-2) ...
+Setting up gcc-12 (12.2.0-14+deb12u1) ...
+Setting up libgd3:arm64 (2.3.3-9) ...
+Setting up libc-devtools (2.36-9+deb12u13) ...
+Setting up gcc (4:12.2.0-3) ...
+Processing triggers for libc-bin (2.36-9+deb12u13) ...
+patching file astropy/io/ascii/tests/test_qdp.py
+Collecting numpy==1.23.4
+  Downloading numpy-1.23.4-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (14.0 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.0/14.0 MB 14.0 MB/s eta 0:00:00
+Installing collected packages: numpy
+Successfully installed numpy-1.23.4
+
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+Using pip 23.0.1 from /app/astropy/tests-venv/lib/python3.9/site-packages/pip (python 3.9)
+Obtaining file:///app/astropy
+  Running command pip subprocess to install build dependencies
+  Collecting setuptools==68.0.0
+    Downloading setuptools-68.0.0-py3-none-any.whl (804 kB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 804.0/804.0 kB 4.1 MB/s eta 0:00:00
+  Collecting setuptools_scm>=6.2
+    Downloading setuptools_scm-9.2.2-py3-none-any.whl (62 kB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 63.0/63.0 kB 5.4 MB/s eta 0:00:00
+  Collecting wheel
+    Downloading wheel-0.46.3-py3-none-any.whl (30 kB)
+  Collecting cython==0.29.30
+    Downloading Cython-0.29.30-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.manylinux_2_24_aarch64.whl (1.8 MB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 17.1 MB/s eta 0:00:00
+  Collecting oldest-supported-numpy
+    Downloading oldest_supported_numpy-2023.12.21-py3-none-any.whl (4.9 kB)
+  Collecting extension-helpers
+    Downloading extension_helpers-1.2.0-py3-none-any.whl (23 kB)
+  Collecting packaging>=20
+    Downloading packaging-26.0-py3-none-any.whl (74 kB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 74.4/74.4 kB 15.2 MB/s eta 0:00:00
+  Collecting tomli>=1
+    Downloading tomli-2.4.1-py3-none-any.whl (14 kB)
+  Collecting typing-extensions
+    Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.6/44.6 kB 20.8 MB/s eta 0:00:00
+  Collecting numpy==1.19.3
+    Downloading numpy-1.19.3-cp39-cp39-manylinux2014_aarch64.whl (12.4 MB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.4/12.4 MB 24.1 MB/s eta 0:00:00
+  Installing collected packages: typing-extensions, tomli, setuptools, packaging, numpy, cython, wheel, setuptools_scm, oldest-supported-numpy, extension-helper
+s
+  Successfully installed cython-0.29.30 extension-helpers-1.2.0 numpy-1.19.3 oldest-supported-numpy-2023.12.21 packaging-26.0 setuptools-68.0.0 setuptools_scm-9
+.2.2 tomli-2.4.1 typing-extensions-4.15.0 wheel-0.46.3
+
+  [notice] A new release of pip is available: 23.0.1 -> 26.0.1
+  [notice] To update, run: pip install --upgrade pip
+  Installing build dependencies ... done
+  Running command Checking if build backend supports build_editable
+  Checking if build backend supports build_editable ... done
+  Running command Getting requirements to build editable
+  running egg_info
+  creating astropy.egg-info
+  writing astropy.egg-info/PKG-INFO
+  writing dependency_links to astropy.egg-info/dependency_links.txt
+  writing entry points to astropy.egg-info/entry_points.txt
+  writing requirements to astropy.egg-info/requires.txt
+  writing top-level names to astropy.egg-info/top_level.txt
+  writing manifest file 'astropy.egg-info/SOURCES.txt'
+  reading manifest template 'MANIFEST.in'
+  no previously-included directories found matching 'docs/_build'
+  no previously-included directories found matching 'build'
+  warning: no previously-included files matching '*.pyc' found anywhere in distribution
+  warning: no previously-included files matching '*.o' found anywhere in distribution
+  adding license file 'LICENSE.rst'
+  writing manifest file 'astropy.egg-info/SOURCES.txt'
+  Getting requirements to build editable ... done
+  Running command Preparing editable metadata (pyproject.toml)
+  running dist_info
+  creating /tmp/pip-modern-metadata-06izxhek/astropy.egg-info
+  writing /tmp/pip-modern-metadata-06izxhek/astropy.egg-info/PKG-INFO
+  writing dependency_links to /tmp/pip-modern-metadata-06izxhek/astropy.egg-info/dependency_links.txt
+  writing entry points to /tmp/pip-modern-metadata-06izxhek/astropy.egg-info/entry_points.txt
+  writing requirements to /tmp/pip-modern-metadata-06izxhek/astropy.egg-info/requires.txt
+  writing top-level names to /tmp/pip-modern-metadata-06izxhek/astropy.egg-info/top_level.txt
+  writing manifest file '/tmp/pip-modern-metadata-06izxhek/astropy.egg-info/SOURCES.txt'
+  reading manifest template 'MANIFEST.in'
+  no previously-included directories found matching 'docs/_build'
+  no previously-included directories found matching 'build'
+  warning: no previously-included files matching '*.pyc' found anywhere in distribution
+  warning: no previously-included files matching '*.o' found anywhere in distribution
+  adding license file 'LICENSE.rst'
+  writing manifest file '/tmp/pip-modern-metadata-06izxhek/astropy.egg-info/SOURCES.txt'
+  creating '/tmp/pip-modern-metadata-06izxhek/astropy-5.3.dev882+g7269fa3e3.d20260408.dist-info'
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/wheel/bdist_wheel.py:4: FutureWarning: The 'wheel' package is no longer the canonical location
+ of the 'bdist_wheel' command, and will be removed in a future release. Please update to setuptools v70.1 or later which contains an integrated version of this
+command.
+    warn(
+  Preparing editable metadata (pyproject.toml) ... done
+Requirement already satisfied: numpy>=1.21 in ./tests-venv/lib/python3.9/site-packages (from astropy==5.3.dev882+g7269fa3e3.d20260408) (1.23.4)
+Collecting PyYAML>=3.13
+  Downloading pyyaml-6.0.3-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (737 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 737.6/737.6 kB 10.9 MB/s eta 0:00:00
+Collecting pyerfa>=2.0
+  Downloading pyerfa-2.0.1.5-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (692 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 692.8/692.8 kB 21.4 MB/s eta 0:00:00
+Collecting packaging>=19.0
+  Using cached packaging-26.0-py3-none-any.whl (74 kB)
+Collecting pytest-xdist
+  Downloading pytest_xdist-3.8.0-py3-none-any.whl (46 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 46.4/46.4 kB 20.7 MB/s eta 0:00:00
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/96/77/5202512f57e42c0713af2929b51d077e964f4758c41b2cc2ecef
+dc501b30/pytest_doctestplus-1.7.0-py3-none-any.whl (from https://pypi.org/simple/pytest-doctestplus/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/a3/1b/0948938381387d810ebcedbbab6c930431996390b09538158d7f
+cbeef379/pytest_doctestplus-1.7.0.tar.gz (from https://pypi.org/simple/pytest-doctestplus/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/f4/72/8e70c7c3238cba0afa8dbef94a1ce7d88ecd0fab3d8d0da394a1
+c3964a41/pytest_doctestplus-1.7.1-py3-none-any.whl (from https://pypi.org/simple/pytest-doctestplus/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/59/43/6db18218cdfa15bd03cba3292345223925011ba7428e6183da97
+c6b1dcb1/pytest_doctestplus-1.7.1.tar.gz (from https://pypi.org/simple/pytest-doctestplus/) (requires-python:>=3.10)
+Collecting pytest-doctestplus>=0.12
+  Downloading pytest_doctestplus-1.6.0-py3-none-any.whl (25 kB)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/72/99/cafef234114a3b6d9f3aaed0723b437c40c57bdb7b3e4c3a575b
+c4890052/pytest-9.0.0-py3-none-any.whl (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/da/1d/eb34f286b164c5e431a810a38697409cca1112cee04b287bb56a
+c486730b/pytest-9.0.0.tar.gz (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/0b/8b/6300fb80f858cda1c51ffa17075df5d846757081d11ab4aa35ce
+f9e6258b/pytest-9.0.1-py3-none-any.whl (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/07/56/f013048ac4bc4c1d9be45afd4ab209ea62822fb1598f40687e6b
+f45dcea4/pytest-9.0.1.tar.gz (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/3b/ab/b3226f0bd7cdcf710fbede2b3548584366da3b19b5021e74f5bd
+e2a8fa3f/pytest-9.0.2-py3-none-any.whl (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d1/db/7ef3487e0fb0049ddb5ce41d3a49c235bf9ad299b6a25d5780a8
+9f19230f/pytest-9.0.2.tar.gz (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d4/24/a372aaf5c9b7208e7112038812994107bc65a84cd00e0354a88c
+2c77a617/pytest-9.0.3-py3-none-any.whl (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/7d/0d/549bd94f1a0a402dc8cf64563a117c0f3765662e2e668477624b
+aeec44d5/pytest-9.0.3.tar.gz (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+Collecting pytest>=7.0
+  Downloading pytest-8.4.2-py3-none-any.whl (365 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 365.8/365.8 kB 38.4 MB/s eta 0:00:00
+Collecting pytest-astropy-header>=0.2.1
+  Downloading pytest_astropy_header-0.2.2-py3-none-any.whl (7.8 kB)
+Collecting pytest-astropy>=0.10
+  Downloading pytest_astropy-0.11.0-py3-none-any.whl (5.2 kB)
+Collecting pygments>=2.7.2
+  Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 13.3 MB/s eta 0:00:00
+Collecting pluggy<2,>=1.5
+  Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/13/71/3970abe530a7a15e406874a30ed6cf1ead266444b4503ebb2f68
+b4d98f30/iniconfig-2.2.0-py3-none-any.whl (from https://pypi.org/simple/iniconfig/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/8e/11/2f7713979d561602e14b8fdd99a0e2e8ff2d901de1041c42a23a
+4c33f2c3/iniconfig-2.2.0.tar.gz (from https://pypi.org/simple/iniconfig/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/cb/b1/3846dd7f199d53cb17f49cba7e651e9ce294d8497c8c150530ed
+11865bb8/iniconfig-2.3.0-py3-none-any.whl (from https://pypi.org/simple/iniconfig/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/72/34/14ca021ce8e5dfedc35312d08ba8bf51fdd999c576889fc2c24c
+b97f4f10/iniconfig-2.3.0.tar.gz (from https://pypi.org/simple/iniconfig/) (requires-python:>=3.10)
+Collecting iniconfig>=1
+  Downloading iniconfig-2.1.0-py3-none-any.whl (6.0 kB)
+Collecting exceptiongroup>=1
+  Downloading exceptiongroup-1.3.1-py3-none-any.whl (16 kB)
+Collecting tomli>=1
+  Using cached tomli-2.4.1-py3-none-any.whl (14 kB)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/77/a4/22f92ab550a961db0991c230f886c3f09758a4d9a359127f6879
+3f80631a/hypothesis-6.142.0-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/fe/96/191a3de65eaccfb9af92206854fd6a470d0f6582589c7522b823
+44977df4/hypothesis-6.142.0.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/55/16/2c8023ea706dd3ef155b1ffe531cd7672271cd9c70fbbbafba61
+4b218679/hypothesis-6.142.1-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/de/13/a4f29624db4d88811d6c4b7708769180004b26f5a2ee6e8a2e8c
+605da5da/hypothesis-6.142.1.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/9b/8f/194d63f715c7b0ace35b4f2a83b756d5bc703299b706c401b7ec
+593054fc/hypothesis-6.142.2-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/47/83/8f76d7c965beb4d3a65d188232c32db97b0799b0e893227d520d
+5d2a0144/hypothesis-6.142.2.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/28/42/7422624c9079865a094e3e13014ecf21f07f07b190df09e1feaa
+aa687891/hypothesis-6.142.3-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/e8/c9/03b5177dcd0224338c9ef63890bc52c0b0fbc86fba7c2c8a8523
+c0f02833/hypothesis-6.142.3.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/3e/9f/8010f93e175ecd996f54df9019ee8c58025fc21ed47658b0a58d
+d25ebe8b/hypothesis-6.142.4-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/47/0b/76a062d1d6cd68342b460c2f5627e1ad1102a3dd781acd5c096c
+75aca0d6/hypothesis-6.142.4.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/e5/cf/211c679639ad396ad7cd348fc2cf54fcf6a5fed90f96a8b92e25
+ced55230/hypothesis-6.142.5-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/e5/31/24e8be99d813060a7ab522458fcd843c75a8c0654a8a89965545
+26af6480/hypothesis-6.142.5.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d2/85/2b64f5ec3927abe9638b1c50bf906508d8b6c9104c5b29b86ff6
+c9c3769a/hypothesis-6.143.0-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/12/77/1a89c2498e678d7ad4040f3012b5ec4ea2e44b9f3ec9a7b703f0
+af02e917/hypothesis-6.143.0.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/de/c6/b6d3e96fa2367edb3f30f6b3ccb7cd061b1603f2103119852530
+99d13b55/hypothesis-6.143.1-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/b8/7e/7217747127792254cef8e7f0b82bc3fe659f46b4efbd2e33abb7
+6a8a6978/hypothesis-6.143.1.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/b5/07/3fe99e5cd586dcb546f4eaac84a0a256c15a55cce392b42650c0
+261aa7e8/hypothesis-6.144.0-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d2/d5/622284cecf35fc1a702d415a0d6c988202a205a1ff2d94528550
+81d80411/hypothesis-6.144.0.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/fa/cc/95f41ff082642f7face7856fcb2abcfe7ba09d6108d2db79751f
+aba87ea8/hypothesis-6.144.1-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/b1/ff/1549cca070e5b58d9024a24169cd677e9adfa8f429fe2992cb57
+06db1e64/hypothesis-6.144.1.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/e6/ab/0070ebfab7a1a55d6a5d44fbfe8b994fe76c306434cc32ff8ac2
+eb442779/hypothesis-6.145.0-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/45/c1/6d1e8a969ee9611980fb09f11710ea3760746aee889452423e92
+b06264ba/hypothesis-6.145.0.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/9c/e3/d4d9195ace4a407f665622c74635fd28901539b8ee375f31be08
+613eb94d/hypothesis-6.145.1-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/83/22/a3aba4f28826ddee2a1f5b0cb6fcc295012794139ea159990dc1
+e987cfd8/hypothesis-6.145.1.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/ea/ad/49568317b2282d14607cc72242aa595f57298aa49847ae045805
+cce6071b/hypothesis-6.146.0-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/dd/77/5673c9ba8d34f2d808e566cbe7d98daa75ec5e9209c7d6672586
+cc34f57e/hypothesis-6.146.0.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/b2/1b/932eddc3d55c4ed6c585006cffe6c6a133b5e1797d873de0bcf5
+208e4fed/hypothesis-6.147.0-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/f3/53/e19fe74671fd60db86344a4623c818fac58b813cc3efbb7ea3b3
+074dcb71/hypothesis-6.147.0.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/02/f2/17075fb571eb11ca82c2a7b1e3a3f2c158567b44cdee90f639bf
+277014ca/hypothesis-6.148.0-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/6e/a5/8565e19f407fb7a2f57cccecf6894e05c047414f2b50a51a37af
+49a9f5ae/hypothesis-6.148.0.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/a4/39/a4f6a711970e6c23be35b967907f766064e27945f5b44855a00f
+a14af3bb/hypothesis-6.148.1-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/fd/5f/b08ad8dc0a79c3828dd137b4f55243f5d0342b02e963f5298dcb
+3bec7021/hypothesis-6.148.1.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10.2'): https://files.pythonhosted.org/packages/b1/d2/c2673aca0127e204965e0e9b3b7a0e91e9b12993859ac8758a
+bd22669b89/hypothesis-6.148.2-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10.2)
+  Link requires a different Python (3.9.25 not in: '>=3.10.2'): https://files.pythonhosted.org/packages/4a/99/a3c6eb3fdd6bfa01433d674b0f12cd9102aa99630689427422
+d920aea9c6/hypothesis-6.148.2.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10.2)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/0a/61/8c9fd9397eb46ac54d974be8b9e619c386d6b47a462d8df962eb
+b79980f9/hypothesis-6.148.3-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/e1/3d/41da3727e5f3e6b0c79b9657946c742e2f61d24edcde3e1660e3
+37509586/hypothesis-6.148.3.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/b6/05/643b677f776121bfc6d3e16e099ebb4f2a761bad7085f242dc4a
+694309f2/hypothesis-6.148.4-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/e5/a2/d894cf29ddfc96c434fd8fb5ee09370a1f389c8508718014e596
+81fac2fa/hypothesis-6.148.4.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/76/df/ad7750513f38913f27ade4d578d2ba6963ea546fc77f84e5c4e3
+80ae756a/hypothesis-6.148.5-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/13/3b/36d12da8dde97520bbec240de77765291cf764e46f96030604c5
+724ddd94/hypothesis-6.148.5.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/26/23/59af28c84413a7b92036a04d600b3f1132783096503e0259a546
+3fa20f96/hypothesis-6.148.6-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/20/2f/828a50d0a87acf28e3788b1987250ed1cd08d7f0c91a138e3b4f
+9ffe5198/hypothesis-6.148.6.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/e9/55/fa5607e4a4af96dfa0e7efd81bbd130735cedd21aac70b25e061
+91bff92f/hypothesis-6.148.7-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/09/5e/6a506e81d4dfefed2e838b6beaaae87b2e411dda3da0a3abf940
+99f194ae/hypothesis-6.148.7.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/61/95/0742f59910074262e98d9f3bb0f7fb7a6b4bfb7e70b6d203eeb5
+625a6452/hypothesis-6.148.8-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/25/b3/e098d91195f121602bb3e4d00276cf1da0035df53e9deeb18115
+467d6da9/hypothesis-6.148.8.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/ac/65/c7fbad05a0ace913b60342d36d1b871edc861f81ab98f60a298a
+781144a5/hypothesis-6.148.9-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/b4/1b/de4a349fe5942e500c3f6b0e61e09347d9fefab9e1ac7048c909
+080a31a0/hypothesis-6.148.9.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/f5/0d/7057d950c154aa7393312536fe416a91289b53a98acd22fc7373
+0a2441ab/hypothesis-6.148.10-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/30/c7/d6805f66a7650549cbddca008a3042dcd0ec71394902c1937aa0
+ab0efa1e/hypothesis-6.148.10.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/44/da/cf5888306ed6cfd76b50c736e996400b5ede43f28da967986b9f
+1138fabd/hypothesis-6.148.11-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d2/98/ccbc8a02b4e2c27e40e61718419aa0195b55bcd69260e81270b9
+ff39d61e/hypothesis-6.148.11.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/80/e3/2b46dcff121175552a0eb12d9ab2fc65dfbae14447e6c5e7cbea
+9cd43552/hypothesis-6.148.12-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/e6/73/832d0004c927622bd3906a1738eb1d740e5f857cd609b8a0d4ae
+3ca37be5/hypothesis-6.148.12.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/08/c6/0db1433a008f9a4bb946c7e90be70fe7b761f42439c4a4c7c853
+002791d2/hypothesis-6.148.13-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/13/19/e21b48bcfd048dae16476890e7cf697349aa62045fbb983c6a12
+bb847401/hypothesis-6.148.13.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/bc/98/e0e4d75e92ec3b84ed6232baf48eb410fa68650b1fa5102ad52c
+f378bf97/hypothesis-6.149.0-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/e3/60/0461f30ba3b97ea8a01ea00d408f8192f9b94e99e431c75f30fb
+6d65423c/hypothesis-6.149.0.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/2e/de/49d680ea2e43237a06adadce52cc1f7042551295240a3c7eaeac
+a9f8c009/hypothesis-6.149.1-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/c0/8d/b332c373c2571996d33b8721f3b35788fac8dc3770fe7958f639
+f2a0f24e/hypothesis-6.149.1.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/0f/6c/49e29a0b856be17048fa4a216cc21bf914623f66305f6327b7a9
+bcec6871/hypothesis-6.150.0-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/ab/20/37805e8871ffd4bf4958c2e13d608fe1fc914d00f3707b35744a
+b62751a4/hypothesis-6.150.0.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/22/18/f43815244cd99b54d8ac9f44f9799bb7c0115e48e29bc7a1899c
+0589ee48/hypothesis-6.150.1-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/ad/4e/cd3a398b9834386a79f4eb777dc4004ca439c1019d324771ec81
+96fc8354/hypothesis-6.150.1.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/b3/5e/21caad4acf45db7caf730cca1bc61422283e4c4e841efbc862d1
+7ab81a21/hypothesis-6.150.2-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d2/19/a4eee0c98e2ec678854272f79646f34943f8fbbc42689cc355b5
+30c5bc96/hypothesis-6.150.2.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/69/6b/c94ca780814aa4e73b52a8d5e9092f0b83f4732a9ecb3d1f8333
+c93ac131/hypothesis-6.150.3-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/86/eb/1b0359b52d2136a7f4b8112e60148ef8b5ba480d450f409ed63e
+18d4c8d2/hypothesis-6.150.3.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/cb/03/7dc99f137d64e6f2ad85c88ecf8af42f301da5a6c8f06a05ae3b
+9e0627da/hypothesis-6.151.0-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/23/51/f29b1d3d83685a7aef3b397af9aa14ff34ee38880a64f1cd070b
+ecab28e6/hypothesis-6.151.0.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/60/31/3ead020b50052b341b92615f2adde14645b1c53b9db0333a8c8e
+017c7f86/hypothesis-6.151.1-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/60/91/158562075f31bba555d05b5ed39aaab1a85a4107ffbb08889fd1
+787d783c/hypothesis-6.151.1.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/cb/3b/a6b9ecf082dd4d736bb553f7d9ad907a64373f41d0b57eb0be21
+acf157ee/hypothesis-6.151.2-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/05/13/69648b6f8c41600ce922386f084f5921fef55912dc980ded8ff4
+948ea626/hypothesis-6.151.2.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/b4/9a/e39da18745c889c7959e0ef4b53b71522062cc94714f99ac9d5b
+86cb222e/hypothesis-6.151.3-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/e9/aa/0e1aff2de954a1b11acf643519599c3da97d461cf62e312cab26
+6aa9f855/hypothesis-6.151.3.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/9b/6d/01ad1b6c3b8cb2bb47eeaa9765dabc27cbe68e3b59f6cff83d56
+68f57780/hypothesis-6.151.4-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/47/03/9fd03d5db09029250e69745c1600edab16fe90947636f77a12ba
+92d79939/hypothesis-6.151.4.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/c0/d9/53a8b53e75279a953fae608bd01025d9afcf393406c0da1dda1b
+7f5693c5/hypothesis-6.151.5-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/4e/d7/c40dcd401cc360d8d084e584ffb7ab17255fde22e2b9cf2b53bf
+25aed629/hypothesis-6.151.5.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/2c/70/42760b369723f8b5aa6a21e5fae58809f503ca7ebb6da13b99f4
+de36305a/hypothesis-6.151.6-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/00/5b/039c095977004f2316225559d591c5a4c62b2e4d7a429db2dd01
+d37c3ec2/hypothesis-6.151.6.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/c5/c0/1afd6994ce370c58932449e303068ad44e971dbcc7c5f6017060
+4951cfc1/hypothesis-6.151.7-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/56/7f/d17758aecced81efdf4d90d49d56b1144769260241dc31693eec
+8189bcc8/hypothesis-6.151.7.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/e5/d2/2221a55616680457f48d6b63b8644710cb6888aba79ae8ded266
+bd10195d/hypothesis-6.151.8-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/4f/1e/870015f855ba7d5a9ab2c02b2974d9951f302e0d282c138b7f9d
+af3b2e5d/hypothesis-6.151.8.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/c4/f7/5cc291d701094754a1d327b44d80a44971e13962881d9a400235
+726171da/hypothesis-6.151.9-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/19/e1/ef365ff480903b929d28e057f57b76cae51a30375943e33374ec
+9a165d9c/hypothesis-6.151.9.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/40/da/439bb2e451979f5e88c13bbebc3e9e17754429cfb528c93677b2
+bd81783b/hypothesis-6.151.10-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/f5/dd/633e2cd62377333b7681628aee2ec1d88166f5bdf916b08c98b1
+e8288ad3/hypothesis-6.151.10.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/1d/06/f49393eca84b87b17a67aaebf9f6251190ba1e9fe9f223650404
+9fc43fee/hypothesis-6.151.11-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/a9/58/41af0d539b3c95644d1e4e353cbd6ac9473e892ea21802546a88
+86b79078/hypothesis-6.151.11.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/0e/5a/6cecf134b631050a1f8605096adbe812483b60790d951470989d
+39b56860/hypothesis-6.151.12-py3-none-any.whl (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/ce/ab/67ca321d1ab96fd3828b12142f1c258e2d4a668a025d06cd50ab
+3409787f/hypothesis-6.151.12.tar.gz (from https://pypi.org/simple/hypothesis/) (requires-python:>=3.10)
+Collecting hypothesis>=5.1
+  Downloading hypothesis-6.141.1-py3-none-any.whl (535 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 535.0/535.0 kB 48.3 MB/s eta 0:00:00
+Collecting pytest-remotedata>=0.4.1
+  Downloading pytest_remotedata-0.4.1-py3-none-any.whl (8.6 kB)
+Collecting pytest-filter-subpackage>=0.1.2
+  Downloading pytest_filter_subpackage-0.2.0-py2.py3-none-any.whl (5.5 kB)
+Collecting pytest-cov>=2.3.1
+  Downloading pytest_cov-7.1.0-py3-none-any.whl (22 kB)
+Collecting pytest-arraydiff>=0.5
+  Downloading pytest_arraydiff-0.6.1-py3-none-any.whl (10 kB)
+Collecting attrs>=19.2.0
+  Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 67.5/67.5 kB 35.0 MB/s eta 0:00:00
+Collecting pytest-mock>=2.0
+  Downloading pytest_mock-3.15.1-py3-none-any.whl (10 kB)
+Collecting execnet>=2.1
+  Downloading execnet-2.1.2-py3-none-any.whl (40 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.7/40.7 kB 18.4 MB/s eta 0:00:00
+Collecting typing-extensions>=4.6.0
+  Using cached typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+Collecting sortedcontainers<3.0.0,>=2.1.0
+  Downloading sortedcontainers-2.4.0-py2.py3-none-any.whl (29 kB)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/5f/04/642c1d8a448ae5ea1369eac8495740a79eb4e581a9fb0cbdce56
+bbf56da1/coverage-7.11.0-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/1c/38/ee22495420457259d2f3390309505ea98f98a5eed40901cf6219
+6abad006/coverage-7.11.0.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/76/32/bd9f48c28e23b2f08946f8e83983617b00619f5538dbd7e1045f
+a7e88c00/coverage-7.11.1-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/89/12/3e2d2ec71796e0913178478e693a06af6a3bc9f7f9cb899bf85a
+426d8370/coverage-7.11.1.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/05/7a/99766a75c88e576f47c2d9a06416ff5d95be9b42faca5c37e1ab
+77c4cd1a/coverage-7.11.2-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/32/e6/7c4006cf689ed7a4aa75dcf1f14acbc04e585714c220b5cc6d23
+1096685a/coverage-7.11.2.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/19/8f/92bdd27b067204b99f396a1414d6342122f3e2663459baf78710
+8a6b8b84/coverage-7.11.3-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d2/59/9698d57a3b11704c7b89b21d69e9d23ecf80d538cabb536c8b63
+f4a12322/coverage-7.11.3.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/1e/40/3559920734fa9a5b8efafee0d84a64c0ea4ed41d1b8fbb5627c0
+f0c67dac/coverage-7.11.4a0.dev1-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/a8/49/426dfb3d39702b8f59f6e3d9fa7e45b21f6343f871edb8565804
+78121af1/coverage-7.11.4a0.dev1.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/ce/a3/43b749004e3c09452e39bb56347a008f0a0668aad37324a99b5c
+8ca91d9e/coverage-7.12.0-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/89/26/4a96807b193b011588099c3b5c89fbb05294e5b90e71018e0654
+65f34eb6/coverage-7.12.0.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/1b/1b/cd5c3391a04a101767961e3e3ccf5a0c987b08d8434d97073dbb
+d132a049/coverage-7.12.1b1-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/57/0b/c212490af3d8526225ee4f277ab249810ca108232d840d0a093e
+4f35931c/coverage-7.12.1b1.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/8d/4c/1968f32fb9a2604645827e11ff84a31e59d532e01995f904723b
+4f5328b3/coverage-7.13.0-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/b6/45/2c665ca77ec32ad67e25c77daf1cee28ee4558f3bc571cdbaf88
+a00b9f23/coverage-7.13.0.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/cc/48/d9f421cb8da5afaa1a64570d9989e00fb7955e6acddc5a12979f
+7666ef60/coverage-7.13.1-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/23/f9/e92df5e07f3fc8d4c7f9a0f146ef75446bf870351cd37b788cf5
+897f8079/coverage-7.13.1.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d2/db/d291e30fdf7ea617a335531e72294e0c723356d7fdde8fba0061
+0a76bda9/coverage-7.13.2-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/ad/49/349848445b0e53660e258acbcc9b0d014895b673923792088667
+2240f84b/coverage-7.13.2.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/7d/fb/70af542d2d938c778c9373ce253aa4116dbe7c0a5672f78b2b2a
+e0e1b94b/coverage-7.13.3-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/11/43/3e4ac666cc35f231fa70c94e9f38459299de1a152813f9d2f60f
+c5f3ecaf/coverage-7.13.3.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/0d/4a/331fe2caf6799d591109bb9c08083080f6de90a823695d412a93
+5622abb2/coverage-7.13.4-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/24/56/95b7e30fa389756cb56630faa728da46a27b8c6eb46f9d557c68
+fff12b65/coverage-7.13.4.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/9e/ee/a4cf96b8ce1e566ed238f0659ac2d3f007ed1d14b181bcb684e1
+9561a69a/coverage-7.13.5-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/9d/e0/70553e3000e345daff267cec284ce4cbf3fc141b6da229ac5277
+5b5428f1/coverage-7.13.5.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+Collecting coverage[toml]>=7.10.6
+  Downloading coverage-7.10.7-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (248 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 248.4/248.4 kB 54.7 MB/s eta 0:00:00
+Building wheels for collected packages: astropy
+  Running command Building editable for astropy (pyproject.toml)
+  running editable_wheel
+  creating /tmp/pip-wheel-p00brd5r/.tmp-zm0bigqf/astropy.egg-info
+  writing /tmp/pip-wheel-p00brd5r/.tmp-zm0bigqf/astropy.egg-info/PKG-INFO
+  writing dependency_links to /tmp/pip-wheel-p00brd5r/.tmp-zm0bigqf/astropy.egg-info/dependency_links.txt
+  writing entry points to /tmp/pip-wheel-p00brd5r/.tmp-zm0bigqf/astropy.egg-info/entry_points.txt
+  writing requirements to /tmp/pip-wheel-p00brd5r/.tmp-zm0bigqf/astropy.egg-info/requires.txt
+  writing top-level names to /tmp/pip-wheel-p00brd5r/.tmp-zm0bigqf/astropy.egg-info/top_level.txt
+  writing manifest file '/tmp/pip-wheel-p00brd5r/.tmp-zm0bigqf/astropy.egg-info/SOURCES.txt'
+  reading manifest template 'MANIFEST.in'
+  no previously-included directories found matching 'docs/_build'
+  no previously-included directories found matching 'build'
+  warning: no previously-included files matching '*.pyc' found anywhere in distribution
+  warning: no previously-included files matching '*.o' found anywhere in distribution
+  adding license file 'LICENSE.rst'
+  writing manifest file '/tmp/pip-wheel-p00brd5r/.tmp-zm0bigqf/astropy.egg-info/SOURCES.txt'
+  creating '/tmp/pip-wheel-p00brd5r/.tmp-zm0bigqf/astropy-5.3.dev882+g7269fa3e3.d20260408.dist-info'
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/wheel/bdist_wheel.py:4: FutureWarning: The 'wheel' package is no longer the canonical location
+ of the 'bdist_wheel' command, and will be removed in a future release. Please update to setuptools v70.1 or later which contains an integrated version of this
+command.
+    warn(
+  creating /tmp/pip-wheel-p00brd5r/.tmp-zm0bigqf/astropy-5.3.dev882+g7269fa3e3.d20260408.dist-info/WHEEL
+  running build_py
+  running build_ext
+  cythoning astropy/convolution/_convolve.pyx to astropy/convolution/_convolve.c
+  cythoning astropy/table/_np_utils.pyx to astropy/table/_np_utils.c
+  cythoning astropy/table/_column_mixins.pyx to astropy/table/_column_mixins.c
+  cythoning astropy/io/ascii/cparser.pyx to astropy/io/ascii/cparser.c
+  cythoning astropy/timeseries/periodograms/bls/_impl.pyx to astropy/timeseries/periodograms/bls/_impl.c
+  cythoning ./astropy/stats/_stats.pyx to ./astropy/stats/_stats.c
+  cythoning ./astropy/io/fits/_utils.pyx to ./astropy/io/fits/_utils.c
+  cythoning ./astropy/cosmology/flrw/scalar_inv_efuncs.pyx to ./astropy/cosmology/flrw/scalar_inv_efuncs.c
+  cythoning ./astropy/timeseries/periodograms/lombscargle/implementations/cython_impl.pyx to ./astropy/timeseries/periodograms/lombscargle/implementations/cytho
+n_impl.c
+  building 'astropy.convolution._convolve' extension
+  creating /tmp/tmpe4ioowao.build-temp/astropy
+  creating /tmp/tmpe4ioowao.build-temp/astropy/convolution
+  creating /tmp/tmpe4ioowao.build-temp/astropy/convolution/src
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/convolution/_convolve.c -o /tmp/tmpe4ioowao.build-temp/astropy/convolution/_convolv
+e.o -UNDEBUG -fPIC
+  In file included from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1822,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:12,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/arrayobject.h:4,
+                   from astropy/convolution/_convolve.c:698:
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h:17:2: warning: #warning "Using deprecated Nu
+mPy API, disable it with " "#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION" [-Wcpp]
+     17 | #warning "Using deprecated NumPy API, disable it with " \
+        |  ^~~~~~~
+  In file included from astropy/convolution/_convolve.c:703:
+  astropy/convolution/src/convolve.h:88:19: warning: inline function ‘convolve3d’ declared but never defined
+     88 | FORCE_INLINE void convolve3d(DTYPE * const result,
+        |                   ^~~~~~~~~~
+  astropy/convolution/src/convolve.h:74:19: warning: inline function ‘convolve2d’ declared but never defined
+     74 | FORCE_INLINE void convolve2d(DTYPE * const result,
+        |                   ^~~~~~~~~~
+  astropy/convolution/src/convolve.h:60:19: warning: inline function ‘convolve1d’ declared but never defined
+     60 | FORCE_INLINE void convolve1d(DTYPE * const result,
+        |                   ^~~~~~~~~~
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/convolution/src/convolve.c -o /tmp/tmpe4ioowao.build-temp/astropy/convolution/src/c
+onvolve.o -UNDEBUG -fPIC
+  creating /tmp/tmp3_rw25jk.build-lib/astropy
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/convolution
+  gcc -shared /tmp/tmpe4ioowao.build-temp/astropy/convolution/_convolve.o /tmp/tmpe4ioowao.build-temp/astropy/convolution/src/convolve.o -L/usr/local/lib -o /tm
+p/tmp3_rw25jk.build-lib/astropy/convolution/_convolve.cpython-39-aarch64-linux-gnu.so
+  building 'astropy.wcs._wcs' extension
+  creating /tmp/tmpe4ioowao.build-temp/astropy/wcs
+  creating /tmp/tmpe4ioowao.build-temp/astropy/wcs/src
+  creating /tmp/tmpe4ioowao.build-temp/cextern
+  creating /tmp/tmpe4ioowao.build-temp/cextern/wcslib
+  creating /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C
+  creating /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/flexed
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/astropy_wcs.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/astropy_wcs.o -std=gnu99 -Wno-strict-prototyp
+es -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/astropy_wcs_api.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/astropy_wcs_api.o -std=gnu99 -Wno-strict-
+prototypes -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/distortion.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/distortion.o -std=gnu99 -Wno-strict-prototypes
+ -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/distortion_wrap.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/distortion_wrap.o -std=gnu99 -Wno-strict-
+prototypes -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/docstrings.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/docstrings.o -std=gnu99 -Wno-strict-prototypes
+ -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/pipeline.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/pipeline.o -std=gnu99 -Wno-strict-prototypes -Wn
+o-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/pyutil.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/pyutil.o -std=gnu99 -Wno-strict-prototypes -Wno-un
+used-function -Wno-unused-value -Wno-uninitialized
+  astropy/wcs/src/pyutil.c: In function ‘set_pscards’:
+  astropy/wcs/src/pyutil.c:807:5: warning: ‘strncpy’ specified bound 72 equals destination size [-Wstringop-truncation]
+    807 |     strncpy((*ps)[i].value, strvalue, 72);
+        |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/sip.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/sip.o -std=gnu99 -Wno-strict-prototypes -Wno-unused-f
+unction -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/sip_wrap.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/sip_wrap.o -std=gnu99 -Wno-strict-prototypes -Wn
+o-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/str_list_proxy.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/str_list_proxy.o -std=gnu99 -Wno-strict-pr
+ototypes -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/unit_list_proxy.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/unit_list_proxy.o -std=gnu99 -Wno-strict-
+prototypes -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/util.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/util.o -std=gnu99 -Wno-strict-prototypes -Wno-unused
+-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/wcslib_auxprm_wrap.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/wcslib_auxprm_wrap.o -std=gnu99 -Wno-s
+trict-prototypes -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/wcslib_celprm_wrap.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/wcslib_celprm_wrap.o -std=gnu99 -Wno-s
+trict-prototypes -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  astropy/wcs/src/wcslib_celprm_wrap.c: In function ‘PyCelprm_deepcopy’:
+  astropy/wcs/src/wcslib_celprm_wrap.c:167:22: warning: initialization of ‘PyCelprm *’ from incompatible pointer type ‘PyObject *’ {aka ‘struct _object *’} [-Wi
+ncompatible-pointer-types]
+    167 |     PyCelprm* copy = PyCelprm_new(&PyCelprmType, NULL, NULL);
+        |                      ^~~~~~~~~~~~
+  In file included from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/arrayobject.h:4,
+                   from astropy/wcs/include/astropy_wcs/pyutil.h:16,
+                   from astropy/wcs/include/astropy_wcs/wcslib_celprm_wrap.h:4,
+                   from astropy/wcs/src/wcslib_celprm_wrap.c:3:
+  astropy/wcs/src/wcslib_celprm_wrap.c: In function ‘PyCelprm_set_ref’:
+  astropy/wcs/src/wcslib_celprm_wrap.c:327:25: warning: passing argument 1 of ‘PyArray_DIMS’ from incompatible pointer type [-Wincompatible-pointer-types]
+    327 |     size = PyArray_SIZE(value_array);
+        |                         ^~~~~~~~~~~
+        |                         |
+        |                         PyObject * {aka struct _object *}
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:73:59: note: in definition of macro ‘PyArray_SIZE’
+     73 | #define PyArray_SIZE(m) PyArray_MultiplyList(PyArray_DIMS(m), PyArray_NDIM(m))
+        |                                                           ^
+  In file included from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:12:
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1487:29: note: expected ‘PyArrayObject *’ {aka ‘struct
+ tagPyArrayObject *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+   1487 | PyArray_DIMS(PyArrayObject *arr)
+        |              ~~~~~~~~~~~~~~~^~~
+  astropy/wcs/src/wcslib_celprm_wrap.c:327:25: warning: passing argument 1 of ‘PyArray_NDIM’ from incompatible pointer type [-Wincompatible-pointer-types]
+    327 |     size = PyArray_SIZE(value_array);
+        |                         ^~~~~~~~~~~
+        |                         |
+        |                         PyObject * {aka struct _object *}
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:73:76: note: in definition of macro ‘PyArray_SIZE’
+     73 | #define PyArray_SIZE(m) PyArray_MultiplyList(PyArray_DIMS(m), PyArray_NDIM(m))
+        |                                                                            ^
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1469:35: note: expected ‘const PyArrayObject *’ {aka ‘
+const struct tagPyArrayObject *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+   1469 | PyArray_NDIM(const PyArrayObject *arr)
+        |              ~~~~~~~~~~~~~~~~~~~~~^~~
+  astropy/wcs/src/wcslib_celprm_wrap.c:348:35: warning: passing argument 1 of ‘PyArray_DATA’ from incompatible pointer type [-Wincompatible-pointer-types]
+    348 |     data = (double*) PyArray_DATA(value_array);
+        |                                   ^~~~~~~~~~~
+        |                                   |
+        |                                   PyObject * {aka struct _object *}
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1475:29: note: expected ‘PyArrayObject *’ {aka ‘struct
+ tagPyArrayObject *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+   1475 | PyArray_DATA(PyArrayObject *arr)
+        |              ~~~~~~~~~~~~~~~^~~
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/wcslib_prjprm_wrap.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/wcslib_prjprm_wrap.o -std=gnu99 -Wno-s
+trict-prototypes -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  astropy/wcs/src/wcslib_prjprm_wrap.c: In function ‘PyPrjprm_deepcopy’:
+  astropy/wcs/src/wcslib_prjprm_wrap.c:149:22: warning: initialization of ‘PyPrjprm *’ from incompatible pointer type ‘PyObject *’ {aka ‘struct _object *’} [-Wi
+ncompatible-pointer-types]
+    149 |     PyPrjprm* copy = PyPrjprm_new(&PyPrjprmType, NULL, NULL);
+        |                      ^~~~~~~~~~~~
+  astropy/wcs/src/wcslib_prjprm_wrap.c: In function ‘PyPrjprm_get_pv’:
+  astropy/wcs/src/wcslib_prjprm_wrap.c:517:14: warning: assignment to ‘PyObject *’ {aka ‘struct _object *’} from incompatible pointer type ‘PyArrayObject *’ {ak
+a ‘struct tagPyArrayObject *’} [-Wincompatible-pointer-types]
+    517 |     pv_array = (PyArrayObject*) PyArray_SimpleNew(1, &size, NPY_DOUBLE);
+        |              ^
+  astropy/wcs/src/wcslib_prjprm_wrap.c:519:33: warning: passing argument 1 of ‘PyArray_DATA’ from incompatible pointer type [-Wincompatible-pointer-types]
+    519 |     pv = (double*) PyArray_DATA(pv_array);
+        |                                 ^~~~~~~~
+        |                                 |
+        |                                 PyObject * {aka struct _object *}
+  In file included from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:12,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/arrayobject.h:4,
+                   from astropy/wcs/include/astropy_wcs/pyutil.h:16,
+                   from astropy/wcs/include/astropy_wcs/wcslib_celprm_wrap.h:4,
+                   from astropy/wcs/src/wcslib_prjprm_wrap.c:5:
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1475:29: note: expected ‘PyArrayObject *’ {aka ‘struct
+ tagPyArrayObject *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+   1475 | PyArray_DATA(PyArrayObject *arr)
+        |              ~~~~~~~~~~~~~~~^~~
+  astropy/wcs/src/wcslib_prjprm_wrap.c: In function ‘PyPrjprm_set_pv’:
+  astropy/wcs/src/wcslib_prjprm_wrap.c:556:25: warning: passing argument 1 of ‘PyArray_DIMS’ from incompatible pointer type [-Wincompatible-pointer-types]
+    556 |     size = PyArray_SIZE(value_array);
+        |                         ^~~~~~~~~~~
+        |                         |
+        |                         PyObject * {aka struct _object *}
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:73:59: note: in definition of macro ‘PyArray_SIZE’
+     73 | #define PyArray_SIZE(m) PyArray_MultiplyList(PyArray_DIMS(m), PyArray_NDIM(m))
+        |                                                           ^
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1487:29: note: expected ‘PyArrayObject *’ {aka ‘struct
+ tagPyArrayObject *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+   1487 | PyArray_DIMS(PyArrayObject *arr)
+        |              ~~~~~~~~~~~~~~~^~~
+  astropy/wcs/src/wcslib_prjprm_wrap.c:556:25: warning: passing argument 1 of ‘PyArray_NDIM’ from incompatible pointer type [-Wincompatible-pointer-types]
+    556 |     size = PyArray_SIZE(value_array);
+        |                         ^~~~~~~~~~~
+        |                         |
+        |                         PyObject * {aka struct _object *}
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:73:76: note: in definition of macro ‘PyArray_SIZE’
+     73 | #define PyArray_SIZE(m) PyArray_MultiplyList(PyArray_DIMS(m), PyArray_NDIM(m))
+        |                                                                            ^
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1469:35: note: expected ‘const PyArrayObject *’ {aka ‘
+const struct tagPyArrayObject *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+   1469 | PyArray_NDIM(const PyArrayObject *arr)
+        |              ~~~~~~~~~~~~~~~~~~~~~^~~
+  astropy/wcs/src/wcslib_prjprm_wrap.c:583:35: warning: passing argument 1 of ‘PyArray_DATA’ from incompatible pointer type [-Wincompatible-pointer-types]
+    583 |     data = (double*) PyArray_DATA(value_array);
+        |                                   ^~~~~~~~~~~
+        |                                   |
+        |                                   PyObject * {aka struct _object *}
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1475:29: note: expected ‘PyArrayObject *’ {aka ‘struct
+ tagPyArrayObject *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+   1475 | PyArray_DATA(PyArrayObject *arr)
+        |              ~~~~~~~~~~~~~~~^~~
+  astropy/wcs/src/wcslib_prjprm_wrap.c: In function ‘PyPrjprm_get_pvi’:
+  astropy/wcs/src/wcslib_prjprm_wrap.c:615:15: warning: unused variable ‘value’ [-Wunused-variable]
+    615 |     PyObject* value = NULL;
+        |               ^~~~~
+  astropy/wcs/src/wcslib_prjprm_wrap.c: In function ‘PyPrjprm_set_pvi’:
+  astropy/wcs/src/wcslib_prjprm_wrap.c:712:29: warning: passing argument 1 of ‘PyArray_DIMS’ from incompatible pointer type [-Wincompatible-pointer-types]
+    712 |         size = PyArray_SIZE(value_array);
+        |                             ^~~~~~~~~~~
+        |                             |
+        |                             PyObject * {aka struct _object *}
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:73:59: note: in definition of macro ‘PyArray_SIZE’
+     73 | #define PyArray_SIZE(m) PyArray_MultiplyList(PyArray_DIMS(m), PyArray_NDIM(m))
+        |                                                           ^
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1487:29: note: expected ‘PyArrayObject *’ {aka ‘struct
+ tagPyArrayObject *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+   1487 | PyArray_DIMS(PyArrayObject *arr)
+        |              ~~~~~~~~~~~~~~~^~~
+  astropy/wcs/src/wcslib_prjprm_wrap.c:712:29: warning: passing argument 1 of ‘PyArray_NDIM’ from incompatible pointer type [-Wincompatible-pointer-types]
+    712 |         size = PyArray_SIZE(value_array);
+        |                             ^~~~~~~~~~~
+        |                             |
+        |                             PyObject * {aka struct _object *}
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:73:76: note: in definition of macro ‘PyArray_SIZE’
+     73 | #define PyArray_SIZE(m) PyArray_MultiplyList(PyArray_DIMS(m), PyArray_NDIM(m))
+        |                                                                            ^
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1469:35: note: expected ‘const PyArrayObject *’ {aka ‘
+const struct tagPyArrayObject *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+   1469 | PyArray_NDIM(const PyArrayObject *arr)
+        |              ~~~~~~~~~~~~~~~~~~~~~^~~
+  astropy/wcs/src/wcslib_prjprm_wrap.c:720:48: warning: passing argument 1 of ‘PyArray_DATA’ from incompatible pointer type [-Wincompatible-pointer-types]
+    720 |         scalar = PyArray_ToScalar(PyArray_DATA(value_array), value_array);
+        |                                                ^~~~~~~~~~~
+        |                                                |
+        |                                                PyObject * {aka struct _object *}
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:129:24: note: in definition of macro ‘PyArray_ToScala
+r’
+    129 |         PyArray_Scalar(data, PyArray_DESCR(arr), (PyObject *)arr)
+        |                        ^~~~
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1475:29: note: expected ‘PyArrayObject *’ {aka ‘struct
+ tagPyArrayObject *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+   1475 | PyArray_DATA(PyArrayObject *arr)
+        |              ~~~~~~~~~~~~~~~^~~
+  astropy/wcs/src/wcslib_prjprm_wrap.c:720:62: warning: passing argument 1 of ‘PyArray_DESCR’ from incompatible pointer type [-Wincompatible-pointer-types]
+    720 |         scalar = PyArray_ToScalar(PyArray_DATA(value_array), value_array);
+        |                                                              ^~~~~~~~~~~
+        |                                                              |
+        |                                                              PyObject * {aka struct _object *}
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:129:44: note: in definition of macro ‘PyArray_ToScala
+r’
+    129 |         PyArray_Scalar(data, PyArray_DESCR(arr), (PyObject *)arr)
+        |                                            ^~~
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1517:30: note: expected ‘PyArrayObject *’ {aka ‘struct
+ tagPyArrayObject *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+   1517 | PyArray_DESCR(PyArrayObject *arr)
+        |               ~~~~~~~~~~~~~~~^~~
+  astropy/wcs/src/wcslib_prjprm_wrap.c: In function ‘PyPrjprm_get_w’:
+  astropy/wcs/src/wcslib_prjprm_wrap.c:780:32: warning: passing argument 1 of ‘PyArray_DATA’ from incompatible pointer type [-Wincompatible-pointer-types]
+    780 |     w = (double*) PyArray_DATA(w_array);
+        |                                ^~~~~~~
+        |                                |
+        |                                PyObject * {aka struct _object *}
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1475:29: note: expected ‘PyArrayObject *’ {aka ‘struct
+ tagPyArrayObject *’} but argument is of type ‘PyObject *’ {aka ‘struct _object *’}
+   1475 | PyArray_DATA(PyArrayObject *arr)
+        |              ~~~~~~~~~~~~~~~^~~
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/wcslib_tabprm_wrap.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/wcslib_tabprm_wrap.o -std=gnu99 -Wno-s
+trict-prototypes -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/wcslib_wrap.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/wcslib_wrap.o -std=gnu99 -Wno-strict-prototyp
+es -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  astropy/wcs/src/wcslib_wrap.c: In function ‘PyWcsprm_sptr’:
+  astropy/wcs/src/wcslib_wrap.c:1756:3: warning: ‘strncpy’ specified bound 9 equals destination size [-Wstringop-truncation]
+   1756 |   strncpy(ctype, py_ctype, 9);
+        |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c astropy/wcs/src/wcslib_wtbarr_wrap.c -o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/wcslib_wtbarr_wrap.o -std=gnu99 -Wno-s
+trict-prototypes -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/cel.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/cel.o -std=gnu99 -Wno-strict-prototypes -Wno-unused
+-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/dis.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/dis.o -std=gnu99 -Wno-strict-prototypes -Wno-unused
+-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/flexed/wcsbth.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/flexed/wcsbth.o -std=gnu99 -Wno-strict-pr
+ototypes -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/flexed/wcspih.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/flexed/wcspih.o -std=gnu99 -Wno-strict-pr
+ototypes -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/flexed/wcsulex.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/flexed/wcsulex.o -std=gnu99 -Wno-strict-
+prototypes -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/flexed/wcsutrn.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/flexed/wcsutrn.o -std=gnu99 -Wno-strict-
+prototypes -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/lin.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/lin.o -std=gnu99 -Wno-strict-prototypes -Wno-unused
+-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/log.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/log.o -std=gnu99 -Wno-strict-prototypes -Wno-unused
+-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/prj.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/prj.o -std=gnu99 -Wno-strict-prototypes -Wno-unused
+-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/spc.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/spc.o -std=gnu99 -Wno-strict-prototypes -Wno-unused
+-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/sph.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/sph.o -std=gnu99 -Wno-strict-prototypes -Wno-unused
+-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/spx.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/spx.o -std=gnu99 -Wno-strict-prototypes -Wno-unused
+-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/tab.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/tab.o -std=gnu99 -Wno-strict-prototypes -Wno-unused
+-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/wcs.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/wcs.o -std=gnu99 -Wno-strict-prototypes -Wno-unused
+-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/wcserr.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/wcserr.o -std=gnu99 -Wno-strict-prototypes -Wno-
+unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/wcsfix.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/wcsfix.o -std=gnu99 -Wno-strict-prototypes -Wno-
+unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/wcshdr.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/wcshdr.o -std=gnu99 -Wno-strict-prototypes -Wno-
+unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/wcsprintf.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/wcsprintf.o -std=gnu99 -Wno-strict-prototypes
+ -Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/wcsunits.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/wcsunits.o -std=gnu99 -Wno-strict-prototypes -
+Wno-unused-function -Wno-unused-value -Wno-uninitialized
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DECHO -DWCSTRIG_MACRO -DASTROPY_WCS_BUILD -D_GNU_SOURCE -DNDEBUG -DHAVE_SINCOS -UDE
+BUG -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include -Icextern/wcslib/C -Iastropy/wcs/include -I/app/astropy/tests-venv/incl
+ude -I/usr/local/include/python3.9 -c cextern/wcslib/C/wcsutil.c -o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/wcsutil.o -std=gnu99 -Wno-strict-prototypes -Wn
+o-unused-function -Wno-unused-value -Wno-uninitialized
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/wcs
+  gcc -shared /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/astropy_wcs.o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/astropy_wcs_api.o /tmp/tmpe4ioowao.build-tem
+p/astropy/wcs/src/distortion.o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/distortion_wrap.o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/docstrings.o /tmp/tmpe4
+ioowao.build-temp/astropy/wcs/src/pipeline.o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/pyutil.o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/sip.o /tmp/tmpe4io
+owao.build-temp/astropy/wcs/src/sip_wrap.o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/str_list_proxy.o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/unit_list_pr
+oxy.o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/util.o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/wcslib_auxprm_wrap.o /tmp/tmpe4ioowao.build-temp/astropy/wc
+s/src/wcslib_celprm_wrap.o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/wcslib_prjprm_wrap.o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/wcslib_tabprm_wrap.o /tm
+p/tmpe4ioowao.build-temp/astropy/wcs/src/wcslib_wrap.o /tmp/tmpe4ioowao.build-temp/astropy/wcs/src/wcslib_wtbarr_wrap.o /tmp/tmpe4ioowao.build-temp/cextern/wcsl
+ib/C/cel.o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/dis.o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/flexed/wcsbth.o /tmp/tmpe4ioowao.build-temp/cextern/w
+cslib/C/flexed/wcspih.o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/flexed/wcsulex.o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/flexed/wcsutrn.o /tmp/tmpe4io
+owao.build-temp/cextern/wcslib/C/lin.o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/log.o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/prj.o /tmp/tmpe4ioowao.bu
+ild-temp/cextern/wcslib/C/spc.o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/sph.o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/spx.o /tmp/tmpe4ioowao.build-tem
+p/cextern/wcslib/C/tab.o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/wcs.o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/wcserr.o /tmp/tmpe4ioowao.build-temp/ce
+xtern/wcslib/C/wcsfix.o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/wcshdr.o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/wcsprintf.o /tmp/tmpe4ioowao.build-te
+mp/cextern/wcslib/C/wcsunits.o /tmp/tmpe4ioowao.build-temp/cextern/wcslib/C/wcsutil.o -L/usr/local/lib -o /tmp/tmp3_rw25jk.build-lib/astropy/wcs/_wcs.cpython-39
+-aarch64-linux-gnu.so
+  building 'astropy.time._parse_times' extension
+  creating /tmp/tmpe4ioowao.build-temp/astropy/time
+  creating /tmp/tmpe4ioowao.build-temp/astropy/time/src
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/time/src/parse_times.c -o /tmp/tmpe4ioowao.build-temp/astropy/time/src/parse_times.
+o
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/time
+  gcc -shared /tmp/tmpe4ioowao.build-temp/astropy/time/src/parse_times.o -L/usr/local/lib -o /tmp/tmp3_rw25jk.build-lib/astropy/time/_parse_times.cpython-39-aar
+ch64-linux-gnu.so
+  building 'astropy.stats._fast_sigma_clip' extension
+  creating /tmp/tmpe4ioowao.build-temp/astropy/stats
+  creating /tmp/tmpe4ioowao.build-temp/astropy/stats/src
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/stats/src/compute_bounds.c -o /tmp/tmpe4ioowao.build-temp/astropy/stats/src/compute
+_bounds.o
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/stats/src/fast_sigma_clip.c -o /tmp/tmpe4ioowao.build-temp/astropy/stats/src/fast_s
+igma_clip.o
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/stats/src/wirth_select.c -o /tmp/tmpe4ioowao.build-temp/astropy/stats/src/wirth_sel
+ect.o
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/stats
+  gcc -shared /tmp/tmpe4ioowao.build-temp/astropy/stats/src/compute_bounds.o /tmp/tmpe4ioowao.build-temp/astropy/stats/src/fast_sigma_clip.o /tmp/tmpe4ioowao.bu
+ild-temp/astropy/stats/src/wirth_select.o -L/usr/local/lib -o /tmp/tmp3_rw25jk.build-lib/astropy/stats/_fast_sigma_clip.cpython-39-aarch64-linux-gnu.so
+  building 'astropy.utils._compiler' extension
+  creating /tmp/tmpe4ioowao.build-temp/astropy/utils
+  creating /tmp/tmpe4ioowao.build-temp/astropy/utils/src
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/utils/sr
+c/compiler.c -o /tmp/tmpe4ioowao.build-temp/astropy/utils/src/compiler.o
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/utils
+  gcc -shared /tmp/tmpe4ioowao.build-temp/astropy/utils/src/compiler.o -L/usr/local/lib -o /tmp/tmp3_rw25jk.build-lib/astropy/utils/_compiler.cpython-39-aarch64
+-linux-gnu.so
+  building 'astropy.table._np_utils' extension
+  creating /tmp/tmpe4ioowao.build-temp/astropy/table
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/table/_np_utils.c -o /tmp/tmpe4ioowao.build-temp/astropy/table/_np_utils.o
+  In file included from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1822,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:12,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/arrayobject.h:4,
+                   from astropy/table/_np_utils.c:698:
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h:17:2: warning: #warning "Using deprecated Nu
+mPy API, disable it with " "#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION" [-Wcpp]
+     17 | #warning "Using deprecated NumPy API, disable it with " \
+        |  ^~~~~~~
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/table
+  gcc -shared /tmp/tmpe4ioowao.build-temp/astropy/table/_np_utils.o -L/usr/local/lib -o /tmp/tmp3_rw25jk.build-lib/astropy/table/_np_utils.cpython-39-aarch64-li
+nux-gnu.so
+  building 'astropy.table._column_mixins' extension
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/table/_column_mixins.c -o /tmp/tmpe4ioowao.build-temp/astropy/table/_column_mixins.
+o
+  In file included from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1822,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:12,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/arrayobject.h:4,
+                   from astropy/table/_column_mixins.c:696:
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h:17:2: warning: #warning "Using deprecated Nu
+mPy API, disable it with " "#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION" [-Wcpp]
+     17 | #warning "Using deprecated NumPy API, disable it with " \
+        |  ^~~~~~~
+  In file included from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:21:
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/__multiarray_api.h:1463:1: warning: ‘_import_array’ defined but not u
+sed [-Wunused-function]
+   1463 | _import_array(void)
+        | ^~~~~~~~~~~~~
+  gcc -shared /tmp/tmpe4ioowao.build-temp/astropy/table/_column_mixins.o -L/usr/local/lib -o /tmp/tmp3_rw25jk.build-lib/astropy/table/_column_mixins.cpython-39-
+aarch64-linux-gnu.so
+  building 'astropy.io.ascii.cparser' extension
+  creating /tmp/tmpe4ioowao.build-temp/astropy/io
+  creating /tmp/tmpe4ioowao.build-temp/astropy/io/ascii
+  creating /tmp/tmpe4ioowao.build-temp/astropy/io/ascii/src
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/io/ascii/cparser.c -o /tmp/tmpe4ioowao.build-temp/astropy/io/ascii/cparser.o
+  In file included from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1822,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:12,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/arrayobject.h:4,
+                   from astropy/io/ascii/cparser.c:698:
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h:17:2: warning: #warning "Using deprecated Nu
+mPy API, disable it with " "#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION" [-Wcpp]
+     17 | #warning "Using deprecated NumPy API, disable it with " \
+        |  ^~~~~~~
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/io/ascii/src/tokenizer.c -o /tmp/tmpe4ioowao.build-temp/astropy/io/ascii/src/tokeni
+zer.o
+  astropy/io/ascii/src/tokenizer.c: In function ‘push’:
+  astropy/io/ascii/src/tokenizer.c:124:54: warning: comparison of integer expressions of different signedness: ‘long int’ and ‘size_t’ {aka ‘long unsigned int’}
+ [-Wsign-compare]
+    124 |     if (self->col_ptrs[col] - self->output_cols[col] >=
+        |                                                      ^~
+  astropy/io/ascii/src/tokenizer.c: In function ‘tokenize’:
+  astropy/io/ascii/src/tokenizer.c:424:42: warning: comparison of integer expressions of different signedness: ‘size_t’ {aka ‘long unsigned int’} and ‘int’ [-Ws
+ign-compare]
+    424 |                     if (self->source_pos == -1
+        |                                          ^~
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/io
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/io/ascii
+  gcc -shared /tmp/tmpe4ioowao.build-temp/astropy/io/ascii/cparser.o /tmp/tmpe4ioowao.build-temp/astropy/io/ascii/src/tokenizer.o -L/usr/local/lib -o /tmp/tmp3_
+rw25jk.build-lib/astropy/io/ascii/cparser.cpython-39-aarch64-linux-gnu.so
+  building 'astropy.io.votable.tablewriter' extension
+  creating /tmp/tmpe4ioowao.build-temp/astropy/io/votable
+  creating /tmp/tmpe4ioowao.build-temp/astropy/io/votable/src
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -Iastropy/io/votable/src -I/app/astropy/tests-venv/include -I/usr/local/include/pyth
+on3.9 -c astropy/io/votable/src/tablewriter.c -o /tmp/tmpe4ioowao.build-temp/astropy/io/votable/src/tablewriter.o
+  astropy/io/votable/src/tablewriter.c: In function ‘write_tabledata’:
+  astropy/io/votable/src/tablewriter.c:270:30: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+    270 |                 if ((str_tmp = PyUnicode_AsUTF8AndSize(str_val, &str_len)) == NULL) {
+        |                              ^
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/io/votable
+  gcc -shared /tmp/tmpe4ioowao.build-temp/astropy/io/votable/src/tablewriter.o -L/usr/local/lib -o /tmp/tmp3_rw25jk.build-lib/astropy/io/votable/tablewriter.cpy
+thon-39-aarch64-linux-gnu.so
+  building 'astropy.io.fits._tiled_compression._compression' extension
+  creating /tmp/tmpe4ioowao.build-temp/astropy/io/fits
+  creating /tmp/tmpe4ioowao.build-temp/astropy/io/fits/_tiled_compression
+  creating /tmp/tmpe4ioowao.build-temp/astropy/io/fits/_tiled_compression/src
+  creating /tmp/tmpe4ioowao.build-temp/cextern/cfitsio
+  creating /tmp/tmpe4ioowao.build-temp/cextern/cfitsio/lib
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -Iastropy/io/fits/_tiled_compression/src -I/app/astropy/tests-venv/include -I/usr/lo
+cal/include/python3.9 -c astropy/io/fits/_tiled_compression/src/compression.c -o /tmp/tmpe4ioowao.build-temp/astropy/io/fits/_tiled_compression/src/compression.
+o
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -Iastropy/io/fits/_tiled_compression/src -I/app/astropy/tests-venv/include -I/usr/lo
+cal/include/python3.9 -c astropy/io/fits/_tiled_compression/src/unquantize.c -o /tmp/tmpe4ioowao.build-temp/astropy/io/fits/_tiled_compression/src/unquantize.o
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -Iastropy/io/fits/_tiled_compression/src -I/app/astropy/tests-venv/include -I/usr/lo
+cal/include/python3.9 -c cextern/cfitsio/lib/fits_hcompress.c -o /tmp/tmpe4ioowao.build-temp/cextern/cfitsio/lib/fits_hcompress.o
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -Iastropy/io/fits/_tiled_compression/src -I/app/astropy/tests-venv/include -I/usr/lo
+cal/include/python3.9 -c cextern/cfitsio/lib/fits_hdecompress.c -o /tmp/tmpe4ioowao.build-temp/cextern/cfitsio/lib/fits_hdecompress.o
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -Iastropy/io/fits/_tiled_compression/src -I/app/astropy/tests-venv/include -I/usr/lo
+cal/include/python3.9 -c cextern/cfitsio/lib/pliocomp.c -o /tmp/tmpe4ioowao.build-temp/cextern/cfitsio/lib/pliocomp.o
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -Iastropy/io/fits/_tiled_compression/src -I/app/astropy/tests-venv/include -I/usr/lo
+cal/include/python3.9 -c cextern/cfitsio/lib/quantize.c -o /tmp/tmpe4ioowao.build-temp/cextern/cfitsio/lib/quantize.o
+  cextern/cfitsio/lib/quantize.c: In function ‘quick_select_float’:
+  cextern/cfitsio/lib/quantize.c:3722:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   3722 |     if (hh <= median)
+        |     ^~
+  cextern/cfitsio/lib/quantize.c:3724:9: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   3724 |         if (hh >= median)
+        |         ^~
+  cextern/cfitsio/lib/quantize.c: In function ‘quick_select_short’:
+  cextern/cfitsio/lib/quantize.c:3778:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   3778 |     if (hh <= median)
+        |     ^~
+  cextern/cfitsio/lib/quantize.c:3780:9: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   3780 |         if (hh >= median)
+        |         ^~
+  cextern/cfitsio/lib/quantize.c: In function ‘quick_select_int’:
+  cextern/cfitsio/lib/quantize.c:3834:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   3834 |     if (hh <= median)
+        |     ^~
+  cextern/cfitsio/lib/quantize.c:3836:9: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   3836 |         if (hh >= median)
+        |         ^~
+  cextern/cfitsio/lib/quantize.c: In function ‘quick_select_longlong’:
+  cextern/cfitsio/lib/quantize.c:3890:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   3890 |     if (hh <= median)
+        |     ^~
+  cextern/cfitsio/lib/quantize.c:3892:9: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   3892 |         if (hh >= median)
+        |         ^~
+  cextern/cfitsio/lib/quantize.c: In function ‘quick_select_double’:
+  cextern/cfitsio/lib/quantize.c:3946:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   3946 |     if (hh <= median)
+        |     ^~
+  cextern/cfitsio/lib/quantize.c:3948:9: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   3948 |         if (hh >= median)
+        |         ^~
+  cextern/cfitsio/lib/quantize.c: At top level:
+  cextern/cfitsio/lib/quantize.c:3641:12: warning: ‘FnCompare_float’ defined but not used [-Wunused-function]
+   3641 | static int FnCompare_float(const void *v1, const void *v2)
+        |            ^~~~~~~~~~~~~~~
+  cextern/cfitsio/lib/quantize.c:3628:12: warning: ‘FnCompare_int’ defined but not used [-Wunused-function]
+   3628 | static int FnCompare_int(const void *v1, const void *v2)
+        |            ^~~~~~~~~~~~~
+  cextern/cfitsio/lib/quantize.c:3615:12: warning: ‘FnCompare_short’ defined but not used [-Wunused-function]
+   3615 | static int FnCompare_short(const void *v1, const void *v2)
+        |            ^~~~~~~~~~~~~~~
+  cextern/cfitsio/lib/quantize.c:3494:12: warning: ‘FnNoise1_double’ defined but not used [-Wunused-function]
+   3494 | static int FnNoise1_double
+        |            ^~~~~~~~~~~~~~~
+  cextern/cfitsio/lib/quantize.c:2487:12: warning: ‘FnNoise3_int’ defined but not used [-Wunused-function]
+   2487 | static int FnNoise3_int
+        |            ^~~~~~~~~~~~
+  cextern/cfitsio/lib/quantize.c:2269:12: warning: ‘FnNoise3_short’ defined but not used [-Wunused-function]
+   2269 | static int FnNoise3_short
+        |            ^~~~~~~~~~~~~~
+  cextern/cfitsio/lib/quantize.c: In function ‘fits_img_stats_short’:
+  cextern/cfitsio/lib/quantize.c:510:41: warning: ‘ngood’ may be used uninitialized [-Wmaybe-uninitialized]
+    510 |                 if (ngoodpix) *ngoodpix = ngood;
+        |                               ~~~~~~~~~~^~~~~~~
+  cextern/cfitsio/lib/quantize.c:485:14: note: ‘ngood’ was declared here
+    485 |         long ngood;
+        |              ^~~~~
+  cextern/cfitsio/lib/quantize.c: In function ‘fits_img_stats_int’:
+  cextern/cfitsio/lib/quantize.c:569:41: warning: ‘ngood’ may be used uninitialized [-Wmaybe-uninitialized]
+    569 |                 if (ngoodpix) *ngoodpix = ngood;
+        |                               ~~~~~~~~~~^~~~~~~
+  cextern/cfitsio/lib/quantize.c:544:14: note: ‘ngood’ was declared here
+    544 |         long ngood;
+        |              ^~~~~
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -Iastropy/io/fits/_tiled_compression/src -I/app/astropy/tests-venv/include -I/usr/lo
+cal/include/python3.9 -c cextern/cfitsio/lib/ricecomp.c -o /tmp/tmpe4ioowao.build-temp/cextern/cfitsio/lib/ricecomp.o
+  cextern/cfitsio/lib/ricecomp.c: In function ‘fits_rcomp’:
+  cextern/cfitsio/lib/ricecomp.c:70:48: warning: right-hand operand of comma expression has no effect [-Wunused-value]
+     70 | #define putcbuf(c,mf)   ((*(mf->current)++ = c), 0)
+        |                         ~~~~~~~~~~~~~~~~~~~~~~~^~~~
+  cextern/cfitsio/lib/ricecomp.c:267:21: note: in expansion of macro ‘putcbuf’
+    267 |                     putcbuf(lbitbuffer & 0xff,buffer);
+        |                     ^~~~~~~
+  cextern/cfitsio/lib/ricecomp.c:70:48: warning: right-hand operand of comma expression has no effect [-Wunused-value]
+     70 | #define putcbuf(c,mf)   ((*(mf->current)++ = c), 0)
+        |                         ~~~~~~~~~~~~~~~~~~~~~~~^~~~
+  cextern/cfitsio/lib/ricecomp.c:270:25: note: in expansion of macro ‘putcbuf’
+    270 |                         putcbuf(0, buffer);
+        |                         ^~~~~~~
+  cextern/cfitsio/lib/ricecomp.c:70:48: warning: right-hand operand of comma expression has no effect [-Wunused-value]
+     70 | #define putcbuf(c,mf)   ((*(mf->current)++ = c), 0)
+        |                         ~~~~~~~~~~~~~~~~~~~~~~~^~~~
+  cextern/cfitsio/lib/ricecomp.c:286:25: note: in expansion of macro ‘putcbuf’
+    286 |                         putcbuf((lbitbuffer>>(-lbits_to_go)) & 0xff,buffer);
+        |                         ^~~~~~~
+  cextern/cfitsio/lib/ricecomp.c: In function ‘fits_rcomp_short’:
+  cextern/cfitsio/lib/ricecomp.c:70:48: warning: right-hand operand of comma expression has no effect [-Wunused-value]
+     70 | #define putcbuf(c,mf)   ((*(mf->current)++ = c), 0)
+        |                         ~~~~~~~~~~~~~~~~~~~~~~~^~~~
+  cextern/cfitsio/lib/ricecomp.c:498:21: note: in expansion of macro ‘putcbuf’
+    498 |                     putcbuf(lbitbuffer & 0xff,buffer);
+        |                     ^~~~~~~
+  cextern/cfitsio/lib/ricecomp.c:70:48: warning: right-hand operand of comma expression has no effect [-Wunused-value]
+     70 | #define putcbuf(c,mf)   ((*(mf->current)++ = c), 0)
+        |                         ~~~~~~~~~~~~~~~~~~~~~~~^~~~
+  cextern/cfitsio/lib/ricecomp.c:500:25: note: in expansion of macro ‘putcbuf’
+    500 |                         putcbuf(0, buffer);
+        |                         ^~~~~~~
+  cextern/cfitsio/lib/ricecomp.c:70:48: warning: right-hand operand of comma expression has no effect [-Wunused-value]
+     70 | #define putcbuf(c,mf)   ((*(mf->current)++ = c), 0)
+        |                         ~~~~~~~~~~~~~~~~~~~~~~~^~~~
+  cextern/cfitsio/lib/ricecomp.c:516:25: note: in expansion of macro ‘putcbuf’
+    516 |                         putcbuf((lbitbuffer>>(-lbits_to_go)) & 0xff,buffer);
+        |                         ^~~~~~~
+  cextern/cfitsio/lib/ricecomp.c: In function ‘fits_rcomp_byte’:
+  cextern/cfitsio/lib/ricecomp.c:70:48: warning: right-hand operand of comma expression has no effect [-Wunused-value]
+     70 | #define putcbuf(c,mf)   ((*(mf->current)++ = c), 0)
+        |                         ~~~~~~~~~~~~~~~~~~~~~~~^~~~
+  cextern/cfitsio/lib/ricecomp.c:723:21: note: in expansion of macro ‘putcbuf’
+    723 |                     putcbuf(lbitbuffer & 0xff,buffer);
+        |                     ^~~~~~~
+  cextern/cfitsio/lib/ricecomp.c:70:48: warning: right-hand operand of comma expression has no effect [-Wunused-value]
+     70 | #define putcbuf(c,mf)   ((*(mf->current)++ = c), 0)
+        |                         ~~~~~~~~~~~~~~~~~~~~~~~^~~~
+  cextern/cfitsio/lib/ricecomp.c:725:25: note: in expansion of macro ‘putcbuf’
+    725 |                         putcbuf(0, buffer);
+        |                         ^~~~~~~
+  cextern/cfitsio/lib/ricecomp.c:70:48: warning: right-hand operand of comma expression has no effect [-Wunused-value]
+     70 | #define putcbuf(c,mf)   ((*(mf->current)++ = c), 0)
+        |                         ~~~~~~~~~~~~~~~~~~~~~~~^~~~
+  cextern/cfitsio/lib/ricecomp.c:741:25: note: in expansion of macro ‘putcbuf’
+    741 |                         putcbuf((lbitbuffer>>(-lbits_to_go)) & 0xff,buffer);
+        |                         ^~~~~~~
+  cextern/cfitsio/lib/ricecomp.c: In function ‘output_nbits’:
+  cextern/cfitsio/lib/ricecomp.c:70:48: warning: right-hand operand of comma expression has no effect [-Wunused-value]
+     70 | #define putcbuf(c,mf)   ((*(mf->current)++ = c), 0)
+        |                         ~~~~~~~~~~~~~~~~~~~~~~~^~~~
+  cextern/cfitsio/lib/ricecomp.c:812:9: note: in expansion of macro ‘putcbuf’
+    812 |         putcbuf(lbitbuffer & 0xff,buffer);
+        |         ^~~~~~~
+  cextern/cfitsio/lib/ricecomp.c:70:48: warning: right-hand operand of comma expression has no effect [-Wunused-value]
+     70 | #define putcbuf(c,mf)   ((*(mf->current)++ = c), 0)
+        |                         ~~~~~~~~~~~~~~~~~~~~~~~^~~~
+  cextern/cfitsio/lib/ricecomp.c:824:9: note: in expansion of macro ‘putcbuf’
+    824 |         putcbuf((lbitbuffer>>(-lbits_to_go)) & 0xff,buffer);
+        |         ^~~~~~~
+  cextern/cfitsio/lib/ricecomp.c: In function ‘done_outputing_bits’:
+  cextern/cfitsio/lib/ricecomp.c:70:48: warning: right-hand operand of comma expression has no effect [-Wunused-value]
+     70 | #define putcbuf(c,mf)   ((*(mf->current)++ = c), 0)
+        |                         ~~~~~~~~~~~~~~~~~~~~~~~^~~~
+  cextern/cfitsio/lib/ricecomp.c:837:9: note: in expansion of macro ‘putcbuf’
+    837 |         putcbuf(buffer->bitbuffer<<buffer->bits_to_go,buffer);
+        |         ^~~~~~~
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/io/fits
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/io/fits/_tiled_compression
+  gcc -shared /tmp/tmpe4ioowao.build-temp/astropy/io/fits/_tiled_compression/src/compression.o /tmp/tmpe4ioowao.build-temp/astropy/io/fits/_tiled_compression/sr
+c/unquantize.o /tmp/tmpe4ioowao.build-temp/cextern/cfitsio/lib/fits_hcompress.o /tmp/tmpe4ioowao.build-temp/cextern/cfitsio/lib/fits_hdecompress.o /tmp/tmpe4ioo
+wao.build-temp/cextern/cfitsio/lib/pliocomp.o /tmp/tmpe4ioowao.build-temp/cextern/cfitsio/lib/quantize.o /tmp/tmpe4ioowao.build-temp/cextern/cfitsio/lib/ricecom
+p.o -L/usr/local/lib -o /tmp/tmp3_rw25jk.build-lib/astropy/io/fits/_tiled_compression/_compression.cpython-39-aarch64-linux-gnu.so
+  building 'astropy.timeseries.periodograms.bls._impl' extension
+  creating /tmp/tmpe4ioowao.build-temp/astropy/timeseries
+  creating /tmp/tmpe4ioowao.build-temp/astropy/timeseries/periodograms
+  creating /tmp/tmpe4ioowao.build-temp/astropy/timeseries/periodograms/bls
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/timeseries/periodograms/bls/_impl.c -o /tmp/tmpe4ioowao.build-temp/astropy/timeseri
+es/periodograms/bls/_impl.o
+  In file included from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1822,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:12,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/arrayobject.h:4,
+                   from astropy/timeseries/periodograms/bls/_impl.c:698:
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h:17:2: warning: #warning "Using deprecated Nu
+mPy API, disable it with " "#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION" [-Wcpp]
+     17 | #warning "Using deprecated NumPy API, disable it with " \
+        |  ^~~~~~~
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/timeseries/periodograms/bls/bls.c -o /tmp/tmpe4ioowao.build-temp/astropy/timeseries
+/periodograms/bls/bls.o
+  astropy/timeseries/periodograms/bls/bls.c: In function ‘run_bls’:
+  astropy/timeseries/periodograms/bls/bls.c:92: warning: ignoring ‘#pragma omp parallel’ [-Wunknown-pragmas]
+     92 | #pragma omp parallel
+        |
+  astropy/timeseries/periodograms/bls/bls.c:116: warning: ignoring ‘#pragma omp parallel’ [-Wunknown-pragmas]
+    116 |     #pragma omp parallel for reduction(+:sum_y), reduction(+:sum_ivar)
+        |
+  astropy/timeseries/periodograms/bls/bls.c:125: warning: ignoring ‘#pragma omp parallel’ [-Wunknown-pragmas]
+    125 |     #pragma omp parallel for
+        |
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/timeseries
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/timeseries/periodograms
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/timeseries/periodograms/bls
+  gcc -shared /tmp/tmpe4ioowao.build-temp/astropy/timeseries/periodograms/bls/_impl.o /tmp/tmpe4ioowao.build-temp/astropy/timeseries/periodograms/bls/bls.o -L/u
+sr/local/lib -o /tmp/tmp3_rw25jk.build-lib/astropy/timeseries/periodograms/bls/_impl.cpython-39-aarch64-linux-gnu.so
+  building 'astropy.utils.xml._iterparser' extension
+  creating /tmp/tmpe4ioowao.build-temp/astropy/utils/xml
+  creating /tmp/tmpe4ioowao.build-temp/astropy/utils/xml/src
+  creating /tmp/tmpe4ioowao.build-temp/cextern/expat
+  creating /tmp/tmpe4ioowao.build-temp/cextern/expat/lib
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DHAVE_EXPAT_CONFIG_H=1 -DBYTEORDER=1234 -DHAVE_UNISTD_H -Iastropy/utils/xml/src -Ic
+extern/expat/lib -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/utils/xml/src/iterparse.c -o /tmp/tmpe4ioowao.build-temp/astropy/ut
+ils/xml/src/iterparse.o
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DHAVE_EXPAT_CONFIG_H=1 -DBYTEORDER=1234 -DHAVE_UNISTD_H -Iastropy/utils/xml/src -Ic
+extern/expat/lib -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c cextern/expat/lib/xmlparse.c -o /tmp/tmpe4ioowao.build-temp/cextern/expat/l
+ib/xmlparse.o
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DHAVE_EXPAT_CONFIG_H=1 -DBYTEORDER=1234 -DHAVE_UNISTD_H -Iastropy/utils/xml/src -Ic
+extern/expat/lib -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c cextern/expat/lib/xmlrole.c -o /tmp/tmpe4ioowao.build-temp/cextern/expat/li
+b/xmlrole.o
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DHAVE_EXPAT_CONFIG_H=1 -DBYTEORDER=1234 -DHAVE_UNISTD_H -Iastropy/utils/xml/src -Ic
+extern/expat/lib -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c cextern/expat/lib/xmltok.c -o /tmp/tmpe4ioowao.build-temp/cextern/expat/lib
+/xmltok.o
+  In file included from cextern/expat/lib/xmltok.c:55:
+  cextern/expat/lib/xmltok.h: In function ‘findEncoding’:
+  cextern/expat/lib/xmltok.h:272:10: warning: ‘buf’ may be used uninitialized [-Wmaybe-uninitialized]
+    272 |   (((enc)->utf8Convert)(enc, fromP, fromLim, toP, toLim))
+        |          ^~
+  cextern/expat/lib/xmltok.h:272:10: note: by argument 5 of type ‘const char *’ to ‘enum XML_Convert_Result(const ENCODING *, const char **, const char *, char
+**, const char *)’ {aka ‘enum XML_Convert_Result(const struct encoding *, const char **, const char *, char **, const char *)’}
+    272 |   (((enc)->utf8Convert)(enc, fromP, fromLim, toP, toLim))
+        |   ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  cextern/expat/lib/xmltok_ns.c:95:3: note: in expansion of macro ‘XmlUtf8Convert’
+     95 |   XmlUtf8Convert(enc, &ptr, end, &p, p + ENCODING_MAX - 1);
+        |   ^~~~~~~~~~~~~~
+  In file included from cextern/expat/lib/xmltok.c:1646:
+  cextern/expat/lib/xmltok_ns.c:92:8: note: ‘buf’ declared here
+     92 |   char buf[ENCODING_MAX];
+        |        ^~~
+  cextern/expat/lib/xmltok.h: In function ‘findEncodingNS’:
+  cextern/expat/lib/xmltok.h:272:10: warning: ‘buf’ may be used uninitialized [-Wmaybe-uninitialized]
+    272 |   (((enc)->utf8Convert)(enc, fromP, fromLim, toP, toLim))
+        |          ^~
+  cextern/expat/lib/xmltok.h:272:10: note: by argument 5 of type ‘const char *’ to ‘enum XML_Convert_Result(const ENCODING *, const char **, const char *, char
+**, const char *)’ {aka ‘enum XML_Convert_Result(const struct encoding *, const char **, const char *, char **, const char *)’}
+    272 |   (((enc)->utf8Convert)(enc, fromP, fromLim, toP, toLim))
+        |   ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  cextern/expat/lib/xmltok_ns.c:95:3: note: in expansion of macro ‘XmlUtf8Convert’
+     95 |   XmlUtf8Convert(enc, &ptr, end, &p, p + ENCODING_MAX - 1);
+        |   ^~~~~~~~~~~~~~
+  In file included from cextern/expat/lib/xmltok.c:1657:
+  cextern/expat/lib/xmltok_ns.c:92:8: note: ‘buf’ declared here
+     92 |   char buf[ENCODING_MAX];
+        |        ^~~
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DHAVE_EXPAT_CONFIG_H=1 -DBYTEORDER=1234 -DHAVE_UNISTD_H -Iastropy/utils/xml/src -Ic
+extern/expat/lib -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c cextern/expat/lib/xmltok_impl.c -o /tmp/tmpe4ioowao.build-temp/cextern/expa
+t/lib/xmltok_impl.o
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/utils/xml
+  gcc -shared /tmp/tmpe4ioowao.build-temp/astropy/utils/xml/src/iterparse.o /tmp/tmpe4ioowao.build-temp/cextern/expat/lib/xmlparse.o /tmp/tmpe4ioowao.build-temp
+/cextern/expat/lib/xmlrole.o /tmp/tmpe4ioowao.build-temp/cextern/expat/lib/xmltok.o /tmp/tmpe4ioowao.build-temp/cextern/expat/lib/xmltok_impl.o -L/usr/local/lib
+ -o /tmp/tmp3_rw25jk.build-lib/astropy/utils/xml/_iterparser.cpython-39-aarch64-linux-gnu.so -Wl,--version-script=astropy/utils/xml/src/iterparse.map
+  building 'astropy.stats._stats' extension
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c ./astropy/stats/_stats.c -o /tmp/tmpe4ioowao.build-temp/./astropy/stats/_stats.o
+  In file included from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1822,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:12,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/arrayobject.h:4,
+                   from ./astropy/stats/_stats.c:698:
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h:17:2: warning: #warning "Using deprecated Nu
+mPy API, disable it with " "#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION" [-Wcpp]
+     17 | #warning "Using deprecated NumPy API, disable it with " \
+        |  ^~~~~~~
+  gcc -shared /tmp/tmpe4ioowao.build-temp/./astropy/stats/_stats.o -L/usr/local/lib -o /tmp/tmp3_rw25jk.build-lib/astropy/stats/_stats.cpython-39-aarch64-linux-
+gnu.so
+  building 'astropy.io.fits._utils' extension
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c ./astropy/io/fits/_utils.c -o /tmp/tmpe4ioowao.build-temp/./astropy/io/fits/_utils.o
+  gcc -shared /tmp/tmpe4ioowao.build-temp/./astropy/io/fits/_utils.o -L/usr/local/lib -o /tmp/tmp3_rw25jk.build-lib/astropy/io/fits/_utils.cpython-39-aarch64-li
+nux-gnu.so
+  building 'astropy.cosmology.flrw.scalar_inv_efuncs' extension
+  creating /tmp/tmpe4ioowao.build-temp/astropy/cosmology
+  creating /tmp/tmpe4ioowao.build-temp/astropy/cosmology/flrw
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c ./astropy/cosmology/flrw/scalar_inv_efuncs.c -o /tmp/tmpe4ioowao.build-temp/./astropy/cosmo
+logy/flrw/scalar_inv_efuncs.o
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/cosmology
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/cosmology/flrw
+  gcc -shared /tmp/tmpe4ioowao.build-temp/./astropy/cosmology/flrw/scalar_inv_efuncs.o -L/usr/local/lib -o /tmp/tmp3_rw25jk.build-lib/astropy/cosmology/flrw/sca
+lar_inv_efuncs.cpython-39-aarch64-linux-gnu.so
+  building 'astropy.timeseries.periodograms.lombscargle.implementations.cython_impl' extension
+  creating /tmp/tmpe4ioowao.build-temp/astropy/timeseries/periodograms/lombscargle
+  creating /tmp/tmpe4ioowao.build-temp/astropy/timeseries/periodograms/lombscargle/implementations
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include
+ -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c ./astropy/timeseries/periodograms/lombscargle/implementations/cython_impl.c -o /tmp/tmpe4io
+owao.build-temp/./astropy/timeseries/periodograms/lombscargle/implementations/cython_impl.o
+  In file included from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarraytypes.h:1822,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/ndarrayobject.h:12,
+                   from /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/arrayobject.h:4,
+                   from ./astropy/timeseries/periodograms/lombscargle/implementations/cython_impl.c:698:
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h:17:2: warning: #warning "Using deprecated Nu
+mPy API, disable it with " "#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION" [-Wcpp]
+     17 | #warning "Using deprecated NumPy API, disable it with " \
+        |  ^~~~~~~
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/timeseries/periodograms/lombscargle
+  creating /tmp/tmp3_rw25jk.build-lib/astropy/timeseries/periodograms/lombscargle/implementations
+  gcc -shared /tmp/tmpe4ioowao.build-temp/./astropy/timeseries/periodograms/lombscargle/implementations/cython_impl.o -L/usr/local/lib -o /tmp/tmp3_rw25jk.build
+-lib/astropy/timeseries/periodograms/lombscargle/implementations/cython_impl.cpython-39-aarch64-linux-gnu.so
+  building 'astropy.compiler_version' extension
+  gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/app/astropy/tests-venv/include -I/usr/local/include/python3.9 -c astropy/_compile
+r.c -o /tmp/tmpe4ioowao.build-temp/astropy/_compiler.o
+  gcc -shared /tmp/tmpe4ioowao.build-temp/astropy/_compiler.o -L/usr/local/lib -o /tmp/tmp3_rw25jk.build-lib/astropy/compiler_version.cpython-39-aarch64-linux-g
+nu.so
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/convolution/_convolve.cpython-39-aarch64-linux-gnu.so -> astropy/convolution
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/wcs/_wcs.cpython-39-aarch64-linux-gnu.so -> astropy/wcs
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/time/_parse_times.cpython-39-aarch64-linux-gnu.so -> astropy/time
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/stats/_fast_sigma_clip.cpython-39-aarch64-linux-gnu.so -> astropy/stats
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/utils/_compiler.cpython-39-aarch64-linux-gnu.so -> astropy/utils
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/table/_np_utils.cpython-39-aarch64-linux-gnu.so -> astropy/table
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/table/_column_mixins.cpython-39-aarch64-linux-gnu.so -> astropy/table
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/io/ascii/cparser.cpython-39-aarch64-linux-gnu.so -> astropy/io/ascii
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/io/votable/tablewriter.cpython-39-aarch64-linux-gnu.so -> astropy/io/votable
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/io/fits/_tiled_compression/_compression.cpython-39-aarch64-linux-gnu.so -> astropy/io/fits/_tiled_compression
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/timeseries/periodograms/bls/_impl.cpython-39-aarch64-linux-gnu.so -> astropy/timeseries/periodograms/bls
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/utils/xml/_iterparser.cpython-39-aarch64-linux-gnu.so -> astropy/utils/xml
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/stats/_stats.cpython-39-aarch64-linux-gnu.so -> astropy/stats
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/io/fits/_utils.cpython-39-aarch64-linux-gnu.so -> astropy/io/fits
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/cosmology/flrw/scalar_inv_efuncs.cpython-39-aarch64-linux-gnu.so -> astropy/cosmology/flrw
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/timeseries/periodograms/lombscargle/implementations/cython_impl.cpython-39-aarch64-linux-gnu.so -> astropy/timeseri
+es/periodograms/lombscargle/implementations
+  copying /tmp/tmp3_rw25jk.build-lib/astropy/compiler_version.cpython-39-aarch64-linux-gnu.so -> astropy
+  Editable install will be performed using a meta path finder.
+
+  Options like `package-data`, `include/exclude-package-data` or
+  `packages.find.exclude/include` may have no effect.
+
+  adding '__editable___astropy_5_3_dev882_g7269fa3e3_d20260408_finder.py'
+  adding '__editable__.astropy-5.3.dev882+g7269fa3e3.d20260408.pth'
+  creating '/tmp/pip-wheel-p00brd5r/.tmp-zm0bigqf/astropy-5.3.dev882+g7269fa3e3.d20260408-0.editable-cp39-cp39-linux_aarch64.whl' and adding '/tmp/tmpqbqi5l75as
+tropy-5.3.dev882+g7269fa3e3.d20260408-0.editable-cp39-cp39-linux_aarch64.whl' to it
+  adding 'astropy-5.3.dev882+g7269fa3e3.d20260408.dist-info/LICENSE.rst'
+  adding 'astropy-5.3.dev882+g7269fa3e3.d20260408.dist-info/METADATA'
+  adding 'astropy-5.3.dev882+g7269fa3e3.d20260408.dist-info/WHEEL'
+  adding 'astropy-5.3.dev882+g7269fa3e3.d20260408.dist-info/entry_points.txt'
+  adding 'astropy-5.3.dev882+g7269fa3e3.d20260408.dist-info/top_level.txt'
+  adding 'astropy-5.3.dev882+g7269fa3e3.d20260408.dist-info/RECORD'
+  /tmp/pip-build-env-_0qgws45/overlay/lib/python3.9/site-packages/setuptools/command/editable_wheel.py:348: InformationOnly: Editable installation.
+  !!
+
+          ********************************************************************************
+          Please be careful with folders in your working directory with the same
+          name as your package as they may take precedence during imports.
+          ********************************************************************************
+
+  !!
+    wheel_obj.write_files(unpacked)
+  Building editable for astropy (pyproject.toml) ... done
+  Created wheel for astropy: filename=astropy-5.3.dev882+g7269fa3e3.d20260408-0.editable-cp39-cp39-linux_aarch64.whl size=7331 sha256=66d16306979e09c1955fe48cf9
+d46cfff4c3a3bebc22a4a3b7098897bc149c39
+  Stored in directory: /tmp/pip-ephem-wheel-cache-ow4wet0d/wheels/ec/6c/1d/8d68cf03fa70ba44a2512079c46214d7894f30763fd2518e70
+Successfully built astropy
+Installing collected packages: sortedcontainers, typing-extensions, tomli, PyYAML, pygments, pyerfa, pluggy, packaging, iniconfig, execnet, coverage, attrs, exc
+eptiongroup, astropy, pytest, hypothesis, pytest-xdist, pytest-remotedata, pytest-mock, pytest-filter-subpackage, pytest-doctestplus, pytest-cov, pytest-astropy
+-header, pytest-arraydiff, pytest-astropy
+  changing mode of /app/astropy/tests-venv/bin/pygmentize to 755
+  changing mode of /app/astropy/tests-venv/bin/coverage to 755
+  changing mode of /app/astropy/tests-venv/bin/coverage-3.9 to 755
+  changing mode of /app/astropy/tests-venv/bin/coverage3 to 755
+  changing mode of /app/astropy/tests-venv/bin/fits2bitmap to 755
+  changing mode of /app/astropy/tests-venv/bin/fitscheck to 755
+  changing mode of /app/astropy/tests-venv/bin/fitsdiff to 755
+  changing mode of /app/astropy/tests-venv/bin/fitsheader to 755
+  changing mode of /app/astropy/tests-venv/bin/fitsinfo to 755
+  changing mode of /app/astropy/tests-venv/bin/samp_hub to 755
+  changing mode of /app/astropy/tests-venv/bin/showtable to 755
+  changing mode of /app/astropy/tests-venv/bin/volint to 755
+  changing mode of /app/astropy/tests-venv/bin/wcslint to 755
+  changing mode of /app/astropy/tests-venv/bin/py.test to 755
+  changing mode of /app/astropy/tests-venv/bin/pytest to 755
+  changing mode of /app/astropy/tests-venv/bin/hypothesis to 755
+Successfully installed PyYAML-6.0.3 astropy-5.3.dev882+g7269fa3e3.d20260408 attrs-26.1.0 coverage-7.10.7 exceptiongroup-1.3.1 execnet-2.1.2 hypothesis-6.141.1 i
+niconfig-2.1.0 packaging-26.0 pluggy-1.6.0 pyerfa-2.0.1.5 pygments-2.20.0 pytest-8.4.2 pytest-arraydiff-0.6.1 pytest-astropy-0.11.0 pytest-astropy-header-0.2.2
+pytest-cov-7.1.0 pytest-doctestplus-1.6.0 pytest-filter-subpackage-0.2.0 pytest-mock-3.15.1 pytest-remotedata-0.4.1 pytest-xdist-3.8.0 sortedcontainers-2.4.0 to
+mli-2.4.1 typing-extensions-4.15.0
+
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+Internet access disabled
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.9.25, pytest-8.4.2, pluggy-1.6.0 -- /app/astropy/tests-venv/bin/python
+cachedir: .pytest_cache
+
+Running tests with Astropy version 5.3.dev882+g7269fa3e3.d20260408.
+Running tests in astropy/io/ascii/tests/test_qdp.py.
+
+Date: 2026-04-08T21:14:48
+
+Platform: Linux-6.12.76-linuxkit-aarch64-with-glibc2.36
+
+Executable: /app/astropy/tests-venv/bin/python
+
+Full Python Version:
+3.9.25 (main, Oct 31 2025, 23:18:06)
+[GCC 12.2.0]
+
+encodings: sys: utf-8, locale: UTF-8, filesystem: utf-8
+byteorder: little
+float info: dig: 15, mant_dig: 15
+
+Package versions:
+Numpy: 1.23.4
+Scipy: not available
+Matplotlib: not available
+h5py: not available
+Pandas: not available
+PyERFA: 2.0.1.5
+Cython: not available
+Scikit-image: not available
+asdf: not available
+pyarrow: not available
+
+Using Astropy options: remote_data: none.
+
+hypothesis profile 'ci' -> database=None, deadline=None, print_blob=True, derandomize=True
+CI: undefined
+ARCH_ON_CI: undefined
+IS_CRON: undefined
+
+rootdir: /app/astropy
+configfile: setup.cfg
+plugins: astropy-header-0.2.2, xdist-3.8.0, remotedata-0.4.1, cov-7.1.0, mock-3.15.1, arraydiff-0.6.1, doctestplus-1.6.0, astropy-0.11.0, hypothesis-6.141.1, fi
+lter-subpackage-0.2.0
+collected 9 items
+
+astropy/io/ascii/tests/test_qdp.py::test_get_tables_from_qdp_file PASSED                                                                                 [ 11%]
+astropy/io/ascii/tests/test_qdp.py::test_roundtrip[False] PASSED                                                                                         [ 22%]
+astropy/io/ascii/tests/test_qdp.py::test_roundtrip[True] FAILED                                                                                          [ 33%]
+astropy/io/ascii/tests/test_qdp.py::test_read_example PASSED                                                                                             [ 44%]
+astropy/io/ascii/tests/test_qdp.py::test_roundtrip_example PASSED                                                                                        [ 55%]
+astropy/io/ascii/tests/test_qdp.py::test_roundtrip_example_comma PASSED                                                                                  [ 66%]
+astropy/io/ascii/tests/test_qdp.py::test_read_write_simple PASSED                                                                                        [ 77%]
+astropy/io/ascii/tests/test_qdp.py::test_read_write_simple_specify_name PASSED                                                                           [ 88%]
+astropy/io/ascii/tests/test_qdp.py::test_get_lines_from_qdp PASSED                                                                                       [100%]
+
+=========================================================================== FAILURES ===========================================================================
+_____________________________________________________________________ test_roundtrip[True] _____________________________________________________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_roundtrip_True_0'), lowercase = True
+
+    @pytest.mark.parametrize("lowercase", [False, True])
+    def test_roundtrip(tmp_path, lowercase):
+        example_qdp = """
+        ! Swift/XRT hardness ratio of trigger: XXXX, name: BUBU X-2
+        ! Columns are as labelled
+        READ TERR 1
+        READ SERR 2
+        ! WT -- hard data
+        !MJD            Err (pos)       Err(neg)        Rate            Error
+        53000.123456 2.37847222222222e-05    -2.37847222222222e-05   NO       0.212439
+        55045.099887 1.14467592592593e-05    -1.14467592592593e-05   0.000000        0.000000
+        NO NO NO NO NO
+        ! WT -- soft data
+        !MJD            Err (pos)       Err(neg)        Rate            Error
+        53000.123456 2.37847222222222e-05    -2.37847222222222e-05   0.726155        0.583890
+        55045.099887 1.14467592592593e-05    -1.14467592592593e-05   2.410935        1.393592
+        NO NO NO NO NO
+        ! WT -- hardness ratio
+        !MJD            Err (pos)       Err(neg)        Rate            Error
+        53000.123456 2.37847222222222e-05    -2.37847222222222e-05   -0.292553       -0.374935
+        55045.099887 1.14467592592593e-05    -1.14467592592593e-05   0.000000        NO
+        ! Add command, just to raise the warning.
+        READ TERR 1
+        ! WT -- whatever
+        !MJD            Err (pos)       Err(neg)        Rate            Error
+        53000.123456 2.37847222222222e-05    -2.37847222222222e-05   -0.292553       -0.374935
+        NO 1.14467592592593e-05    -1.14467592592593e-05   0.000000        NO
+        """
+        if lowercase:
+            example_qdp = lowercase_header(example_qdp)
+
+        path = str(tmp_path / "test.qdp")
+        path2 = str(tmp_path / "test2.qdp")
+
+        with open(path, "w") as fp:
+            print(example_qdp, file=fp)
+        with pytest.warns(AstropyUserWarning) as record:
+>           table = _read_table_qdp(path, names=["MJD", "Rate"], table_id=0)
+
+astropy/io/ascii/tests/test_qdp.py:93:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+astropy/io/ascii/qdp.py:418: in _read_table_qdp
+    tables = _get_tables_from_qdp_file(
+astropy/io/ascii/qdp.py:259: in _get_tables_from_qdp_file
+    contents, ncol = _get_type_from_list_of_lines(lines, delimiter=delimiter)
+astropy/io/ascii/qdp.py:122: in _get_type_from_list_of_lines
+    types = [_line_type(line, delimiter=delimiter) for line in lines]
+astropy/io/ascii/qdp.py:122: in <listcomp>
+    types = [_line_type(line, delimiter=delimiter) for line in lines]
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+line = 'read terr 1', delimiter = None
+
+    def _line_type(line, delimiter=None):
+        """Interpret a QDP file line.
+
+        Parameters
+        ----------
+        line : str
+            a single line of the file
+
+        Returns
+        -------
+        type : str
+            Line type: "comment", "command", or "data"
+
+        Examples
+        --------
+        >>> _line_type("READ SERR 3")
+        'command'
+        >>> _line_type(" \\n    !some gibberish")
+        'comment'
+        >>> _line_type("   ")
+        'comment'
+        >>> _line_type(" 21345.45")
+        'data,1'
+        >>> _line_type(" 21345.45 1.53e-3 1e-3 .04 NO nan")
+        'data,6'
+        >>> _line_type(" 21345.45,1.53e-3,1e-3,.04,NO,nan", delimiter=',')
+        'data,6'
+        >>> _line_type(" 21345.45 ! a comment to disturb")
+        'data,1'
+        >>> _line_type("NO NO NO NO NO")
+        'new'
+        >>> _line_type("NO,NO,NO,NO,NO", delimiter=',')
+        'new'
+        >>> _line_type("N O N NOON OON O")
+        Traceback (most recent call last):
+            ...
+        ValueError: Unrecognized QDP line...
+        >>> _line_type(" some non-comment gibberish")
+        Traceback (most recent call last):
+            ...
+        ValueError: Unrecognized QDP line...
+        """
+        _decimal_re = r"[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?"
+        _command_re = r"READ [TS]ERR(\s+[0-9]+)+"
+
+        sep = delimiter
+        if delimiter is None:
+            sep = r"\s+"
+        _new_re = rf"NO({sep}NO)+"
+        _data_re = rf"({_decimal_re}|NO|[-+]?nan)({sep}({_decimal_re}|NO|[-+]?nan))*)"
+        _type_re = rf"^\s*((?P<command>{_command_re})|(?P<new>{_new_re})|(?P<data>{_data_re})?\s*(\!(?P<comment>.*))?\s*$"
+        _line_type_re = re.compile(_type_re)
+        line = line.strip()
+        if not line:
+            return "comment"
+        match = _line_type_re.match(line)
+
+        if match is None:
+>           raise ValueError(f"Unrecognized QDP line: {line}")
+E           ValueError: Unrecognized QDP line: read terr 1
+
+astropy/io/ascii/qdp.py:78: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_roundtrip_True_0'), lowercase = True
+
+    @pytest.mark.parametrize("lowercase", [False, True])
+    def test_roundtrip(tmp_path, lowercase):
+        example_qdp = """
+        ! Swift/XRT hardness ratio of trigger: XXXX, name: BUBU X-2
+        ! Columns are as labelled
+        READ TERR 1
+        READ SERR 2
+        ! WT -- hard data
+        !MJD            Err (pos)       Err(neg)        Rate            Error
+        53000.123456 2.37847222222222e-05    -2.37847222222222e-05   NO       0.212439
+        55045.099887 1.14467592592593e-05    -1.14467592592593e-05   0.000000        0.000000
+        NO NO NO NO NO
+        ! WT -- soft data
+        !MJD            Err (pos)       Err(neg)        Rate            Error
+        53000.123456 2.37847222222222e-05    -2.37847222222222e-05   0.726155        0.583890
+        55045.099887 1.14467592592593e-05    -1.14467592592593e-05   2.410935        1.393592
+        NO NO NO NO NO
+        ! WT -- hardness ratio
+        !MJD            Err (pos)       Err(neg)        Rate            Error
+        53000.123456 2.37847222222222e-05    -2.37847222222222e-05   -0.292553       -0.374935
+        55045.099887 1.14467592592593e-05    -1.14467592592593e-05   0.000000        NO
+        ! Add command, just to raise the warning.
+        READ TERR 1
+        ! WT -- whatever
+        !MJD            Err (pos)       Err(neg)        Rate            Error
+        53000.123456 2.37847222222222e-05    -2.37847222222222e-05   -0.292553       -0.374935
+        NO 1.14467592592593e-05    -1.14467592592593e-05   0.000000        NO
+        """
+        if lowercase:
+            example_qdp = lowercase_header(example_qdp)
+
+        path = str(tmp_path / "test.qdp")
+        path2 = str(tmp_path / "test2.qdp")
+
+        with open(path, "w") as fp:
+            print(example_qdp, file=fp)
+        with pytest.warns(AstropyUserWarning) as record:
+>           table = _read_table_qdp(path, names=["MJD", "Rate"], table_id=0)
+E           Failed: DID NOT WARN. No warnings of type (<class 'astropy.utils.exceptions.AstropyUserWarning'>,) were emitted.
+E            Emitted warnings: [].
+
+astropy/io/ascii/tests/test_qdp.py:93: Failed
+============================================================================ PASSES ============================================================================
+=================================================================== short test summary info ====================================================================
+PASSED astropy/io/ascii/tests/test_qdp.py::test_get_tables_from_qdp_file
+PASSED astropy/io/ascii/tests/test_qdp.py::test_roundtrip[False]
+PASSED astropy/io/ascii/tests/test_qdp.py::test_read_example
+PASSED astropy/io/ascii/tests/test_qdp.py::test_roundtrip_example
+PASSED astropy/io/ascii/tests/test_qdp.py::test_roundtrip_example_comma
+PASSED astropy/io/ascii/tests/test_qdp.py::test_read_write_simple
+PASSED astropy/io/ascii/tests/test_qdp.py::test_read_write_simple_specify_name
+PASSED astropy/io/ascii/tests/test_qdp.py::test_get_lines_from_qdp
+FAILED astropy/io/ascii/tests/test_qdp.py::test_roundtrip[True] - Failed: DID NOT WARN. No warnings of type (<class 'astropy.utils.exceptions.AstropyUserWarning
+'>,) were emitted.
+================================================================= 1 failed, 8 passed in 0.11s ==================================================================
+root@96bc7b887a86:/app/astropy#

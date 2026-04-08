@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The crack in the chasm is too narrow for the player to pass through. The path along the chasm runs southwest to northeast, suggesting other potential routes to explore.",
+    "explanation": "Continue exploring the path along the chasm, heading southwest to further investigate where it leads.",
+    "commands": [
+        {
+            "keystrokes": "southwest\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

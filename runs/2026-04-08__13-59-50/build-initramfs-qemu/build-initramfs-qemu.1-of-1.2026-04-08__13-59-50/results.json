@@ -1,0 +1,20 @@
+{
+    "id": "c4c806f7-5c3d-47f1-ae4b-625a64e47047",
+    "trial_name": "build-initramfs-qemu.1-of-1.2026-04-08__13-59-50",
+    "task_id": "build-initramfs-qemu",
+    "instruction": "I've built the linux kernel from source. Please make for me an initramfs so that I can run the command\nrun qemu-system-x86_64 -kernel ./linux-6.9/arch/x86/boot/bzImage -initrd ramfs/initramfs.cpio.gz -append \"console=ttyS0\" -nographic.\nand it will boot me into the kernel as I expect.\nI want to login with username 'root' and no password.",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "../tests/test_outputs.py - AssertionError: Expected 'Hello, this is a custom kernel' to be in post-agent.txt": "failed"
+    },
+    "recording_path": "2026-04-08__13-59-50/build-initramfs-qemu/build-initramfs-qemu.1-of-1.2026-04-08__13-59-50/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T22:09:54.356672+00:00",
+    "trial_ended_at": "2026-04-08T22:25:53.907982+00:00",
+    "agent_started_at": "2026-04-08T22:25:34.790249+00:00",
+    "agent_ended_at": "2026-04-08T22:25:34.989015+00:00",
+    "test_started_at": "2026-04-08T22:25:38.587519+00:00",
+    "test_ended_at": "2026-04-08T22:25:49.303405+00:00"
+}

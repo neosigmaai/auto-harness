@@ -1,0 +1,32 @@
+{
+    "state_analysis": "The commands to list directories and search for the `linux-6.9` directory have continuously timed out. This suggests that either the directory is deeply nested, not present, or there are performance issues with the filesystem.",
+    "explanation": "Attempt to locate the `linux-6.9` directory by listing contents of the most probable parent directories and checking for compressed files that might need extraction.",
+    "commands": [
+        {
+            "keystrokes": "\n",
+            "is_blocking": false,
+            "timeout_sec": 1
+        },
+        {
+            "keystrokes": "ls -l /app\n",
+            "is_blocking": false,
+            "timeout_sec": 10
+        },
+        {
+            "keystrokes": "ls -l /usr/src\n",
+            "is_blocking": false,
+            "timeout_sec": 10
+        },
+        {
+            "keystrokes": "ls -l /var\n",
+            "is_blocking": false,
+            "timeout_sec": 10
+        },
+        {
+            "keystrokes": "ls -l /opt\n",
+            "is_blocking": false,
+            "timeout_sec": 10
+        }
+    ],
+    "is_task_complete": false
+}

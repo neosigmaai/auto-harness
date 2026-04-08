@@ -1,0 +1,20 @@
+{
+    "id": "45b7d83a-c1cc-43c3-92e5-86697f1fceea",
+    "trial_name": "qemu-alpine-ssh.1-of-1.2026-04-08__13-59-50",
+    "task_id": "qemu-alpine-ssh",
+    "instruction": "Start the alpine.iso image in qemu, and then start an ssh server on the alpine linux vm. When you're done, I should be able to run `ssh -p 2222 root@localhost` with password `password123` and be dropped into a shell. On the alpine.iso image, the default username is root with no password.",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_sshpass": "failed"
+    },
+    "recording_path": "2026-04-08__13-59-50/qemu-alpine-ssh/qemu-alpine-ssh.1-of-1.2026-04-08__13-59-50/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T21:22:42.866954+00:00",
+    "trial_ended_at": "2026-04-08T21:23:08.415798+00:00",
+    "agent_started_at": "2026-04-08T21:22:54.739913+00:00",
+    "agent_ended_at": "2026-04-08T21:22:54.833488+00:00",
+    "test_started_at": "2026-04-08T21:22:58.075295+00:00",
+    "test_ended_at": "2026-04-08T21:23:05.705705+00:00"
+}

@@ -1,0 +1,40 @@
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.10/site-packages (from rich>=12.3.0->typer->transformers) (2.20.0)
+Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich>=12.3.0->typer->transformers) (0.1.2)
+Requirement already satisfied: exceptiongroup>=1.0.2 in /usr/local/lib/python3.10/site-packages (from anyio->httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->tran
+sformers) (1.3.1)
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a v
+irtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+root@da999e52426a:/app# python -m mteb.run --hf-model bge-small-en-v1.5 --hf-commit-id 5c38ec7c405ec4b44b94cc5a9bb96e735b38267a --task sts12 --output-dir result
+s/hf_model_org__bge-small-en-v1.5/5c38ec7c405ec4b44b94cc5a9bb96e735b38267a/sts12.json; tmux wait -S done
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/usr/local/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/usr/local/lib/python3.10/site-packages/mteb/__init__.py", line 5, in <module>
+    from mteb.benchmarks.benchmarks import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/__init__.py", line 3, in <module>
+    from mteb.benchmarks.benchmark import Benchmark
+  File "/usr/local/lib/python3.10/site-packages/mteb/benchmarks/benchmark.py", line 9, in <module>
+    from mteb.load_results.load_results import load_results
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/__init__.py", line 3, in <module>
+    from .benchmark_results import BenchmarkResults, ModelResult
+  File "/usr/local/lib/python3.10/site-packages/mteb/load_results/benchmark_results.py", line 15, in <module>
+    from mteb.abstasks.AbsTask import AbsTask, ScoresDict
+  File "/usr/local/lib/python3.10/site-packages/mteb/abstasks/__init__.py", line 3, in <module>
+    from ..evaluation.LangMapping import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/__init__.py", line 3, in <module>
+    from .MTEB import *
+  File "/usr/local/lib/python3.10/site-packages/mteb/evaluation/MTEB.py", line 23, in <module>
+    from mteb.models import model_meta_from_sentence_transformers
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/__init__.py", line 5, in <module>
+    from mteb.models.overview import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/overview.py", line 14, in <module>
+    from mteb.models import (
+  File "/usr/local/lib/python3.10/site-packages/mteb/models/gme_v_models.py", line 13, in <module>
+    from transformers import AutoModelForVision2Seq, AutoProcessor
+ImportError: cannot import name 'AutoModelForVision2Seq' from 'transformers' (/usr/local/lib/python3.10/site-packages/transformers/__init__.py)
+root@da999e52426a:/app#

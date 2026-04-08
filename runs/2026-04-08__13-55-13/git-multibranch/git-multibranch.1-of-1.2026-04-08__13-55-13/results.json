@@ -1,0 +1,20 @@
+{
+    "id": "e4d70238-672c-4c7e-a801-6e991342872b",
+    "trial_name": "git-multibranch.1-of-1.2026-04-08__13-55-13",
+    "task_id": "git-multibranch",
+    "instruction": "Set up a Git server that hosts a project over SSH at git@localhost:/git/project.\nThe server should accept password authentication with the password \"password\".\n\nIt should deploy contents from two branches (main and dev) to separate HTTPS endpoints using Nginx:\n- Main branch: https://localhost:8443/index.html\n- Dev branch: https://localhost:8443/dev/index.html\n\nThe server should use HTTPS with a self-signed certificate.\nEach push to the Git repository should trigger a deployment via a `post-receive` hook.\nThe deployment should complete within 3 seconds of the push.",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_multi_branch_https_deploy": "failed"
+    },
+    "recording_path": "2026-04-08__13-55-13/git-multibranch/git-multibranch.1-of-1.2026-04-08__13-55-13/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T21:23:27.266400+00:00",
+    "trial_ended_at": "2026-04-08T21:24:39.850850+00:00",
+    "agent_started_at": "2026-04-08T21:24:22.847365+00:00",
+    "agent_ended_at": "2026-04-08T21:24:22.982187+00:00",
+    "test_started_at": "2026-04-08T21:24:26.387803+00:00",
+    "test_ended_at": "2026-04-08T21:24:37.165922+00:00"
+}

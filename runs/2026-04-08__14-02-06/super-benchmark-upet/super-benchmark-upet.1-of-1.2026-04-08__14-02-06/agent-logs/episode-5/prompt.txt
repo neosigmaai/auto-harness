@@ -1,0 +1,40 @@
+            gcc: numpy/core/src/common/npy_longdouble.c
+            gcc: build/src.linux-aarch64-3.10/numpy/core/src/umath/scalarmath.c
+            gcc: numpy/core/src/common/cblasfuncs.c
+            gcc: numpy/core/src/common/python_xerbla.c
+            gcc: numpy/core/src/multiarray/mapping.c
+            gcc: numpy/core/src/multiarray/methods.c
+            gcc: build/src.linux-aarch64-3.10/numpy/core/src/umath/matmul.c
+            gcc: build/src.linux-aarch64-3.10/numpy/core/src/umath/clip.c
+            error: Command "gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -DNPY_INTERNAL_BUILD=1 -DHAVE_NPY_CONFIG_H=1 -D_FILE_OFFSE
+T_BITS=64 -D_LARGEFILE_SOURCE=1 -D_LARGEFILE64_SOURCE=1 -DHAVE_CBLAS -Ibuild/src.linux-aarch64-3.10/numpy/core/src/umath -Ibuild/src.linux-aarch64-3.10/numpy/co
+re/src/npymath -Ibuild/src.linux-aarch64-3.10/numpy/core/src/common -Inumpy/core/include -Ibuild/src.linux-aarch64-3.10/numpy/core/include/numpy -Inumpy/core/sr
+c/common -Inumpy/core/src -Inumpy/core -Inumpy/core/src/npymath -Inumpy/core/src/multiarray -Inumpy/core/src/umath -Inumpy/core/src/npysort -I/usr/local/include
+/python3.10 -Ibuild/src.linux-aarch64-3.10/numpy/core/src/common -Ibuild/src.linux-aarch64-3.10/numpy/core/src/npymath -c build/src.linux-aarch64-3.10/numpy/cor
+e/src/multiarray/scalartypes.c -o build/temp.linux-aarch64-3.10/build/src.linux-aarch64-3.10/numpy/core/src/multiarray/scalartypes.o -MMD -MF build/temp.linux-a
+arch64-3.10/build/src.linux-aarch64-3.10/numpy/core/src/multiarray/scalartypes.o.d -std=c99" failed with exit status 1
+            [end of output]
+
+        note: This error originates from a subprocess, and is likely not a problem with pip.
+        ERROR: Failed building wheel for numpy
+      Failed to build numpy
+      ERROR: Could not build wheels for numpy, which is required to install pyproject.toml-based projects
+
+      [notice] A new release of pip is available: 23.0.1 -> 26.0.1
+      [notice] To update, run: pip install --upgrade pip
+      [end of output]
+
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+error: subprocess-exited-with-error
+
+× pip subprocess to install build dependencies did not run successfully.
+│ exit code: 1
+╰─> See above for output.
+
+note: This error originates from a subprocess, and is likely not a problem with pip.
+
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+root@ceebef5ecae8:/app/UPET# ; tmux wait -S done
+bash: syntax error near unexpected token `;'
+root@ceebef5ecae8:/app/UPET#

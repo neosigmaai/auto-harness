@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player has entered a high north-south passage that forks to the northeast. This suggests multiple new paths to explore.",
+    "explanation": "Explore the fork to the northeast to discover where it leads and potentially find new items or areas of interest.",
+    "commands": [
+        {
+            "keystrokes": "northeast\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

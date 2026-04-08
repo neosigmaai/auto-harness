@@ -1,0 +1,8 @@
+{"version": 2, "width": 160, "height": 40, "timestamp": 1775682926, "env": {"SHELL": "/bin/bash", "TERM": "tmux-256color"}}
+[0.001798, "o", "\u001b[?2004hroot@e0b2127ec9c1:/app/astropy# "]
+[2.975023, "i", "clear\r"]
+[2.975439, "o", "clear\r\n\u001b[?2004l\r"]
+[2.976551, "o", "\u001b[H\u001b[J\u001b[3J"]
+[2.976762, "o", "\u001b[?2004hroot@e0b2127ec9c1:/app/astropy# "]
+[86.858953, "i", "\u0004"]
+[86.861162, "o", "\u001b[?2004l\r\r\nexit\r\n"]

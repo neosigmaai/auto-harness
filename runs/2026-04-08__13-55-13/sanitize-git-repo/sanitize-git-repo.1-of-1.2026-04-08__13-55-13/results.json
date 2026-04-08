@@ -1,0 +1,22 @@
+{
+    "id": "07ce139f-c783-4253-9995-fc3ba2566404",
+    "trial_name": "sanitize-git-repo.1-of-1.2026-04-08__13-55-13",
+    "task_id": "sanitize-git-repo",
+    "instruction": "Please help sanitize my github repository \"dclm\" of all API keys. Likely candidates are\nAWS, github, and huggingface passwords/tokens.\n\nPlease find and remove all such information and replace it with placeholder values as follows:\n\nFor example:\n- If an AWS_ACCESS_KEY_ID is found, replace the actual value with <your-aws-access-key-id>\n- If a Huggingface token is found, replace the actual value with <your-huggingface-token>\n\nPlease ensure that the sensitive values are not present in the repository after the sanitization.\nThe placeholder values should be consistent across the repository and should be kept.\nAlso, do not make any other unnecessary changes to the files that do not contain sensitive information.",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_no_other_files_changed": "passed",
+        "test_removal_of_secret_information": "failed",
+        "test_correct_replacement_of_secret_information": "failed"
+    },
+    "recording_path": "2026-04-08__13-55-13/sanitize-git-repo/sanitize-git-repo.1-of-1.2026-04-08__13-55-13/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T21:49:48.363040+00:00",
+    "trial_ended_at": "2026-04-08T21:50:10.226551+00:00",
+    "agent_started_at": "2026-04-08T21:49:55.682752+00:00",
+    "agent_ended_at": "2026-04-08T21:49:55.811040+00:00",
+    "test_started_at": "2026-04-08T21:49:59.299435+00:00",
+    "test_ended_at": "2026-04-08T21:50:07.652887+00:00"
+}

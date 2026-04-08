@@ -1,0 +1,219 @@
+root@c04348efb156:/workspace# bash /tests/run-tests.sh; tmux wait -S done
+Get:1 http://ports.ubuntu.com/ubuntu-ports noble InRelease [256 kB]
+Get:2 http://ports.ubuntu.com/ubuntu-ports noble-updates InRelease [126 kB]
+Get:3 http://ports.ubuntu.com/ubuntu-ports noble-backports InRelease [126 kB]
+Get:4 http://ports.ubuntu.com/ubuntu-ports noble-security InRelease [126 kB]
+Get:5 http://ports.ubuntu.com/ubuntu-ports noble/restricted arm64 Packages [113 kB]
+Get:6 http://ports.ubuntu.com/ubuntu-ports noble/universe arm64 Packages [19.0 MB]
+Get:7 http://ports.ubuntu.com/ubuntu-ports noble/multiverse arm64 Packages [274 kB]
+Get:8 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 Packages [1776 kB]
+Get:9 http://ports.ubuntu.com/ubuntu-ports noble-updates/multiverse arm64 Packages [45.7 kB]
+Get:10 http://ports.ubuntu.com/ubuntu-ports noble-updates/universe arm64 Packages [2114 kB]
+Get:11 http://ports.ubuntu.com/ubuntu-ports noble-updates/restricted arm64 Packages [5151 kB]
+Get:12 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 Packages [2495 kB]
+Get:13 http://ports.ubuntu.com/ubuntu-ports noble-backports/main arm64 Packages [49.5 kB]
+Get:14 http://ports.ubuntu.com/ubuntu-ports noble-backports/multiverse arm64 Packages [695 B]
+Get:15 http://ports.ubuntu.com/ubuntu-ports noble-backports/universe arm64 Packages [36.1 kB]
+Get:16 http://ports.ubuntu.com/ubuntu-ports noble-security/main arm64 Packages [2133 kB]
+Get:17 http://ports.ubuntu.com/ubuntu-ports noble-security/universe arm64 Packages [1505 kB]
+Get:18 http://ports.ubuntu.com/ubuntu-ports noble-security/multiverse arm64 Packages [44.1 kB]
+Get:19 http://ports.ubuntu.com/ubuntu-ports noble-security/restricted arm64 Packages [4974 kB]
+Fetched 40.4 MB in 5s (8536 kB/s)
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  krb5-locales libcurl4t64 libgssapi-krb5-2 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap-common libldap2 libnghttp2-14 libpsl5t64 librtmp1
+  libsasl2-2 libsasl2-modules libsasl2-modules-db libssh-4 publicsuffix
+Suggested packages:
+  krb5-doc krb5-user libsasl2-modules-gssapi-mit | libsasl2-modules-gssapi-heimdal libsasl2-modules-ldap libsasl2-modules-otp libsasl2-modules-sql
+The following NEW packages will be installed:
+  curl krb5-locales libcurl4t64 libgssapi-krb5-2 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap-common libldap2 libnghttp2-14 libpsl5t64 librtmp1
+  libsasl2-2 libsasl2-modules libsasl2-modules-db libssh-4 publicsuffix
+0 upgraded, 18 newly installed, 0 to remove and 36 not upgraded.
+Need to get 2077 kB of archives.
+After this operation, 6678 kB of additional disk space will be used.
+Get:1 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 krb5-locales all 1.20.1-6ubuntu2.6 [14.8 kB]
+Get:2 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libkrb5support0 arm64 1.20.1-6ubuntu2.6 [34.8 kB]
+Get:3 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libk5crypto3 arm64 1.20.1-6ubuntu2.6 [85.8 kB]
+Get:4 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 libkeyutils1 arm64 1.6.3-3build1 [9654 B]
+Get:5 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libkrb5-3 arm64 1.20.1-6ubuntu2.6 [349 kB]
+Get:6 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libgssapi-krb5-2 arm64 1.20.1-6ubuntu2.6 [142 kB]
+Get:7 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libnghttp2-14 arm64 1.59.0-1ubuntu0.2 [74.5 kB]
+Get:8 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 libpsl5t64 arm64 0.21.2-1.1build1 [57.4 kB]
+Get:9 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 publicsuffix all 20231001.0357-0.1 [129 kB]
+Get:10 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libsasl2-modules-db arm64 2.1.28+dfsg1-5ubuntu3.1 [21.6 kB]
+Get:11 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libsasl2-2 arm64 2.1.28+dfsg1-5ubuntu3.1 [54.7 kB]
+Get:12 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libldap2 arm64 2.6.10+dfsg-0ubuntu0.24.04.1 [196 kB]
+Get:13 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 librtmp1 arm64 2.4+20151223.gitfa8646d.1-2build7 [57.8 kB]
+Get:14 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libssh-4 arm64 0.10.6-2ubuntu0.4 [191 kB]
+Get:15 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libcurl4t64 arm64 8.5.0-2ubuntu10.8 [334 kB]
+Get:16 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 curl arm64 8.5.0-2ubuntu10.8 [222 kB]
+Get:17 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libldap-common all 2.6.10+dfsg-0ubuntu0.24.04.1 [32.9 kB]
+Get:18 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libsasl2-modules arm64 2.1.28+dfsg1-5ubuntu3.1 [69.6 kB]
+Fetched 2077 kB in 2s (1118 kB/s)
+debconf: delaying package configuration, since apt-utils is not installed
+Selecting previously unselected package krb5-locales.
+(Reading database ... 18261 files and directories currently installed.)
+Preparing to unpack .../00-krb5-locales_1.20.1-6ubuntu2.6_all.deb ...
+Unpacking krb5-locales (1.20.1-6ubuntu2.6) ...
+Selecting previously unselected package libkrb5support0:arm64.
+Preparing to unpack .../01-libkrb5support0_1.20.1-6ubuntu2.6_arm64.deb ...
+Unpacking libkrb5support0:arm64 (1.20.1-6ubuntu2.6) ...
+Selecting previously unselected package libk5crypto3:arm64.
+Preparing to unpack .../02-libk5crypto3_1.20.1-6ubuntu2.6_arm64.deb ...
+Unpacking libk5crypto3:arm64 (1.20.1-6ubuntu2.6) ...
+Selecting previously unselected package libkeyutils1:arm64.
+Preparing to unpack .../03-libkeyutils1_1.6.3-3build1_arm64.deb ...
+Unpacking libkeyutils1:arm64 (1.6.3-3build1) ...
+Selecting previously unselected package libkrb5-3:arm64.
+Preparing to unpack .../04-libkrb5-3_1.20.1-6ubuntu2.6_arm64.deb ...
+Unpacking libkrb5-3:arm64 (1.20.1-6ubuntu2.6) ...
+Selecting previously unselected package libgssapi-krb5-2:arm64.
+Preparing to unpack .../05-libgssapi-krb5-2_1.20.1-6ubuntu2.6_arm64.deb ...
+Unpacking libgssapi-krb5-2:arm64 (1.20.1-6ubuntu2.6) ...
+Selecting previously unselected package libnghttp2-14:arm64.
+Preparing to unpack .../06-libnghttp2-14_1.59.0-1ubuntu0.2_arm64.deb ...
+Unpacking libnghttp2-14:arm64 (1.59.0-1ubuntu0.2) ...
+Selecting previously unselected package libpsl5t64:arm64.
+Preparing to unpack .../07-libpsl5t64_0.21.2-1.1build1_arm64.deb ...
+Unpacking libpsl5t64:arm64 (0.21.2-1.1build1) ...
+Selecting previously unselected package publicsuffix.
+Preparing to unpack .../08-publicsuffix_20231001.0357-0.1_all.deb ...
+Unpacking publicsuffix (20231001.0357-0.1) ...
+Selecting previously unselected package libsasl2-modules-db:arm64.
+Preparing to unpack .../09-libsasl2-modules-db_2.1.28+dfsg1-5ubuntu3.1_arm64.deb ...
+Unpacking libsasl2-modules-db:arm64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Selecting previously unselected package libsasl2-2:arm64.
+Preparing to unpack .../10-libsasl2-2_2.1.28+dfsg1-5ubuntu3.1_arm64.deb ...
+Unpacking libsasl2-2:arm64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Selecting previously unselected package libldap2:arm64.
+Preparing to unpack .../11-libldap2_2.6.10+dfsg-0ubuntu0.24.04.1_arm64.deb ...
+Unpacking libldap2:arm64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...
+Selecting previously unselected package librtmp1:arm64.
+Preparing to unpack .../12-librtmp1_2.4+20151223.gitfa8646d.1-2build7_arm64.deb ...
+Unpacking librtmp1:arm64 (2.4+20151223.gitfa8646d.1-2build7) ...
+Selecting previously unselected package libssh-4:arm64.
+Preparing to unpack .../13-libssh-4_0.10.6-2ubuntu0.4_arm64.deb ...
+Unpacking libssh-4:arm64 (0.10.6-2ubuntu0.4) ...
+Selecting previously unselected package libcurl4t64:arm64.
+Preparing to unpack .../14-libcurl4t64_8.5.0-2ubuntu10.8_arm64.deb ...
+Unpacking libcurl4t64:arm64 (8.5.0-2ubuntu10.8) ...
+Selecting previously unselected package curl.
+Preparing to unpack .../15-curl_8.5.0-2ubuntu10.8_arm64.deb ...
+Unpacking curl (8.5.0-2ubuntu10.8) ...
+Selecting previously unselected package libldap-common.
+Preparing to unpack .../16-libldap-common_2.6.10+dfsg-0ubuntu0.24.04.1_all.deb ...
+Unpacking libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...
+Selecting previously unselected package libsasl2-modules:arm64.
+Preparing to unpack .../17-libsasl2-modules_2.1.28+dfsg1-5ubuntu3.1_arm64.deb ...
+Unpacking libsasl2-modules:arm64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Setting up libkeyutils1:arm64 (1.6.3-3build1) ...
+Setting up libsasl2-modules:arm64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Setting up libpsl5t64:arm64 (0.21.2-1.1build1) ...
+Setting up libnghttp2-14:arm64 (1.59.0-1ubuntu0.2) ...
+Setting up krb5-locales (1.20.1-6ubuntu2.6) ...
+Setting up libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...
+Setting up libkrb5support0:arm64 (1.20.1-6ubuntu2.6) ...
+Setting up libsasl2-modules-db:arm64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Setting up librtmp1:arm64 (2.4+20151223.gitfa8646d.1-2build7) ...
+Setting up libk5crypto3:arm64 (1.20.1-6ubuntu2.6) ...
+Setting up libsasl2-2:arm64 (2.1.28+dfsg1-5ubuntu3.1) ...
+Setting up libkrb5-3:arm64 (1.20.1-6ubuntu2.6) ...
+Setting up publicsuffix (20231001.0357-0.1) ...
+Setting up libldap2:arm64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...
+Setting up libgssapi-krb5-2:arm64 (1.20.1-6ubuntu2.6) ...
+Setting up libssh-4:arm64 (0.10.6-2ubuntu0.4) ...
+Setting up libcurl4t64:arm64 (8.5.0-2ubuntu10.8) ...
+Setting up curl (8.5.0-2ubuntu10.8) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+downloading uv 0.11.5 aarch64-unknown-linux-gnu
+installing to /root/.local/bin
+  uv
+  uvx
+everything's installed!
+
+To add $HOME/.local/bin to your PATH, either restart your shell or run:
+
+    source $HOME/.local/bin/env (sh, bash, zsh)
+    source $HOME/.local/bin/env.fish (fish)
+Initialized project `workspace`
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: .venv
+Resolved 7 packages in 179ms
+Prepared 5 packages in 287ms
+Installed 5 packages in 26ms
+ + iniconfig==2.3.0
+ + packaging==26.0
+ + pluggy==1.6.0
+ + pygments==2.20.0
+ + pytest==9.0.3
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0
+rootdir: /tests
+collected 4 items
+
+../tests/test_outputs.py .FFF                                                                                                                            [100%]
+
+=========================================================================== FAILURES ===========================================================================
+__________________________________________________________________ test_compiled_proof_exists __________________________________________________________________
+
+    def test_compiled_proof_exists():
+>       assert os.path.exists("plus_comm.vo"), (
+            "The compiled proof file plus_comm.vo should exist"
+        )
+E       AssertionError: The compiled proof file plus_comm.vo should exist
+E       assert False
+E        +  where False = <function exists at 0xffff9570b560>('plus_comm.vo')
+E        +    where <function exists at 0xffff9570b560> = <module 'posixpath' (frozen)>.exists
+E        +      where <module 'posixpath' (frozen)> = os.path
+
+/tests/test_outputs.py:12: AssertionError
+_____________________________________________________________________ test_proof_contents ______________________________________________________________________
+
+    def test_proof_contents():
+        with open("plus_comm.v", "r") as f:
+            content = f.read()
+            assert "n + m = m + n" in content, (
+                "The file should contain the plus_comm theorem"
+            )
+            assert "Proof." in content, "The file should contain a proof"
+            assert "Qed." in content, "The proof should be completed with Qed"
+>           assert "admit" not in content, "The proof should not contain any admits"
+E           AssertionError: The proof should not contain any admits
+E           assert 'admit' not in 'Require Imp...dmit.\nQed. '
+E
+E             'admit' is contained here:
+E               se *)
+E                   admit.
+E                 - simpl.
+E                   (* Need to use the inductive hypothesis and plus_n_Sm *)
+E                   admit.
+E               Qed.
+
+/tests/test_outputs.py:25: AssertionError
+_________________________________________________________________ test_compiled_proof_content __________________________________________________________________
+
+    def test_compiled_proof_content():
+        # First verify the proof compiles without errors
+        compile_result = subprocess.run(
+            ["coqc", "plus_comm.v"],
+            capture_output=True,
+            text=True,
+        )
+>       assert compile_result.returncode == 0, "Proof should compile without errors"
+E       AssertionError: Proof should compile without errors
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['coqc', 'plus_comm.v'], returncode=1, stdout='', stderr='File "./plus_comm.v", line 14, charact...ttempt to save a
+proof with given up goals. If\nthis is really what you want to do, use Admitted in place of Qed.\n\n').returncode
+
+/tests/test_outputs.py:35: AssertionError
+============================================================================ PASSES ============================================================================
+=================================================================== short test summary info ====================================================================
+PASSED ../tests/test_outputs.py::test_proof_file_exists
+FAILED ../tests/test_outputs.py::test_compiled_proof_exists - AssertionError: The compiled proof file plus_comm.vo should exist
+FAILED ../tests/test_outputs.py::test_proof_contents - AssertionError: The proof should not contain any admits
+FAILED ../tests/test_outputs.py::test_compiled_proof_content - AssertionError: Proof should compile without errors
+================================================================= 3 failed, 1 passed in 0.51s ==================================================================
+root@c04348efb156:/workspace#

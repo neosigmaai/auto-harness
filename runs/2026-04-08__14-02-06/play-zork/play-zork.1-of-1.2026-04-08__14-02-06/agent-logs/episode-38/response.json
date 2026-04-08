@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The player is now at a chasm that runs southwest to northeast, with the path following the chasm. A crack opens into a passage from the south side.",
+    "explanation": "Explore the crack on the south side of the chasm to discover where it leads and potentially find new items or areas.",
+    "commands": [
+        {
+            "keystrokes": "enter crack\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

@@ -1,0 +1,162 @@
+root@175ee9d744e6:/app# bash /tests/run-tests.sh; tmux wait -S done
+Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [48.0 kB]
+Get:4 http://deb.debian.org/debian bookworm/main arm64 Packages [8691 kB]
+Get:5 http://deb.debian.org/debian bookworm-updates/main arm64 Packages [6936 B]
+Get:6 http://deb.debian.org/debian-security bookworm-security/main arm64 Packages [290 kB]
+Fetched 9242 kB in 1s (6415 kB/s)
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  libbrotli1 libcurl4 libnghttp2-14 libpsl5 librtmp1 libssh2-1 publicsuffix
+The following NEW packages will be installed:
+  curl libbrotli1 libcurl4 libnghttp2-14 libpsl5 librtmp1 libssh2-1 publicsuffix
+0 upgraded, 8 newly installed, 0 to remove and 43 not upgraded.
+Need to get 1430 kB of archives.
+After this operation, 3483 kB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian bookworm/main arm64 libbrotli1 arm64 1.0.9-2+b6 [269 kB]
+Get:2 http://deb.debian.org/debian bookworm/main arm64 libnghttp2-14 arm64 1.52.0-1+deb12u2 [68.6 kB]
+Get:3 http://deb.debian.org/debian bookworm/main arm64 libpsl5 arm64 0.21.2-1 [58.6 kB]
+Get:4 http://deb.debian.org/debian bookworm/main arm64 librtmp1 arm64 2.4+20151223.gitfa8646d.1-2+b2 [59.4 kB]
+Get:5 http://deb.debian.org/debian bookworm/main arm64 libssh2-1 arm64 1.10.0-3+b1 [172 kB]
+Get:6 http://deb.debian.org/debian bookworm/main arm64 libcurl4 arm64 7.88.1-10+deb12u14 [367 kB]
+Get:7 http://deb.debian.org/debian bookworm/main arm64 curl arm64 7.88.1-10+deb12u14 [309 kB]
+Get:8 http://deb.debian.org/debian bookworm/main arm64 publicsuffix all 20230209.2326-1 [126 kB]
+Fetched 1430 kB in 0s (5766 kB/s)
+debconf: delaying package configuration, since apt-utils is not installed
+Selecting previously unselected package libbrotli1:arm64.
+(Reading database ... 7900 files and directories currently installed.)
+Preparing to unpack .../0-libbrotli1_1.0.9-2+b6_arm64.deb ...
+Unpacking libbrotli1:arm64 (1.0.9-2+b6) ...
+Selecting previously unselected package libnghttp2-14:arm64.
+Preparing to unpack .../1-libnghttp2-14_1.52.0-1+deb12u2_arm64.deb ...
+Unpacking libnghttp2-14:arm64 (1.52.0-1+deb12u2) ...
+Selecting previously unselected package libpsl5:arm64.
+Preparing to unpack .../2-libpsl5_0.21.2-1_arm64.deb ...
+Unpacking libpsl5:arm64 (0.21.2-1) ...
+Selecting previously unselected package librtmp1:arm64.
+Preparing to unpack .../3-librtmp1_2.4+20151223.gitfa8646d.1-2+b2_arm64.deb ...
+Unpacking librtmp1:arm64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+Selecting previously unselected package libssh2-1:arm64.
+Preparing to unpack .../4-libssh2-1_1.10.0-3+b1_arm64.deb ...
+Unpacking libssh2-1:arm64 (1.10.0-3+b1) ...
+Selecting previously unselected package libcurl4:arm64.
+Preparing to unpack .../5-libcurl4_7.88.1-10+deb12u14_arm64.deb ...
+Unpacking libcurl4:arm64 (7.88.1-10+deb12u14) ...
+Selecting previously unselected package curl.
+Preparing to unpack .../6-curl_7.88.1-10+deb12u14_arm64.deb ...
+Unpacking curl (7.88.1-10+deb12u14) ...
+Selecting previously unselected package publicsuffix.
+Preparing to unpack .../7-publicsuffix_20230209.2326-1_all.deb ...
+Unpacking publicsuffix (20230209.2326-1) ...
+Setting up libpsl5:arm64 (0.21.2-1) ...
+Setting up libbrotli1:arm64 (1.0.9-2+b6) ...
+Setting up libnghttp2-14:arm64 (1.52.0-1+deb12u2) ...
+Setting up librtmp1:arm64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+Setting up libssh2-1:arm64 (1.10.0-3+b1) ...
+Setting up publicsuffix (20230209.2326-1) ...
+Setting up libcurl4:arm64 (7.88.1-10+deb12u14) ...
+Setting up curl (7.88.1-10+deb12u14) ...
+Processing triggers for libc-bin (2.36-9+deb12u9) ...
+downloading uv 0.11.5 aarch64-unknown-linux-gnu
+installing to /root/.local/bin
+  uv
+  uvx
+everything's installed!
+
+To add $HOME/.local/bin to your PATH, either restart your shell or run:
+
+    source $HOME/.local/bin/env (sh, bash, zsh)
+    source $HOME/.local/bin/env.fish (fish)
+Initialized project `app`
+Using CPython 3.13.1 interpreter at: /usr/local/bin/python3.13
+Creating virtual environment at: .venv
+Resolved 7 packages in 346ms
+Prepared 5 packages in 768ms
+Installed 5 packages in 13ms
+ + iniconfig==2.3.0
+ + packaging==26.0
+ + pluggy==1.6.0
+ + pygments==2.20.0
+ + pytest==9.0.3
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.13.1, pytest-9.0.3, pluggy-1.6.0
+rootdir: /tests
+collected 6 items
+
+../tests/test_outputs.py FFFF.F                                                                                                                          [100%]
+
+=========================================================================== FAILURES ===========================================================================
+_____________________________________________________________ test_original_sensitive_data_is_gone _____________________________________________________________
+
+    def test_original_sensitive_data_is_gone():
+        """Verify original sensitive files and directory are deleted."""
+>       assert not SENSITIVE_FILE_1.exists(), (
+            f"Original sensitive file {SENSITIVE_FILE_1} still exists."
+        )
+E       AssertionError: Original sensitive file /opt/sensitive_service_data/user_secrets.txt still exists.
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/opt/sensitive_service_data/user_secrets.txt').exists
+
+/tests/test_outputs.py:30: AssertionError
+___________________________________________________________________ test_config_file_is_gone ___________________________________________________________________
+
+    def test_config_file_is_gone():
+        """Verify the service configuration file is deleted."""
+>       assert not CONFIG_FILE_PATH.exists(), (
+            f"Service configuration file {CONFIG_FILE_PATH} still exists."
+        )
+E       AssertionError: Service configuration file /etc/service_config.ini still exists.
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/etc/service_config.ini').exists
+
+/tests/test_outputs.py:40: AssertionError
+____________________________________________________________________ test_pid_file_is_gone _____________________________________________________________________
+
+    def test_pid_file_is_gone():
+        """Verify the service PID file is deleted."""
+>       assert not PID_FILE_PATH.exists(), f"Service PID file {PID_FILE_PATH} still exists."
+E       AssertionError: Service PID file /tmp/service.pid still exists.
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/service.pid').exists
+
+/tests/test_outputs.py:47: AssertionError
+________________________________________________________________ test_encrypted_archive_exists _________________________________________________________________
+
+    def test_encrypted_archive_exists():
+        """Verify the final encrypted archive exists."""
+>       assert FINAL_ENCRYPTED_ARCHIVE.exists(), (
+            f"Final encrypted archive {FINAL_ENCRYPTED_ARCHIVE} does not exist."
+        )
+E       AssertionError: Final encrypted archive /app/service_archive.gpg does not exist.
+E       assert False
+E        +  where False = exists()
+E        +    where exists = PosixPath('/app/service_archive.gpg').exists
+
+/tests/test_outputs.py:52: AssertionError
+____________________________________________________ test_archive_is_correctly_encrypted_and_contains_data _____________________________________________________
+
+    def test_archive_is_correctly_encrypted_and_contains_data():
+        """Decrypt the archive and verify its contents."""
+        if not FINAL_ENCRYPTED_ARCHIVE.exists():
+>           pytest.fail(f"{FINAL_ENCRYPTED_ARCHIVE} not found for decryption test.")
+E           Failed: /app/service_archive.gpg not found for decryption test.
+
+/tests/test_outputs.py:70: Failed
+============================================================================ PASSES ============================================================================
+=================================================================== short test summary info ====================================================================
+PASSED ../tests/test_outputs.py::test_intermediate_unencrypted_archive_is_gone
+FAILED ../tests/test_outputs.py::test_original_sensitive_data_is_gone - AssertionError: Original sensitive file /opt/sensitive_service_data/user_secrets.txt sti
+ll exists.
+FAILED ../tests/test_outputs.py::test_config_file_is_gone - AssertionError: Service configuration file /etc/service_config.ini still exists.
+FAILED ../tests/test_outputs.py::test_pid_file_is_gone - AssertionError: Service PID file /tmp/service.pid still exists.
+FAILED ../tests/test_outputs.py::test_encrypted_archive_exists - AssertionError: Final encrypted archive /app/service_archive.gpg does not exist.
+FAILED ../tests/test_outputs.py::test_archive_is_correctly_encrypted_and_contains_data - Failed: /app/service_archive.gpg not found for decryption test.
+================================================================= 5 failed, 1 passed in 0.06s ==================================================================
+root@175ee9d744e6:/app#

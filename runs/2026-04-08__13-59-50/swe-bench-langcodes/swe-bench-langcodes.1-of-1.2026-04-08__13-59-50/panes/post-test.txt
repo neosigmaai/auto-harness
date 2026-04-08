@@ -1,0 +1,662 @@
+root@1dc0cf90ab0f:/app/langcodes# bash /tests/run-tests.sh; tmux wait -S done
+Hit:1 http://deb.debian.org/debian bookworm InRelease
+Hit:2 http://deb.debian.org/debian bookworm-updates InRelease
+Hit:3 http://deb.debian.org/debian-security bookworm-security InRelease
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  binutils binutils-aarch64-linux-gnu binutils-common cpp cpp-12 fontconfig-config fonts-dejavu-core gcc-12 libabsl20220623 libaom3 libasan8 libatomic1
+  libavif15 libbinutils libc-dev-bin libc-devtools libc6-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 libdav1d6 libde265-0 libdeflate0 libfontconfig1
+  libfreetype6 libgav1-1 libgcc-12-dev libgd3 libgomp1 libgprofng0 libheif1 libhwasan0 libisl23 libitm1 libjansson4 libjbig0 libjpeg62-turbo liblerc4 liblsan0
+  libmpc3 libmpfr6 libnsl-dev libnuma1 libpng16-16 librav1e0 libsvtav1enc1 libtiff6 libtirpc-dev libtsan2 libubsan1 libwebp7 libx265-199 libxpm4 libyuv0
+  linux-libc-dev manpages manpages-dev rpcsvc-proto
+Suggested packages:
+  binutils-doc cpp-doc gcc-12-locales cpp-12-doc gcc-multilib make autoconf automake libtool flex bison gdb gcc-doc gcc-12-doc glibc-doc libgd-tools
+  man-browser
+The following NEW packages will be installed:
+  binutils binutils-aarch64-linux-gnu binutils-common cpp cpp-12 fontconfig-config fonts-dejavu-core gcc gcc-12 libabsl20220623 libaom3 libasan8 libatomic1
+  libavif15 libbinutils libc-dev-bin libc-devtools libc6-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 libdav1d6 libde265-0 libdeflate0 libfontconfig1
+  libfreetype6 libgav1-1 libgcc-12-dev libgd3 libgomp1 libgprofng0 libheif1 libhwasan0 libisl23 libitm1 libjansson4 libjbig0 libjpeg62-turbo liblerc4 liblsan0
+  libmpc3 libmpfr6 libnsl-dev libnuma1 libpng16-16 librav1e0 libsvtav1enc1 libtiff6 libtirpc-dev libtsan2 libubsan1 libwebp7 libx265-199 libxpm4 libyuv0
+  linux-libc-dev manpages manpages-dev rpcsvc-proto
+0 upgraded, 60 newly installed, 0 to remove and 13 not upgraded.
+Need to get 57.1 MB of archives.
+After this operation, 222 MB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian bookworm/main arm64 manpages all 6.03-2 [1332 kB]
+Get:2 http://deb.debian.org/debian bookworm/main arm64 binutils-common arm64 2.40-2 [2487 kB]
+Get:3 http://deb.debian.org/debian bookworm/main arm64 libbinutils arm64 2.40-2 [645 kB]
+Get:4 http://deb.debian.org/debian bookworm/main arm64 libctf-nobfd0 arm64 2.40-2 [144 kB]
+Get:5 http://deb.debian.org/debian bookworm/main arm64 libctf0 arm64 2.40-2 [79.2 kB]
+Get:6 http://deb.debian.org/debian bookworm/main arm64 libgprofng0 arm64 2.40-2 [680 kB]
+Get:7 http://deb.debian.org/debian bookworm/main arm64 libjansson4 arm64 2.14-2 [40.2 kB]
+Get:8 http://deb.debian.org/debian bookworm/main arm64 binutils-aarch64-linux-gnu arm64 2.40-2 [2637 kB]
+Get:9 http://deb.debian.org/debian bookworm/main arm64 binutils arm64 2.40-2 [64.9 kB]
+Get:10 http://deb.debian.org/debian bookworm/main arm64 libisl23 arm64 0.25-1.1 [610 kB]
+Get:11 http://deb.debian.org/debian bookworm/main arm64 libmpfr6 arm64 4.2.0-1 [600 kB]
+Get:12 http://deb.debian.org/debian bookworm/main arm64 libmpc3 arm64 1.3.1-1 [49.2 kB]
+Get:13 http://deb.debian.org/debian bookworm/main arm64 cpp-12 arm64 12.2.0-14+deb12u1 [8228 kB]
+Get:14 http://deb.debian.org/debian bookworm/main arm64 cpp arm64 4:12.2.0-3 [6832 B]
+Get:15 http://deb.debian.org/debian bookworm/main arm64 fonts-dejavu-core all 2.37-6 [1068 kB]
+Get:16 http://deb.debian.org/debian bookworm/main arm64 fontconfig-config arm64 2.14.1-4 [315 kB]
+Get:17 http://deb.debian.org/debian bookworm/main arm64 libcc1-0 arm64 12.2.0-14+deb12u1 [37.7 kB]
+Get:18 http://deb.debian.org/debian bookworm/main arm64 libgomp1 arm64 12.2.0-14+deb12u1 [104 kB]
+Get:19 http://deb.debian.org/debian bookworm/main arm64 libitm1 arm64 12.2.0-14+deb12u1 [24.0 kB]
+Get:20 http://deb.debian.org/debian bookworm/main arm64 libatomic1 arm64 12.2.0-14+deb12u1 [9568 B]
+Get:21 http://deb.debian.org/debian bookworm/main arm64 libasan8 arm64 12.2.0-14+deb12u1 [2096 kB]
+Get:22 http://deb.debian.org/debian bookworm/main arm64 liblsan0 arm64 12.2.0-14+deb12u1 [926 kB]
+Get:23 http://deb.debian.org/debian bookworm/main arm64 libtsan2 arm64 12.2.0-14+deb12u1 [2178 kB]
+Get:24 http://deb.debian.org/debian bookworm/main arm64 libubsan1 arm64 12.2.0-14+deb12u1 [862 kB]
+Get:25 http://deb.debian.org/debian bookworm/main arm64 libhwasan0 arm64 12.2.0-14+deb12u1 [999 kB]
+Get:26 http://deb.debian.org/debian bookworm/main arm64 libgcc-12-dev arm64 12.2.0-14+deb12u1 [956 kB]
+Get:27 http://deb.debian.org/debian bookworm/main arm64 gcc-12 arm64 12.2.0-14+deb12u1 [16.3 MB]
+Get:28 http://deb.debian.org/debian bookworm/main arm64 gcc arm64 4:12.2.0-3 [5244 B]
+Get:29 http://deb.debian.org/debian bookworm/main arm64 libabsl20220623 arm64 20220623.1-1+deb12u2 [363 kB]
+Get:30 http://deb.debian.org/debian bookworm/main arm64 libaom3 arm64 3.6.0-1+deb12u2 [1373 kB]
+Get:31 http://deb.debian.org/debian bookworm/main arm64 libdav1d6 arm64 1.0.0-2+deb12u1 [275 kB]
+Get:32 http://deb.debian.org/debian bookworm/main arm64 libgav1-1 arm64 0.18.0-1+b1 [425 kB]
+Get:33 http://deb.debian.org/debian bookworm/main arm64 librav1e0 arm64 0.5.1-6 [552 kB]
+Get:34 http://deb.debian.org/debian bookworm/main arm64 libsvtav1enc1 arm64 1.4.1+dfsg-1 [1074 kB]
+Get:35 http://deb.debian.org/debian bookworm/main arm64 libjpeg62-turbo arm64 1:2.1.5-2 [171 kB]
+Get:36 http://deb.debian.org/debian bookworm/main arm64 libyuv0 arm64 0.0~git20230123.b2528b0-1 [122 kB]
+Get:37 http://deb.debian.org/debian bookworm/main arm64 libavif15 arm64 0.11.1-1+deb12u1 [88.4 kB]
+Get:38 http://deb.debian.org/debian bookworm/main arm64 libc-dev-bin arm64 2.36-9+deb12u13 [46.5 kB]
+Get:39 http://deb.debian.org/debian-security bookworm-security/main arm64 libpng16-16 arm64 1.6.39-2+deb12u4 [270 kB]
+Get:40 http://deb.debian.org/debian bookworm/main arm64 libfreetype6 arm64 2.12.1+dfsg-5+deb12u4 [368 kB]
+Get:41 http://deb.debian.org/debian bookworm/main arm64 libfontconfig1 arm64 2.14.1-4 [381 kB]
+Get:42 http://deb.debian.org/debian bookworm/main arm64 libde265-0 arm64 1.0.11-1+deb12u2 [148 kB]
+Get:43 http://deb.debian.org/debian bookworm/main arm64 libnuma1 arm64 2.0.16-1 [20.3 kB]
+Get:44 http://deb.debian.org/debian bookworm/main arm64 libx265-199 arm64 3.5-2+b1 [603 kB]
+Get:45 http://deb.debian.org/debian bookworm/main arm64 libheif1 arm64 1.15.1-1+deb12u1 [191 kB]
+Get:46 http://deb.debian.org/debian bookworm/main arm64 libdeflate0 arm64 1.14-1 [54.3 kB]
+Get:47 http://deb.debian.org/debian bookworm/main arm64 libjbig0 arm64 2.1-6.1 [30.0 kB]
+Get:48 http://deb.debian.org/debian bookworm/main arm64 liblerc4 arm64 4.0.0+ds-2 [138 kB]
+Get:49 http://deb.debian.org/debian bookworm/main arm64 libwebp7 arm64 1.2.4-0.2+deb12u1 [260 kB]
+Get:50 http://deb.debian.org/debian-security bookworm-security/main arm64 libtiff6 arm64 4.5.0-6+deb12u4 [301 kB]
+Get:51 http://deb.debian.org/debian bookworm/main arm64 libxpm4 arm64 1:3.5.12-1.1+deb12u1 [45.4 kB]
+Get:52 http://deb.debian.org/debian bookworm/main arm64 libgd3 arm64 2.3.3-9 [113 kB]
+Get:53 http://deb.debian.org/debian bookworm/main arm64 libc-devtools arm64 2.36-9+deb12u13 [53.8 kB]
+Get:54 http://deb.debian.org/debian-security bookworm-security/main arm64 linux-libc-dev arm64 6.1.164-1 [2217 kB]
+Get:55 http://deb.debian.org/debian bookworm/main arm64 libcrypt-dev arm64 1:4.4.33-2 [121 kB]
+Get:56 http://deb.debian.org/debian bookworm/main arm64 libtirpc-dev arm64 1.3.3+ds-1 [194 kB]
+Get:57 http://deb.debian.org/debian bookworm/main arm64 libnsl-dev arm64 1.3.0-2 [66.1 kB]
+Get:58 http://deb.debian.org/debian bookworm/main arm64 rpcsvc-proto arm64 1.4.3-1 [59.7 kB]
+Get:59 http://deb.debian.org/debian bookworm/main arm64 libc6-dev arm64 2.36-9+deb12u13 [1435 kB]
+Get:60 http://deb.debian.org/debian bookworm/main arm64 manpages-dev all 6.03-2 [2030 kB]
+Fetched 57.1 MB in 8s (6843 kB/s)
+debconf: delaying package configuration, since apt-utils is not installed
+Selecting previously unselected package manpages.
+(Reading database ... 11230 files and directories currently installed.)
+Preparing to unpack .../00-manpages_6.03-2_all.deb ...
+Unpacking manpages (6.03-2) ...
+Selecting previously unselected package binutils-common:arm64.
+Preparing to unpack .../01-binutils-common_2.40-2_arm64.deb ...
+Unpacking binutils-common:arm64 (2.40-2) ...
+Selecting previously unselected package libbinutils:arm64.
+Preparing to unpack .../02-libbinutils_2.40-2_arm64.deb ...
+Unpacking libbinutils:arm64 (2.40-2) ...
+Selecting previously unselected package libctf-nobfd0:arm64.
+Preparing to unpack .../03-libctf-nobfd0_2.40-2_arm64.deb ...
+Unpacking libctf-nobfd0:arm64 (2.40-2) ...
+Selecting previously unselected package libctf0:arm64.
+Preparing to unpack .../04-libctf0_2.40-2_arm64.deb ...
+Unpacking libctf0:arm64 (2.40-2) ...
+Selecting previously unselected package libgprofng0:arm64.
+Preparing to unpack .../05-libgprofng0_2.40-2_arm64.deb ...
+Unpacking libgprofng0:arm64 (2.40-2) ...
+Selecting previously unselected package libjansson4:arm64.
+Preparing to unpack .../06-libjansson4_2.14-2_arm64.deb ...
+Unpacking libjansson4:arm64 (2.14-2) ...
+Selecting previously unselected package binutils-aarch64-linux-gnu.
+Preparing to unpack .../07-binutils-aarch64-linux-gnu_2.40-2_arm64.deb ...
+Unpacking binutils-aarch64-linux-gnu (2.40-2) ...
+Selecting previously unselected package binutils.
+Preparing to unpack .../08-binutils_2.40-2_arm64.deb ...
+Unpacking binutils (2.40-2) ...
+Selecting previously unselected package libisl23:arm64.
+Preparing to unpack .../09-libisl23_0.25-1.1_arm64.deb ...
+Unpacking libisl23:arm64 (0.25-1.1) ...
+Selecting previously unselected package libmpfr6:arm64.
+Preparing to unpack .../10-libmpfr6_4.2.0-1_arm64.deb ...
+Unpacking libmpfr6:arm64 (4.2.0-1) ...
+Selecting previously unselected package libmpc3:arm64.
+Preparing to unpack .../11-libmpc3_1.3.1-1_arm64.deb ...
+Unpacking libmpc3:arm64 (1.3.1-1) ...
+Selecting previously unselected package cpp-12.
+Preparing to unpack .../12-cpp-12_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking cpp-12 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package cpp.
+Preparing to unpack .../13-cpp_4%3a12.2.0-3_arm64.deb ...
+Unpacking cpp (4:12.2.0-3) ...
+Selecting previously unselected package fonts-dejavu-core.
+Preparing to unpack .../14-fonts-dejavu-core_2.37-6_all.deb ...
+Unpacking fonts-dejavu-core (2.37-6) ...
+Selecting previously unselected package fontconfig-config.
+Preparing to unpack .../15-fontconfig-config_2.14.1-4_arm64.deb ...
+Unpacking fontconfig-config (2.14.1-4) ...
+Selecting previously unselected package libcc1-0:arm64.
+Preparing to unpack .../16-libcc1-0_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libcc1-0:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libgomp1:arm64.
+Preparing to unpack .../17-libgomp1_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libgomp1:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libitm1:arm64.
+Preparing to unpack .../18-libitm1_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libitm1:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libatomic1:arm64.
+Preparing to unpack .../19-libatomic1_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libatomic1:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libasan8:arm64.
+Preparing to unpack .../20-libasan8_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libasan8:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package liblsan0:arm64.
+Preparing to unpack .../21-liblsan0_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking liblsan0:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libtsan2:arm64.
+Preparing to unpack .../22-libtsan2_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libtsan2:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libubsan1:arm64.
+Preparing to unpack .../23-libubsan1_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libubsan1:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libhwasan0:arm64.
+Preparing to unpack .../24-libhwasan0_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libhwasan0:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libgcc-12-dev:arm64.
+Preparing to unpack .../25-libgcc-12-dev_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking libgcc-12-dev:arm64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package gcc-12.
+Preparing to unpack .../26-gcc-12_12.2.0-14+deb12u1_arm64.deb ...
+Unpacking gcc-12 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package gcc.
+Preparing to unpack .../27-gcc_4%3a12.2.0-3_arm64.deb ...
+Unpacking gcc (4:12.2.0-3) ...
+Selecting previously unselected package libabsl20220623:arm64.
+Preparing to unpack .../28-libabsl20220623_20220623.1-1+deb12u2_arm64.deb ...
+Unpacking libabsl20220623:arm64 (20220623.1-1+deb12u2) ...
+Selecting previously unselected package libaom3:arm64.
+Preparing to unpack .../29-libaom3_3.6.0-1+deb12u2_arm64.deb ...
+Unpacking libaom3:arm64 (3.6.0-1+deb12u2) ...
+Selecting previously unselected package libdav1d6:arm64.
+Preparing to unpack .../30-libdav1d6_1.0.0-2+deb12u1_arm64.deb ...
+Unpacking libdav1d6:arm64 (1.0.0-2+deb12u1) ...
+Selecting previously unselected package libgav1-1:arm64.
+Preparing to unpack .../31-libgav1-1_0.18.0-1+b1_arm64.deb ...
+Unpacking libgav1-1:arm64 (0.18.0-1+b1) ...
+Selecting previously unselected package librav1e0:arm64.
+Preparing to unpack .../32-librav1e0_0.5.1-6_arm64.deb ...
+Unpacking librav1e0:arm64 (0.5.1-6) ...
+Selecting previously unselected package libsvtav1enc1:arm64.
+Preparing to unpack .../33-libsvtav1enc1_1.4.1+dfsg-1_arm64.deb ...
+Unpacking libsvtav1enc1:arm64 (1.4.1+dfsg-1) ...
+Selecting previously unselected package libjpeg62-turbo:arm64.
+Preparing to unpack .../34-libjpeg62-turbo_1%3a2.1.5-2_arm64.deb ...
+Unpacking libjpeg62-turbo:arm64 (1:2.1.5-2) ...
+Selecting previously unselected package libyuv0:arm64.
+Preparing to unpack .../35-libyuv0_0.0~git20230123.b2528b0-1_arm64.deb ...
+Unpacking libyuv0:arm64 (0.0~git20230123.b2528b0-1) ...
+Selecting previously unselected package libavif15:arm64.
+Preparing to unpack .../36-libavif15_0.11.1-1+deb12u1_arm64.deb ...
+Unpacking libavif15:arm64 (0.11.1-1+deb12u1) ...
+Selecting previously unselected package libc-dev-bin.
+Preparing to unpack .../37-libc-dev-bin_2.36-9+deb12u13_arm64.deb ...
+Unpacking libc-dev-bin (2.36-9+deb12u13) ...
+Selecting previously unselected package libpng16-16:arm64.
+Preparing to unpack .../38-libpng16-16_1.6.39-2+deb12u4_arm64.deb ...
+Unpacking libpng16-16:arm64 (1.6.39-2+deb12u4) ...
+Selecting previously unselected package libfreetype6:arm64.
+Preparing to unpack .../39-libfreetype6_2.12.1+dfsg-5+deb12u4_arm64.deb ...
+Unpacking libfreetype6:arm64 (2.12.1+dfsg-5+deb12u4) ...
+Selecting previously unselected package libfontconfig1:arm64.
+Preparing to unpack .../40-libfontconfig1_2.14.1-4_arm64.deb ...
+Unpacking libfontconfig1:arm64 (2.14.1-4) ...
+Selecting previously unselected package libde265-0:arm64.
+Preparing to unpack .../41-libde265-0_1.0.11-1+deb12u2_arm64.deb ...
+Unpacking libde265-0:arm64 (1.0.11-1+deb12u2) ...
+Selecting previously unselected package libnuma1:arm64.
+Preparing to unpack .../42-libnuma1_2.0.16-1_arm64.deb ...
+Unpacking libnuma1:arm64 (2.0.16-1) ...
+Selecting previously unselected package libx265-199:arm64.
+Preparing to unpack .../43-libx265-199_3.5-2+b1_arm64.deb ...
+Unpacking libx265-199:arm64 (3.5-2+b1) ...
+Selecting previously unselected package libheif1:arm64.
+Preparing to unpack .../44-libheif1_1.15.1-1+deb12u1_arm64.deb ...
+Unpacking libheif1:arm64 (1.15.1-1+deb12u1) ...
+Selecting previously unselected package libdeflate0:arm64.
+Preparing to unpack .../45-libdeflate0_1.14-1_arm64.deb ...
+Unpacking libdeflate0:arm64 (1.14-1) ...
+Selecting previously unselected package libjbig0:arm64.
+Preparing to unpack .../46-libjbig0_2.1-6.1_arm64.deb ...
+Unpacking libjbig0:arm64 (2.1-6.1) ...
+Selecting previously unselected package liblerc4:arm64.
+Preparing to unpack .../47-liblerc4_4.0.0+ds-2_arm64.deb ...
+Unpacking liblerc4:arm64 (4.0.0+ds-2) ...
+Selecting previously unselected package libwebp7:arm64.
+Preparing to unpack .../48-libwebp7_1.2.4-0.2+deb12u1_arm64.deb ...
+Unpacking libwebp7:arm64 (1.2.4-0.2+deb12u1) ...
+Selecting previously unselected package libtiff6:arm64.
+Preparing to unpack .../49-libtiff6_4.5.0-6+deb12u4_arm64.deb ...
+Unpacking libtiff6:arm64 (4.5.0-6+deb12u4) ...
+Selecting previously unselected package libxpm4:arm64.
+Preparing to unpack .../50-libxpm4_1%3a3.5.12-1.1+deb12u1_arm64.deb ...
+Unpacking libxpm4:arm64 (1:3.5.12-1.1+deb12u1) ...
+Selecting previously unselected package libgd3:arm64.
+Preparing to unpack .../51-libgd3_2.3.3-9_arm64.deb ...
+Unpacking libgd3:arm64 (2.3.3-9) ...
+Selecting previously unselected package libc-devtools.
+Preparing to unpack .../52-libc-devtools_2.36-9+deb12u13_arm64.deb ...
+Unpacking libc-devtools (2.36-9+deb12u13) ...
+Selecting previously unselected package linux-libc-dev:arm64.
+Preparing to unpack .../53-linux-libc-dev_6.1.164-1_arm64.deb ...
+Unpacking linux-libc-dev:arm64 (6.1.164-1) ...
+Selecting previously unselected package libcrypt-dev:arm64.
+Preparing to unpack .../54-libcrypt-dev_1%3a4.4.33-2_arm64.deb ...
+Unpacking libcrypt-dev:arm64 (1:4.4.33-2) ...
+Selecting previously unselected package libtirpc-dev:arm64.
+Preparing to unpack .../55-libtirpc-dev_1.3.3+ds-1_arm64.deb ...
+Unpacking libtirpc-dev:arm64 (1.3.3+ds-1) ...
+Selecting previously unselected package libnsl-dev:arm64.
+Preparing to unpack .../56-libnsl-dev_1.3.0-2_arm64.deb ...
+Unpacking libnsl-dev:arm64 (1.3.0-2) ...
+Selecting previously unselected package rpcsvc-proto.
+Preparing to unpack .../57-rpcsvc-proto_1.4.3-1_arm64.deb ...
+Unpacking rpcsvc-proto (1.4.3-1) ...
+Selecting previously unselected package libc6-dev:arm64.
+Preparing to unpack .../58-libc6-dev_2.36-9+deb12u13_arm64.deb ...
+Unpacking libc6-dev:arm64 (2.36-9+deb12u13) ...
+Selecting previously unselected package manpages-dev.
+Preparing to unpack .../59-manpages-dev_6.03-2_all.deb ...
+Unpacking manpages-dev (6.03-2) ...
+Setting up libaom3:arm64 (3.6.0-1+deb12u2) ...
+Setting up libabsl20220623:arm64 (20220623.1-1+deb12u2) ...
+Setting up liblerc4:arm64 (4.0.0+ds-2) ...
+Setting up libxpm4:arm64 (1:3.5.12-1.1+deb12u1) ...
+Setting up manpages (6.03-2) ...
+Setting up binutils-common:arm64 (2.40-2) ...
+Setting up libdeflate0:arm64 (1.14-1) ...
+Setting up linux-libc-dev:arm64 (6.1.164-1) ...
+Setting up libctf-nobfd0:arm64 (2.40-2) ...
+Setting up libsvtav1enc1:arm64 (1.4.1+dfsg-1) ...
+Setting up libgomp1:arm64 (12.2.0-14+deb12u1) ...
+Setting up libjbig0:arm64 (2.1-6.1) ...
+Setting up librav1e0:arm64 (0.5.1-6) ...
+Setting up libjansson4:arm64 (2.14-2) ...
+Setting up libtirpc-dev:arm64 (1.3.3+ds-1) ...
+Setting up rpcsvc-proto (1.4.3-1) ...
+Setting up libjpeg62-turbo:arm64 (1:2.1.5-2) ...
+Setting up libmpfr6:arm64 (4.2.0-1) ...
+Setting up libpng16-16:arm64 (1.6.39-2+deb12u4) ...
+Setting up libmpc3:arm64 (1.3.1-1) ...
+Setting up libatomic1:arm64 (12.2.0-14+deb12u1) ...
+Setting up fonts-dejavu-core (2.37-6) ...
+Setting up libgav1-1:arm64 (0.18.0-1+b1) ...
+Setting up libdav1d6:arm64 (1.0.0-2+deb12u1) ...
+Setting up libwebp7:arm64 (1.2.4-0.2+deb12u1) ...
+Setting up libubsan1:arm64 (12.2.0-14+deb12u1) ...
+Setting up libnuma1:arm64 (2.0.16-1) ...
+Setting up libnsl-dev:arm64 (1.3.0-2) ...
+Setting up libhwasan0:arm64 (12.2.0-14+deb12u1) ...
+Setting up libcrypt-dev:arm64 (1:4.4.33-2) ...
+Setting up libtiff6:arm64 (4.5.0-6+deb12u4) ...
+Setting up libasan8:arm64 (12.2.0-14+deb12u1) ...
+Setting up libtsan2:arm64 (12.2.0-14+deb12u1) ...
+Setting up libbinutils:arm64 (2.40-2) ...
+Setting up libisl23:arm64 (0.25-1.1) ...
+Setting up libde265-0:arm64 (1.0.11-1+deb12u2) ...
+Setting up libc-dev-bin (2.36-9+deb12u13) ...
+Setting up libyuv0:arm64 (0.0~git20230123.b2528b0-1) ...
+Setting up libcc1-0:arm64 (12.2.0-14+deb12u1) ...
+Setting up liblsan0:arm64 (12.2.0-14+deb12u1) ...
+Setting up libitm1:arm64 (12.2.0-14+deb12u1) ...
+Setting up libctf0:arm64 (2.40-2) ...
+Setting up manpages-dev (6.03-2) ...
+Setting up cpp-12 (12.2.0-14+deb12u1) ...
+Setting up libavif15:arm64 (0.11.1-1+deb12u1) ...
+Setting up fontconfig-config (2.14.1-4) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used. at /usr/share/perl5/Debconf/FrontEnd/Dialog.pm line 78.)
+debconf: falling back to frontend: Readline
+Setting up libgprofng0:arm64 (2.40-2) ...
+Setting up libfreetype6:arm64 (2.12.1+dfsg-5+deb12u4) ...
+Setting up libgcc-12-dev:arm64 (12.2.0-14+deb12u1) ...
+Setting up libx265-199:arm64 (3.5-2+b1) ...
+Setting up cpp (4:12.2.0-3) ...
+Setting up libc6-dev:arm64 (2.36-9+deb12u13) ...
+Setting up libfontconfig1:arm64 (2.14.1-4) ...
+Setting up libheif1:arm64 (1.15.1-1+deb12u1) ...
+Setting up binutils-aarch64-linux-gnu (2.40-2) ...
+Setting up binutils (2.40-2) ...
+Setting up gcc-12 (12.2.0-14+deb12u1) ...
+Setting up libgd3:arm64 (2.3.3-9) ...
+Setting up libc-devtools (2.36-9+deb12u13) ...
+Setting up gcc (4:12.2.0-3) ...
+Processing triggers for libc-bin (2.36-9+deb12u13) ...
+patching file langcodes/tests/test_language.py
+Using pip 23.0.1 from /app/langcodes/tests-venv/lib/python3.9/site-packages/pip (python 3.9)
+Obtaining file:///app/langcodes
+  Running command pip subprocess to install build dependencies
+  Collecting setuptools>=60
+    Downloading setuptools-82.0.1-py3-none-any.whl (1.0 MB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.0/1.0 MB 2.2 MB/s eta 0:00:00
+  Collecting setuptools-scm>=8.0
+    Downloading setuptools_scm-9.2.2-py3-none-any.whl (62 kB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 63.0/63.0 kB 20.7 MB/s eta 0:00:00
+  Collecting packaging>=20
+    Downloading packaging-26.0-py3-none-any.whl (74 kB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 74.4/74.4 kB 7.3 MB/s eta 0:00:00
+  Collecting tomli>=1
+    Downloading tomli-2.4.1-py3-none-any.whl (14 kB)
+  Collecting typing-extensions
+    Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.6/44.6 kB 337.2 kB/s eta 0:00:00
+  Installing collected packages: typing-extensions, tomli, setuptools, packaging, setuptools-scm
+  Successfully installed packaging-26.0 setuptools-82.0.1 setuptools-scm-9.2.2 tomli-2.4.1 typing-extensions-4.15.0
+
+  [notice] A new release of pip is available: 23.0.1 -> 26.0.1
+  [notice] To update, run: pip install --upgrade pip
+  Installing build dependencies ... done
+  Running command Checking if build backend supports build_editable
+  Checking if build backend supports build_editable ... done
+  Running command Getting requirements to build editable
+  /tmp/pip-build-env-dljyi3u_/overlay/lib/python3.9/site-packages/setuptools/config/_apply_pyprojecttoml.py:61: SetuptoolsDeprecationWarning: License classifier
+s are deprecated.
+  !!
+
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+
+          License :: OSI Approved :: MIT License
+
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+
+  !!
+    dist._finalize_license_expression()
+  /tmp/pip-build-env-dljyi3u_/overlay/lib/python3.9/site-packages/setuptools/dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+  !!
+
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+
+          License :: OSI Approved :: MIT License
+
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+
+  !!
+    self._finalize_license_expression()
+  running egg_info
+  creating langcodes.egg-info
+  writing langcodes.egg-info/PKG-INFO
+  writing dependency_links to langcodes.egg-info/dependency_links.txt
+  writing requirements to langcodes.egg-info/requires.txt
+  writing top-level names to langcodes.egg-info/top_level.txt
+  writing manifest file 'langcodes.egg-info/SOURCES.txt'
+  adding license file 'LICENSE.txt'
+  writing manifest file 'langcodes.egg-info/SOURCES.txt'
+  Getting requirements to build editable ... done
+  Running command Preparing editable metadata (pyproject.toml)
+  /tmp/pip-build-env-dljyi3u_/overlay/lib/python3.9/site-packages/setuptools/config/_apply_pyprojecttoml.py:61: SetuptoolsDeprecationWarning: License classifier
+s are deprecated.
+  !!
+
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+
+          License :: OSI Approved :: MIT License
+
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+
+  !!
+    dist._finalize_license_expression()
+  /tmp/pip-build-env-dljyi3u_/overlay/lib/python3.9/site-packages/setuptools/dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+  !!
+
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+
+          License :: OSI Approved :: MIT License
+
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+
+  !!
+    self._finalize_license_expression()
+  running dist_info
+  creating /tmp/pip-modern-metadata-gbo4wgwe/langcodes.egg-info
+  writing /tmp/pip-modern-metadata-gbo4wgwe/langcodes.egg-info/PKG-INFO
+  writing dependency_links to /tmp/pip-modern-metadata-gbo4wgwe/langcodes.egg-info/dependency_links.txt
+  writing requirements to /tmp/pip-modern-metadata-gbo4wgwe/langcodes.egg-info/requires.txt
+  writing top-level names to /tmp/pip-modern-metadata-gbo4wgwe/langcodes.egg-info/top_level.txt
+  writing manifest file '/tmp/pip-modern-metadata-gbo4wgwe/langcodes.egg-info/SOURCES.txt'
+  adding license file 'LICENSE.txt'
+  writing manifest file '/tmp/pip-modern-metadata-gbo4wgwe/langcodes.egg-info/SOURCES.txt'
+  creating '/tmp/pip-modern-metadata-gbo4wgwe/langcodes-3.4.1.dev5+ga60360793.dist-info'
+  Preparing editable metadata (pyproject.toml) ... done
+Collecting language-data>=1.2
+  Downloading language_data-1.4.0-py3-none-any.whl (5.6 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.6/5.6 MB 2.4 MB/s eta 0:00:00
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/72/99/cafef234114a3b6d9f3aaed0723b437c40c57bdb7b3e4c3a575b
+c4890052/pytest-9.0.0-py3-none-any.whl (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/da/1d/eb34f286b164c5e431a810a38697409cca1112cee04b287bb56a
+c486730b/pytest-9.0.0.tar.gz (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/0b/8b/6300fb80f858cda1c51ffa17075df5d846757081d11ab4aa35ce
+f9e6258b/pytest-9.0.1-py3-none-any.whl (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/07/56/f013048ac4bc4c1d9be45afd4ab209ea62822fb1598f40687e6b
+f45dcea4/pytest-9.0.1.tar.gz (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/3b/ab/b3226f0bd7cdcf710fbede2b3548584366da3b19b5021e74f5bd
+e2a8fa3f/pytest-9.0.2-py3-none-any.whl (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d1/db/7ef3487e0fb0049ddb5ce41d3a49c235bf9ad299b6a25d5780a8
+9f19230f/pytest-9.0.2.tar.gz (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d4/24/a372aaf5c9b7208e7112038812994107bc65a84cd00e0354a88c
+2c77a617/pytest-9.0.3-py3-none-any.whl (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/7d/0d/549bd94f1a0a402dc8cf64563a117c0f3765662e2e668477624b
+aeec44d5/pytest-9.0.3.tar.gz (from https://pypi.org/simple/pytest/) (requires-python:>=3.10)
+Collecting pytest
+  Downloading pytest-8.4.2-py3-none-any.whl (365 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 365.8/365.8 kB 4.1 MB/s eta 0:00:00
+Collecting pytest-cov
+  Downloading pytest_cov-7.1.0-py3-none-any.whl (22 kB)
+Collecting marisa-trie>=1.1.0
+  Downloading marisa_trie-1.4.1-cp39-cp39-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl (1.5 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.5/1.5 MB 6.6 MB/s eta 0:00:00
+Collecting tomli>=1
+  Using cached tomli-2.4.1-py3-none-any.whl (14 kB)
+Collecting packaging>=20
+  Using cached packaging-26.0-py3-none-any.whl (74 kB)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/13/71/3970abe530a7a15e406874a30ed6cf1ead266444b4503ebb2f68
+b4d98f30/iniconfig-2.2.0-py3-none-any.whl (from https://pypi.org/simple/iniconfig/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/8e/11/2f7713979d561602e14b8fdd99a0e2e8ff2d901de1041c42a23a
+4c33f2c3/iniconfig-2.2.0.tar.gz (from https://pypi.org/simple/iniconfig/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/cb/b1/3846dd7f199d53cb17f49cba7e651e9ce294d8497c8c150530ed
+11865bb8/iniconfig-2.3.0-py3-none-any.whl (from https://pypi.org/simple/iniconfig/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/72/34/14ca021ce8e5dfedc35312d08ba8bf51fdd999c576889fc2c24c
+b97f4f10/iniconfig-2.3.0.tar.gz (from https://pypi.org/simple/iniconfig/) (requires-python:>=3.10)
+Collecting iniconfig>=1
+  Downloading iniconfig-2.1.0-py3-none-any.whl (6.0 kB)
+Collecting pygments>=2.7.2
+  Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 3.8 MB/s eta 0:00:00
+Collecting pluggy<2,>=1.5
+  Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+Collecting exceptiongroup>=1
+  Downloading exceptiongroup-1.3.1-py3-none-any.whl (16 kB)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/5f/04/642c1d8a448ae5ea1369eac8495740a79eb4e581a9fb0cbdce56
+bbf56da1/coverage-7.11.0-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/1c/38/ee22495420457259d2f3390309505ea98f98a5eed40901cf6219
+6abad006/coverage-7.11.0.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/76/32/bd9f48c28e23b2f08946f8e83983617b00619f5538dbd7e1045f
+a7e88c00/coverage-7.11.1-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/89/12/3e2d2ec71796e0913178478e693a06af6a3bc9f7f9cb899bf85a
+426d8370/coverage-7.11.1.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/05/7a/99766a75c88e576f47c2d9a06416ff5d95be9b42faca5c37e1ab
+77c4cd1a/coverage-7.11.2-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/32/e6/7c4006cf689ed7a4aa75dcf1f14acbc04e585714c220b5cc6d23
+1096685a/coverage-7.11.2.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/19/8f/92bdd27b067204b99f396a1414d6342122f3e2663459baf78710
+8a6b8b84/coverage-7.11.3-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d2/59/9698d57a3b11704c7b89b21d69e9d23ecf80d538cabb536c8b63
+f4a12322/coverage-7.11.3.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/1e/40/3559920734fa9a5b8efafee0d84a64c0ea4ed41d1b8fbb5627c0
+f0c67dac/coverage-7.11.4a0.dev1-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/a8/49/426dfb3d39702b8f59f6e3d9fa7e45b21f6343f871edb8565804
+78121af1/coverage-7.11.4a0.dev1.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/ce/a3/43b749004e3c09452e39bb56347a008f0a0668aad37324a99b5c
+8ca91d9e/coverage-7.12.0-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/89/26/4a96807b193b011588099c3b5c89fbb05294e5b90e71018e0654
+65f34eb6/coverage-7.12.0.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/1b/1b/cd5c3391a04a101767961e3e3ccf5a0c987b08d8434d97073dbb
+d132a049/coverage-7.12.1b1-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/57/0b/c212490af3d8526225ee4f277ab249810ca108232d840d0a093e
+4f35931c/coverage-7.12.1b1.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/8d/4c/1968f32fb9a2604645827e11ff84a31e59d532e01995f904723b
+4f5328b3/coverage-7.13.0-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/b6/45/2c665ca77ec32ad67e25c77daf1cee28ee4558f3bc571cdbaf88
+a00b9f23/coverage-7.13.0.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/cc/48/d9f421cb8da5afaa1a64570d9989e00fb7955e6acddc5a12979f
+7666ef60/coverage-7.13.1-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/23/f9/e92df5e07f3fc8d4c7f9a0f146ef75446bf870351cd37b788cf5
+897f8079/coverage-7.13.1.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/d2/db/d291e30fdf7ea617a335531e72294e0c723356d7fdde8fba0061
+0a76bda9/coverage-7.13.2-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/ad/49/349848445b0e53660e258acbcc9b0d014895b673923792088667
+2240f84b/coverage-7.13.2.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/7d/fb/70af542d2d938c778c9373ce253aa4116dbe7c0a5672f78b2b2a
+e0e1b94b/coverage-7.13.3-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/11/43/3e4ac666cc35f231fa70c94e9f38459299de1a152813f9d2f60f
+c5f3ecaf/coverage-7.13.3.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/0d/4a/331fe2caf6799d591109bb9c08083080f6de90a823695d412a93
+5622abb2/coverage-7.13.4-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/24/56/95b7e30fa389756cb56630faa728da46a27b8c6eb46f9d557c68
+fff12b65/coverage-7.13.4.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/9e/ee/a4cf96b8ce1e566ed238f0659ac2d3f007ed1d14b181bcb684e1
+9561a69a/coverage-7.13.5-py3-none-any.whl (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+  Link requires a different Python (3.9.25 not in: '>=3.10'): https://files.pythonhosted.org/packages/9d/e0/70553e3000e345daff267cec284ce4cbf3fc141b6da229ac5277
+5b5428f1/coverage-7.13.5.tar.gz (from https://pypi.org/simple/coverage/) (requires-python:>=3.10)
+Collecting coverage[toml]>=7.10.6
+  Downloading coverage-7.10.7-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (248 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 248.4/248.4 kB 6.9 MB/s eta 0:00:00
+Collecting typing-extensions>=4.6.0
+  Using cached typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+Building wheels for collected packages: langcodes
+  Running command Building editable for langcodes (pyproject.toml)
+  /tmp/pip-build-env-dljyi3u_/overlay/lib/python3.9/site-packages/setuptools/config/_apply_pyprojecttoml.py:61: SetuptoolsDeprecationWarning: License classifier
+s are deprecated.
+  !!
+
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+
+          License :: OSI Approved :: MIT License
+
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+
+  !!
+    dist._finalize_license_expression()
+  /tmp/pip-build-env-dljyi3u_/overlay/lib/python3.9/site-packages/setuptools/dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+  !!
+
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+
+          License :: OSI Approved :: MIT License
+
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+
+  !!
+    self._finalize_license_expression()
+  running editable_wheel
+  creating /tmp/pip-wheel-j2shvv3c/.tmp-648b16x7/langcodes.egg-info
+  writing /tmp/pip-wheel-j2shvv3c/.tmp-648b16x7/langcodes.egg-info/PKG-INFO
+  writing dependency_links to /tmp/pip-wheel-j2shvv3c/.tmp-648b16x7/langcodes.egg-info/dependency_links.txt
+  writing requirements to /tmp/pip-wheel-j2shvv3c/.tmp-648b16x7/langcodes.egg-info/requires.txt
+  writing top-level names to /tmp/pip-wheel-j2shvv3c/.tmp-648b16x7/langcodes.egg-info/top_level.txt
+  writing manifest file '/tmp/pip-wheel-j2shvv3c/.tmp-648b16x7/langcodes.egg-info/SOURCES.txt'
+  adding license file 'LICENSE.txt'
+  writing manifest file '/tmp/pip-wheel-j2shvv3c/.tmp-648b16x7/langcodes.egg-info/SOURCES.txt'
+  creating '/tmp/pip-wheel-j2shvv3c/.tmp-648b16x7/langcodes-3.4.1.dev5+ga60360793.dist-info'
+  creating /tmp/pip-wheel-j2shvv3c/.tmp-648b16x7/langcodes-3.4.1.dev5+ga60360793.dist-info/WHEEL
+  running build_py
+  running egg_info
+  creating /tmp/tmplpicrf2s.build-temp/langcodes.egg-info
+  writing /tmp/tmplpicrf2s.build-temp/langcodes.egg-info/PKG-INFO
+  writing dependency_links to /tmp/tmplpicrf2s.build-temp/langcodes.egg-info/dependency_links.txt
+  writing requirements to /tmp/tmplpicrf2s.build-temp/langcodes.egg-info/requires.txt
+  writing top-level names to /tmp/tmplpicrf2s.build-temp/langcodes.egg-info/top_level.txt
+  writing manifest file '/tmp/tmplpicrf2s.build-temp/langcodes.egg-info/SOURCES.txt'
+  adding license file 'LICENSE.txt'
+  writing manifest file '/tmp/tmplpicrf2s.build-temp/langcodes.egg-info/SOURCES.txt'
+  Editable install will be performed using a meta path finder.
+
+  Options like `package-data`, `include/exclude-package-data` or
+  `packages.find.exclude/include` may have no effect.
+
+  adding '__editable___langcodes_3_4_1_dev5_ga60360793_finder.py'
+  adding '__editable__.langcodes-3.4.1.dev5+ga60360793.pth'
+  creating '/tmp/pip-wheel-j2shvv3c/.tmp-648b16x7/langcodes-3.4.1.dev5+ga60360793-0.editable-py3-none-any.whl' and adding '/tmp/tmpjqb7d3lulangcodes-3.4.1.dev5+
+ga60360793-0.editable-py3-none-any.whl' to it
+  adding 'langcodes-3.4.1.dev5+ga60360793.dist-info/licenses/LICENSE.txt'
+  adding 'langcodes-3.4.1.dev5+ga60360793.dist-info/METADATA'
+  adding 'langcodes-3.4.1.dev5+ga60360793.dist-info/WHEEL'
+  adding 'langcodes-3.4.1.dev5+ga60360793.dist-info/top_level.txt'
+  adding 'langcodes-3.4.1.dev5+ga60360793.dist-info/RECORD'
+  /tmp/pip-build-env-dljyi3u_/overlay/lib/python3.9/site-packages/setuptools/command/editable_wheel.py:354: InformationOnly: Editable installation.
+  !!
+
+          ********************************************************************************
+          Please be careful with folders in your working directory with the same
+          name as your package as they may take precedence during imports.
+          ********************************************************************************
+
+  !!
+    wheel_obj.write_files(unpacked)
+  Building editable for langcodes (pyproject.toml) ... done
+  Created wheel for langcodes: filename=langcodes-3.4.1.dev5+ga60360793-0.editable-py3-none-any.whl size=14307 sha256=9689453dc6188587703d35bf89dae6f67d324a2136
+6673be8ce49d2f60e6f15d
+  Stored in directory: /tmp/pip-ephem-wheel-cache-pzkp15hc/wheels/32/82/26/e0cbd98a8723bfe0ffaf09b3cbafcfdcd4a9452ff95aa0fe33
+Successfully built langcodes
+Installing collected packages: typing-extensions, tomli, pygments, pluggy, packaging, marisa-trie, iniconfig, coverage, language-data, exceptiongroup, pytest, l
+angcodes, pytest-cov
+  changing mode of /app/langcodes/tests-venv/bin/pygmentize to 755
+  changing mode of /app/langcodes/tests-venv/bin/coverage to 755
+  changing mode of /app/langcodes/tests-venv/bin/coverage-3.9 to 755
+  changing mode of /app/langcodes/tests-venv/bin/coverage3 to 755
+  changing mode of /app/langcodes/tests-venv/bin/py.test to 755
+  changing mode of /app/langcodes/tests-venv/bin/pytest to 755
+Successfully installed coverage-7.10.7 exceptiongroup-1.3.1 iniconfig-2.1.0 langcodes-3.4.1.dev5+ga60360793 language-data-1.4.0 marisa-trie-1.4.1 packaging-26.0
+ pluggy-1.6.0 pygments-2.20.0 pytest-8.4.2 pytest-cov-7.1.0 tomli-2.4.1 typing-extensions-4.15.0
+
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.9.25, pytest-8.4.2, pluggy-1.6.0 -- /app/langcodes/tests-venv/bin/python
+cachedir: .pytest_cache
+rootdir: /app/langcodes
+configfile: pyproject.toml
+plugins: cov-7.1.0
+collected 1 item
+
+langcodes/tests/test_language.py::test__hash__ FAILED                                                                                                    [100%]
+
+=========================================================================== FAILURES ===========================================================================
+_________________________________________________________________________ test__hash__ _________________________________________________________________________
+
+    def test__hash__():
+        en1 = Language.get("en")
+        # Disable caching
+        Language._INSTANCES = {}
+        Language._PARSE_CACHE = {}
+        en2 = Language.get("en")
+>       assert hash(en1) == hash(en2)
+E       AssertionError: assert 281473321874720 == 281473321874816
+E        +  where 281473321874720 = hash(Language.make(language='en'))
+E        +  and   281473321874816 = hash(Language.make(language='en'))
+
+langcodes/tests/test_language.py:10: AssertionError
+=================================================================== short test summary info ====================================================================
+FAILED langcodes/tests/test_language.py::test__hash__ - AssertionError: assert 281473321874720 == 281473321874816
+====================================================================== 1 failed in 0.09s =======================================================================
+root@1dc0cf90ab0f:/app/langcodes#

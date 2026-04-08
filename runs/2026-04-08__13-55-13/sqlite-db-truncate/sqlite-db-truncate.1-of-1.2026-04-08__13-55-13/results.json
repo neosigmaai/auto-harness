@@ -1,0 +1,20 @@
+{
+    "id": "47875047-679a-4018-b6fb-f36ed8be382a",
+    "trial_name": "sqlite-db-truncate.1-of-1.2026-04-08__13-55-13",
+    "task_id": "sqlite-db-truncate",
+    "instruction": "I have a sqlite database in /app/trunc.db that was corrupted. Recover as many of the rows as possible, and create a JSON file in /app/recover.json. The output should have the format [{\"word\": \"testwordXY\", \"value\": M}, {\"word\": \"testwordZZ\",\"value\": N}, ...]",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_json_data": "failed"
+    },
+    "recording_path": "2026-04-08__13-55-13/sqlite-db-truncate/sqlite-db-truncate.1-of-1.2026-04-08__13-55-13/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T21:30:56.876949+00:00",
+    "trial_ended_at": "2026-04-08T21:31:18.804560+00:00",
+    "agent_started_at": "2026-04-08T21:31:01.569150+00:00",
+    "agent_ended_at": "2026-04-08T21:31:01.657443+00:00",
+    "test_started_at": "2026-04-08T21:31:04.998909+00:00",
+    "test_ended_at": "2026-04-08T21:31:16.781418+00:00"
+}

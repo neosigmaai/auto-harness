@@ -1,0 +1,40 @@
+    Uninstalling sympy-1.14.0:
+   ━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/89 [sympy]# Continue waiting for the installation to fully complete.
+   ━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/89 [sympy]# Continue to wait for the installation to fully complete without interruption.
+   ━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/89 [sympy]# Continue to wait for the installation to fully complete without interruption.
+      Successfully uninstalled sympy-1.14.0
+   ━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11/89 [sympy]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: six
+    Found existing installation: six 1.17.0
+    Uninstalling six-1.17.0:
+      Successfully uninstalled six-1.17.0
+  Attempting uninstall: shellingham
+    Found existing installation: shellingham 1.5.4
+    Uninstalling shellingham-1.5.4:
+      Successfully uninstalled shellingham-1.5.4
+  Attempting uninstall: setuptools
+    Found existing installation: setuptools 79.0.1
+    Uninstalling setuptools-79.0.1:
+      Successfully uninstalled setuptools-79.0.1
+  Attempting uninstall: safetensors
+    Found existing installation: safetensors 0.7.0
+    Uninstalling safetensors-0.7.0:
+      Successfully uninstalled safetensors-0.7.0
+  Attempting uninstall: regex
+    Found existing installation: regex 2026.4.4
+    Uninstalling regex-2026.4.4:
+      Successfully uninstalled regex-2026.4.4
+  Attempting uninstall: pyyaml
+    Found existing installation: PyYAML 6.0.3
+    Uninstalling PyYAML-6.0.3:
+      Successfully uninstalled PyYAML-6.0.3
+  Attempting uninstall: pygments
+    Found existing installation: Pygments 2.20.0
+    Uninstalling Pygments-2.20.0:
+      Successfully uninstalled Pygments-2.20.0
+   ━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 18/89 [pygments]# Continue to wait for the installation to fully complete.
+  Attempting uninstall: pyarrow
+    Found existing installation: pyarrow 23.0.1
+    Uninstalling pyarrow-23.0.1:
+   ━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 19/89 [pyarrow]# Continue to wait for the installation to fully complete.
+   ━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 19/89 [pyarrow]

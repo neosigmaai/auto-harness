@@ -1,0 +1,20 @@
+{
+    "id": "10c550f4-89fe-4a8d-b7e6-e0b383d7c3b4",
+    "trial_name": "qemu-startup.1-of-1.2026-04-08__13-59-50",
+    "task_id": "qemu-startup",
+    "instruction": "Start the alpine.iso image in qemu in such a way that I can connect to it via `telnet 127.0.0.1 6665`. When I run telnet I will expect to see the login prompt; I'll log in. You should just get me to this point. Start the image in the background and leave it running. Block until it's ready.",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_version": "failed"
+    },
+    "recording_path": "2026-04-08__13-59-50/qemu-startup/qemu-startup.1-of-1.2026-04-08__13-59-50/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T21:21:01.342946+00:00",
+    "trial_ended_at": "2026-04-08T21:22:42.862960+00:00",
+    "agent_started_at": "2026-04-08T21:22:27.491865+00:00",
+    "agent_ended_at": "2026-04-08T21:22:27.593743+00:00",
+    "test_started_at": "2026-04-08T21:22:30.872883+00:00",
+    "test_ended_at": "2026-04-08T21:22:40.164258+00:00"
+}

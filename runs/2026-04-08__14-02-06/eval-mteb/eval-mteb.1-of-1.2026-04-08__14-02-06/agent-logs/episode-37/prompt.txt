@@ -1,0 +1,40 @@
+   ━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 18/89 [pygments]# Continue to wait for the installation to fully complete.
+  Attempting uninstall: pyarrow
+    Found existing installation: pyarrow 23.0.1
+    Uninstalling pyarrow-23.0.1:
+   ━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 19/89 [pyarrow]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled pyarrow-23.0.1
+   ━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 19/89 [pyarrow]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: propcache
+    Found existing installation: propcache 0.4.1
+    Uninstalling propcache-0.4.1:
+      Successfully uninstalled propcache-0.4.1
+  Attempting uninstall: polars-runtime-32
+    Found existing installation: polars-runtime-32 1.39.3
+    Uninstalling polars-runtime-32-1.39.3:
+      Successfully uninstalled polars-runtime-32-1.39.3
+   ━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 21/89 [polars-runtime-32]# Continue to wait for the installation to fully complete.
+  Attempting uninstall: packaging
+    Found existing installation: packaging 26.0
+    Uninstalling packaging-26.0:
+      Successfully uninstalled packaging-26.0
+  Attempting uninstall: nvidia-nvtx
+    Found existing installation: nvidia-nvtx 13.0.85
+    Uninstalling nvidia-nvtx-13.0.85:
+      Successfully uninstalled nvidia-nvtx-13.0.85
+  Attempting uninstall: nvidia-nvshmem-cu13
+    Found existing installation: nvidia-nvshmem-cu13 3.4.5
+    Uninstalling nvidia-nvshmem-cu13-3.4.5:
+   ━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 24/89 [nvidia-nvshmem-cu13]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled nvidia-nvshmem-cu13-3.4.5
+  Attempting uninstall: nvidia-nvjitlink
+    Found existing installation: nvidia-nvjitlink 13.0.88
+    Uninstalling nvidia-nvjitlink-13.0.88:
+      Successfully uninstalled nvidia-nvjitlink-13.0.88
+   ━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 25/89 [nvidia-nvjitlink]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: nvidia-nccl-cu13
+    Found existing installation: nvidia-nccl-cu13 2.28.9
+    Uninstalling nvidia-nccl-cu13-2.28.9:
+   ━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 26/89 [nvidia-nccl-cu13]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled nvidia-nccl-cu13-2.28.9
+   ━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 26/89 [nvidia-nccl-cu13]

@@ -1,0 +1,22 @@
+{
+    "id": "235550ec-825f-4646-be24-6b46540cb3f7",
+    "trial_name": "simple-sheets-put.1-of-1.2026-04-08__13-55-13",
+    "task_id": "simple-sheets-put",
+    "instruction": "1. Create a new spreadsheet named \"Financial Report\"\n2. Create a sheet in this spreadsheet named \"Q1 Data\"\n3. Add the following data to the sheet, starting at cell A1:\n  | Month    | Revenue | Expenses |\n  |----------|---------|----------|\n  | January  | 10000   | 8000     |\n  | February | 12000   | 9000     |\n  | March    | 15000   | 10000    |\n\n4. Add a third column that contains the profit.\n\nThe API is available at http://api:8000.\nThere is an endpoint to get the API documentation at http://api:8000/docs/json.",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_spreadsheet_created": "failed",
+        "test_sheet_created": "failed",
+        "test_cells_created": "failed"
+    },
+    "recording_path": "2026-04-08__13-55-13/simple-sheets-put/simple-sheets-put.1-of-1.2026-04-08__13-55-13/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T21:48:16.514760+00:00",
+    "trial_ended_at": "2026-04-08T21:48:57.905553+00:00",
+    "agent_started_at": "2026-04-08T21:48:51.230159+00:00",
+    "agent_ended_at": "2026-04-08T21:48:51.322959+00:00",
+    "test_started_at": "2026-04-08T21:48:51.406583+00:00",
+    "test_ended_at": "2026-04-08T21:48:54.701385+00:00"
+}

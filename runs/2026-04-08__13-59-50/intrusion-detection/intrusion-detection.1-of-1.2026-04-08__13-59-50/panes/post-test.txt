@@ -1,0 +1,588 @@
+root@1e94c250c383:/app# bash /tests/run-tests.sh; tmux wait -S done
+Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [48.0 kB]
+Get:4 http://deb.debian.org/debian bookworm/main arm64 Packages [8691 kB]
+Get:5 http://deb.debian.org/debian bookworm-updates/main arm64 Packages [6936 B]
+Get:6 http://deb.debian.org/debian-security bookworm-security/main arm64 Packages [290 kB]
+Fetched 9242 kB in 2s (6063 kB/s)
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  libbrotli1 libcurl4 libldap-2.5-0 libldap-common libnghttp2-14 libpsl5 librtmp1 libsasl2-2 libsasl2-modules libsasl2-modules-db libssh2-1 publicsuffix
+Suggested packages:
+  libsasl2-modules-gssapi-mit | libsasl2-modules-gssapi-heimdal libsasl2-modules-ldap libsasl2-modules-otp libsasl2-modules-sql
+The following NEW packages will be installed:
+  curl libbrotli1 libcurl4 libldap-2.5-0 libldap-common libnghttp2-14 libpsl5 librtmp1 libsasl2-2 libsasl2-modules libsasl2-modules-db libssh2-1 publicsuffix
+0 upgraded, 13 newly installed, 0 to remove and 44 not upgraded.
+Need to get 1772 kB of archives.
+After this operation, 5016 kB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian bookworm/main arm64 libbrotli1 arm64 1.0.9-2+b6 [269 kB]
+Get:2 http://deb.debian.org/debian bookworm/main arm64 libsasl2-modules-db arm64 2.1.28+dfsg-10 [20.8 kB]
+Get:3 http://deb.debian.org/debian bookworm/main arm64 libsasl2-2 arm64 2.1.28+dfsg-10 [58.0 kB]
+Get:4 http://deb.debian.org/debian bookworm/main arm64 libldap-2.5-0 arm64 2.5.13+dfsg-5 [171 kB]
+Get:5 http://deb.debian.org/debian bookworm/main arm64 libnghttp2-14 arm64 1.52.0-1+deb12u2 [68.6 kB]
+Get:6 http://deb.debian.org/debian bookworm/main arm64 libpsl5 arm64 0.21.2-1 [58.6 kB]
+Get:7 http://deb.debian.org/debian bookworm/main arm64 librtmp1 arm64 2.4+20151223.gitfa8646d.1-2+b2 [59.4 kB]
+Get:8 http://deb.debian.org/debian bookworm/main arm64 libssh2-1 arm64 1.10.0-3+b1 [172 kB]
+Get:9 http://deb.debian.org/debian bookworm/main arm64 libcurl4 arm64 7.88.1-10+deb12u14 [367 kB]
+Get:10 http://deb.debian.org/debian bookworm/main arm64 curl arm64 7.88.1-10+deb12u14 [309 kB]
+Get:11 http://deb.debian.org/debian bookworm/main arm64 libldap-common all 2.5.13+dfsg-5 [29.3 kB]
+Get:12 http://deb.debian.org/debian bookworm/main arm64 libsasl2-modules arm64 2.1.28+dfsg-10 [63.1 kB]
+Get:13 http://deb.debian.org/debian bookworm/main arm64 publicsuffix all 20230209.2326-1 [126 kB]
+Fetched 1772 kB in 0s (4789 kB/s)
+debconf: delaying package configuration, since apt-utils is not installed
+Selecting previously unselected package libbrotli1:arm64.
+(Reading database ... 7622 files and directories currently installed.)
+Preparing to unpack .../00-libbrotli1_1.0.9-2+b6_arm64.deb ...
+Unpacking libbrotli1:arm64 (1.0.9-2+b6) ...
+Selecting previously unselected package libsasl2-modules-db:arm64.
+Preparing to unpack .../01-libsasl2-modules-db_2.1.28+dfsg-10_arm64.deb ...
+Unpacking libsasl2-modules-db:arm64 (2.1.28+dfsg-10) ...
+Selecting previously unselected package libsasl2-2:arm64.
+Preparing to unpack .../02-libsasl2-2_2.1.28+dfsg-10_arm64.deb ...
+Unpacking libsasl2-2:arm64 (2.1.28+dfsg-10) ...
+Selecting previously unselected package libldap-2.5-0:arm64.
+Preparing to unpack .../03-libldap-2.5-0_2.5.13+dfsg-5_arm64.deb ...
+Unpacking libldap-2.5-0:arm64 (2.5.13+dfsg-5) ...
+Selecting previously unselected package libnghttp2-14:arm64.
+Preparing to unpack .../04-libnghttp2-14_1.52.0-1+deb12u2_arm64.deb ...
+Unpacking libnghttp2-14:arm64 (1.52.0-1+deb12u2) ...
+Selecting previously unselected package libpsl5:arm64.
+Preparing to unpack .../05-libpsl5_0.21.2-1_arm64.deb ...
+Unpacking libpsl5:arm64 (0.21.2-1) ...
+Selecting previously unselected package librtmp1:arm64.
+Preparing to unpack .../06-librtmp1_2.4+20151223.gitfa8646d.1-2+b2_arm64.deb ...
+Unpacking librtmp1:arm64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+Selecting previously unselected package libssh2-1:arm64.
+Preparing to unpack .../07-libssh2-1_1.10.0-3+b1_arm64.deb ...
+Unpacking libssh2-1:arm64 (1.10.0-3+b1) ...
+Selecting previously unselected package libcurl4:arm64.
+Preparing to unpack .../08-libcurl4_7.88.1-10+deb12u14_arm64.deb ...
+Unpacking libcurl4:arm64 (7.88.1-10+deb12u14) ...
+Selecting previously unselected package curl.
+Preparing to unpack .../09-curl_7.88.1-10+deb12u14_arm64.deb ...
+Unpacking curl (7.88.1-10+deb12u14) ...
+Selecting previously unselected package libldap-common.
+Preparing to unpack .../10-libldap-common_2.5.13+dfsg-5_all.deb ...
+Unpacking libldap-common (2.5.13+dfsg-5) ...
+Selecting previously unselected package libsasl2-modules:arm64.
+Preparing to unpack .../11-libsasl2-modules_2.1.28+dfsg-10_arm64.deb ...
+Unpacking libsasl2-modules:arm64 (2.1.28+dfsg-10) ...
+Selecting previously unselected package publicsuffix.
+Preparing to unpack .../12-publicsuffix_20230209.2326-1_all.deb ...
+Unpacking publicsuffix (20230209.2326-1) ...
+Setting up libpsl5:arm64 (0.21.2-1) ...
+Setting up libbrotli1:arm64 (1.0.9-2+b6) ...
+Setting up libsasl2-modules:arm64 (2.1.28+dfsg-10) ...
+Setting up libnghttp2-14:arm64 (1.52.0-1+deb12u2) ...
+Setting up libldap-common (2.5.13+dfsg-5) ...
+Setting up libsasl2-modules-db:arm64 (2.1.28+dfsg-10) ...
+Setting up librtmp1:arm64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+Setting up libsasl2-2:arm64 (2.1.28+dfsg-10) ...
+Setting up libssh2-1:arm64 (1.10.0-3+b1) ...
+Setting up publicsuffix (20230209.2326-1) ...
+Setting up libldap-2.5-0:arm64 (2.5.13+dfsg-5) ...
+Setting up libcurl4:arm64 (7.88.1-10+deb12u14) ...
+Setting up curl (7.88.1-10+deb12u14) ...
+Processing triggers for libc-bin (2.36-9+deb12u9) ...
+downloading uv 0.11.5 aarch64-unknown-linux-gnu
+installing to /root/.local/bin
+  uv
+  uvx
+everything's installed!
+
+To add $HOME/.local/bin to your PATH, either restart your shell or run:
+
+    source $HOME/.local/bin/env (sh, bash, zsh)
+    source $HOME/.local/bin/env.fish (fish)
+Initialized project `app`
+Using CPython 3.13.1 interpreter at: /usr/local/bin/python3.13
+Creating virtual environment at: .venv
+Resolved 7 packages in 281ms
+Prepared 5 packages in 170ms
+Installed 5 packages in 7ms
+ + iniconfig==2.3.0
+ + packaging==26.0
+ + pluggy==1.6.0
+ + pygments==2.20.0
+ + pytest==9.0.3
+===================================================================== test session starts ======================================================================
+platform linux -- Python 3.13.1, pytest-9.0.3, pluggy-1.6.0
+rootdir: /tests
+collected 7 items
+
+../tests/test_outputs.py FFFFFFF                                                                                                                         [100%]
+
+=========================================================================== FAILURES ===========================================================================
+________________________________________________________________ test_intrusion_detector_exists ________________________________________________________________
+
+    def test_intrusion_detector_exists():
+        """Test that intrusion_detector.sh exists and is executable."""
+
+>       assert os.path.exists("/app/intrusion_detector.sh"), (
+            "intrusion_detector.sh script does not exist"
+        )
+E       AssertionError: intrusion_detector.sh script does not exist
+E       assert False
+E        +  where False = <function exists at 0xffffbd5171a0>('/app/intrusion_detector.sh')
+E        +    where <function exists at 0xffffbd5171a0> = <module 'posixpath' (frozen)>.exists
+E        +      where <module 'posixpath' (frozen)> = os.path
+
+/tests/test_outputs.py:13: AssertionError
+_________________________________________________________________ test_response_script_exists __________________________________________________________________
+
+    def test_response_script_exists():
+        """Test that response.sh exists and is executable."""
+>       assert os.path.exists("/app/response.sh"), "response.sh script does not exist"
+E       AssertionError: response.sh script does not exist
+E       assert False
+E        +  where False = <function exists at 0xffffbd5171a0>('/app/response.sh')
+E        +    where <function exists at 0xffffbd5171a0> = <module 'posixpath' (frozen)>.exists
+E        +      where <module 'posixpath' (frozen)> = os.path
+
+/tests/test_outputs.py:23: AssertionError
+_______________________________________________________________ test_intrusion_detector_content ________________________________________________________________
+
+    def test_intrusion_detector_content():
+        """Test the content of the intrusion_detector.sh script."""
+>       with open("/app/intrusion_detector.sh", "r") as f:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/app/intrusion_detector.sh'
+
+/tests/test_outputs.py:29: FileNotFoundError
+______________________________________________________________ test_intrusion_detector_execution _______________________________________________________________
+
+    def test_intrusion_detector_execution():
+        """Test that the intrusion detector executes and creates output."""
+        try:
+>           subprocess.run(["/app/intrusion_detector.sh"], check=True, timeout=10)
+
+/tests/test_outputs.py:45:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+/usr/local/lib/python3.13/subprocess.py:554: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.13/subprocess.py:1036: in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+/usr/local/lib/python3.13/subprocess.py:1851: in _execute_child
+    self._posix_spawn(args, executable, env, restore_signals, close_fds,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Popen: returncode: None args: ['/app/intrusion_detector.sh']>, args = ['/app/intrusion_detector.sh'], executable = '/app/intrusion_detector.sh'
+env = None, restore_signals = True, close_fds = True, p2cread = -1, p2cwrite = -1, c2pread = -1, c2pwrite = -1, errread = -1, errwrite = -1
+
+    def _posix_spawn(self, args, executable, env, restore_signals, close_fds,
+                     p2cread, p2cwrite,
+                     c2pread, c2pwrite,
+                     errread, errwrite):
+        """Execute program using os.posix_spawn()."""
+        kwargs = {}
+        if restore_signals:
+            # See _Py_RestoreSignals() in Python/pylifecycle.c
+            sigset = []
+            for signame in ('SIGPIPE', 'SIGXFZ', 'SIGXFSZ'):
+                signum = getattr(signal, signame, None)
+                if signum is not None:
+                    sigset.append(signum)
+            kwargs['setsigdef'] = sigset
+
+        file_actions = []
+        for fd in (p2cwrite, c2pread, errread):
+            if fd != -1:
+                file_actions.append((os.POSIX_SPAWN_CLOSE, fd))
+        for fd, fd2 in (
+            (p2cread, 0),
+            (c2pwrite, 1),
+            (errwrite, 2),
+        ):
+            if fd != -1:
+                file_actions.append((os.POSIX_SPAWN_DUP2, fd, fd2))
+
+        if close_fds:
+            file_actions.append((os.POSIX_SPAWN_CLOSEFROM, 3))
+
+        if file_actions:
+            kwargs['file_actions'] = file_actions
+
+>       self.pid = os.posix_spawn(executable, args, env, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/app/intrusion_detector.sh'
+
+/usr/local/lib/python3.13/subprocess.py:1795: FileNotFoundError
+________________________________________________________________ test_response_script_execution ________________________________________________________________
+
+    def test_response_script_execution():
+        """Test that the response script executes with an IP and creates output."""
+        suspicious_ip = "45.32.67.89"
+
+        try:
+>           subprocess.run(["/app/response.sh", suspicious_ip], check=True, timeout=10)
+
+/tests/test_outputs.py:73:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+/usr/local/lib/python3.13/subprocess.py:554: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.13/subprocess.py:1036: in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+/usr/local/lib/python3.13/subprocess.py:1851: in _execute_child
+    self._posix_spawn(args, executable, env, restore_signals, close_fds,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Popen: returncode: None args: ['/app/response.sh', '45.32.67.89']>, args = ['/app/response.sh', '45.32.67.89'], executable = '/app/response.sh'
+env = None, restore_signals = True, close_fds = True, p2cread = -1, p2cwrite = -1, c2pread = -1, c2pwrite = -1, errread = -1, errwrite = -1
+
+    def _posix_spawn(self, args, executable, env, restore_signals, close_fds,
+                     p2cread, p2cwrite,
+                     c2pread, c2pwrite,
+                     errread, errwrite):
+        """Execute program using os.posix_spawn()."""
+        kwargs = {}
+        if restore_signals:
+            # See _Py_RestoreSignals() in Python/pylifecycle.c
+            sigset = []
+            for signame in ('SIGPIPE', 'SIGXFZ', 'SIGXFSZ'):
+                signum = getattr(signal, signame, None)
+                if signum is not None:
+                    sigset.append(signum)
+            kwargs['setsigdef'] = sigset
+
+        file_actions = []
+        for fd in (p2cwrite, c2pread, errread):
+            if fd != -1:
+                file_actions.append((os.POSIX_SPAWN_CLOSE, fd))
+        for fd, fd2 in (
+            (p2cread, 0),
+            (c2pwrite, 1),
+            (errwrite, 2),
+        ):
+            if fd != -1:
+                file_actions.append((os.POSIX_SPAWN_DUP2, fd, fd2))
+
+        if close_fds:
+            file_actions.append((os.POSIX_SPAWN_CLOSEFROM, 3))
+
+        if file_actions:
+            kwargs['file_actions'] = file_actions
+
+>       self.pid = os.posix_spawn(executable, args, env, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/app/response.sh'
+
+/usr/local/lib/python3.13/subprocess.py:1795: FileNotFoundError
+_____________________________________________________________ test_response_script_error_handling ______________________________________________________________
+
+    def test_response_script_error_handling():
+        """Test that the response script produces an error with invalid input."""
+        invalid_ip = "999.999.999.999"
+
+>       result = subprocess.run(
+            ["/app/response.sh", invalid_ip], capture_output=True, text=True
+        )
+
+/tests/test_outputs.py:97:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+/usr/local/lib/python3.13/subprocess.py:554: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.13/subprocess.py:1036: in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+/usr/local/lib/python3.13/subprocess.py:1851: in _execute_child
+    self._posix_spawn(args, executable, env, restore_signals, close_fds,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Popen: returncode: None args: ['/app/response.sh', '999.999.999.999']>, args = ['/app/response.sh', '999.999.999.999'], executable = '/app/response.sh'
+env = None, restore_signals = True, close_fds = True, p2cread = -1, p2cwrite = -1, c2pread = 11, c2pwrite = 12, errread = 13, errwrite = 14
+
+    def _posix_spawn(self, args, executable, env, restore_signals, close_fds,
+                     p2cread, p2cwrite,
+                     c2pread, c2pwrite,
+                     errread, errwrite):
+        """Execute program using os.posix_spawn()."""
+        kwargs = {}
+        if restore_signals:
+            # See _Py_RestoreSignals() in Python/pylifecycle.c
+            sigset = []
+            for signame in ('SIGPIPE', 'SIGXFZ', 'SIGXFSZ'):
+                signum = getattr(signal, signame, None)
+                if signum is not None:
+                    sigset.append(signum)
+            kwargs['setsigdef'] = sigset
+
+        file_actions = []
+        for fd in (p2cwrite, c2pread, errread):
+            if fd != -1:
+                file_actions.append((os.POSIX_SPAWN_CLOSE, fd))
+        for fd, fd2 in (
+            (p2cread, 0),
+            (c2pwrite, 1),
+            (errwrite, 2),
+        ):
+            if fd != -1:
+                file_actions.append((os.POSIX_SPAWN_DUP2, fd, fd2))
+
+        if close_fds:
+            file_actions.append((os.POSIX_SPAWN_CLOSEFROM, 3))
+
+        if file_actions:
+            kwargs['file_actions'] = file_actions
+
+>       self.pid = os.posix_spawn(executable, args, env, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/app/response.sh'
+
+/usr/local/lib/python3.13/subprocess.py:1795: FileNotFoundError
+_______________________________________________________________________ test_performance _______________________________________________________________________
+
+    def test_performance():
+        """Test that script execute fine compared to a reference implementation."""
+
+        reference_script = """#!/bin/bash
+    # Reference implementation for benchmarking
+    echo '{"timestamp":"'$(date -Iseconds)'","alerts":[]}' > ref_alert.json
+    echo '{"timestamp":"'$(date -Iseconds)'","events":[],"statistics":{}}' > ref_report.json
+
+    for rule in $(jq -c '.rules[]' /app/rules/detection_rules.json); do
+        id=$(echo "$rule" | jq -r '.id')
+        pattern=$(echo "$rule" | jq -r '.pattern')
+        threshold=$(echo "$rule" | jq -r '.threshold')
+        severity=$(echo "$rule" | jq -r '.severity')
+
+        auth_matches=$(grep -E "$pattern" /app/logs/auth.log | wc -l)
+        http_matches=$(grep -E "$pattern" /app/logs/http.log | wc -l)
+        total_matches=$((auth_matches + http_matches))
+
+        jq --arg id "$id" --arg total "$total_matches" \
+           '.statistics[$id] = ($total|tonumber)' ref_report.json > tmp.json && \
+           mv tmp.json ref_report.json
+
+        if [ "$total_matches" -ge "$threshold" ]; then
+            ips=$(grep -E "$pattern" /app/logs/auth.log | \
+            grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' || echo "")
+            ips+=$'\n'$(grep -E "$pattern" /app/logs/http.log |
+            grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' || echo "")
+            unique_ips=$(echo "$ips" | grep -v '^$' | sort -u | tr '\n' ',' | sed 's/,$//')
+
+            alert=$(jq -n \
+                      --arg id "$id" \
+                      --arg sev "$severity" \
+                      --argjson matches "$total_matches" \
+                      --arg ips "$unique_ips" \
+                      '{id: $id, severity: $sev, matches: $matches, ips: $ips}')
+
+            jq --argjson alert "$alert" '.alerts += [$alert]' ref_alert.json > tmp.json && \
+            mv tmp.json ref_alert.json
+            jq --argjson alert "$alert" '.events += [$alert]' ref_report.json > tmp.json &&\
+            mv tmp.json ref_report.json
+        fi
+    done
+    """
+
+        with open("/app/reference_impl.sh", "w") as f:
+            f.write(reference_script)
+        os.chmod("/app/reference_impl.sh", 0o755)
+
+        start_time = time.time()
+        subprocess.run(["/app/reference_impl.sh"], check=True)
+        reference_time = time.time() - start_time
+
+        start_time = time.time()
+>       subprocess.run(["/app/intrusion_detector.sh"], check=True)
+
+/tests/test_outputs.py:162:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+/usr/local/lib/python3.13/subprocess.py:554: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.13/subprocess.py:1036: in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+/usr/local/lib/python3.13/subprocess.py:1851: in _execute_child
+    self._posix_spawn(args, executable, env, restore_signals, close_fds,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Popen: returncode: None args: ['/app/intrusion_detector.sh']>, args = ['/app/intrusion_detector.sh'], executable = '/app/intrusion_detector.sh'
+env = None, restore_signals = True, close_fds = True, p2cread = -1, p2cwrite = -1, c2pread = -1, c2pwrite = -1, errread = -1, errwrite = -1
+
+    def _posix_spawn(self, args, executable, env, restore_signals, close_fds,
+                     p2cread, p2cwrite,
+                     c2pread, c2pwrite,
+                     errread, errwrite):
+        """Execute program using os.posix_spawn()."""
+        kwargs = {}
+        if restore_signals:
+            # See _Py_RestoreSignals() in Python/pylifecycle.c
+            sigset = []
+            for signame in ('SIGPIPE', 'SIGXFZ', 'SIGXFSZ'):
+                signum = getattr(signal, signame, None)
+                if signum is not None:
+                    sigset.append(signum)
+            kwargs['setsigdef'] = sigset
+
+        file_actions = []
+        for fd in (p2cwrite, c2pread, errread):
+            if fd != -1:
+                file_actions.append((os.POSIX_SPAWN_CLOSE, fd))
+        for fd, fd2 in (
+            (p2cread, 0),
+            (c2pwrite, 1),
+            (errwrite, 2),
+        ):
+            if fd != -1:
+                file_actions.append((os.POSIX_SPAWN_DUP2, fd, fd2))
+
+        if close_fds:
+            file_actions.append((os.POSIX_SPAWN_CLOSEFROM, 3))
+
+        if file_actions:
+            kwargs['file_actions'] = file_actions
+
+>       self.pid = os.posix_spawn(executable, args, env, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/app/intrusion_detector.sh'
+
+/usr/local/lib/python3.13/subprocess.py:1795: FileNotFoundError
+--------------------------------------------------------------------- Captured stderr call ---------------------------------------------------------------------
+parse error: Unfinished string at EOF at line 2, column 0
+parse error: Unfinished string at EOF at line 2, column 0
+parse error: Unfinished string at EOF at line 2, column 0
+parse error: Unfinished string at EOF at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid literal at line 2, column 0
+parse error: Invalid literal at line 2, column 0
+parse error: Invalid literal at line 2, column 0
+parse error: Invalid literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 1, column 8
+parse error: Invalid numeric literal at line 1, column 8
+parse error: Invalid numeric literal at line 1, column 8
+parse error: Invalid numeric literal at line 1, column 8
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid literal at line 1, column 4
+parse error: Invalid literal at line 1, column 4
+parse error: Invalid literal at line 1, column 4
+parse error: Invalid literal at line 1, column 4
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Unfinished string at EOF at line 2, column 0
+parse error: Unfinished string at EOF at line 2, column 0
+parse error: Unfinished string at EOF at line 2, column 0
+parse error: Unfinished string at EOF at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 1, column 9
+parse error: Invalid numeric literal at line 1, column 9
+parse error: Invalid numeric literal at line 1, column 9
+parse error: Invalid numeric literal at line 1, column 9
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 1, column 12
+parse error: Invalid numeric literal at line 1, column 12
+parse error: Invalid numeric literal at line 1, column 12
+parse error: Invalid numeric literal at line 1, column 12
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Unfinished string at EOF at line 2, column 0
+parse error: Unfinished string at EOF at line 2, column 0
+parse error: Unfinished string at EOF at line 2, column 0
+parse error: Unfinished string at EOF at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 1, column 6
+parse error: Invalid numeric literal at line 1, column 6
+parse error: Invalid numeric literal at line 1, column 6
+parse error: Invalid numeric literal at line 1, column 6
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 1, column 5
+parse error: Invalid numeric literal at line 1, column 5
+parse error: Invalid numeric literal at line 1, column 5
+parse error: Invalid numeric literal at line 1, column 5
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Unfinished string at EOF at line 2, column 0
+parse error: Unfinished string at EOF at line 2, column 0
+parse error: Unfinished string at EOF at line 2, column 0
+parse error: Unfinished string at EOF at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+parse error: Invalid numeric literal at line 2, column 0
+/app/reference_impl.sh: line 18: [: : integer expression expected
+parse error: Invalid numeric literal at line 1, column 10
+parse error: Invalid numeric literal at line 1, column 10
+parse error: Invalid numeric literal at line 1, column 10
+parse error: Invalid numeric literal at line 1, column 10
+/app/reference_impl.sh: line 18: [: : integer expression expected
+======================================================================= warnings summary =======================================================================
+../tests/test_outputs.py:112
+  /tests/test_outputs.py:112: SyntaxWarning: invalid escape sequence '\.'
+    reference_script = """#!/bin/bash
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=================================================================== short test summary info ====================================================================
+FAILED ../tests/test_outputs.py::test_intrusion_detector_exists - AssertionError: intrusion_detector.sh script does not exist
+FAILED ../tests/test_outputs.py::test_response_script_exists - AssertionError: response.sh script does not exist
+FAILED ../tests/test_outputs.py::test_intrusion_detector_content - FileNotFoundError: [Errno 2] No such file or directory: '/app/intrusion_detector.sh'
+FAILED ../tests/test_outputs.py::test_intrusion_detector_execution - FileNotFoundError: [Errno 2] No such file or directory: '/app/intrusion_detector.sh'
+FAILED ../tests/test_outputs.py::test_response_script_execution - FileNotFoundError: [Errno 2] No such file or directory: '/app/response.sh'
+FAILED ../tests/test_outputs.py::test_response_script_error_handling - FileNotFoundError: [Errno 2] No such file or directory: '/app/response.sh'
+FAILED ../tests/test_outputs.py::test_performance - FileNotFoundError: [Errno 2] No such file or directory: '/app/intrusion_detector.sh'
+================================================================= 7 failed, 1 warning in 3.38s =================================================================
+root@1e94c250c383:/app#

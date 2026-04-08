@@ -1,0 +1,17 @@
+{
+    "state_analysis": "The persistent timeout indicates a deeper problem with the session or environment. Commands are not executing as expected, likely due to a stalled or unresponsive terminal session.",
+    "explanation": "Attempt to clear the command prompt and try a very simple command to check if it executes successfully. This will help determine if the terminal is still responsive.",
+    "commands": [
+        {
+            "keystrokes": "C-c\n",
+            "is_blocking": false,
+            "timeout_sec": 1
+        },
+        {
+            "keystrokes": "echo \"check\"\n",
+            "is_blocking": true,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}

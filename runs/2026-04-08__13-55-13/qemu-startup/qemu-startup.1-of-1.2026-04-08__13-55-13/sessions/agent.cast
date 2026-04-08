@@ -1,0 +1,9 @@
+{"version": 2, "width": 160, "height": 40, "timestamp": 1775683344, "env": {"SHELL": "/bin/bash", "TERM": "screen"}}
+[0.00282, "o", "\u001b[?2004hroot@e57831ecdf38:/app# "]
+[2.978811, "i", "clear\r"]
+[2.979059, "o", "clear\r\n\u001b[?2004l\r"]
+[2.981343, "o", "\u001b[H\u001b[J"]
+[2.981538, "o", "\u001b[?2004hroot@e57831ecdf38:/app# "]
+[15.722977, "i", "\u0004"]
+[15.72348, "o", "\u001b[?2004l\r\r\n"]
+[15.723548, "o", "exit\r\n"]

@@ -1,0 +1,40 @@
+mers==3.1.0) (1.5.2)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in /usr/local/lib/python3.10/site-packages (from sympy>=1.13.3->torch>=1.11.0->sentence-transformers==3.1.0) (
+1.3.0)
+Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.10/site-packages (from jinja2->torch>=1.11.0->sentence-transformers==3.1.0) (3.0.3)
+Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.10/site-packages (from requests->huggingface-hub>=0.19.3->sentence-transformer
+s==3.1.0) (3.4.7)
+Requirement already satisfied: certifi>=2023.5.7 in /usr/local/lib/python3.10/site-packages (from requests->huggingface-hub>=0.19.3->sentence-transformers==3.1.
+0) (2026.2.25)
+Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/site-packages (from requests->huggingface-hub>=0.19.3->sentence-transformers==3.1.0) (3
+.11)
+Requirement already satisfied: urllib3<3,>=1.26 in /usr/local/lib/python3.10/site-packages (from requests->huggingface-hub>=0.19.3->sentence-transformers==3.1.0
+) (2.6.3)
+Installing collected packages: numpy, tokenizers, transformers, sentence-transformers
+  Attempting uninstall: numpy
+    Found existing installation: numpy 2.2.6
+    Uninstalling numpy-2.2.6:
+      Successfully uninstalled numpy-2.2.6
+  Attempting uninstall: tokenizers
+    Found existing installation: tokenizers 0.13.3
+    Uninstalling tokenizers-0.13.3:
+      Successfully uninstalled tokenizers-0.13.3
+  Attempting uninstall: transformers
+    Found existing installation: transformers 4.30.0
+    Uninstalling transformers-4.30.0:
+      Successfully uninstalled transformers-4.30.0
+  Attempting uninstall: sentence-transformers
+    Found existing installation: sentence-transformers 2.2.0
+    Uninstalling sentence-transformers-2.2.0:
+      Successfully uninstalled sentence-transformers-2.2.0
+Successfully installed numpy-1.26.4 sentence-transformers-3.1.0 tokenizers-0.22.2 transformers-4.57.6
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a v
+irtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 23.0.1 -> 26.0.1
+[notice] To update, run: pip install --upgrade pip
+root@b858e75d9142:/app# python -m mteb --task STS12 --model all-MiniLM-L6-v2 --output results; tmux wait -S done
+usage: __main__.py [-h] {run,available_tasks,available_benchmarks,create_meta} ...
+__main__.py: error: argument {run,available_tasks,available_benchmarks,create_meta}: invalid choice: 'STS12' (choose from 'run', 'available_tasks', 'available_b
+enchmarks', 'create_meta')
+root@b858e75d9142:/app#

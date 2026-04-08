@@ -1,0 +1,20 @@
+{
+    "id": "51887615-1175-4733-834b-cd179dc4d729",
+    "trial_name": "polyglot-rust-c.1-of-1.2026-04-08__13-59-50",
+    "task_id": "polyglot-rust-c",
+    "instruction": "Write me a single file in /app/main.c.rs which is a polyglot, that is, I can run `rustc main.c.rs && ./main N` or `gcc main.c.rs -o cmain && ./cmain N`. Both of these should print to stdout the kth fibonacci number. f(0) = 0, f(1) = 1.",
+    "is_resolved": false,
+    "failure_mode": "unknown_agent_error",
+    "parser_results": {
+        "test_fibonacci_polyglot": "failed"
+    },
+    "recording_path": "2026-04-08__13-59-50/polyglot-rust-c/polyglot-rust-c.1-of-1.2026-04-08__13-59-50/sessions/agent.cast",
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "trial_started_at": "2026-04-08T21:57:44.662539+00:00",
+    "trial_ended_at": "2026-04-08T21:58:53.434841+00:00",
+    "agent_started_at": "2026-04-08T21:58:35.108162+00:00",
+    "agent_ended_at": "2026-04-08T21:58:35.361994+00:00",
+    "test_started_at": "2026-04-08T21:58:39.219114+00:00",
+    "test_ended_at": "2026-04-08T21:58:50.497379+00:00"
+}

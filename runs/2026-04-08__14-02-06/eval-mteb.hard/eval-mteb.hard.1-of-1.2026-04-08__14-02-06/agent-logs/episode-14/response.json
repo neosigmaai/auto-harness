@@ -1,0 +1,17 @@
+{
+    "state_analysis": "The MTEB library's available tasks and benchmarks are listed, but the STS12 task is not explicitly displayed. This suggests that the task might be categorized under a different name or is not directly available in the list of benchmarks currently accessible through MTEB.",
+    "explanation": "We should explore the documentation or references for MTEB to determine the correct benchmark or task name for STS12. In the meantime, we will attempt to run the 'available_tasks' and 'available_benchmarks' command with the correct prefix to ensure accurate listing.",
+    "commands": [
+        {
+            "keystrokes": "python -m mteb.run available_tasks\n",
+            "is_blocking": true,
+            "timeout_sec": 30
+        },
+        {
+            "keystrokes": "python -m mteb.run available_benchmarks\n",
+            "is_blocking": true,
+            "timeout_sec": 30
+        }
+    ],
+    "is_task_complete": false
+}

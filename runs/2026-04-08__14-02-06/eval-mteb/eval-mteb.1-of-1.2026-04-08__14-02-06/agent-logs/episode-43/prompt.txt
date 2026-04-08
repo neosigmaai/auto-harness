@@ -1,0 +1,40 @@
+   ━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 25/89 [nvidia-nvjitlink]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: nvidia-nccl-cu13
+    Found existing installation: nvidia-nccl-cu13 2.28.9
+    Uninstalling nvidia-nccl-cu13-2.28.9:
+   ━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 26/89 [nvidia-nccl-cu13]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled nvidia-nccl-cu13-2.28.9
+  Attempting uninstall: nvidia-curand
+    Found existing installation: nvidia-curand 10.4.0.35
+    Uninstalling nvidia-curand-10.4.0.35:
+      Successfully uninstalled nvidia-curand-10.4.0.35
+   ━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━━ 27/89 [nvidia-curand]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: nvidia-cufile
+    Found existing installation: nvidia-cufile 1.15.1.6
+    Uninstalling nvidia-cufile-1.15.1.6:
+      Successfully uninstalled nvidia-cufile-1.15.1.6
+  Attempting uninstall: nvidia-cuda-runtime
+    Found existing installation: nvidia-cuda-runtime 13.0.96
+    Uninstalling nvidia-cuda-runtime-13.0.96:
+      Successfully uninstalled nvidia-cuda-runtime-13.0.96
+  Attempting uninstall: nvidia-cuda-nvrtc
+    Found existing installation: nvidia-cuda-nvrtc 13.0.88
+    Uninstalling nvidia-cuda-nvrtc-13.0.88:
+   ━━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━━ 30/89 [nvidia-cuda-nvrtc]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled nvidia-cuda-nvrtc-13.0.88
+  Attempting uninstall: nvidia-cuda-cupti
+    Found existing installation: nvidia-cuda-cupti 13.0.85
+    Uninstalling nvidia-cuda-cupti-13.0.85:
+      Successfully uninstalled nvidia-cuda-cupti-13.0.85
+  Attempting uninstall: nvidia-cublas
+    Found existing installation: nvidia-cublas 13.1.0.3
+    Uninstalling nvidia-cublas-13.1.0.3:
+   ━━━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━ 32/89 [nvidia-cublas]# Continue to wait for the installation to fully complete without interruption.
+   ━━━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━ 32/89 [nvidia-cublas]# Continue to wait for the installation to fully complete.
+      Successfully uninstalled nvidia-cublas-13.1.0.3
+   ━━━━━━━━━━━━━━╺━━━━━━━━━━━━━━━━━━━━━━━━━ 32/89 [nvidia-cublas]# Continue to wait for the installation to fully complete without interruption.
+  Attempting uninstall: numpy
+    Found existing installation: numpy 2.2.6
+    Uninstalling numpy-2.2.6:
+   ━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━ 33/89 [numpy]# Continue to wait for the installation to fully complete.
+

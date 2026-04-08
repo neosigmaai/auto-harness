@@ -1,0 +1,17 @@
+{
+    "state_analysis": "Repeated timeouts on simple directory listing commands suggest there is a persistent issue with either the command execution or the environment setup itself. This might be due to an unresponsive filesystem, a misconfigured terminal, or an incorrect working directory.",
+    "explanation": "Try to change the working directory to the root of the filesystem and list its contents to determine if the current environment is responsive. This can help identify if the issue is localized to the `/app` directory.",
+    "commands": [
+        {
+            "keystrokes": "cd /\n",
+            "is_blocking": true,
+            "timeout_sec": 5
+        },
+        {
+            "keystrokes": "ls -l\n",
+            "is_blocking": true,
+            "timeout_sec": 10
+        }
+    ],
+    "is_task_complete": false
+}

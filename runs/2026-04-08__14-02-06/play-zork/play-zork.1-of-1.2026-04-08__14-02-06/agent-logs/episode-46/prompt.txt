@@ -1,0 +1,40 @@
+ Loud Room                                                                                                                        Score: 45       Moves: 45
+>southwest
+East-West Passage
+
+>east
+Round Room
+This is a circular stone room with passages in all directions. Several of them have unfortunately been blocked by cave-ins.
+
+>north
+North-South Passage
+This is a high north-south passage, which forks to the northeast.
+
+>northeast
+Deep Canyon
+You are on the south edge of a deep canyon. Passages lead off to the east, northwest and southwest. A stairway leads down. You can hear the sound of flowing
+water from below.
+
+>down
+Loud Room
+This is a large room with a ceiling which cannot be detected from the ground. There is a narrow passage from east to west and a stone stairway leading upward.
+The room is deafeningly loud with an undetermined rushing sound. The sound seems to reverberate from all of the walls, making it difficult even to think.
+On the ground is a large platinum bar.
+
+>take platinum bar
+bar bar ...
+
+>west
+Round Room
+
+>east
+Loud Room
+On the ground is a large platinum bar.
+
+>down
+down down ...
+
+>examine platinum bar
+bar bar ...
+
+>

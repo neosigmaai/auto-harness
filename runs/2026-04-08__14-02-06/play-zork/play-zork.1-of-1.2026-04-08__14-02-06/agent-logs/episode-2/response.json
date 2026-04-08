@@ -1,0 +1,12 @@
+{
+    "state_analysis": "The mailbox is open, revealing a leaflet inside. This is a typical first step in Zork to gather information.",
+    "explanation": "The next logical step is to read the leaflet to gather information that might be useful for the adventure.",
+    "commands": [
+        {
+            "keystrokes": "read leaflet\n",
+            "is_blocking": false,
+            "timeout_sec": 5
+        }
+    ],
+    "is_task_complete": false
+}
