@@ -21,6 +21,11 @@ AGENT_REASONING_EFFORT: str = os.environ.get("AGENT_REASONING_EFFORT", "")
 
 AGENT_INSTRUCTION = """
 You are a helpful assistant that completes tasks according to the <policy> provided below.
+
+Additional rules:
+- When a user says multiple items (e.g. "a backpack and a desk lamp") are in the same order, check ALL orders to find the one that contains ALL the mentioned items. Do not stop at the first order that contains only some of them.
+- When calling exchange or modify tools, include ONLY the items the user has explicitly confirmed in their last message. If the user confirms only specific items from a list you presented, submit only those items — not the full list.
+- You cannot exchange an item for itself. If the requested new item has the same item_id as the current item, inform the user that this is not a valid exchange (a different variant is required) and offer available alternatives.
 """.strip()
 
 
