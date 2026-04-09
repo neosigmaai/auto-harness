@@ -1,0 +1,64 @@
+{
+    "lockfile_version": "1.0",
+    "created_at": "2026-04-09T00:52:26.086137-07:00",
+    "invocation": {
+        "command": "tb",
+        "args": [
+            "run",
+            "--agent-import-path",
+            "agent.agent_harbor:HarborAgent",
+            "--model",
+            "openai/gpt-4o",
+            "--dataset-name",
+            "terminal-bench-core",
+            "--dataset-version",
+            "0.1.1",
+            "--n-concurrent",
+            "1",
+            "--output-path",
+            "jobs",
+            "--task-id",
+            "nginx-request-logging"
+        ]
+    },
+    "harness": {
+        "package": "terminal-bench",
+        "version": "0.2.18",
+        "is_editable_installation": false
+    },
+    "agent": {
+        "name": "harness-agent",
+        "import_path": "agent.agent_harbor:HarborAgent",
+        "model_name": "openai/gpt-4o",
+        "extra_kwargs": {
+            "no_rebuild": false,
+            "model_name": "openai/gpt-4o"
+        }
+    },
+    "run_config": {
+        "log_level": "info",
+        "livestream": false,
+        "n_concurrent_trials": 1,
+        "n_attempts": 1,
+        "no_rebuild": false,
+        "cleanup": true,
+        "global_timeout_multiplier": 1.0,
+        "global_agent_timeout_sec": null,
+        "global_test_timeout_sec": null
+    },
+    "dataset": {
+        "name": "terminal-bench-core",
+        "version": "0.1.1",
+        "local_path": null,
+        "task_ids": [
+            "nginx-request-logging"
+        ],
+        "registry_url": null,
+        "local_registry_path": null
+    },
+    "local_config": {
+        "output_path": "jobs",
+        "run_id": "2026-04-09__00-52-25",
+        "upload_results": false
+    }
+}

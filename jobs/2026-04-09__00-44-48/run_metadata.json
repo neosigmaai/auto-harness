@@ -1,0 +1,30 @@
+{
+    "run_id": "2026-04-09__00-44-48",
+    "uuid": "2b8a7486-78b6-4918-8d06-493d0dca0881",
+    "dataset_path": null,
+    "dataset_name": "terminal-bench-core",
+    "dataset_version": "0.1.1",
+    "output_path": "/Users/ruhibatchu/auto-harness/jobs",
+    "agent_name": "harness-agent",
+    "no_rebuild": false,
+    "cleanup": true,
+    "log_level": 20,
+    "task_ids": [
+        "nginx-request-logging"
+    ],
+    "exclude_task_ids": null,
+    "n_tasks": null,
+    "n_concurrent_trials": 1,
+    "n_attempts": 1,
+    "dataset_size": 1,
+    "accuracy": 0.0,
+    "model_name": "openai/gpt-4o",
+    "start_time": "2026-04-09T07:44:48.790383+00:00",
+    "end_time": "2026-04-09T07:45:05.360673+00:00",
+    "commit_hash": "c91b30c80536f892ecbf802bdfc3d58e643fefeb",
+    "username": "ruhibatchu",
+    "s3_bucket": null,
+    "agent_kwargs": null,
+    "pass_at_k": {},
+    "resumed_at": null
+}

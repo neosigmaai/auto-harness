@@ -151,7 +151,7 @@ class TerminalBenchRunner(BenchmarkRunner):
 
         if task_ids:
             for task_id in task_ids:
-                cmd += ["--task-name", task_id]
+                cmd += ["--task-id", task_id]
 
         subprocess.run(cmd, check=True)
 

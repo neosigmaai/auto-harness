@@ -2,8 +2,11 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install git (needed for uv to fetch tau2 from git) and uv
-RUN apt-get update && apt-get install -y --no-install-recommends git \
+# Install git (needed for uv to fetch tau2 from git), uv, and docker CLI
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    && curl -fsSL https://get.docker.com | sh \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir uv
 

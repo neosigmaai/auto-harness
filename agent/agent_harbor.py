@@ -3,44 +3,39 @@
 import json
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 
-from agents import Agent, Runner, function_tool
-from agents.items import (
-    ItemHelpers, MessageOutputItem, ReasoningItem,
-    ToolCallItem, ToolCallOutputItem,
-)
+from agents import Agent, Runner, function_tool, MessageOutputItem, ReasoningItem, ToolCallItem, ToolCallOutputItem, ItemHelpers
+from agents.extensions.models.litellm_model import LitellmModel
 from agents.usage import Usage
-from terminal_bench.agents.base_agent import BaseAgent
-from harbor.environments.base import BaseEnvironment
-from harbor.models.agent.context import AgentContext
+from agent.agent import AGENT_MODEL, MAX_TURNS, SYSTEM_PROMPT
+from terminal_bench.agents.base_agent import BaseAgent, AgentResult
+from terminal_bench.terminal.tmux_session import TmuxSession
 
-from agent.agent import BaseHarnessAgent, HarnessState, AGENT_MODEL, MAX_TURNS, SYSTEM_PROMPT
+def create_tools(session: TmuxSession) -> list:
+    """TerminalBench tools — shell execution via tmux."""
 
-TERMINAL_SYSTEM_PROMPT = SYSTEM_PROMPT
-
-def create_tools(environment: BaseEnvironment) -> list:
     @function_tool
     async def run_shell(command: str) -> str:
-        """Run a shell command. Returns stdout and stderr."""
+        """Run a shell command in the terminal. Returns output."""
         try:
-            result = await environment.exec(command=command, timeout_sec=120)
-            out = result.stdout or ""
-            if result.stderr:
-                out += f"\nSTDERR:\n{result.stderr}" if out else f"STDERR:\n{result.stderr}"
-            return out or "(no output)"
+            session.send_keys([command, "Enter"], block=True, max_timeout_sec=120)
+            output = session.capture_pane()
+            return output or "(no output)"
         except Exception as exc:
             return f"ERROR: {exc}"
 
     return [run_shell]
 
 
-async def run_task(environment: BaseEnvironment, instruction: str) -> tuple[object, int]:
-    tools = create_tools(environment)
+async def run_task(session: TmuxSession, instruction: str) -> tuple[object, int]:
+    """Run the harbor agent on a task using tmux session."""
+    tools = create_tools(session)
     agent = Agent(
         name="harness-agent",
-        instructions=TERMINAL_SYSTEM_PROMPT,
+        instructions=SYSTEM_PROMPT,
         tools=tools,
-        model=AGENT_MODEL,
+        model=LitellmModel(model=f"anthropic/{AGENT_MODEL}" if not AGENT_MODEL.startswith("anthropic/") else AGENT_MODEL),
     )
     t0 = time.time()
     result = await Runner.run(agent, input=instruction, max_turns=MAX_TURNS)
@@ -50,14 +45,11 @@ async def run_task(environment: BaseEnvironment, instruction: str) -> tuple[obje
 
 # ── fixed Harbor adapter boundary ────────────────────────────────
 
-class HarborAgent(BaseAgent, BaseHarnessAgent):
-    """Harbor entry point for TerminalBench."""
+class HarborAgent(BaseAgent):
+    """TerminalBench entry point."""
 
-    SUPPORTS_ATIF = True
-
-    def __init__(self, *args, extra_env: dict[str, str] | None = None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._extra_env = dict(extra_env) if extra_env else {}
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     @staticmethod
     def name() -> str:
@@ -66,28 +58,9 @@ class HarborAgent(BaseAgent, BaseHarnessAgent):
     def version(self) -> str | None:
         return "0.1.0"
 
-    async def setup(self, environment: BaseEnvironment) -> None:
-        pass
-
-    async def run(self, instruction: str, environment: BaseEnvironment, context: AgentContext) -> None:
-        await environment.exec(command="mkdir -p /task")
-        instr_file = self.logs_dir / "instruction.md"
-        instr_file.write_text(instruction)
-        await environment.upload_file(source_path=instr_file, target_path="/task/instruction.md")
-
-        result, duration_ms = await run_task(environment, instruction)
-
-        atif = _to_atif(result, model=AGENT_MODEL, duration_ms=duration_ms)
-        traj_path = self.logs_dir / "trajectory.json"
-        traj_path.write_text(json.dumps(atif, indent=2))
-
-        try:
-            final_metrics = atif.get("final_metrics", {})
-            context.n_input_tokens = final_metrics.get("total_prompt_tokens", 0)
-            context.n_output_tokens = final_metrics.get("total_completion_tokens", 0)
-            context.n_cache_tokens = final_metrics.get("total_cached_tokens", 0)
-        except Exception:
-            pass
+    def perform_task(self, instruction: str, session: TmuxSession,logging_dir: Path | None = None,**kwargs,) -> AgentResult:
+        import asyncio
+        result, duration_ms = asyncio.run(run_task(session, instruction))
 
         usage = Usage()
         for response in result.raw_responses:
@@ -96,6 +69,8 @@ class HarborAgent(BaseAgent, BaseHarnessAgent):
             f"turns={len(result.raw_responses)} duration_ms={duration_ms} "
             f"input={usage.input_tokens} output={usage.output_tokens}"
         )
+
+        return AgentResult(success=True)
 
 
 def _to_atif(result: object, model: str, duration_ms: int = 0) -> dict:

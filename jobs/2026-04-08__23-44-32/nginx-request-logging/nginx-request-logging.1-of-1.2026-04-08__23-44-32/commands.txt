@@ -1,0 +1,3 @@
+['asciinema rec --stdin /logs/agent.cast', 'Enter']
+['clear', 'Enter']
+['C-d']

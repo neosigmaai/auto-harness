@@ -1,0 +1,50 @@
+root@84c8e8c1c379:/app# apt-get install -y nginx 2>&1 | tail -5 && mkdir -p /var/www/html /var/log/nginx /etc/nginx/conf.d; tmux wait -S done
+debconf: falling back to frontend: Teletype
+Setting up nginx (1.22.1-9+deb12u4) ...
+invoke-rc.d: could not determine current runlevel
+invoke-rc.d: policy-rc.d denied execution of start.
+Processing triggers for libc-bin (2.36-9+deb12u9) ...
+root@84c8e8c1c379:/app# cat > /var/www/html/index.html << 'EOF'
+> Welcome to the benchmark webserver
+> EOF; tmux wait -S done
+> cat > /var/www/html/404.html << 'EOF'
+> Page not found - Please check your URL
+> EOF; tmux wait -S done
+> cat > /etc/nginx/conf.d/benchmark-site.conf << 'EOF'
+> # Rate limiting zone: 10 requests/sec per IP, stored in 10MB shared memory
+> limit_req_zone $binary_remote_addr zone=rate_limit:10m rate=10r/s;
+>
+> # Custom detailed log format
+> log_format benchmark_fmt '$time_local $request_method $status "$http_user_agent"';
+>
+> server {
+>     listen 8080;
+>     server_name localhost;
+>
+>     # Document root for static files
+>     root /var/www/html;
+>     index index.html;
+>
+>     # Detailed access log using custom format
+>     access_log /var/log/nginx/benchmark-access.log benchmark_fmt;
+>
+>     # Apply rate limiting to all requests
+>     limit_req zone=rate_limit nodelay;
+>
+>     # Serve static files
+>     location / {
+>         try_files $uri $uri/ =404;
+>     }
+>
+>     # Custom 404 error page
+>     error_page 404 /404.html;
+>     location = /404.html {
+>         internal;
+>     }
+> }
+> EOF; tmux wait -S done
+> echo 'Welcome to the benchmark webserver' > /var/www/html/index.html && echo 'Page not found - Please check your URL' > /var/www/html/404.html; tmux wait -S d
+one
+> ls /var/www/html/; tmux wait -S done
+> pwd; tmux wait -S done
+>

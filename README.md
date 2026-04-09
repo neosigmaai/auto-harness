@@ -2,7 +2,7 @@
 
 > Give a coding agent a benchmark and an agent file. Let it iterate overnight. It reads failures, improves the system prompt and tools, gates every change against a self-maintained eval suite, and repeats.
 
-This repo is a simplified version of our auto-harness agent setup. We demonstrate our system on Tau3 benchmark tasks where the agent’s score improves from 0.56 to 0.78 (~40% jump) while mining failures and auto maintaining live evals. If you are curious to learn more, read the full blog here - https://www.neosigma.ai/blog/self-improving-agentic-systems.
+This repo is a simplified version of our auto-harness agent setup. We demonstrate our system on Tau3 benchmark tasks where the agent's score improves from 0.56 to 0.78 (~40% jump) while mining failures and auto maintaining live evals. If you are curious to learn more, read the full blog here - https://www.neosigma.ai/blog/self-improving-agentic-systems.
 
 The loop is defined in `PROGRAM.md`. The coding agent edits `agent/agent.py` to improve the agent and appends findings to `workspace/learnings.md` after each iteration.
 
@@ -21,6 +21,22 @@ run benchmark → analyze → improve agent/agent.py → gate → record → upd
 - **`workspace/suite.json`** — the regression suite the coding agent maintains
 - **`workspace/learnings.md`** — persistent log of patterns, what worked, and requests to the human
 - **`PROGRAM.md`** — instructions the coding agent follows
+
+### How `benchmark.py` and `agent/` interact
+
+`benchmark.py` is deterministic infrastructure — it never changes. It selects the right agent wrapper based on the `benchmark` field in `experiment_config.yaml` and runs the benchmark, returning `{task_id: reward}`.
+
+`agent/agent.py` is what Claude Code improves. It contains the generic agent loop logic — prompts, state management, tool definitions, turn limits. The benchmark-specific wrappers (`agent_tau.py`, `agent_harbor.py`) import from `agent.py` and plug into their respective frameworks.
+
+```
+benchmark.py (deterministic)         agent/ (Claude Code improves this)
+─────────────────────────────        ──────────────────────────────────
+TauBenchRunner                  →    agent_tau.py (tau2 wrapper)
+                                         imports from agent.py
+TerminalBenchRunner             →    agent_harbor.py (TerminalBench wrapper)
+                                         imports from agent.py
+                                     agent.py (generic base — never changes)
+```
 
 ---
 
@@ -88,6 +104,59 @@ docker compose run autoeval python benchmark.py --domain airline --split test
 
 ---
 
+## Using TerminalBench
+
+[TerminalBench](https://github.com/harbor-framework/terminal-bench) evaluates agents on real terminal tasks — compiling code, setting up servers, debugging systems. It runs each task in an isolated Docker container and scores pass/fail via verification scripts.
+
+Install TerminalBench with required dependencies:
+
+```bash
+uv tool install terminal-bench --with openai-agents --with harbor
+export OPENAI_API_KEY=your-key
+export AGENT_MODEL=gpt-4o
+```
+
+Configure `experiment_config.yaml`:
+
+```yaml
+benchmark: "terminal_bench"
+```
+
+Run a subset of tasks to test:
+
+```bash
+tb run \
+  --agent-import-path agent.agent_harbor:HarborAgent \
+  --model openai/gpt-4o \
+  --dataset-name terminal-bench-core \
+  --dataset-version 0.1.1 \
+  --n-concurrent 1 \
+  --output-path jobs \
+  --task-id nginx-request-logging
+```
+
+Or run via `benchmark.py` (same as tau-bench):
+
+```bash
+docker compose run autoeval python benchmark.py --task-ids nginx-request-logging
+```
+
+---
+
+## Adding a new benchmark
+
+The system is designed to be benchmark-agnostic. Adding a new benchmark requires three steps:
+
+1. **Create `agent/agent_newbenchmark.py`** — a wrapper that extends `BaseHarnessAgent` and the new benchmark's agent interface. Import `SYSTEM_PROMPT`, `AGENT_MODEL`, and `MAX_TURNS` from `agent/agent.py`.
+
+2. **Add a `NewBenchmarkRunner`** to `benchmark.py` — subclass `BenchmarkRunner`, implement `run()` to invoke the benchmark and return `{task_id: reward}`.
+
+3. **Update `experiment_config.yaml`** — set `benchmark: new_benchmark`.
+
+`agent/agent.py` never changes when adding a new benchmark.
+
+---
+
 ## Plugging in your own benchmark
 
 Subclass `BenchmarkRunner` in `benchmark.py`:
@@ -126,7 +195,9 @@ The coding agent self-maintains `workspace/suite.json` — task IDs it must alwa
 
 ```
 agent/agent.py          the agent under optimization — only file the coding agent edits
-benchmark.py            benchmark execution layer (abstract + tau-bench example)
+agent/agent_tau.py      tau-bench wrapper — extends BaseHarnessAgent + tau2's LLMAgent
+agent/agent_harbor.py   TerminalBench wrapper — extends BaseHarnessAgent + TerminalBench's BaseAgent
+benchmark.py            benchmark execution layer (abstract + tau-bench + terminal-bench)
 gating.py               two-step gate, calls benchmark.py
 prepare.py              workspace initialization (run once)
 record.py               appends iteration result to results.tsv
@@ -147,6 +218,8 @@ workspace/
 - **Self-maintained evals.** The coding agent decides which tasks belong in the regression suite — no manual curation needed.
 - **Learnings close the feedback loop.** After each iteration the agent writes `workspace/learnings.md`: what it tried, what worked, what it needs from the human (a missing tool, parallelism in the runner, a subagent for a slow step). Read it at session start to restore context instantly.
 - **Gate everything.** No change is committed without passing both the eval suite and the full test score gate.
+- **Benchmark-agnostic agent base.** `agent/agent.py` contains only generic logic — prompts, state, tool definitions. Benchmark-specific wrappers live in `agent_tau.py` and `agent_harbor.py` and import from `agent.py`. Adding a new benchmark never requires touching `agent.py`.
+- **Benchmarks own their context.** Each `BenchmarkRunner` in `benchmark.py` knows which agent wrapper to use, how to invoke the benchmark, and how to score results. This keeps `benchmark.py` deterministic and `agent/` focused on what Claude Code should improve.
 
 ---
 
