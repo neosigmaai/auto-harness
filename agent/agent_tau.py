@@ -1,7 +1,6 @@
 """Tau-bench wrapper — connects BaseHarnessAgent to tau2."""
 
 from typing import cast
-from dataclasses import dataclass, field
 
 from tau2.agent.base_agent import ValidAgentInputMessage, is_valid_agent_history_message
 from tau2.agent.llm_agent import LLMAgent

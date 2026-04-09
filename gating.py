@@ -178,10 +178,7 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
 
 if __name__ == "__main__":
     cfg = load_config()
-    if "domain" not in cfg:
-        print("ERROR: 'domain' not set in experiment_config.yaml")
-        sys.exit(1)
     # Step 1 uses train split (same tasks as benchmark.py); step 2 uses gate_split (test)
-    cfg = load_config()
+    # make_runners() validates benchmark-specific required fields (e.g. domain for tau_bench)
     train_runner, gate_runner = make_runners(cfg)
     sys.exit(run_gate(train_runner, gate_runner))

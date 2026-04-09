@@ -158,16 +158,32 @@ class TerminalBenchRunner(BenchmarkRunner):
         return self._parse_results()
 
     def _parse_results(self) -> dict[str, float]:
-        """Parse per-task reward files from jobs output directory."""
-        results = {}
-        for task_dir in Path(self.jobs_dir).iterdir():
-            reward_file = task_dir / "logs" / "reward.txt"
-            if reward_file.exists():
-                try:
-                    reward = float(reward_file.read_text().strip())
-                    results[task_dir.name] = reward
-                except ValueError:
-                    results[task_dir.name] = 0.0
+        """Parse TerminalBench results as a mapping of task_id -> reward.
+
+        TerminalBench writes jobs/<run_id>/results.json after each run.
+        Each entry in the ``results`` list has a ``task_id`` and
+        ``is_resolved`` bool; we convert that to 1.0 / 0.0.
+        When a task appears in multiple runs the last run wins.
+        """
+        import json
+
+        jobs_path = Path(self.jobs_dir)
+        if not jobs_path.exists():
+            return {}
+
+        results: dict[str, float] = {}
+        for run_dir in sorted(p for p in jobs_path.iterdir() if p.is_dir()):
+            results_file = run_dir / "results.json"
+            if not results_file.exists():
+                continue
+            try:
+                payload = json.loads(results_file.read_text())
+            except (OSError, json.JSONDecodeError):
+                continue
+            for entry in payload.get("results", []):
+                task_id = entry.get("task_id")
+                if task_id is not None:
+                    results[str(task_id)] = 1.0 if entry.get("is_resolved") else 0.0
         return results
 
 

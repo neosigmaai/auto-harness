@@ -35,7 +35,7 @@ TauBenchRunner                  →    agent_tau.py (tau2 wrapper)
                                          imports from agent.py
 TerminalBenchRunner             →    agent_harbor.py (TerminalBench wrapper)
                                          imports from agent.py
-                                     agent.py (generic base — never changes)
+                                     agent.py (generic base — benchmark-agnostic, improved by Claude Code)
 ```
 
 ---

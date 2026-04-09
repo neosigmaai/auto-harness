@@ -6,6 +6,9 @@ __pycache__/
 .DS_Store
 *.log
 
+# TerminalBench run artifacts (casts, pane captures, results)
+jobs/
+
 # agent working directory (runtime state, not committed)
 workspace/
 

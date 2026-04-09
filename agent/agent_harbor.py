@@ -35,7 +35,7 @@ async def run_task(session: TmuxSession, instruction: str) -> tuple[object, int]
         name="harness-agent",
         instructions=SYSTEM_PROMPT,
         tools=tools,
-        model=LitellmModel(model=f"anthropic/{AGENT_MODEL}" if not AGENT_MODEL.startswith("anthropic/") else AGENT_MODEL),
+        model=LitellmModel(model=AGENT_MODEL),
     )
     t0 = time.time()
     result = await Runner.run(agent, input=instruction, max_turns=MAX_TURNS)
