@@ -238,26 +238,37 @@ class TerminalBenchRunner(BenchmarkRunner):
                 print(f"[benchmark] WARNING: failed to parse {trial_result}: {e}")
                 continue
 
-        # Copy train traces to workspace/traces/train/ for the coding agent
+        # Copy train traces for the coding agent
+        # workspace/traces/baseline/ — immutable first-run traces (never overwritten)
+        # workspace/traces/latest/   — most recent run (overwritten each iteration)
         if self.split == "train":
             import shutil
-            traces_dir = os.path.join("workspace", "traces", "train")
-            os.makedirs(traces_dir, exist_ok=True)
+            latest_dir = os.path.join("workspace", "traces", "latest")
+            baseline_dir = os.path.join("workspace", "traces", "baseline")
+            os.makedirs(latest_dir, exist_ok=True)
             for trial_name in os.listdir(job_dir):
                 trial_dir = os.path.join(job_dir, trial_name)
                 trace_file = os.path.join(trial_dir, "agent", "trace.json")
                 result_file = os.path.join(trial_dir, "result.json")
                 if not os.path.isdir(trial_dir):
                     continue
-                # Extract task name from trial dir (format: taskname__randomid)
                 task_name = trial_name.rsplit("__", 1)[0]
-                dest = os.path.join(traces_dir, task_name)
+                # Always update latest
+                dest = os.path.join(latest_dir, task_name)
                 os.makedirs(dest, exist_ok=True)
                 if os.path.exists(trace_file):
                     shutil.copy2(trace_file, os.path.join(dest, "trace.json"))
                 if os.path.exists(result_file):
                     shutil.copy2(result_file, os.path.join(dest, "result.json"))
-            print(f"[benchmark] train traces updated in {traces_dir}")
+                # Only write baseline if it doesn't exist yet
+                base_dest = os.path.join(baseline_dir, task_name)
+                if not os.path.exists(base_dest):
+                    os.makedirs(base_dest, exist_ok=True)
+                    if os.path.exists(trace_file):
+                        shutil.copy2(trace_file, os.path.join(base_dest, "trace.json"))
+                    if os.path.exists(result_file):
+                        shutil.copy2(result_file, os.path.join(base_dest, "result.json"))
+            print(f"[benchmark] traces: latest/ updated, baseline/ preserved")
 
         return results
 

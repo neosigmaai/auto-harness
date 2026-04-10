@@ -101,11 +101,14 @@ Read the stdout output. Note which tasks failed (task name, reward). Results are
 Read train task traces to understand root cause:
 
 ```
-workspace/traces/train/<task_name>/trace.json    ← full conversation (messages, tool calls, outputs)
-workspace/traces/train/<task_name>/result.json   ← reward, duration, config
+workspace/traces/latest/<task_name>/trace.json      ← most recent run (updated after each benchmark)
+workspace/traces/latest/<task_name>/result.json     ← reward, duration, config
+workspace/traces/baseline/<task_name>/trace.json    ← original baseline run (never overwritten)
 ```
 
-**IMPORTANT: Only read traces in `workspace/traces/train/`.** Test traces are not available. Do not look in `workspace/tbench_jobs/` directly — it contains both train and test data.
+Compare `latest/` vs `baseline/` to see if your changes helped or hurt a specific task.
+
+**IMPORTANT: Only read traces in `workspace/traces/`.** Test traces are not available. Do not look in `workspace/tbench_jobs/` directly.
 
 For each failing task, examine:
 - What commands did the agent run?
@@ -192,7 +195,7 @@ Go to step 1.
 ## Rules
 
 1. **Only edit `agent/agent.py` and `workspace/learnings.md`**
-2. **Only read traces from `workspace/traces/train/`** — never access test traces
+2. **Only read traces from `workspace/traces/latest/`** — never access test traces
 3. **Never skip the gate** — every committed change must pass all three steps
 4. **One hypothesis per iteration** — keep changes small and reversible
 5. **Always update `learnings.md`** — even on failure; the log is your memory
@@ -203,7 +206,7 @@ Go to step 1.
 - **Never modify** `benchmark.py`, `gating.py`, `record.py`, `prepare.py`, `experiment_config.yaml`, or any file in `agent/templates/`, `program_templates/`, `tbench_data/`
 - **Never change** concurrency, timeout, env_provider, or any infrastructure setting
 - **Never install packages** or modify the Python environment
-- **Never read traces from `workspace/tbench_jobs/`** — only use `workspace/traces/train/`
+- **Never read traces from `workspace/tbench_jobs/`** — only use `workspace/traces/latest/`
 - **Never search the web** or fetch any online resources
 - **Never create new files** outside of `agent/agent.py` and `workspace/learnings.md`
 
