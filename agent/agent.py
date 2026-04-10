@@ -176,14 +176,15 @@ class HarnessAgent(BaseAgent):
                     "content": output,
                 })
 
-        # Save full conversation trace for failure analysis
-        trace_path = self.logs_dir / "trace.json"
-        try:
-            with open(trace_path, "w") as f:
-                json.dump(messages, f, indent=2, default=str)
-            self.logger.info(f"Trace saved to {trace_path}")
-        except Exception as e:
-            self.logger.warning(f"Failed to save trace: {e}")
+        # Save full conversation trace for failure analysis (disabled for test splits)
+        if os.environ.get("HARNESS_SAVE_TRACE", "1") == "1":
+            trace_path = self.logs_dir / "trace.json"
+            try:
+                with open(trace_path, "w") as f:
+                    json.dump(messages, f, indent=2, default=str)
+                self.logger.info(f"Trace saved to {trace_path}")
+            except Exception as e:
+                self.logger.warning(f"Failed to save trace: {e}")
 
         # Populate context
         context.n_input_tokens = total_input_tokens

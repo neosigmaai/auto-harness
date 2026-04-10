@@ -183,6 +183,9 @@ class TerminalBenchRunner(BenchmarkRunner):
         env = os.environ.copy()
         repo_root = os.path.dirname(os.path.abspath(__file__))
         env["PYTHONPATH"] = repo_root + os.pathsep + env.get("PYTHONPATH", "")
+        # Disable trace saving for test splits (prevent coding agent from reading test traces)
+        if self.split == "test":
+            env["HARNESS_SAVE_TRACE"] = "0"
 
         # Subprocess timeout: per_task_timeout × number of batches + 5 min buffer
         import math
