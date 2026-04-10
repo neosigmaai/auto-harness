@@ -1,21 +1,37 @@
-# Experiment configuration — copy to experiment_config.yaml and edit before running.
+# Experiment configuration
+#
+# Copy one of the examples below into experiment_config.yaml:
 #
 #   cp experiment_config.yaml.template experiment_config.yaml
+#
+# Then edit to match your setup.
 
-# Model used by the agent under optimization
-agent_model: "gpt-5.4"
+# ═══════════════════════════════════════════════════════════════
+# TERMINAL-BENCH 2.0
+# ═══════════════════════════════════════════════════════════════
+#
+# benchmark: "terminal-bench"
+# agent_model: "gpt-5.4"
+# split: "train"
+# gate_split: "test"
+# env_provider: "e2b"            # "e2b", "daytona", or "docker"
+# max_concurrency: 50            # tasks run in parallel
+# threshold: 0.8                 # regression suite pass rate threshold
+# parallel_gate: true            # run gate steps 1 & 2 in parallel
+#
+# Required env vars: OPENAI_API_KEY, E2B_API_KEY (or DAYTONA_API_KEY)
 
-# Pass rate threshold for the eval suite gate (Step 1 of gating.py)
-threshold: 0.8
-
-# tau-bench domain to run (e.g. "retail", "airline")
-domain: "retail"
-
-# Split used by benchmark.py (typically "train" for iteration, "test" for final eval)
-split: "train"
-
-# Split used by gating.py for the full-benchmark gate
-gate_split: "test"
-
-# Max concurrent tasks during benchmark / gate runs
-max_concurrency: 3
+# ═══════════════════════════════════════════════════════════════
+# TAU-BENCH
+# ═══════════════════════════════════════════════════════════════
+#
+# benchmark: "tau-bench"
+# agent_model: "gpt-5.4"
+# domain: "retail"               # "retail", "airline", "telecom"
+# split: "train"
+# gate_split: "test"
+# max_concurrency: 3
+# threshold: 0.8
+# parallel_gate: true
+#
+# Required env vars: OPENAI_API_KEY, TAU2_DATA_DIR
