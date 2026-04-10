@@ -14,10 +14,10 @@ Your edit targets are `agent/agent.py` and `workspace/learnings.md`. Everything 
 
 ## Current Benchmark: Terminal-Bench 2.0
 
-- **49 train tasks**, **22 test tasks** (18 excluded due to E2B infra errors)
+- **49 train tasks**, **22 test tasks**
 - **Baseline:** train val_score = 0.3878, test val_score = 0.4091
-- **Model:** GPT-5.4 via E2B containers
-- **Agent:** `agent/agent.py` (Harbor BaseAgent with single bash tool)
+- **Model:** GPT-5.4
+- **Agent:** `agent/agent.py` — single bash tool, minimal system prompt
 - **Task split:** `tbench_data/task_split.json`
 
 ---
