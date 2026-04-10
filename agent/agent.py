@@ -1,81 +1,190 @@
-"""HarnessAgent — this is the file the coding agent optimizes."""
+"""
+HarnessAgent for Terminal-Bench 2.0 — starting template.
 
+This file is copied to agent/agent.py before the optimization loop begins.
+The coding agent then edits agent/agent.py freely. This template stays unchanged
+as the baseline for diffing.
+"""
+
+import json
 import os
-from dataclasses import dataclass, field
-from typing import cast
+from pathlib import Path
 
-from tau2.agent.base_agent import ValidAgentInputMessage, is_valid_agent_history_message
-from tau2.agent.llm_agent import LLMAgent
-from tau2.data_model.message import (
-    AssistantMessage,
-    Message,
-    MultiToolMessage,
-    SystemMessage,
-)
-from tau2.utils.llm_utils import generate
+import litellm
+from harbor.agents.base import BaseAgent
+from harbor.environments.base import BaseEnvironment
+from harbor.models.agent.context import AgentContext
 
-if "AGENT_MODEL" not in os.environ:
-    raise RuntimeError("AGENT_MODEL env var is not set")
-AGENT_MODEL: str = os.environ["AGENT_MODEL"]
-AGENT_REASONING_EFFORT: str = os.environ.get("AGENT_REASONING_EFFORT", "")
+MAX_STEPS = 80
+MAX_OUTPUT_CHARS = 8000
+MODEL = os.environ.get("AGENT_MODEL", "gpt-5.4")
 
-AGENT_INSTRUCTION = """
-You are a helpful assistant that completes tasks according to the <policy> provided below.
-""".strip()
+AGENT_INSTRUCTION = """\
+You are an autonomous terminal agent. You are given a task and a Linux container.
+You solve tasks by executing bash commands. Work step by step.
+
+Rules:
+- Read the task carefully before acting.
+- Explore the environment first to understand what you have.
+- Check command output for errors before proceeding.
+- Install missing dependencies as needed.
+- Verify your solution before finishing.
+- When you are done, send a final text message (no tool call) summarizing what you did.
+"""
+
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "bash",
+            "description": "Execute a bash command in the container. Returns stdout and stderr.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {
+                        "type": "string",
+                        "description": "The bash command to execute.",
+                    }
+                },
+                "required": ["command"],
+            },
+        },
+    }
+]
 
 
-@dataclass
-class HarnessState:
-    messages: list[Message] = field(default_factory=list)
+def _truncate(text: str, limit: int = MAX_OUTPUT_CHARS) -> str:
+    """Truncate long output, keeping the beginning and end."""
+    if not text or len(text) <= limit:
+        return text or ""
+    half = limit // 2
+    return (
+        text[:half]
+        + f"\n\n... [{len(text) - limit} chars truncated] ...\n\n"
+        + text[-half:]
+    )
 
 
-class HarnessAgent(LLMAgent):
-    """Agent under optimization."""
+class HarnessAgent(BaseAgent):
+    """Agent under optimization for Terminal-Bench 2.0."""
 
-    @property
-    def system_prompt(self) -> str:
-        if self.domain_policy:
-            return (
-                "<instructions>\n"
-                f"{AGENT_INSTRUCTION}\n"
-                "</instructions>\n"
-                "<policy>\n"
-                f"{self.domain_policy}\n"
-                "</policy>"
-            )
-        return AGENT_INSTRUCTION
+    @staticmethod
+    def name() -> str:
+        return "harness-agent"
 
-    def get_init_state(
-        self, message_history: list[Message] | None = None
-    ) -> HarnessState:
-        if message_history is None:
-            message_history = []
-        assert all(is_valid_agent_history_message(m) for m in message_history)
-        return HarnessState(messages=list(message_history))
+    def version(self) -> str | None:
+        return "0.1.0"
 
-    def generate_next_message(
+    async def setup(self, environment: BaseEnvironment) -> None:
+        pass
+
+    async def run(
         self,
-        message: ValidAgentInputMessage,
-        state: HarnessState,
-    ) -> tuple[AssistantMessage, HarnessState]:
-        if isinstance(message, MultiToolMessage):
-            state.messages.extend(message.tool_messages)
-        else:
-            state.messages.append(message)
+        instruction: str,
+        environment: BaseEnvironment,
+        context: AgentContext,
+    ) -> None:
+        model = self.model_name or MODEL
+        total_input_tokens = 0
+        total_output_tokens = 0
 
-        system = SystemMessage(role="system", content=self.system_prompt)
-        generate_kwargs = (
-            {"reasoning_effort": AGENT_REASONING_EFFORT} if AGENT_REASONING_EFFORT else {}
-        )
-        generate_kwargs.update(self.llm_args)
-        response = cast(
-            AssistantMessage,
-            generate(
-                model=self.llm or AGENT_MODEL,
-                tools=self.tools,
-                messages=[system, *state.messages],
-                **generate_kwargs,
-            ),
-        )
-        state.messages.append(response)
-        return response, state
+        messages = [
+            {"role": "system", "content": AGENT_INSTRUCTION},
+            {"role": "user", "content": f"Task:\n{instruction}"},
+        ]
+
+        for step in range(MAX_STEPS):
+            try:
+                response = await litellm.acompletion(
+                    model=model,
+                    messages=messages,
+                    tools=TOOLS,
+                    tool_choice="auto",
+                )
+            except Exception as e:
+                self.logger.error(f"LLM call failed at step {step}: {e}")
+                break
+
+            usage = response.usage
+            if usage:
+                total_input_tokens += usage.prompt_tokens or 0
+                total_output_tokens += usage.completion_tokens or 0
+
+            choice = response.choices[0]
+            message = choice.message
+
+            # Build the assistant message for history
+            assistant_msg = {"role": "assistant", "content": message.content}
+            if message.tool_calls:
+                assistant_msg["tool_calls"] = [
+                    {
+                        "id": tc.id,
+                        "type": "function",
+                        "function": {
+                            "name": tc.function.name,
+                            "arguments": tc.function.arguments,
+                        },
+                    }
+                    for tc in message.tool_calls
+                ]
+            messages.append(assistant_msg)
+
+            # If the model returned text without tool calls → task complete
+            if not message.tool_calls:
+                self.logger.info(f"Agent declared complete at step {step}")
+                break
+
+            # Execute each tool call
+            for tc in message.tool_calls:
+                if tc.function.name != "bash":
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tc.id,
+                        "content": f"Unknown tool: {tc.function.name}",
+                    })
+                    continue
+
+                try:
+                    args = json.loads(tc.function.arguments)
+                except json.JSONDecodeError:
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tc.id,
+                        "content": "Error: invalid JSON arguments",
+                    })
+                    continue
+
+                command = args.get("command", "")
+                self.logger.info(f"Step {step} | bash: {command[:200]}")
+
+                result = await environment.exec(command, timeout_sec=120)
+
+                output_parts = []
+                if result.stdout:
+                    output_parts.append(result.stdout)
+                if result.stderr:
+                    output_parts.append(f"STDERR:\n{result.stderr}")
+                if result.return_code != 0:
+                    output_parts.append(f"[exit code: {result.return_code}]")
+
+                output = "\n".join(output_parts) if output_parts else "(no output)"
+                output = _truncate(output)
+
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tc.id,
+                    "content": output,
+                })
+
+        # Save full conversation trace for failure analysis
+        trace_path = self.logs_dir / "trace.json"
+        try:
+            with open(trace_path, "w") as f:
+                json.dump(messages, f, indent=2, default=str)
+            self.logger.info(f"Trace saved to {trace_path}")
+        except Exception as e:
+            self.logger.warning(f"Failed to save trace: {e}")
+
+        # Populate context
+        context.n_input_tokens = total_input_tokens
+        context.n_output_tokens = total_output_tokens

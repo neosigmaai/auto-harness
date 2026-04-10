@@ -2,19 +2,10 @@
 Benchmark execution layer.
 
 BenchmarkRunner: abstract base class — subclass to plug in your own benchmark.
-TauBenchRunner:  example implementation for tau-bench (https://github.com/sierra-research/tau2-bench).
+TauBenchRunner:  implementation for tau-bench (https://github.com/sierra-research/tau2-bench).
+TerminalBenchRunner: implementation for Terminal-Bench 2.0 via Harbor framework.
 
 Both gating.py and the coding agent call this directly.
-
-To use a different benchmark (e.g. Harbor), subclass BenchmarkRunner and swap
-the runner in gating.py — the rest of the loop is unchanged. Example:
-
-    class HarborBenchmarkRunner(BenchmarkRunner):
-        def run(self, task_ids=None):
-            # invoke: uv run harbor run -p tasks/ -n 100 ...
-            # parse /logs/reward.txt outputs per task
-            # return {task_id: reward}
-            ...
 """
 
 from __future__ import annotations
@@ -108,10 +99,143 @@ class TauBenchRunner(BenchmarkRunner):
         }
 
 
+class TerminalBenchRunner(BenchmarkRunner):
+    """
+    Runner for Terminal-Bench 2.0 via Harbor framework.
+
+    Invokes `harbor run` as a subprocess and parses per-task results from the
+    output directory.
+
+    Usage:
+        runner = TerminalBenchRunner(split="train")
+        results = runner.run()                                    # full split
+        results = runner.run(task_ids=["cobol-modernization"])    # specific tasks
+    """
+
+    SPLIT_FILE = "tbench_data/task_split.json"
+
+    def __init__(
+        self,
+        agent_model: str | None = None,
+        split: str = "train",
+        env_provider: str = "daytona",
+        n_concurrent: int = 2,
+        dataset: str = "terminal-bench@2.0",
+        agent_import_path: str = "agent.agent:HarnessAgent",
+    ):
+        self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-5.4")
+        self.split = split
+        self.env_provider = env_provider
+        self.n_concurrent = n_concurrent
+        self.dataset = dataset
+        self.agent_import_path = agent_import_path
+
+    def _load_split_tasks(self) -> list[str]:
+        """Load task names for the configured split from the split file."""
+        import json
+
+        if not os.path.exists(self.SPLIT_FILE):
+            raise FileNotFoundError(
+                f"{self.SPLIT_FILE} not found. Run prepare.py first."
+            )
+        with open(self.SPLIT_FILE) as f:
+            splits = json.load(f)
+        tasks = splits.get(self.split)
+        if tasks is None:
+            raise ValueError(
+                f"Split '{self.split}' not found in {self.SPLIT_FILE}. "
+                f"Available: {list(splits.keys())}"
+            )
+        return tasks
+
+    def run(self, task_ids: list[str] | None = None) -> dict[str, float]:
+        import json
+        import subprocess
+        import tempfile
+
+        if task_ids is None:
+            task_ids = self._load_split_tasks()
+
+        # Create a unique output directory for this run
+        jobs_dir = os.path.join("workspace", "tbench_jobs")
+        os.makedirs(jobs_dir, exist_ok=True)
+
+        # Build harbor run command
+        cmd = [
+            "harbor", "run",
+            "-d", self.dataset,
+            "--agent-import-path", self.agent_import_path,
+            "--model", self.agent_model,
+            "--env", self.env_provider,
+            "-n", str(self.n_concurrent),
+            "--jobs-dir", jobs_dir,
+            "-y",
+        ]
+        for tid in task_ids:
+            cmd.extend(["-i", tid])
+
+        # Set PYTHONPATH so Harbor can import the agent module
+        env = os.environ.copy()
+        repo_root = os.path.dirname(os.path.abspath(__file__))
+        env["PYTHONPATH"] = repo_root + os.pathsep + env.get("PYTHONPATH", "")
+
+        # Timeout: (300s per task / concurrency) + 5 min buffer
+        timeout_sec = int((300 * len(task_ids)) / max(self.n_concurrent, 1)) + 300
+        print(f"[benchmark] running {len(task_ids)} terminal-bench tasks "
+              f"(model={self.agent_model}, env={self.env_provider}, "
+              f"n={self.n_concurrent}, timeout={timeout_sec}s)")
+
+        try:
+            result = subprocess.run(
+                cmd, env=env, capture_output=True, text=True, timeout=timeout_sec,
+            )
+            print(result.stdout)
+            if result.stderr:
+                print(result.stderr, file=sys.stderr)
+        except subprocess.TimeoutExpired:
+            print(f"[benchmark] WARNING: harbor run timed out after {timeout_sec}s")
+
+        # Find the job directory (most recent in jobs_dir)
+        job_dirs = sorted(
+            [d for d in os.listdir(jobs_dir)
+             if os.path.isdir(os.path.join(jobs_dir, d))],
+            reverse=True,
+        )
+        if not job_dirs:
+            print("[benchmark] ERROR: no job output found")
+            return {}
+
+        job_dir = os.path.join(jobs_dir, job_dirs[0])
+
+        # Parse per-trial result.json files
+        results = {}
+        for trial_name in os.listdir(job_dir):
+            trial_result = os.path.join(job_dir, trial_name, "result.json")
+            if not os.path.exists(trial_result):
+                continue
+            try:
+                with open(trial_result) as f:
+                    data = json.load(f)
+                task_name = data.get("task_name", trial_name)
+                vr = data.get("verifier_result")
+                if vr and isinstance(vr, dict):
+                    reward = float(vr.get("rewards", {}).get("reward", 0.0))
+                else:
+                    reward = 0.0
+                results[task_name] = reward
+            except (json.JSONDecodeError, KeyError, TypeError) as e:
+                print(f"[benchmark] WARNING: failed to parse {trial_result}: {e}")
+                continue
+
+        return results
+
+
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     import argparse
+    import datetime
+    import json as _json
 
     import yaml
 
@@ -122,23 +246,33 @@ if __name__ == "__main__":
         return {}
 
     cfg = _load_config()
-    if "domain" not in cfg:
-        print("ERROR: 'domain' not set in experiment_config.yaml")
-        sys.exit(1)
+    benchmark = cfg.get("benchmark", "tau-bench")
 
     parser = argparse.ArgumentParser(description="Run benchmark tasks")
     parser.add_argument("--task-ids", nargs="*", help="Task IDs to run (default: all)")
-    parser.add_argument("--domain", default=cfg["domain"])
-    parser.add_argument("--split", default=cfg.get("split", "test"))
+    parser.add_argument("--split", default=cfg.get("split", "train"))
     parser.add_argument("--concurrency", type=int, default=cfg.get("max_concurrency", 3))
     args = parser.parse_args()
 
-    runner = TauBenchRunner(
-        domain=args.domain,
-        agent_model=cfg.get("agent_model"),
-        split=args.split,
-        max_concurrency=args.concurrency,
-    )
+    if benchmark == "terminal-bench":
+        runner = TerminalBenchRunner(
+            agent_model=cfg.get("agent_model"),
+            split=args.split,
+            env_provider=cfg.get("env_provider", "daytona"),
+            n_concurrent=args.concurrency,
+            dataset=cfg.get("dataset", "terminal-bench@2.0"),
+        )
+    else:
+        if "domain" not in cfg:
+            print("ERROR: 'domain' not set in experiment_config.yaml")
+            sys.exit(1)
+        runner = TauBenchRunner(
+            domain=cfg["domain"],
+            agent_model=cfg.get("agent_model"),
+            split=args.split,
+            max_concurrency=args.concurrency,
+        )
+
     results = runner.run(task_ids=args.task_ids)
     val = runner.val_score(results)
 
@@ -147,11 +281,9 @@ if __name__ == "__main__":
         status = "PASS" if reward >= 0.5 else "FAIL"
         print(f"  {status}  {task_id}: {reward:.2f}")
 
-    import datetime
     train_results_path = "workspace/train_results.json"
     os.makedirs("workspace", exist_ok=True)
     with open(train_results_path, "w") as f:
-        import json as _json
         _json.dump({
             "split": args.split,
             "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),

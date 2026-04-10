@@ -1,14 +1,13 @@
 """
-HarnessAgent for Terminal-Bench 2.0 — this is the file the coding agent optimizes.
+HarnessAgent for Terminal-Bench 2.0 — starting template.
 
-Implements Harbor's BaseAgent interface. Uses litellm with native tool calling
-(a single bash tool). The system prompt (AGENT_INSTRUCTION) is the primary
-optimization target.
+This file is copied to agent/agent.py before the optimization loop begins.
+The coding agent then edits agent/agent.py freely. This template stays unchanged
+as the baseline for diffing.
 """
 
 import json
 import os
-import logging
 from pathlib import Path
 
 import litellm
