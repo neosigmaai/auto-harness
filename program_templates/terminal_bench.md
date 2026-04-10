@@ -198,6 +198,15 @@ Go to step 1.
 5. **Always update `learnings.md`** — even on failure; the log is your memory
 6. **Stop when** val_score has not improved for 5 consecutive iterations
 
+## NEVER DO THESE
+
+- **Never modify** `benchmark.py`, `gating.py`, `record.py`, `prepare.py`, `experiment_config.yaml`, or any file in `agent/templates/`, `program_templates/`, `tbench_data/`
+- **Never change** concurrency, timeout, env_provider, or any infrastructure setting
+- **Never install packages** or modify the Python environment
+- **Never read traces from `workspace/tbench_jobs/`** — only use `workspace/traces/train/`
+- **Never search the web** or fetch any online resources
+- **Never create new files** outside of `agent/agent.py` and `workspace/learnings.md`
+
 ---
 
 ## File Formats
