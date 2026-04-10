@@ -15,10 +15,11 @@ import csv
 import json
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor, Future
 
 import yaml
 
-from benchmark import BenchmarkRunner, TauBenchRunner  # swap for your runner
+from benchmark import BenchmarkRunner, TauBenchRunner, TerminalBenchRunner
 
 CONFIG_FILE = "experiment_config.yaml"
 
@@ -63,46 +64,73 @@ def best_val_score() -> float | None:
     return max(scores) if scores else None
 
 
-def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int:
-    suite = load_suite()
-    task_ids: list[str] = suite.get("tasks", [])
-    threshold: float = suite.get("threshold", 0.8)
+def _run_suite_gate(train_runner: BenchmarkRunner, suite: dict) -> tuple[bool, int, dict]:
+    """Step 1: regression suite. Returns (passed, n_passed, results)."""
+    task_ids = suite.get("tasks", [])
+    threshold = suite.get("threshold", 0.8)
 
-    # ── Step 1: Eval suite gate (train split) ─────────────────────────────────
-    if task_ids:
-        print(f"\n[gate] Step 1: eval suite ({len(task_ids)} tasks, threshold={threshold:.0%})")
-        results = train_runner.run(task_ids=task_ids)
-        passed = sum(1 for r in results.values() if r >= 0.5)
-        pass_rate = passed / len(results)
-
-        suite["last_results"] = results
-        save_suite(suite)
-
-        print(f"       {passed}/{len(results)} passed ({pass_rate:.0%})", end="  ")
-        suite_passed = pass_rate >= threshold
-        if suite_passed:
-            print("PASS ✓")
-        else:
-            print("FAIL ✗")
-    else:
+    if not task_ids:
         print("\n[gate] Step 1: eval suite is empty — skipping")
-        passed, results, suite_passed = 0, {}, True
+        return True, 0, {}
 
-    # ── Step 2: Full benchmark gate (test split) — always runs ───────────────
+    print(f"\n[gate] Step 1: eval suite ({len(task_ids)} tasks, threshold={threshold:.0%})")
+    results = train_runner.run(task_ids=task_ids)
+    passed = sum(1 for r in results.values() if r >= 0.5)
+    pass_rate = passed / len(results) if results else 0
+
+    suite["last_results"] = results
+    save_suite(suite)
+
+    suite_passed = pass_rate >= threshold
+    print(f"       {passed}/{len(results)} passed ({pass_rate:.0%})  "
+          f"{'PASS ✓' if suite_passed else 'FAIL ✗'}")
+    return suite_passed, passed, results
+
+
+def _run_test_gate(gate_runner: BenchmarkRunner) -> tuple[bool, float, float | None]:
+    """Step 2: full test benchmark. Returns (passed, val_score, best)."""
     print("\n[gate] Step 2: full benchmark (test split)")
     all_results = gate_runner.run()
     val = gate_runner.val_score(all_results)
     best = best_val_score()
 
-    print(f"       val_score={val:.4f}", end="  ")
     test_passed = best is None or val >= best
     if test_passed:
         suffix = f"(prev best: {best:.4f})" if best is not None else "(first run)"
-        print(f"PASS ✓  {suffix}")
+        print(f"       val_score={val:.4f}  PASS ✓  {suffix}")
     else:
-        print(f"FAIL ✗  (best so far: {best:.4f})")
+        print(f"       val_score={val:.4f}  FAIL ✗  (best so far: {best:.4f})")
+    return test_passed, val, best
+
+
+def run_gate(
+    train_runner: BenchmarkRunner,
+    gate_runner: BenchmarkRunner,
+    parallel: bool = True,
+) -> int:
+    suite = load_suite()
+
+    if parallel and suite.get("tasks"):
+        # Run Steps 1 and 2 in parallel
+        print("\n[gate] Running Steps 1 and 2 in parallel...")
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            suite_future: Future = executor.submit(_run_suite_gate, train_runner, suite)
+            test_future: Future = executor.submit(_run_test_gate, gate_runner)
+            suite_passed, passed, suite_results = suite_future.result()
+            test_passed, val, best = test_future.result()
+    else:
+        # Sequential: skip Step 2 if Step 1 fails
+        suite_passed, passed, suite_results = _run_suite_gate(train_runner, suite)
+        if not suite_passed:
+            threshold = suite.get("threshold", 0.8)
+            pass_rate = passed / len(suite_results) if suite_results else 0
+            print(f"\n[gate] FAILED — eval suite pass rate {pass_rate:.0%} < threshold {threshold:.0%}")
+            return 1
+        test_passed, val, best = _run_test_gate(gate_runner)
 
     if not suite_passed:
+        threshold = suite.get("threshold", 0.8)
+        pass_rate = passed / len(suite_results) if suite_results else 0
         print(f"\n[gate] FAILED — eval suite pass rate {pass_rate:.0%} < threshold {threshold:.0%}")
         return 1
     if not test_passed:
@@ -132,24 +160,54 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
         else:
             print("       all failing train tasks already in suite — nothing to promote")
 
-    print("\n[gate] PASSED ✓  All steps clear.")
+    print(f"\n[gate] PASSED ✓  All steps clear. (val_score={val:.4f})")
     return 0
+
+
+def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
+    """Create train and gate runners based on benchmark config."""
+    benchmark = cfg.get("benchmark", "tau-bench")
+
+    if benchmark == "terminal-bench":
+        train_runner = TerminalBenchRunner(
+            agent_model=cfg.get("agent_model"),
+            split=cfg.get("split", "train"),
+            env_provider=cfg.get("env_provider", "e2b"),
+            n_concurrent=cfg.get("max_concurrency", 50),
+            dataset=cfg.get("dataset", "terminal-bench@2.0"),
+        )
+        gate_runner = TerminalBenchRunner(
+            agent_model=cfg.get("agent_model"),
+            split=cfg.get("gate_split", "test"),
+            env_provider=cfg.get("env_provider", "e2b"),
+            n_concurrent=cfg.get("max_concurrency", 50),
+            dataset=cfg.get("dataset", "terminal-bench@2.0"),
+        )
+    elif benchmark == "tau-bench":
+        if "domain" not in cfg:
+            print("ERROR: 'domain' not set in experiment_config.yaml")
+            sys.exit(1)
+        train_runner = TauBenchRunner(
+            domain=cfg["domain"],
+            agent_model=cfg.get("agent_model"),
+            split=cfg.get("split", "train"),
+            max_concurrency=cfg.get("max_concurrency", 3),
+        )
+        gate_runner = TauBenchRunner(
+            domain=cfg["domain"],
+            agent_model=cfg.get("agent_model"),
+            split=cfg.get("gate_split", "test"),
+            max_concurrency=cfg.get("max_concurrency", 3),
+        )
+    else:
+        print(f"ERROR: unknown benchmark '{benchmark}'")
+        sys.exit(1)
+
+    return train_runner, gate_runner
 
 
 if __name__ == "__main__":
     cfg = load_config()
-    if "domain" not in cfg:
-        print("ERROR: 'domain' not set in experiment_config.yaml")
-        sys.exit(1)
-    # Step 1 uses train split (same tasks as benchmark.py); step 2 uses gate_split (test)
-    train_runner = TauBenchRunner(
-        domain=cfg["domain"],
-        split=cfg.get("split", "train"),
-        max_concurrency=cfg.get("max_concurrency", 3),
-    )
-    gate_runner = TauBenchRunner(
-        domain=cfg["domain"],
-        split=cfg.get("gate_split", "test"),
-        max_concurrency=cfg.get("max_concurrency", 3),
-    )
-    sys.exit(run_gate(train_runner, gate_runner))
+    parallel = cfg.get("parallel_gate", True)
+    train_runner, gate_runner = _create_runners(cfg)
+    sys.exit(run_gate(train_runner, gate_runner, parallel=parallel))
