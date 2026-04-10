@@ -118,10 +118,11 @@ class TerminalBenchRunner(BenchmarkRunner):
         self,
         agent_model: str | None = None,
         split: str = "train",
-        env_provider: str = "daytona",
-        n_concurrent: int = 2,
+        env_provider: str = "e2b",
+        n_concurrent: int = 50,
         dataset: str = "terminal-bench@2.0",
         agent_import_path: str = "agent.agent:HarnessAgent",
+        per_task_timeout: int = 1200,
     ):
         self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-5.4")
         self.split = split
@@ -129,6 +130,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         self.n_concurrent = n_concurrent
         self.dataset = dataset
         self.agent_import_path = agent_import_path
+        self.per_task_timeout = per_task_timeout
 
     def _load_split_tasks(self) -> list[str]:
         """Load task names for the configured split from the split file."""
@@ -161,14 +163,17 @@ class TerminalBenchRunner(BenchmarkRunner):
         os.makedirs(jobs_dir, exist_ok=True)
 
         # Build harbor run command
+        n = min(self.n_concurrent, len(task_ids))
+        agent_timeout_mult = self.per_task_timeout / 180  # Harbor default is 180s
         cmd = [
             "harbor", "run",
             "-d", self.dataset,
             "--agent-import-path", self.agent_import_path,
             "--model", self.agent_model,
             "--env", self.env_provider,
-            "-n", str(self.n_concurrent),
+            "-n", str(n),
             "--jobs-dir", jobs_dir,
+            "--agent-timeout-multiplier", f"{agent_timeout_mult:.2f}",
             "-y",
         ]
         for tid in task_ids:
@@ -179,11 +184,14 @@ class TerminalBenchRunner(BenchmarkRunner):
         repo_root = os.path.dirname(os.path.abspath(__file__))
         env["PYTHONPATH"] = repo_root + os.pathsep + env.get("PYTHONPATH", "")
 
-        # Timeout: (300s per task / concurrency) + 5 min buffer
-        timeout_sec = int((300 * len(task_ids)) / max(self.n_concurrent, 1)) + 300
+        # Subprocess timeout: per_task_timeout × number of batches + 5 min buffer
+        import math
+        n_batches = math.ceil(len(task_ids) / max(n, 1))
+        timeout_sec = self.per_task_timeout * n_batches + 300
         print(f"[benchmark] running {len(task_ids)} terminal-bench tasks "
               f"(model={self.agent_model}, env={self.env_provider}, "
-              f"n={self.n_concurrent}, timeout={timeout_sec}s)")
+              f"n={n}, per_task_timeout={self.per_task_timeout}s, "
+              f"subprocess_timeout={timeout_sec}s)")
 
         try:
             result = subprocess.run(
