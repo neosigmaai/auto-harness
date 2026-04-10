@@ -1,0 +1,8 @@
+benchmark: "terminal-bench"
+agent_model: "gpt-5.4"
+split: "train"
+gate_split: "test"
+env_provider: "e2b"
+max_concurrency: 50
+threshold: 0.8
+parallel_gate: true

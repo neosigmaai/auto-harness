@@ -12,5 +12,6 @@ workspace/
 # local coding agent config
 .claude/
 
-# local experiment config (copy from experiment_config.yaml.template)
-experiment_config.yaml
+# local coding agent runtime data
+auto_harness.egg-info/
+tau2_data/
