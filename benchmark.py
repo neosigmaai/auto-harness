@@ -238,6 +238,27 @@ class TerminalBenchRunner(BenchmarkRunner):
                 print(f"[benchmark] WARNING: failed to parse {trial_result}: {e}")
                 continue
 
+        # Copy train traces to workspace/traces/train/ for the coding agent
+        if self.split == "train":
+            import shutil
+            traces_dir = os.path.join("workspace", "traces", "train")
+            os.makedirs(traces_dir, exist_ok=True)
+            for trial_name in os.listdir(job_dir):
+                trial_dir = os.path.join(job_dir, trial_name)
+                trace_file = os.path.join(trial_dir, "agent", "trace.json")
+                result_file = os.path.join(trial_dir, "result.json")
+                if not os.path.isdir(trial_dir):
+                    continue
+                # Extract task name from trial dir (format: taskname__randomid)
+                task_name = trial_name.rsplit("__", 1)[0]
+                dest = os.path.join(traces_dir, task_name)
+                os.makedirs(dest, exist_ok=True)
+                if os.path.exists(trace_file):
+                    shutil.copy2(trace_file, os.path.join(dest, "trace.json"))
+                if os.path.exists(result_file):
+                    shutil.copy2(result_file, os.path.join(dest, "result.json"))
+            print(f"[benchmark] train traces updated in {traces_dir}")
+
         return results
 
 
