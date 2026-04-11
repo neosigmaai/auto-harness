@@ -132,9 +132,12 @@ class TerminalBenchRunner(BenchmarkRunner):
         self.agent_import_path = agent_import_path
         self.per_task_timeout = per_task_timeout
 
-    def _load_split_tasks(self) -> list[str]:
-        """Load task names for the configured split from the split file."""
+    def _load_split_tasks(self) -> list[str] | None:
+        """Load task names for the configured split. Returns None to run all tasks."""
         import json
+
+        if self.split is None:
+            return None  # run all tasks in the dataset
 
         if not os.path.exists(self.SPLIT_FILE):
             raise FileNotFoundError(
@@ -153,7 +156,6 @@ class TerminalBenchRunner(BenchmarkRunner):
     def run(self, task_ids: list[str] | None = None) -> dict[str, float]:
         import json
         import subprocess
-        import tempfile
 
         if task_ids is None:
             task_ids = self._load_split_tasks()
@@ -163,7 +165,6 @@ class TerminalBenchRunner(BenchmarkRunner):
         os.makedirs(jobs_dir, exist_ok=True)
 
         # Build harbor run command
-        n = min(self.n_concurrent, len(task_ids))
         agent_timeout_mult = self.per_task_timeout / 180  # Harbor default is 180s
         cmd = [
             "harbor", "run",
@@ -171,13 +172,17 @@ class TerminalBenchRunner(BenchmarkRunner):
             "--agent-import-path", self.agent_import_path,
             "--model", self.agent_model,
             "--env", self.env_provider,
-            "-n", str(n),
-            "--jobs-dir", jobs_dir,
             "--agent-timeout-multiplier", f"{agent_timeout_mult:.2f}",
             "-y",
         ]
-        for tid in task_ids:
-            cmd.extend(["-i", tid])
+        if task_ids is not None:
+            n = min(self.n_concurrent, len(task_ids))
+            cmd.extend(["-n", str(n)])
+            for tid in task_ids:
+                cmd.extend(["-i", tid])
+        else:
+            n = self.n_concurrent
+            cmd.extend(["-n", str(n)])
 
         # Set PYTHONPATH so Harbor can import the agent module
         env = os.environ.copy()
@@ -187,11 +192,12 @@ class TerminalBenchRunner(BenchmarkRunner):
         if self.split == "test":
             env["HARNESS_SAVE_TRACE"] = "0"
 
-        # Subprocess timeout: per_task_timeout × number of batches + 5 min buffer
+        # Subprocess timeout: generous for full dataset, computed for splits
         import math
-        n_batches = math.ceil(len(task_ids) / max(n, 1))
+        n_tasks = len(task_ids) if task_ids else 89
+        n_batches = math.ceil(n_tasks / max(n, 1))
         timeout_sec = self.per_task_timeout * n_batches + 300
-        print(f"[benchmark] running {len(task_ids)} terminal-bench tasks "
+        print(f"[benchmark] running {n_tasks} terminal-bench tasks "
               f"(model={self.agent_model}, env={self.env_provider}, "
               f"n={n}, per_task_timeout={self.per_task_timeout}s, "
               f"subprocess_timeout={timeout_sec}s)")

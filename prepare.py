@@ -79,17 +79,7 @@ def check_env_terminal_bench(cfg: dict) -> bool:
         return False
     print(f"[prepare] harbor CLI found: {shutil.which('harbor')}")
 
-    # Check task split exists
-    split_file = "tbench_data/task_split.json"
-    if not os.path.exists(split_file):
-        print(f"[prepare] ERROR: {split_file} not found.")
-        print("          Create the task split before running prepare.py.")
-        return False
-    with open(split_file) as f:
-        split = json.load(f)
-    print(f"[prepare] task split OK: {len(split.get('train', []))} train, "
-          f"{len(split.get('test', []))} test")
-
+    # Task split will be created after baseline run if needed
     return True
 
 
@@ -229,8 +219,41 @@ def copy_program_template(benchmark: str) -> None:
 # ── Baseline run ──────────────────────────────────────────────────────────────
 
 
+SPLIT_FILE = "tbench_data/task_split.json"
+
+
+def generate_terminal_bench_split(results: dict[str, float], seed: int = 42) -> None:
+    """Generate train/test split from baseline results. 70/30 stratified by pass/fail."""
+    import random
+
+    passed = sorted(k for k, v in results.items() if v >= 0.5)
+    failed = sorted(k for k, v in results.items() if v < 0.5)
+
+    random.seed(seed)
+    random.shuffle(passed)
+    random.shuffle(failed)
+
+    train_pass_n = int(len(passed) * 0.7)
+    train_fail_n = int(len(failed) * 0.7)
+    train = sorted(passed[:train_pass_n] + failed[:train_fail_n])
+    test = sorted(passed[train_pass_n:] + failed[train_fail_n:])
+
+    os.makedirs("tbench_data", exist_ok=True)
+    with open(SPLIT_FILE, "w") as f:
+        json.dump({
+            "train": train,
+            "test": test,
+            "metadata": {
+                "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                "total_tasks": len(results),
+                "seed": seed,
+            },
+        }, f, indent=2)
+    print(f"[prepare] task split created: {len(train)} train, {len(test)} test")
+
+
 def run_baseline(cfg: dict) -> None:
-    """Run test benchmark once to establish baseline val_score in results.tsv."""
+    """Run baseline benchmark, generate split if needed, record iteration 0."""
     with open(RESULTS_FILE) as f:
         rows = [line for line in f if line.strip() and not line.startswith("iteration")]
     if rows:
@@ -241,12 +264,37 @@ def run_baseline(cfg: dict) -> None:
 
     if benchmark == "terminal-bench":
         from benchmark import TerminalBenchRunner
-        runner = TerminalBenchRunner(
-            agent_model=cfg.get("agent_model"),
-            split=cfg.get("gate_split", "test"),
-            env_provider=cfg.get("env_provider", "e2b"),
-            n_concurrent=cfg.get("max_concurrency", 50),
-        )
+
+        # First run: all tasks (no split yet) to generate the split
+        if not os.path.exists(SPLIT_FILE):
+            print("[prepare] running ALL terminal-bench tasks to generate train/test split...")
+            all_runner = TerminalBenchRunner(
+                agent_model=cfg.get("agent_model"),
+                split=None,  # run all tasks
+                env_provider=cfg.get("env_provider", "e2b"),
+                n_concurrent=cfg.get("max_concurrency", 50),
+            )
+            all_results = all_runner.run()
+
+            # Filter out infra errors (reward stays 0 but no verifier ran)
+            actual_results = {k: v for k, v in all_results.items() if v is not None}
+            generate_terminal_bench_split(actual_results)
+
+            # Record baseline using the test split score
+            with open(SPLIT_FILE) as f:
+                split = json.load(f)
+            test_results = {k: actual_results.get(k, 0.0) for k in split["test"]}
+            val = sum(test_results.values()) / len(test_results) if test_results else 0.0
+        else:
+            # Split exists — just run the test split for baseline
+            runner = TerminalBenchRunner(
+                agent_model=cfg.get("agent_model"),
+                split=cfg.get("gate_split", "test"),
+                env_provider=cfg.get("env_provider", "e2b"),
+                n_concurrent=cfg.get("max_concurrency", 50),
+            )
+            test_results = runner.run()
+            val = runner.val_score(test_results)
     else:
         from benchmark import TauBenchRunner
         runner = TauBenchRunner(
@@ -255,17 +303,15 @@ def run_baseline(cfg: dict) -> None:
             split=cfg.get("gate_split", "test"),
             max_concurrency=cfg.get("max_concurrency", 3),
         )
+        test_results = runner.run()
+        val = runner.val_score(test_results)
 
-    print("[prepare] running baseline benchmark (this may take a few minutes)...")
-    results = runner.run()
-    val = runner.val_score(results)
     ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
-
     with open(RESULTS_FILE, "a") as f:
         f.write(f"0\t{val:.4f}\tbaseline\t0\t0\t{ts}\n")
 
-    passed = sum(v >= 0.5 for v in results.values())
-    print(f"[prepare] baseline val_score={val:.4f} ({passed}/{len(results)} passed) — recorded as iteration 0")
+    passed = sum(v >= 0.5 for v in test_results.values())
+    print(f"[prepare] baseline val_score={val:.4f} ({passed}/{len(test_results)} passed) — recorded as iteration 0")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
