@@ -74,20 +74,18 @@ def fetch_tau2_data(tau2_data_dir: str) -> bool:
     return True
 
 
-def check_tau2_data() -> bool:
-    """Ensure TAU2_DATA_DIR has the configured domain's task file, cloning if needed."""
-    tau2_data_dir = os.getenv("TAU2_DATA_DIR", "")
+DEFAULT_TAU2_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tau2_data")
 
-    if not tau2_data_dir:
-        print("[prepare] ERROR: TAU2_DATA_DIR is not set.")
-        print("          Set TAU2_DATA_DIR to the path where tau2 data should live.")
-        return False
+
+def check_tau2_data() -> bool:
+    """Ensure tau2 data dir has the configured domain's task file, cloning if needed."""
+    tau2_data_dir = os.getenv("TAU2_DATA_DIR") or DEFAULT_TAU2_DATA_DIR
 
     if not fetch_tau2_data(tau2_data_dir):
         return False
 
     if not os.path.isdir(tau2_data_dir):
-        print(f"[prepare] ERROR: TAU2_DATA_DIR={tau2_data_dir!r} is not a directory.")
+        print(f"[prepare] ERROR: tau2 data dir {tau2_data_dir!r} is not a directory.")
         return False
 
     cfg = load_config()
@@ -100,13 +98,12 @@ def check_tau2_data() -> bool:
     full_path = os.path.join(tau2_data_dir, required_path)
 
     if not os.path.exists(full_path):
-        print(f"[prepare] ERROR: TAU2_DATA_DIR is set but missing expected file:")
+        print(f"[prepare] ERROR: tau2 data missing expected file:")
         print(f"          {full_path}")
-        print(f"          Ensure TAU2_DATA_DIR points to a valid tau2 data directory")
-        print(f"          and that domain={domain!r} is correct in {CONFIG_FILE}.")
+        print(f"          Check that domain={domain!r} is correct in {CONFIG_FILE}.")
         return False
 
-    print(f"[prepare] TAU2_DATA_DIR OK: {tau2_data_dir} (domain={domain})")
+    print(f"[prepare] tau2 data OK: {tau2_data_dir} (domain={domain})")
     return True
 
 
