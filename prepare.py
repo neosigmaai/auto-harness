@@ -1,16 +1,21 @@
 """
 Run once before starting an experiment.
 
-Checks required environment variables, validates TAU2_DATA_DIR, and
-initializes workspace/ files (suite.json, learnings.md, results.tsv).
+Checks required environment variables, validates data/tools for the
+configured benchmark, initializes workspace/ files, copies the correct
+agent template into agent/agent.py, and runs a baseline benchmark.
+
+Supports both tau-bench and terminal-bench.
 """
 
 from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
+from datetime import datetime, timezone
 
 import yaml
 
@@ -21,29 +26,77 @@ RESULTS_FILE = os.path.join(WORKSPACE, "results.tsv")
 TRAIN_RESULTS_FILE = os.path.join(WORKSPACE, "train_results.json")
 CONFIG_FILE = "experiment_config.yaml"
 
-REQUIRED_ENV = ["OPENAI_API_KEY", "TAU2_DATA_DIR"]
-
 
 def load_config() -> dict:
     if not os.path.exists(CONFIG_FILE):
-        return {}
+        print(f"[prepare] ERROR: {CONFIG_FILE} not found.")
+        print(f"          Copy experiment_config.yaml.template to {CONFIG_FILE} and configure it.")
+        sys.exit(1)
     with open(CONFIG_FILE) as f:
         return yaml.safe_load(f) or {}
 
 
-def check_env() -> bool:
-    missing = [k for k in REQUIRED_ENV if not os.getenv(k)]
+# ── Environment checks ───────────────────────────────────────────────────────
+
+
+def check_env_tau_bench(cfg: dict) -> bool:
+    """Check environment for tau-bench."""
+    required = ["OPENAI_API_KEY", "TAU2_DATA_DIR"]
+    missing = [k for k in required if not os.getenv(k)]
     if missing:
-        print(f"[prepare] ERROR: missing env vars: {', '.join(missing)}")
-        print("          Copy .env.example to .env and fill in the values.")
+        print(f"[prepare] ERROR: missing env vars for tau-bench: {', '.join(missing)}")
         return False
     return True
 
 
+def check_env_terminal_bench(cfg: dict) -> bool:
+    """Check environment for terminal-bench."""
+    env_provider = cfg.get("env_provider", "e2b")
+    required = []
+
+    # Need at least one LLM API key
+    model = cfg.get("agent_model", "gpt-5.4")
+    if model.startswith("gemini"):
+        required.append("GEMINI_API_KEY")
+    else:
+        required.append("OPENAI_API_KEY")
+
+    # Need sandbox provider key
+    if env_provider == "e2b":
+        required.append("E2B_API_KEY")
+    elif env_provider == "daytona":
+        required.append("DAYTONA_API_KEY")
+    # docker needs no key
+
+    missing = [k for k in required if not os.getenv(k)]
+    if missing:
+        print(f"[prepare] ERROR: missing env vars for terminal-bench: {', '.join(missing)}")
+        return False
+
+    # Check harbor CLI
+    if shutil.which("harbor") is None:
+        print("[prepare] ERROR: harbor CLI not found. Install with: uv tool install harbor")
+        return False
+    print(f"[prepare] harbor CLI found: {shutil.which('harbor')}")
+
+    # Check task split exists
+    split_file = "tbench_data/task_split.json"
+    if not os.path.exists(split_file):
+        print(f"[prepare] ERROR: {split_file} not found.")
+        print("          Create the task split before running prepare.py.")
+        return False
+    with open(split_file) as f:
+        split = json.load(f)
+    print(f"[prepare] task split OK: {len(split.get('train', []))} train, "
+          f"{len(split.get('test', []))} test")
+
+    return True
+
+
+# ── Tau-bench data ────────────────────────────────────────────────────────────
+
 TAU2_DATA_REPO = "https://github.com/sierra-research/tau2-bench.git"
-# In the tau2-bench repo, data lives under data/tau2/domains/...
-# TAU2_DATA_DIR should point at that data/ directory.
-TAU2_DATA_SUBDIR = "tau2"  # sentinel: data is present when tau2/ exists under TAU2_DATA_DIR
+TAU2_DATA_SUBDIR = "tau2"
 
 
 def fetch_tau2_data(tau2_data_dir: str) -> bool:
@@ -56,14 +109,10 @@ def fetch_tau2_data(tau2_data_dir: str) -> bool:
     os.makedirs(tau2_data_dir, exist_ok=True)
     tmp = os.path.join(tau2_data_dir, "_tau2-bench-tmp")
     try:
-        subprocess.run(
-            ["git", "clone", "--depth", "1", TAU2_DATA_REPO, tmp],
-            check=True,
-        )
-        # copy data/tau2 -> TAU2_DATA_DIR/tau2
+        subprocess.run(["git", "clone", "--depth", "1", TAU2_DATA_REPO, tmp], check=True)
         src = os.path.join(tmp, "data", "tau2")
         if not os.path.isdir(src):
-            print(f"[prepare] ERROR: expected data/tau2 inside cloned repo but not found.")
+            print("[prepare] ERROR: expected data/tau2 inside cloned repo but not found.")
             return False
         os.rename(src, sentinel)
         subprocess.run(["rm", "-rf", tmp], check=True)
@@ -74,43 +123,31 @@ def fetch_tau2_data(tau2_data_dir: str) -> bool:
     return True
 
 
-def check_tau2_data() -> bool:
-    """Ensure TAU2_DATA_DIR has the configured domain's task file, cloning if needed."""
+def check_tau2_data(cfg: dict) -> bool:
+    """Ensure TAU2_DATA_DIR has the configured domain's task file."""
     tau2_data_dir = os.getenv("TAU2_DATA_DIR", "")
-
     if not tau2_data_dir:
         print("[prepare] ERROR: TAU2_DATA_DIR is not set.")
-        print("          Set TAU2_DATA_DIR to the path where tau2 data should live.")
         return False
-
     if not fetch_tau2_data(tau2_data_dir):
         return False
-
-    if not os.path.isdir(tau2_data_dir):
-        print(f"[prepare] ERROR: TAU2_DATA_DIR={tau2_data_dir!r} is not a directory.")
-        return False
-
-    cfg = load_config()
     if "domain" not in cfg:
         print(f"[prepare] ERROR: 'domain' not set in {CONFIG_FILE}.")
-        print(f"          Add 'domain: <your-domain>' to {CONFIG_FILE}.")
         return False
     domain = cfg["domain"]
-    required_path = f"tau2/domains/{domain}/tasks.json"
-    full_path = os.path.join(tau2_data_dir, required_path)
-
+    full_path = os.path.join(tau2_data_dir, f"tau2/domains/{domain}/tasks.json")
     if not os.path.exists(full_path):
-        print(f"[prepare] ERROR: TAU2_DATA_DIR is set but missing expected file:")
-        print(f"          {full_path}")
-        print(f"          Ensure TAU2_DATA_DIR points to a valid tau2 data directory")
-        print(f"          and that domain={domain!r} is correct in {CONFIG_FILE}.")
+        print(f"[prepare] ERROR: missing {full_path}")
         return False
-
     print(f"[prepare] TAU2_DATA_DIR OK: {tau2_data_dir} (domain={domain})")
     return True
 
 
+# ── Workspace init ────────────────────────────────────────────────────────────
+
+
 def init_workspace() -> None:
+    """Create workspace directory and initialize files if they don't exist."""
     os.makedirs(WORKSPACE, exist_ok=True)
 
     if not os.path.exists(SUITE_FILE):
@@ -144,25 +181,82 @@ def init_workspace() -> None:
     print("[prepare] workspace ready.")
 
 
+# ── Agent template ────────────────────────────────────────────────────────────
+
+
+def copy_agent_template(benchmark: str) -> None:
+    """Copy the correct agent template into agent/agent.py."""
+    templates = {
+        "tau-bench": "agent/templates/tau_bench.py",
+        "terminal-bench": "agent/templates/terminal_bench.py",
+    }
+    template = templates.get(benchmark)
+    if not template or not os.path.exists(template):
+        print(f"[prepare] ERROR: no agent template for benchmark '{benchmark}'")
+        sys.exit(1)
+
+    dest = "agent/agent.py"
+    if os.path.exists(dest):
+        # Check if it's already different from the template (agent was edited)
+        with open(template) as f:
+            template_content = f.read()
+        with open(dest) as f:
+            current_content = f.read()
+        if template_content != current_content:
+            print(f"[prepare] agent/agent.py differs from template — preserving (already modified)")
+            return
+
+    shutil.copy2(template, dest)
+    print(f"[prepare] copied {template} → {dest}")
+
+
+def copy_program_template(benchmark: str) -> None:
+    """Copy the correct PROGRAM.md template."""
+    templates = {
+        "tau-bench": "program_templates/tau_bench.md",
+        "terminal-bench": "program_templates/terminal_bench.md",
+    }
+    template = templates.get(benchmark)
+    if not template or not os.path.exists(template):
+        print(f"[prepare] ERROR: no PROGRAM.md template for benchmark '{benchmark}'")
+        sys.exit(1)
+
+    dest = "PROGRAM.md"
+    shutil.copy2(template, dest)
+    print(f"[prepare] copied {template} → {dest}")
+
+
+# ── Baseline run ──────────────────────────────────────────────────────────────
+
+
 def run_baseline(cfg: dict) -> None:
     """Run test benchmark once to establish baseline val_score in results.tsv."""
-    # Check whether results.tsv already has data rows (baseline already recorded).
     with open(RESULTS_FILE) as f:
-        rows = [l for l in f if l.strip() and not l.startswith("iteration")]
+        rows = [line for line in f if line.strip() and not line.startswith("iteration")]
     if rows:
-        print("[prepare] baseline already recorded — skipping test run")
+        print("[prepare] baseline already recorded — skipping")
         return
 
-    from datetime import datetime, timezone
-    from benchmark import TauBenchRunner
+    benchmark = cfg.get("benchmark", "tau-bench")
 
-    print("[prepare] running baseline test benchmark (this may take a few minutes)...")
-    runner = TauBenchRunner(
-        domain=cfg["domain"],
-        agent_model=cfg.get("agent_model"),
-        split=cfg.get("gate_split", "test"),
-        max_concurrency=cfg.get("max_concurrency", 3),
-    )
+    if benchmark == "terminal-bench":
+        from benchmark import TerminalBenchRunner
+        runner = TerminalBenchRunner(
+            agent_model=cfg.get("agent_model"),
+            split=cfg.get("gate_split", "test"),
+            env_provider=cfg.get("env_provider", "e2b"),
+            n_concurrent=cfg.get("max_concurrency", 50),
+        )
+    else:
+        from benchmark import TauBenchRunner
+        runner = TauBenchRunner(
+            domain=cfg["domain"],
+            agent_model=cfg.get("agent_model"),
+            split=cfg.get("gate_split", "test"),
+            max_concurrency=cfg.get("max_concurrency", 3),
+        )
+
+    print("[prepare] running baseline benchmark (this may take a few minutes)...")
     results = runner.run()
     val = runner.val_score(results)
     ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -174,11 +268,36 @@ def run_baseline(cfg: dict) -> None:
     print(f"[prepare] baseline val_score={val:.4f} ({passed}/{len(results)} passed) — recorded as iteration 0")
 
 
+# ── Main ──────────────────────────────────────────────────────────────────────
+
+
 if __name__ == "__main__":
-    if not check_env():
-        sys.exit(1)
-    if not check_tau2_data():
-        sys.exit(1)
     cfg = load_config()
+    benchmark = cfg.get("benchmark", "tau-bench")
+    print(f"[prepare] benchmark: {benchmark}")
+
+    # Check environment
+    if benchmark == "terminal-bench":
+        if not check_env_terminal_bench(cfg):
+            sys.exit(1)
+    elif benchmark == "tau-bench":
+        if not check_env_tau_bench(cfg):
+            sys.exit(1)
+        if not check_tau2_data(cfg):
+            sys.exit(1)
+    else:
+        print(f"[prepare] ERROR: unknown benchmark '{benchmark}'")
+        sys.exit(1)
+
+    # Initialize workspace
     init_workspace()
+
+    # Copy templates
+    copy_agent_template(benchmark)
+    copy_program_template(benchmark)
+
+    # Run baseline
     run_baseline(cfg)
+
+    print(f"\n[prepare] done. Ready to start the optimization loop.")
+    print(f"          Read PROGRAM.md and run: python benchmark.py")
