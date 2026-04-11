@@ -14,3 +14,6 @@ workspace/
 
 # local experiment config (copy from experiment_config.yaml.template)
 experiment_config.yaml
+
+# tau2 data (auto-cloned by prepare.py, not committed)
+tau2_data/

@@ -35,7 +35,7 @@ cd auto-harness
 
 # 2. Set up environment variables
 cp .env.example .env
-# edit .env — set OPENAI_API_KEY and TAU2_DATA_DIR
+# edit .env — set OPENAI_API_KEY
 
 # 3. Configure the experiment
 cp experiment_config.yaml.template experiment_config.yaml
@@ -67,7 +67,7 @@ The agent will read results, diagnose failures, edit `agent/agent.py`, gate the 
 
 tau-bench ([sierra-research/tau2-bench](https://github.com/sierra-research/tau2-bench)) is included as a dependency in `pyproject.toml` and installed automatically during `docker compose build`.
 
-Set `TAU2_DATA_DIR` in your `.env` to point at the tau2 data directory, then configure the domain and split in `experiment_config.yaml`:
+tau2 data is cloned automatically by `prepare.py` on first run into `./tau2_data`. Configure the domain and split in `experiment_config.yaml`:
 
 ```yaml
 domain: "retail"

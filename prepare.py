@@ -21,7 +21,7 @@ RESULTS_FILE = os.path.join(WORKSPACE, "results.tsv")
 TRAIN_RESULTS_FILE = os.path.join(WORKSPACE, "train_results.json")
 CONFIG_FILE = "experiment_config.yaml"
 
-REQUIRED_ENV = ["OPENAI_API_KEY", "TAU2_DATA_DIR"]
+REQUIRED_ENV = ["OPENAI_API_KEY"]
 
 
 def load_config() -> dict:

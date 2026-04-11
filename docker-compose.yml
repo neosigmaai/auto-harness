@@ -14,7 +14,7 @@ services:
       - ./gating.py:/app/gating.py
       - ./prepare.py:/app/prepare.py
       - ./record.py:/app/record.py
-      # Mount tau2 data directory (set TAU2_DATA_DIR in .env)
-      - ${TAU2_DATA_DIR}:/tau2_data
+      # tau2 data — defaults to ./tau2_data, override with TAU2_DATA_DIR in .env
+      - ${TAU2_DATA_DIR:-./tau2_data}:/tau2_data
     stdin_open: true
     tty: true
