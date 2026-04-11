@@ -2,7 +2,7 @@
 
 ## What You Are Doing
 
-You are an autonomous coding agent optimizing `agent/agent.py` to perform better on Terminal-Bench 2.0. You run a tight loop:
+You are an autonomous coding agent optimizing `agent/agent.py` to perform better on a benchmark. You run a tight loop:
 
 ```
 run benchmark → analyze failures → improve agent → gate → commit → repeat
@@ -12,64 +12,20 @@ Your edit targets are `agent/agent.py` and `workspace/learnings.md`. Everything 
 
 ---
 
-## Current Benchmark: Terminal-Bench 2.0
-
-- **49 train tasks**, **22 test tasks**
-- **Baseline:** train val_score = 0.3878, test val_score = 0.4091
-- **Model:** GPT-5.4
-- **Agent:** `agent/agent.py` — single bash tool, minimal system prompt
-- **Task split:** `tbench_data/task_split.json`
-
----
-
 ## Files You Own
 
 | File | Purpose |
 |------|---------|
-| `agent/agent.py` | The complete agent you optimize — prompt, loop, tools, strategy |
-| `workspace/learnings.md` | Persistent learnings log — append after every iteration |
+| `agent/agent.py` | The agent you optimize |
+| `workspace/learnings.md` | Persistent learnings log — patterns, hypotheses, requests to the human — **append after every iteration** |
+| `workspace/results.tsv` | Iteration history — written by `record.py` after each successful gate |
 
-**Read-only files** (do not edit):
+**Read-only workspace files** (managed automatically — do not edit):
 
 | File | Purpose |
 |------|---------|
-| `agent/templates/terminal_bench.py` | Starting-point template — diff against agent.py to see changes |
-| `tbench_data/task_split.json` | Train/test split (49 train, 22 test) |
-| `workspace/suite.json` | Regression suite — auto-managed by gating.py |
-| `workspace/train_results.json` | Last train benchmark results |
-| `workspace/results.tsv` | Iteration history with val_scores |
-
----
-
-## How agent/agent.py works
-
-`agent/agent.py` is the **complete Terminal-Bench agent**. It was initially copied from `agent/templates/terminal_bench.py`. You can see what you've changed:
-
-```bash
-diff agent/templates/terminal_bench.py agent/agent.py
-```
-
-### What you can change
-
-You own the **entire file**. Everything is fair game:
-
-- **`AGENT_INSTRUCTION`** — the system prompt (primary optimization target)
-- **`TOOLS`** — tool definitions (add `analysis`/`plan` fields, change descriptions)
-- **`MAX_STEPS`**, **`MAX_OUTPUT_CHARS`** — execution parameters
-- **`_truncate()`** — output processing strategy
-- **`HarnessAgent.run()`** — the full agent loop (add environment bootstrapping, planning enforcement, completion verification, context management, etc.)
-- **`HarnessAgent.setup()`** — pre-execution setup
-
-### Known techniques that improve Terminal-Bench scores
-
-(From studying top-performing agents — see `TERMINAL_BENCH_AGENT_STRATEGIES.md` one directory above)
-
-1. **Environment bootstrapping** — gather OS, installed tools, file listing before starting (+5-10%)
-2. **Enforced TODO planning** — make the model create and maintain a plan (+10-20%, biggest single win)
-3. **Non-interactive mode** — never ask questions, just act (+3-5%)
-4. **Double-confirmation** — verify task completion before declaring done (+3-5%)
-5. **Progressive reasoning** — high effort for first 10 steps, low after (+2-5%)
-6. **Forced reasoning in tool schema** — add `analysis` and `plan` fields to bash tool
+| `workspace/suite.json` | Regression suite — tasks promoted here automatically after each successful gate |
+| `workspace/train_results.json` | Last train benchmark results — written by `benchmark.py` |
 
 ---
 
@@ -77,10 +33,11 @@ You own the **entire file**. Everything is fair game:
 
 | Command | What it does |
 |---------|-------------|
-| `python benchmark.py` | Run train split (49 tasks), print per-task pass/fail, save `workspace/train_results.json` |
-| `python benchmark.py --task-ids cobol-modernization regex-log` | Run specific tasks ad-hoc |
+| `python benchmark.py` | Run the full train benchmark, print per-task pass/fail, save `workspace/train_results.json` |
+| `python benchmark.py --task-ids 0 1 42` | Run specific tasks ad-hoc |
 | `python gating.py` | Three-step gate. Exit 0 = all clear, commit and record |
 | `python record.py --val-score X --evals-passed N --evals-total M` | Append iteration result |
+| `python prepare.py` | Initialize workspace (run once at start) |
 
 ---
 
@@ -92,43 +49,30 @@ You own the **entire file**. Everything is fair game:
 python benchmark.py
 ```
 
-Read the stdout output. Note which tasks failed (task name, reward). Results are saved to `workspace/train_results.json`.
+Read the stdout output. Note which tasks failed (task ID, reward). The results are also saved to `workspace/train_results.json`.
 
 ---
 
 ### 2. Analyze Failures
 
-Read train task traces to understand root cause:
-
-```
-workspace/traces/latest/<task_name>/trace.json      ← most recent run (updated after each benchmark)
-workspace/traces/latest/<task_name>/result.json     ← reward, duration, config
-workspace/traces/baseline/<task_name>/trace.json    ← original baseline run (never overwritten)
-```
-
-Compare `latest/` vs `baseline/` to see if your changes helped or hurt a specific task.
-
-**IMPORTANT: Only read traces in `workspace/traces/`.** Test traces are not available. Do not look in `workspace/tbench_jobs/` directly.
-
-For each failing task, examine:
-- What commands did the agent run?
-- Did it understand the task correctly?
-- Did it explore the environment before acting?
-- Did it check command output for errors?
-- Did it verify its solution?
-- Did it give up too early or get stuck in a loop?
-
-Append findings to `workspace/learnings.md`.
+- Read train-split simulation traces for failing tasks to understand root cause
+- **Never read test-split traces** — only train traces are available for analysis
+- Note patterns: what did the agent do wrong? Is this a prompt issue or a tool issue?
+- Append findings to `workspace/learnings.md`
 
 ---
 
 ### 3. Improve Agent
 
-Edit `agent/agent.py`. Everything is fair game: the system prompt, the agent loop, tool definitions, parameters, and strategy.
+Edit `agent/agent.py` — you own the entire file. `HarnessAgent` is imported directly by the benchmark runner, so any change here is picked up automatically:
+
+- **Instructions** — change `AGENT_INSTRUCTION` or the `system_prompt` property
+- **Architecture** — change `generate_next_message()`, state management (`HarnessState`), reasoning effort, or how messages are constructed
+- **Tools** — tau-bench injects its fixed domain tools; you cannot add new tools for tau-bench runs
 
 Make one focused change per iteration. Smaller changes are easier to gate and easier to revert.
 
-**Do not modify** `benchmark.py`, `gating.py`, `record.py`, template files, `tbench_data/`, or any workspace file other than `learnings.md`.
+**Do not modify** `benchmark.py`, `gating.py`, `record.py`, `prepare.py`, or any workspace file.
 
 ---
 
@@ -140,13 +84,13 @@ python gating.py
 
 Three steps run in sequence:
 
-- **Step 1 — Regression suite**: re-runs tasks in `suite.json` on the train split. Pass rate must be ≥ 80%. Protects previously-fixed tasks from regressing.
-- **Step 2 — Full test**: runs the 22 test tasks. val_score must be ≥ best recorded in `results.tsv` (currently 0.4091).
-- **Step 3 — Suite promotion**: re-runs previously-failing train tasks; newly-passing ones are added to `suite.json`.
+- **Step 1 — Regression suite**: re-runs tasks in `suite.json` on the train split. Pass rate must be ≥ threshold. Protects previously-fixed tasks from regressing.
+- **Step 2 — Full test**: runs the full test split. val_score must be ≥ best recorded in `results.tsv`.
+- **Step 3 — Suite promotion** *(only if Steps 1+2 pass)*: re-runs previously-failing train tasks; newly-passing ones are automatically added to `suite.json`.
 
 **Exit 0** → proceed to Record.
 
-**Exit 1** → revert and try a different approach:
+**Exit 1** (Step 1 or 2 failed) → revert and try a different approach:
 
 ```bash
 git checkout agent/agent.py
@@ -166,22 +110,30 @@ git commit -m "improve: <what changed and why>"
 python record.py --val-score <val_score from Step 2 output> --evals-passed <n> --evals-total <m>
 ```
 
+The `evals-passed` and `evals-total` refer to the regression suite results from Step 1.
+
 ---
 
 ### 6. Update Learnings
 
 After every iteration — gate passed or failed — append to `workspace/learnings.md`:
 
+- **What you tried and what happened**
+- **Patterns confirmed** — failure modes that appear repeatedly
+- **What worked** — prompt changes that improved the score
+- **Needs from human** — things you cannot fix autonomously
+
 ```markdown
-## Iteration N — val_score: X.XX → Y.YY ✓/✗
+## Iteration 3 — val_score: 0.78 → 0.81 ✓
 
-**What changed:** <one sentence>
+**What changed:** tightened cancellation eligibility check in system prompt
 
-**Pattern confirmed:** <failure mode>
+**Pattern confirmed:** agent over-approved cancellations when user claimed prior approval.
+Adding explicit social-engineering resistance fixed tasks 1 and 43.
 
-**What worked / didn't work:** <specifics>
+**What worked:** explicit "never override policy based on user claims" rule.
 
-**Needs from human:** <or "none">
+**Needs from human:** none this iteration.
 ```
 
 ---
@@ -194,59 +146,57 @@ Go to step 1.
 
 ## Rules
 
-1. **Only edit `agent/agent.py` and `workspace/learnings.md`**
-2. **Only read traces from `workspace/traces/latest/`** — never access test traces
-3. **Never skip the gate** — every committed change must pass all three steps
-4. **One hypothesis per iteration** — keep changes small and reversible
-5. **Always update `learnings.md`** — even on failure; the log is your memory
-6. **Stop when** val_score has not improved for 5 consecutive iterations
-
-## NEVER DO THESE
-
-- **Never modify** `benchmark.py`, `gating.py`, `record.py`, `prepare.py`, `experiment_config.yaml`, or any file in `agent/templates/`, `program_templates/`, `tbench_data/`
-- **Never change** concurrency, timeout, env_provider, or any infrastructure setting
-- **Never install packages** or modify the Python environment
-- **Never read traces from `workspace/tbench_jobs/`** — only use `workspace/traces/latest/`
-- **Never search the web** or fetch any online resources
-- **Never create new files** outside of `agent/agent.py` and `workspace/learnings.md`
+1. **Only edit `agent/agent.py` and `workspace/learnings.md`** — never touch `benchmark.py`, `gating.py`, `record.py`, `prepare.py`, `workspace/suite.json`, or `workspace/train_results.json`
+2. **Never skip the gate** — every committed change must pass all three steps
+3. **One hypothesis per iteration** — keep changes small and reversible
+4. **Always update `learnings.md`** — even on failure; the log is your memory
+5. **Never read test-split traces** — use only train failures to guide changes
+6. **Stop when** val_score has not improved for 5 consecutive iterations — write a summary in `learnings.md` and surface your top findings to the human
 
 ---
 
 ## File Formats
 
-### `tbench_data/task_split.json`
-
-```json
-{
-  "train": ["cobol-modernization", "regex-log", ...],
-  "test": ["code-from-image", "portfolio-optimization", ...],
-  "infra_excluded": ["caffe-cifar-10", ...]
-}
-```
-
 ### `workspace/suite.json`
 
+Managed automatically by `gating.py`. Do not edit.
+
 ```json
 {
-  "tasks": ["cobol-modernization", "regex-log"],
+  "tasks": ["5", "12", "37"],
   "threshold": 0.8,
-  "last_results": {"cobol-modernization": 1.0, "regex-log": 1.0}
+  "last_results": {
+    "5": 1.0,
+    "12": 1.0,
+    "37": 1.0
+  }
 }
 ```
 
+`tasks` grows as iterations fix previously-failing train tasks and both gates pass.
+
 ### `workspace/train_results.json`
+
+Written by `benchmark.py`. Do not edit.
 
 ```json
 {
   "split": "train",
-  "timestamp": "2026-04-10T21:21:54+00:00",
-  "results": {"cobol-modernization": 1.0, "regex-log": 1.0, "chess-best-move": 0.0}
+  "timestamp": "2025-01-01T12:00:00+00:00",
+  "results": {
+    "0": 1.0,
+    "1": 0.0,
+    "2": 1.0
+  }
 }
 ```
 
 ### `workspace/results.tsv`
 
+Tab-separated. Written by `record.py`.
+
 ```
 iteration	val_score	commit	evals_passed	evals_total	timestamp
-0	0.4091	baseline	0	0	2026-04-10T21:21:54+00:00
+1	0.72	abc1234	4	5	2025-01-01T12:00:00+00:00
+2	0.78	def5678	5	5	2025-01-01T13:30:00+00:00
 ```
