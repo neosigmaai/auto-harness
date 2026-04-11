@@ -212,15 +212,19 @@ class TerminalBenchRunner(BenchmarkRunner):
         except subprocess.TimeoutExpired:
             print(f"[benchmark] WARNING: harbor run timed out after {timeout_sec}s")
 
-        # Find the job directory (most recent in jobs_dir)
-        job_dirs = sorted(
-            [d for d in os.listdir(jobs_dir)
-             if os.path.isdir(os.path.join(jobs_dir, d))],
-            reverse=True,
-        )
-        if not job_dirs:
+        # Find the job directory (most recently modified in jobs_dir)
+        all_dirs = [
+            d for d in os.listdir(jobs_dir)
+            if os.path.isdir(os.path.join(jobs_dir, d))
+        ]
+        if not all_dirs:
             print("[benchmark] ERROR: no job output found")
             return {}
+        job_dirs = sorted(
+            all_dirs,
+            key=lambda d: os.path.getmtime(os.path.join(jobs_dir, d)),
+            reverse=True,
+        )
 
         job_dir = os.path.join(jobs_dir, job_dirs[0])
 
