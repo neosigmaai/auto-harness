@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 
@@ -55,22 +56,25 @@ def fetch_tau2_data(tau2_data_dir: str) -> bool:
     print(f"[prepare] tau2 data not found at {tau2_data_dir} — cloning from {TAU2_DATA_REPO} ...")
     os.makedirs(tau2_data_dir, exist_ok=True)
     tmp = os.path.join(tau2_data_dir, "_tau2-bench-tmp")
+    # Remove stale tmp left by a previously interrupted clone.
+    if os.path.exists(tmp):
+        shutil.rmtree(tmp)
     try:
         subprocess.run(
             ["git", "clone", "--depth", "1", TAU2_DATA_REPO, tmp],
             check=True,
         )
-        # copy data/tau2 -> TAU2_DATA_DIR/tau2
         src = os.path.join(tmp, "data", "tau2")
         if not os.path.isdir(src):
             print(f"[prepare] ERROR: expected data/tau2 inside cloned repo but not found.")
             return False
         os.rename(src, sentinel)
-        subprocess.run(["rm", "-rf", tmp], check=True)
         print(f"[prepare] tau2 data ready at {tau2_data_dir}")
-    except subprocess.CalledProcessError as e:
-        print(f"[prepare] ERROR: failed to clone tau2 data: {e}")
+    except (subprocess.CalledProcessError, OSError) as e:
+        print(f"[prepare] ERROR: failed to fetch tau2 data: {e}")
         return False
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
     return True
 
 
