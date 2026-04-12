@@ -56,10 +56,10 @@ def fetch_tau2_data(tau2_data_dir: str) -> bool:
     print(f"[prepare] tau2 data not found at {tau2_data_dir} — cloning from {TAU2_DATA_REPO} ...")
     os.makedirs(tau2_data_dir, exist_ok=True)
     tmp = os.path.join(tau2_data_dir, "_tau2-bench-tmp")
-    # Remove stale tmp left by a previously interrupted clone.
-    if os.path.exists(tmp):
-        shutil.rmtree(tmp)
     try:
+        # Remove stale tmp left by a previously interrupted clone.
+        if os.path.exists(tmp):
+            shutil.rmtree(tmp)
         subprocess.run(
             ["git", "clone", "--depth", "1", TAU2_DATA_REPO, tmp],
             check=True,
