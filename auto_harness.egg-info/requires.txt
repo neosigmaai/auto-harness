@@ -1,7 +1,0 @@
-mini-swe-agent
-openai
-pyyaml
-tau2
-
-[swe]
-swebench>=2.0.0

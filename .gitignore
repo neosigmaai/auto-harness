@@ -49,3 +49,4 @@ testing/results/
 
 data/tau2/
 auto-harness/data/tau2
+*.egg-info/
