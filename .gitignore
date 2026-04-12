@@ -17,4 +17,6 @@ experiment_config.yaml
 
 # build/data artifacts
 auto_harness.egg-info/
+
+# tau2 data (auto-cloned by prepare.py, not committed)
 tau2_data/

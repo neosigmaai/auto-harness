@@ -73,7 +73,7 @@ cd auto-harness
 
 # 2. Set up environment variables
 cp .env.example .env
-# edit .env — set OPENAI_API_KEY and TAU2_DATA_DIR
+# edit .env — set OPENAI_API_KEY
 
 # 3. Configure the experiment
 cp experiment_config.yaml.template experiment_config.yaml

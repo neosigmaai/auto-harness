@@ -14,7 +14,9 @@ services:
       - ./gating.py:/app/gating.py
       - ./prepare.py:/app/prepare.py
       - ./record.py:/app/record.py
-      # Mount tau2 data directory (set TAU2_DATA_DIR in .env)
-      - ${TAU2_DATA_DIR}:/tau2_data
+      # TAU2_DATA_DIR has two layers: the host-side substitution here controls which
+      # directory is mounted; the container always sees it as /tau2_data (set above
+      # in environment:). To use a different data directory, set TAU2_DATA_DIR in .env.
+      - ${TAU2_DATA_DIR:-./tau2_data}:/tau2_data
     stdin_open: true
     tty: true

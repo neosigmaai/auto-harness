@@ -26,7 +26,6 @@ RESULTS_FILE = os.path.join(WORKSPACE, "results.tsv")
 TRAIN_RESULTS_FILE = os.path.join(WORKSPACE, "train_results.json")
 CONFIG_FILE = "experiment_config.yaml"
 
-
 def load_config() -> dict:
     if not os.path.exists(CONFIG_FILE):
         print(f"[prepare] ERROR: {CONFIG_FILE} not found.")
@@ -99,27 +98,39 @@ def fetch_tau2_data(tau2_data_dir: str) -> bool:
     os.makedirs(tau2_data_dir, exist_ok=True)
     tmp = os.path.join(tau2_data_dir, "_tau2-bench-tmp")
     try:
-        subprocess.run(["git", "clone", "--depth", "1", TAU2_DATA_REPO, tmp], check=True)
+        # Remove stale tmp left by a previously interrupted clone.
+        if os.path.exists(tmp):
+            shutil.rmtree(tmp)
+        subprocess.run(
+            ["git", "clone", "--depth", "1", TAU2_DATA_REPO, tmp],
+            check=True,
+        )
         src = os.path.join(tmp, "data", "tau2")
         if not os.path.isdir(src):
             print("[prepare] ERROR: expected data/tau2 inside cloned repo but not found.")
             return False
         os.rename(src, sentinel)
-        subprocess.run(["rm", "-rf", tmp], check=True)
         print(f"[prepare] tau2 data ready at {tau2_data_dir}")
-    except subprocess.CalledProcessError as e:
-        print(f"[prepare] ERROR: failed to clone tau2 data: {e}")
+    except (subprocess.CalledProcessError, OSError) as e:
+        print(f"[prepare] ERROR: failed to fetch tau2 data: {e}")
         return False
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
     return True
 
 
+DEFAULT_TAU2_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tau2_data")
+
+
 def check_tau2_data(cfg: dict) -> bool:
-    """Ensure TAU2_DATA_DIR has the configured domain's task file."""
-    tau2_data_dir = os.getenv("TAU2_DATA_DIR", "")
-    if not tau2_data_dir:
-        print("[prepare] ERROR: TAU2_DATA_DIR is not set.")
-        return False
+    """Ensure tau2 data dir has the configured domain's task file, cloning if needed."""
+    tau2_data_dir = os.getenv("TAU2_DATA_DIR") or DEFAULT_TAU2_DATA_DIR
+
     if not fetch_tau2_data(tau2_data_dir):
+        return False
+
+    if not os.path.isdir(tau2_data_dir):
+        print(f"[prepare] ERROR: tau2 data dir {tau2_data_dir!r} is not a directory.")
         return False
     if "domain" not in cfg:
         print(f"[prepare] ERROR: 'domain' not set in {CONFIG_FILE}.")
@@ -127,9 +138,12 @@ def check_tau2_data(cfg: dict) -> bool:
     domain = cfg["domain"]
     full_path = os.path.join(tau2_data_dir, f"tau2/domains/{domain}/tasks.json")
     if not os.path.exists(full_path):
-        print(f"[prepare] ERROR: missing {full_path}")
+        print(f"[prepare] ERROR: tau2 data missing expected file:")
+        print(f"          {full_path}")
+        print(f"          Check that domain={domain!r} is correct in {CONFIG_FILE}.")
         return False
-    print(f"[prepare] TAU2_DATA_DIR OK: {tau2_data_dir} (domain={domain})")
+
+    print(f"[prepare] tau2 data OK: {tau2_data_dir} (domain={domain})")
     return True
 
 
