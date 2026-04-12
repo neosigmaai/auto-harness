@@ -175,6 +175,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             env_provider=cfg.get("env_provider", "e2b"),
             n_concurrent=cfg.get("max_concurrency", 50),
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
+            jobs_dir="workspace/tbench_jobs/train",
         )
         gate_runner = TerminalBenchRunner(
             agent_model=cfg.get("agent_model"),
@@ -182,6 +183,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             env_provider=cfg.get("env_provider", "e2b"),
             n_concurrent=cfg.get("max_concurrency", 50),
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
+            jobs_dir="workspace/tbench_jobs/test",
         )
     elif benchmark == "tau-bench":
         if "domain" not in cfg:

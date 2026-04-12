@@ -12,14 +12,17 @@ from __future__ import annotations
 
 import os
 import sys
+import threading
 from abc import ABC, abstractmethod
+
+_registry_lock = threading.Lock()
 
 
 class BenchmarkRunner(ABC):
     """Abstract benchmark runner. Subclass and implement `run` to plug in your own benchmark."""
 
     @abstractmethod
-    def run(self, task_ids: list[str] | None = None) -> dict[str, float]:
+    def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
         """
         Run the benchmark on the given tasks.
 
@@ -27,14 +30,16 @@ class BenchmarkRunner(ABC):
             task_ids: specific task IDs to run. None runs the full benchmark.
 
         Returns:
-            Mapping of task_id -> reward (float in [0.0, 1.0]).
+            Mapping of task_id -> reward (float in [0.0, 1.0]), or None if the
+            task could not be evaluated due to an infrastructure error.
         """
 
-    def val_score(self, results: dict[str, float]) -> float:
-        """Mean reward across all results."""
-        if not results:
+    def val_score(self, results: dict[str, float | None]) -> float:
+        """Mean reward across all results, excluding infra errors (None values)."""
+        valid = [v for v in results.values() if v is not None]
+        if not valid:
             return 0.0
-        return sum(results.values()) / len(results)
+        return sum(valid) / len(valid)
 
 
 class TauBenchRunner(BenchmarkRunner):
@@ -78,8 +83,9 @@ class TauBenchRunner(BenchmarkRunner):
                 llm_args=kwargs.get("llm_args"),
             )
 
-        if registry.get_agent_factory("custom_agent") is None:
-            registry.register_agent_factory(_create_harness_agent, "custom_agent")
+        with _registry_lock:
+            if registry.get_agent_factory("custom_agent") is None:
+                registry.register_agent_factory(_create_harness_agent, "custom_agent")
 
         config = TextRunConfig(
             domain=self.domain,
@@ -123,6 +129,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         dataset: str = "terminal-bench@2.0",
         agent_import_path: str = "agent.agent:HarnessAgent",
         per_task_timeout: int = 1200,
+        jobs_dir: str = "workspace/tbench_jobs",
     ):
         self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-5.4")
         self.split = split
@@ -131,6 +138,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         self.dataset = dataset
         self.agent_import_path = agent_import_path
         self.per_task_timeout = per_task_timeout
+        self.jobs_dir = jobs_dir
 
     def _load_split_tasks(self) -> list[str] | None:
         """Load task names for the configured split. Returns None to run all tasks."""
@@ -160,8 +168,8 @@ class TerminalBenchRunner(BenchmarkRunner):
         if task_ids is None:
             task_ids = self._load_split_tasks()
 
-        # Create a unique output directory for this run
-        jobs_dir = os.path.join("workspace", "tbench_jobs")
+        # Output directory for harbor job results (harbor creates one subdirectory per job)
+        jobs_dir = self.jobs_dir
         os.makedirs(jobs_dir, exist_ok=True)
 
         # Build harbor run command
@@ -194,7 +202,7 @@ class TerminalBenchRunner(BenchmarkRunner):
 
         # Subprocess timeout: generous for full dataset, computed for splits
         import math
-        n_tasks = len(task_ids) if task_ids else 89
+        n_tasks = len(task_ids) if task_ids else 150  # conservative upper bound for full dataset
         n_batches = math.ceil(n_tasks / max(n, 1))
         timeout_sec = self.per_task_timeout * n_batches + 300
         print(f"[benchmark] running {n_tasks} terminal-bench tasks "
@@ -240,9 +248,9 @@ class TerminalBenchRunner(BenchmarkRunner):
                 task_name = data.get("task_name", trial_name)
                 vr = data.get("verifier_result")
                 if vr and isinstance(vr, dict):
-                    reward = float(vr.get("rewards", {}).get("reward", 0.0))
+                    reward: float | None = float(vr.get("rewards", {}).get("reward", 0.0))
                 else:
-                    reward = 0.0
+                    reward = None  # verifier did not run — infra error
                 results[task_name] = reward
             except (json.JSONDecodeError, KeyError, TypeError) as e:
                 print(f"[benchmark] WARNING: failed to parse {trial_result}: {e}")
@@ -311,7 +319,7 @@ if __name__ == "__main__":
         runner = TerminalBenchRunner(
             agent_model=cfg.get("agent_model"),
             split=args.split,
-            env_provider=cfg.get("env_provider", "daytona"),
+            env_provider=cfg.get("env_provider", "e2b"),
             n_concurrent=args.concurrency,
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
         )
@@ -329,7 +337,7 @@ if __name__ == "__main__":
     results = runner.run(task_ids=args.task_ids)
     val = runner.val_score(results)
 
-    print(f"\nval_score: {val:.4f}  ({sum(v >= 0.5 for v in results.values())}/{len(results)} passed)")
+    print(f"\nval_score: {val:.4f}  ({sum(v >= 0.5 for v in results.values() if v is not None)}/{len(results)} passed)")
     for task_id, reward in sorted(results.items(), key=lambda x: int(x[0]) if x[0].isdigit() else x[0]):
         status = "PASS" if reward >= 0.5 else "FAIL"
         print(f"  {status}  {task_id}: {reward:.2f}")

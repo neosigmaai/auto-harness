@@ -185,23 +185,12 @@ def copy_agent_template(benchmark: str) -> None:
         print(f"[prepare] ERROR: no agent template for benchmark '{benchmark}'")
         sys.exit(1)
 
-    dest = "agent/agent.py"
-    if os.path.exists(dest):
-        # Check if it's already different from the template (agent was edited)
-        with open(template) as f:
-            template_content = f.read()
-        with open(dest) as f:
-            current_content = f.read()
-        if template_content != current_content:
-            print(f"[prepare] agent/agent.py differs from template — preserving (already modified)")
-            return
-
-    shutil.copy2(template, dest)
-    print(f"[prepare] copied {template} → {dest}")
+    shutil.copy2(template, "agent/agent.py")
+    print(f"[prepare] copied {template} → agent/agent.py")
 
 
 def copy_program_template(benchmark: str) -> None:
-    """Copy the correct PROGRAM.md template."""
+    """Compose PROGRAM.md from the shared base and the benchmark-specific section."""
     templates = {
         "tau-bench": "program_templates/tau_bench.md",
         "terminal-bench": "program_templates/terminal_bench.md",
@@ -211,9 +200,14 @@ def copy_program_template(benchmark: str) -> None:
         print(f"[prepare] ERROR: no PROGRAM.md template for benchmark '{benchmark}'")
         sys.exit(1)
 
-    dest = "PROGRAM.md"
-    shutil.copy2(template, dest)
-    print(f"[prepare] copied {template} → {dest}")
+    with open("program_templates/base.md") as f:
+        base = f.read()
+    with open(template) as f:
+        benchmark_content = f.read()
+
+    with open("PROGRAM.md", "w") as f:
+        f.write(base.rstrip("\n") + "\n\n" + benchmark_content)
+    print(f"[prepare] composed PROGRAM.md from program_templates/base.md + {template}")
 
 
 # ── Baseline run ──────────────────────────────────────────────────────────────
@@ -310,7 +304,7 @@ def run_baseline(cfg: dict) -> None:
     with open(RESULTS_FILE, "a") as f:
         f.write(f"0\t{val:.4f}\tbaseline\t0\t0\t{ts}\n")
 
-    passed = sum(v >= 0.5 for v in test_results.values())
+    passed = sum(v >= 0.5 for v in test_results.values() if v is not None)
     print(f"[prepare] baseline val_score={val:.4f} ({passed}/{len(test_results)} passed) — recorded as iteration 0")
 
 
