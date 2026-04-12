@@ -1,13 +1,38 @@
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
 .venv/
 .env
+.env.*
+!.env.example
 .DS_Store
 *.log
 
-# agent working directory (runtime state, not committed)
+# Python tooling / test caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+
+# IDEs
+.idea/
+*.swp
+*.swo
+
+# agent working directory (runtime state, not committed; includes workspace/swe/*)
 workspace/
+
+# SWE-Bench official harness (run_evaluation)
+logs/
+
+# SWE-Bench aggregate report JSON at project root (model_name.auto-harness-<id>.json)
+*.auto-harness-*.json
+
+# testing/eval_preds.py: JSONL next to preds.json when run from repo root
+eval-baseline-*.jsonl
 
 # local coding agent config
 .claude/
@@ -15,5 +40,12 @@ workspace/
 # local experiment config (copy from experiment_config.yaml.template)
 experiment_config.yaml
 
-# tau2 data (auto-cloned by prepare.py, not committed)
-tau2_data/
+# tau2 / compose data dir (created by prepare or scripts/setup_swe.sh)
+data/
+
+# baseline_mini_swe.py batch outputs
+testing/results/
+
+
+data/tau2/
+auto-harness/data/tau2

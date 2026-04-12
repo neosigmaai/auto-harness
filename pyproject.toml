@@ -8,10 +8,21 @@ version = "0.1.0"
 description = "autoagent + autoevals framework for production agents"
 requires-python = ">=3.12"
 dependencies = [
+    "mini-swe-agent",
     "openai",
     "pyyaml",
     "tau2",
 ]
 
+[project.optional-dependencies]
+swe = [
+    "swebench>=2.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agent*"]
+
 [tool.uv.sources]
 tau2 = { git = "https://github.com/sierra-research/tau2-bench.git", rev = "73dc24445d28762075e69465d966aee4a9dcbfcb" }
+mini-swe-agent = { git = "https://github.com/SWE-agent/mini-swe-agent", tag = "v2.2.8" }

@@ -1,0 +1,32 @@
+# SWE-Bench Lite — copy to experiment_config.yaml (or run: bash scripts/setup_swe.sh)
+#
+# Full reference: SWE-PROGRAM.md
+
+benchmark: swe
+
+agent_model: "gpt-5.4"
+
+threshold: 0.8
+
+# tau-bench only (ignored when benchmark: swe)
+domain: "retail"
+
+split: "dev"
+gate_split: "dev"
+
+prepare_baseline_role: "train"
+
+max_concurrency: 3
+
+swe_dataset: "SWE-bench/SWE-bench_Lite"
+swe_skip_harness: false
+swe_use_llm: true
+swe_max_workers: 3
+swe_timeout: 1800
+swe_namespace: "swebench"
+
+mini: true
+mini_task_ids:
+  - "sqlfluff__sqlfluff-1625"
+  - "marshmallow-code__marshmallow-1343"
+  - "pydicom__pydicom-1694"

@@ -12,6 +12,7 @@ import os
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 import yaml
 
@@ -22,9 +23,6 @@ RESULTS_FILE = os.path.join(WORKSPACE, "results.tsv")
 TRAIN_RESULTS_FILE = os.path.join(WORKSPACE, "train_results.json")
 CONFIG_FILE = "experiment_config.yaml"
 
-REQUIRED_ENV = ["OPENAI_API_KEY"]
-
-
 def load_config() -> dict:
     if not os.path.exists(CONFIG_FILE):
         return {}
@@ -32,10 +30,14 @@ def load_config() -> dict:
         return yaml.safe_load(f) or {}
 
 
-def check_env() -> bool:
-    missing = [k for k in REQUIRED_ENV if not os.getenv(k)]
-    if missing:
-        print(f"[prepare] ERROR: missing env vars: {', '.join(missing)}")
+def check_env(cfg: dict) -> bool:
+    """OPENAI always; TAU2_DATA_DIR only when ``benchmark: tau``."""
+    if not os.getenv("OPENAI_API_KEY"):
+        print("[prepare] ERROR: missing env var: OPENAI_API_KEY")
+        print("          Copy .env.example to .env and fill in the values.")
+        return False
+    if cfg.get("benchmark", "tau") == "tau" and not os.getenv("TAU2_DATA_DIR"):
+        print("[prepare] ERROR: missing env var: TAU2_DATA_DIR (required when benchmark: tau)")
         print("          Copy .env.example to .env and fill in the values.")
         return False
     return True
@@ -57,39 +59,38 @@ def fetch_tau2_data(tau2_data_dir: str) -> bool:
     os.makedirs(tau2_data_dir, exist_ok=True)
     tmp = os.path.join(tau2_data_dir, "_tau2-bench-tmp")
     try:
-        # Remove stale tmp left by a previously interrupted clone.
-        if os.path.exists(tmp):
-            shutil.rmtree(tmp)
         subprocess.run(
             ["git", "clone", "--depth", "1", TAU2_DATA_REPO, tmp],
             check=True,
         )
+        # copy data/tau2 -> TAU2_DATA_DIR/tau2
         src = os.path.join(tmp, "data", "tau2")
         if not os.path.isdir(src):
             print(f"[prepare] ERROR: expected data/tau2 inside cloned repo but not found.")
             return False
         os.rename(src, sentinel)
+        subprocess.run(["rm", "-rf", tmp], check=True)
         print(f"[prepare] tau2 data ready at {tau2_data_dir}")
-    except (subprocess.CalledProcessError, OSError) as e:
-        print(f"[prepare] ERROR: failed to fetch tau2 data: {e}")
+    except subprocess.CalledProcessError as e:
+        print(f"[prepare] ERROR: failed to clone tau2 data: {e}")
         return False
-    finally:
-        shutil.rmtree(tmp, ignore_errors=True)
     return True
 
 
-DEFAULT_TAU2_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tau2_data")
-
-
 def check_tau2_data() -> bool:
-    """Ensure tau2 data dir has the configured domain's task file, cloning if needed."""
-    tau2_data_dir = os.getenv("TAU2_DATA_DIR") or DEFAULT_TAU2_DATA_DIR
+    """Ensure TAU2_DATA_DIR has the configured domain's task file, cloning if needed."""
+    tau2_data_dir = os.getenv("TAU2_DATA_DIR", "")
+
+    if not tau2_data_dir:
+        print("[prepare] ERROR: TAU2_DATA_DIR is not set.")
+        print("          Set TAU2_DATA_DIR to the path where tau2 data should live.")
+        return False
 
     if not fetch_tau2_data(tau2_data_dir):
         return False
 
     if not os.path.isdir(tau2_data_dir):
-        print(f"[prepare] ERROR: tau2 data dir {tau2_data_dir!r} is not a directory.")
+        print(f"[prepare] ERROR: TAU2_DATA_DIR={tau2_data_dir!r} is not a directory.")
         return False
 
     cfg = load_config()
@@ -102,12 +103,44 @@ def check_tau2_data() -> bool:
     full_path = os.path.join(tau2_data_dir, required_path)
 
     if not os.path.exists(full_path):
-        print(f"[prepare] ERROR: tau2 data missing expected file:")
+        print(f"[prepare] ERROR: TAU2_DATA_DIR is set but missing expected file:")
         print(f"          {full_path}")
-        print(f"          Check that domain={domain!r} is correct in {CONFIG_FILE}.")
+        print(f"          Ensure TAU2_DATA_DIR points to a valid tau2 data directory")
+        print(f"          and that domain={domain!r} is correct in {CONFIG_FILE}.")
         return False
 
-    print(f"[prepare] tau2 data OK: {tau2_data_dir} (domain={domain})")
+    print(f"[prepare] TAU2_DATA_DIR OK: {tau2_data_dir} (domain={domain})")
+    return True
+
+
+def check_swe_env(cfg: dict) -> bool:
+    """Optional ``swebench`` install; Docker when ``swe_skip_harness`` is false."""
+    try:
+        import swebench  # noqa: F401
+    except ImportError:
+        print("[prepare] ERROR: SWE-Bench requires the 'swe' extra.")
+        print("          pip install -e '.[swe]'")
+        return False
+
+    if not cfg.get("swe_skip_harness", True):
+        # Host: docker CLI. Compose app image: often no CLI, only mounted socket.
+        docker_ok = False
+        if shutil.which("docker"):
+            r = subprocess.run(["docker", "info"], capture_output=True, timeout=60)
+            docker_ok = r.returncode == 0
+        else:
+            sock = Path("/var/run/docker.sock")
+            try:
+                docker_ok = sock.exists() and sock.is_socket()
+            except OSError:
+                docker_ok = False
+        if not docker_ok:
+            print("[prepare] ERROR: Docker is not available (required when swe_skip_harness is false).")
+            return False
+        print("[prepare] Docker OK (swe_skip_harness=false)")
+    else:
+        print("[prepare] swe_skip_harness=true — official harness/Docker not required for stub scoring")
+
     return True
 
 
@@ -146,7 +179,19 @@ def init_workspace() -> None:
 
 
 def run_baseline(cfg: dict) -> None:
-    """Run test benchmark once to establish baseline val_score in results.tsv."""
+    """
+    Run one benchmark to establish iteration 0 in results.tsv.
+
+    ``prepare_baseline_role`` (default ``gate``):
+
+    - ``gate`` — same split as gating Step 2 (``gate_split``). For SWE-Bench Lite this
+      is often the full **test** set (~300 instances): slow/expensive.
+    - ``train`` — same split and task selection as default ``python benchmark.py``
+      (``split``; uses ``swe_default_task_ids`` for SWE when set, else full split).
+
+    Baseline rows use ``commit=baseline``; ``gating.py`` ignores them when computing
+    the best val_score to compare against (avoids mixing train vs test means).
+    """
     # Check whether results.tsv already has data rows (baseline already recorded).
     with open(RESULTS_FILE) as f:
         rows = [l for l in f if l.strip() and not l.startswith("iteration")]
@@ -155,16 +200,37 @@ def run_baseline(cfg: dict) -> None:
         return
 
     from datetime import datetime, timezone
-    from benchmark import TauBenchRunner
+    from benchmark import make_runner_from_config, resolve_mini_task_ids, resolve_swe_run_task_ids
 
-    print("[prepare] running baseline test benchmark (this may take a few minutes)...")
-    runner = TauBenchRunner(
-        domain=cfg["domain"],
-        agent_model=cfg.get("agent_model"),
-        split=cfg.get("gate_split", "test"),
-        max_concurrency=cfg.get("max_concurrency", 3),
+    role = cfg.get("prepare_baseline_role", "gate")
+    if role not in ("train", "gate"):
+        print(f"[prepare] WARNING: invalid prepare_baseline_role={role!r} — using 'gate'")
+        role = "gate"
+
+    split_name = (
+        cfg.get("gate_split", "test") if role == "gate" else cfg.get("split", "train")
     )
-    results = runner.run()
+    print(
+        f"[prepare] running baseline benchmark (prepare_baseline_role={role!r} → "
+        f"split {split_name!r}; this may take a while)..."
+    )
+    runner = make_runner_from_config(cfg, role="train" if role == "train" else "gate")
+    try:
+        if cfg.get("benchmark") == "swe":
+            task_ids = resolve_swe_run_task_ids(cfg, None)
+        elif cfg.get("mini"):
+            task_ids = resolve_mini_task_ids(cfg)
+        else:
+            task_ids = None
+    except ValueError as e:
+        print(f"[prepare] ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    if cfg.get("mini") and task_ids:
+        print(f"[prepare] mini baseline: {len(task_ids)} task(s) — {', '.join(task_ids)}")
+    elif cfg.get("benchmark") == "swe" and task_ids:
+        print(f"[prepare] SWE baseline task_ids ({len(task_ids)}): {', '.join(task_ids)}")
+    results = runner.run(task_ids=task_ids)
     val = runner.val_score(results)
     ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
@@ -176,10 +242,18 @@ def run_baseline(cfg: dict) -> None:
 
 
 if __name__ == "__main__":
-    if not check_env():
-        sys.exit(1)
-    if not check_tau2_data():
-        sys.exit(1)
     cfg = load_config()
+    if not check_env(cfg):
+        sys.exit(1)
+    if cfg.get("benchmark", "tau") == "tau":
+        if not check_tau2_data():
+            sys.exit(1)
+    elif cfg.get("benchmark") == "swe":
+        if not check_swe_env(cfg):
+            sys.exit(1)
+    else:
+        print(f"[prepare] ERROR: unknown benchmark: {cfg.get('benchmark')!r}")
+        sys.exit(1)
+
     init_workspace()
     run_baseline(cfg)

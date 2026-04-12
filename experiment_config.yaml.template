@@ -1,6 +1,12 @@
 # Experiment configuration — copy to experiment_config.yaml and edit before running.
 #
 #   cp experiment_config.yaml.template experiment_config.yaml
+#
+# SWE-Bench: prefer copying experiment_config.swe.yaml.example, or run:
+#   bash scripts/setup_swe.sh
+
+# Benchmark: "tau" (tau-bench) or "swe" (SWE-Bench; requires: pip install -e ".[swe]")
+benchmark: "tau"
 
 # Model used by the agent under optimization
 agent_model: "gpt-5.4"
@@ -14,8 +20,47 @@ domain: "retail"
 # Split used by benchmark.py (typically "train" for iteration, "test" for final eval)
 split: "train"
 
-# Split used by gating.py for the full-benchmark gate
+# Split used by gating.py Step 2 (full benchmark gate).
+# SWE-Bench Lite: "dev" ≈ 23 instances, "test" ≈ 300 — use "dev" for faster gates while iterating.
 gate_split: "test"
+
+# prepare.py baseline row (iteration 0): "train" matches default benchmark.py split;
+# "gate" runs full gate_split (e.g. SWE Lite test ~300). Baseline is ignored for best-score gating.
+# prepare_baseline_role: "train"
 
 # Max concurrent tasks during benchmark / gate runs
 max_concurrency: 3
+
+# Mini mode: cap default benchmark.py, gating Step 2, and prepare baseline to THREE tasks.
+# Set mini_task_ids (tau: numeric strings; SWE: instance ids), OR for SWE only use
+# >= 3 entries in swe_default_task_ids (first 3 are used).
+# mini: false
+# mini_task_ids:
+#   - "sqlfluff__sqlfluff-1625"
+#   - "marshmallow-code__marshmallow-1343"
+#   - "pydicom__pydicom-1694"
+
+# --- SWE-Bench (when benchmark: swe) ---
+# HuggingFace dataset id (e.g. SWE-bench Lite)
+swe_dataset: "SWE-bench/SWE-bench_Lite"
+# true = skip official harness (fast; LLM patch written but not Docker-graded unless you set false)
+# false = run swebench.harness.run_evaluation (Docker on host; images)
+swe_skip_harness: true
+# false = no LLM; empty patches (stub)
+swe_use_llm: true
+# Workers for swebench.harness.run_evaluation (when swe_skip_harness is false)
+swe_max_workers: 4
+swe_timeout: 1800
+# Docker image namespace for harness (see SWE-Bench docs)
+swe_namespace: "swebench"
+# Optional (SWE): when set, default `python benchmark.py` (no --task-ids) runs only these IDs.
+# Omit or leave unset to run the full `split` (Lite dev ≈ 23 instances).
+# swe_default_task_ids:
+#   - "marshmallow-code__marshmallow-1343"
+# Optional (SWE): limit gating.py Step 2 to these instance ids (subset of gate_split).
+# swe_gate_task_ids:
+#   - "owner__repo-issue"
+# Optional (SWE): gating Step 2 uses the same ids as swe_default_task_ids (no need to duplicate).
+# swe_gate_match_default_task_ids: false
+# Optional: directory for predictions JSONL (default workspace/swe)
+# swe_predictions_dir: "workspace/swe"
