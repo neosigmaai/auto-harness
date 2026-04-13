@@ -40,7 +40,7 @@ def load_config() -> dict:
 
 def check_env_tau_bench(cfg: dict) -> bool:
     """Check environment for tau-bench."""
-    required = ["OPENAI_API_KEY", "TAU2_DATA_DIR"]
+    required = ["OPENAI_API_KEY"]  # TAU2_DATA_DIR is optional — defaults to DEFAULT_TAU2_DATA_DIR
     missing = [k for k in required if not os.getenv(k)]
     if missing:
         print(f"[prepare] ERROR: missing env vars for tau-bench: {', '.join(missing)}")

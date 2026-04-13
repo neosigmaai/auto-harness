@@ -1,11 +1,4 @@
-"""
-HarnessAgent for tau-bench — starting template.
-
-This file is copied to agent/agent.py before the optimization loop begins.
-The coding agent then edits agent/agent.py freely. This template stays unchanged
-as the baseline for diffing.
-"""
-
+# HarnessAgent for tau-bench — starting template.
 import os
 from dataclasses import dataclass, field
 from typing import cast

@@ -68,7 +68,7 @@ class TauBenchRunner(BenchmarkRunner):
         self.max_concurrency = max_concurrency
         self.seed = seed
 
-    def run(self, task_ids: list[str] | None = None) -> dict[str, float]:
+    def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
         from tau2.data_model.simulation import TextRunConfig
         from tau2 import registry
         from tau2.run import run_domain
@@ -161,7 +161,7 @@ class TerminalBenchRunner(BenchmarkRunner):
             )
         return tasks
 
-    def run(self, task_ids: list[str] | None = None) -> dict[str, float]:
+    def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
         import json
         import subprocess
 
@@ -259,7 +259,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         # Copy train traces for the coding agent
         # workspace/traces/baseline/ — immutable first-run traces (never overwritten)
         # workspace/traces/latest/   — most recent run (overwritten each iteration)
-        if self.split == "train":
+        if self.split in ("train", None):  # also copy traces for baseline run (split=None)
             import shutil
             latest_dir = os.path.join("workspace", "traces", "latest")
             baseline_dir = os.path.join("workspace", "traces", "baseline")
@@ -311,6 +311,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Run benchmark tasks")
     parser.add_argument("--task-ids", nargs="*", help="Task IDs to run (default: all)")
+    if benchmark == "tau-bench":
+        parser.add_argument("--domain", default=cfg.get("domain"), help="tau-bench domain (overrides experiment_config.yaml)")
     parser.add_argument("--split", default=cfg.get("split", "train"))
     parser.add_argument("--concurrency", type=int, default=cfg.get("max_concurrency", 3))
     args = parser.parse_args()
@@ -324,11 +326,11 @@ if __name__ == "__main__":
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
         )
     else:
-        if "domain" not in cfg:
-            print("ERROR: 'domain' not set in experiment_config.yaml")
+        if not args.domain:
+            print("ERROR: 'domain' not set in experiment_config.yaml (or pass --domain)")
             sys.exit(1)
         runner = TauBenchRunner(
-            domain=cfg["domain"],
+            domain=args.domain,
             agent_model=cfg.get("agent_model"),
             split=args.split,
             max_concurrency=args.concurrency,
@@ -339,8 +341,8 @@ if __name__ == "__main__":
 
     print(f"\nval_score: {val:.4f}  ({sum(v >= 0.5 for v in results.values() if v is not None)}/{len(results)} passed)")
     for task_id, reward in sorted(results.items(), key=lambda x: int(x[0]) if x[0].isdigit() else x[0]):
-        status = "PASS" if reward >= 0.5 else "FAIL"
-        print(f"  {status}  {task_id}: {reward:.2f}")
+        status = "PASS" if reward is not None and reward >= 0.5 else ("INFRA_ERR" if reward is None else "FAIL")
+        print(f"  {status}  {task_id}: {f'{reward:.2f}' if reward is not None else 'N/A'}")
 
     train_results_path = "workspace/train_results.json"
     os.makedirs("workspace", exist_ok=True)

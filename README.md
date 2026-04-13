@@ -127,6 +127,45 @@ program_templates/
 diff agent/templates/terminal_bench.py agent/agent.py
 ```
 
+### Using a different Harbor benchmark
+
+If your benchmark runs via `harbor run`, you only need four steps:
+
+**1. Point to your dataset in `experiment_config.yaml`:**
+
+```yaml
+benchmark: "terminal-bench"   # reuses TerminalBenchRunner
+dataset: "my-harbor-dataset@1.0"
+agent_model: "gpt-4o"
+env_provider: "e2b"           # or "daytona" / "docker"
+split: "train"
+gate_split: "test"
+```
+
+**2. Check your verifier's `result.json` schema.**
+`TerminalBenchRunner` expects:
+
+```json
+{
+  "task_name": "<id>",
+  "verifier_result": {
+    "rewards": { "reward": 0.85 }
+  }
+}
+```
+
+If your verifier writes rewards at a different path, update the parser in `TerminalBenchRunner.run()` in `benchmark.py`.
+
+**3. Update the split directory name (optional).**
+The split file is currently saved to `tbench_data/task_split.json`. If you want a separate directory per benchmark, change `SPLIT_FILE` in `TerminalBenchRunner` and update `prepare.py` accordingly.
+
+**4. Add a PROGRAM.md supplement.**
+Create `program_templates/<your_benchmark>.md` with benchmark-specific guidance (trace paths, task ID format, known techniques) following the same pattern as `terminal_bench.md`. Then register it in `copy_program_template()` in `prepare.py`.
+
+The train/test split generation, gating, trace copying, and optimization loop all work as-is — no other changes needed.
+
+---
+
 ### Plugging in your own benchmark
 
 Subclass `BenchmarkRunner` in `benchmark.py`:

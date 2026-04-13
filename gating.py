@@ -47,7 +47,7 @@ def save_suite(suite: dict) -> None:
         json.dump(suite, f, indent=2)
 
 
-def load_train_results() -> dict[str, float]:
+def load_train_results() -> dict[str, float | None]:
     if not os.path.exists(TRAIN_RESULTS_FILE):
         return {}
     with open(TRAIN_RESULTS_FILE) as f:
@@ -75,14 +75,15 @@ def _run_suite_gate(train_runner: BenchmarkRunner, suite: dict) -> tuple[bool, i
 
     print(f"\n[gate] Step 1: eval suite ({len(task_ids)} tasks, threshold={threshold:.0%})")
     results = train_runner.run(task_ids=task_ids)
-    passed = sum(1 for r in results.values() if r >= 0.5)
-    pass_rate = passed / len(results) if results else 0
+    valid = {k: v for k, v in results.items() if v is not None}
+    passed = sum(1 for r in valid.values() if r >= 0.5)
+    pass_rate = passed / len(valid) if valid else 0
 
-    suite["last_results"] = results
+    suite["last_results"] = valid  # strip None (infra errors) before persisting
     save_suite(suite)
 
     suite_passed = pass_rate >= threshold
-    print(f"       {passed}/{len(results)} passed ({pass_rate:.0%})  "
+    print(f"       {passed}/{len(valid)} passed ({pass_rate:.0%})  "
           f"{'PASS ✓' if suite_passed else 'FAIL ✗'}")
     return suite_passed, passed, results
 
@@ -145,11 +146,11 @@ def run_gate(
     else:
         suite_set = set(suite["tasks"])
         failing_non_suite = [tid for tid, r in train_results.items()
-                             if r < 0.5 and tid not in suite_set]
+                             if r is not None and r < 0.5 and tid not in suite_set]
         if failing_non_suite:
             print(f"       re-running {len(failing_non_suite)} previously-failing train tasks")
             recheck = train_runner.run(task_ids=failing_non_suite)
-            newly_fixed = sorted(tid for tid, r in recheck.items() if r >= 0.5)
+            newly_fixed = sorted(tid for tid, r in recheck.items() if r is not None and r >= 0.5)
             if newly_fixed:
                 suite["tasks"] = sorted(suite_set | set(newly_fixed))
                 suite["last_results"].update(recheck)

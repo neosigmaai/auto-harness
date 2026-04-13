@@ -34,4 +34,4 @@
 # threshold: 0.8
 # parallel_gate: true
 #
-# Required env vars: OPENAI_API_KEY, TAU2_DATA_DIR
+# Required env vars: OPENAI_API_KEY

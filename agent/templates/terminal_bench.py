@@ -1,11 +1,4 @@
-"""
-HarnessAgent for Terminal-Bench 2.0 — starting template.
-
-This file is copied to agent/agent.py before the optimization loop begins.
-The coding agent then edits agent/agent.py freely. This template stays unchanged
-as the baseline for diffing.
-"""
-
+# HarnessAgent for Terminal-Bench 2.0 — starting template.
 import json
 import os
 from pathlib import Path
