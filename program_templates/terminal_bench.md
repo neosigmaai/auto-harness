@@ -68,6 +68,7 @@ diff agent/templates/terminal_bench.py agent/agent.py
 
 - **Never modify** `benchmark.py`, `gating.py`, `record.py`, `prepare.py`, `experiment_config.yaml`, or any file in `agent/templates/`, `program_templates/`, `tbench_data/`
 - **Never change** concurrency, timeout, env_provider, or any infrastructure setting
+- **Never hardcode** `MODEL` / `AGENT_MODEL` or `AGENT_REASONING_EFFORT` — these are set by the harness from `experiment_config.yaml`
 - **Never install packages** or modify the Python environment
 - **Never read traces from `workspace/tbench_jobs/`** — only use `workspace/traces/latest/`
 - **Never search the web** or fetch any online resources

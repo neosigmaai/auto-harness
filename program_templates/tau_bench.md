@@ -17,4 +17,4 @@ Task IDs are integers: `python benchmark.py --task-ids 0 1 42`
 - **Architecture** — change `generate_next_message()`, state management (`HarnessState`), or how messages are constructed
 - **Tools** — tau-bench injects its fixed domain tools; you cannot add new tools for tau-bench runs
 
-**Never modify** `experiment_config.yaml` — in particular, do not change `reasoning_effort`.
+`AGENT_MODEL` and `AGENT_REASONING_EFFORT` are set by the harness from `experiment_config.yaml` — do not hardcode these values in `agent.py`.

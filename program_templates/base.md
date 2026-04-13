@@ -68,7 +68,7 @@ Edit `agent/agent.py` — you own the entire file. The benchmark runner imports 
 
 Make one focused change per iteration. Smaller changes are easier to gate and easier to revert.
 
-**Do not modify** `benchmark.py`, `gating.py`, `record.py`, `prepare.py`, `experiment_config.yaml`, or any workspace file. In particular, never change `reasoning_effort` in `experiment_config.yaml`.
+**Do not modify** `benchmark.py`, `gating.py`, `record.py`, `prepare.py`, `experiment_config.yaml`, or any workspace file.
 
 ---
 
