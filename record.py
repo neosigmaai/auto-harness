@@ -31,7 +31,7 @@ def next_iteration() -> int:
         return 1
     with open(RESULTS_FILE) as f:
         data_rows = [l for l in f if l.strip() and not l.startswith("iteration")]
-    return len(data_rows) + 1
+    return len(data_rows)
 
 
 def record(val_score: float, evals_passed: int, evals_total: int) -> None:
