@@ -57,6 +57,8 @@ def check_env_terminal_bench(cfg: dict) -> bool:
     model = cfg.get("agent_model", "gpt-5.4")
     if model.startswith("gemini"):
         required.append("GEMINI_API_KEY")
+    elif model.startswith("claude"):
+        required.append("ANTHROPIC_API_KEY")
     else:
         required.append("OPENAI_API_KEY")
 
@@ -150,13 +152,13 @@ def check_tau2_data(cfg: dict) -> bool:
 # ── Workspace init ────────────────────────────────────────────────────────────
 
 
-def init_workspace() -> None:
+def init_workspace(cfg: dict) -> None:
     """Create workspace directory and initialize files if they don't exist."""
     os.makedirs(WORKSPACE, exist_ok=True)
 
     if not os.path.exists(SUITE_FILE):
         with open(SUITE_FILE, "w") as f:
-            json.dump({"tasks": [], "threshold": 0.8, "last_results": {}}, f, indent=2)
+            json.dump({"tasks": [], "threshold": cfg.get("threshold", 0.8), "last_results": {}}, f, indent=2)
         print(f"[prepare] created {SUITE_FILE}")
     else:
         print(f"[prepare] {SUITE_FILE} already exists — skipping")
@@ -347,7 +349,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Initialize workspace
-    init_workspace()
+    init_workspace(cfg)
 
     # Copy templates
     copy_agent_template(benchmark)

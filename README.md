@@ -192,7 +192,7 @@ The coding agent self-maintains `workspace/suite.json` — task IDs it must alwa
 2. **Full test**: full benchmark on the test split; mean reward must be ≥ the best score seen so far
 3. **Suite promotion**: previously-failing tasks that now pass are added to the suite
 
-Steps 1 and 2 run in parallel by default (`parallel_gate: true` in config).
+Steps 1 and 2 run sequentially; Step 2 always runs regardless of Step 1's outcome.
 
 ---
 
@@ -203,7 +203,7 @@ agent/
   agent.py                  the agent under optimization — only file the coding agent edits
   templates/                read-only starting points for each benchmark
 benchmark.py                benchmark execution layer (abstract + tau-bench + terminal-bench)
-gating.py                   three-step gate with parallel support
+gating.py                   three-step gate (regression suite → full test → suite promotion)
 prepare.py                  workspace setup, template copying, baseline run
 record.py                   appends iteration result to results.tsv
 PROGRAM.md                  loop instructions for the coding agent (copied from template)

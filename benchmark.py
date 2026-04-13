@@ -203,8 +203,10 @@ class TerminalBenchRunner(BenchmarkRunner):
         env = os.environ.copy()
         repo_root = os.path.dirname(os.path.abspath(__file__))
         env["PYTHONPATH"] = repo_root + os.pathsep + env.get("PYTHONPATH", "")
-        # Disable trace saving for test splits (prevent coding agent from reading test traces)
-        if self.split == "test":
+        # Disable trace saving for test/baseline runs (prevent coding agent from reading test traces).
+        # split=None means the baseline all-tasks run; the train/test split doesn't exist yet so
+        # we can't know which tasks are test tasks — safest to save nothing.
+        if self.split != "train":
             env["HARNESS_SAVE_TRACE"] = "0"
 
         # Subprocess timeout: generous for full dataset, computed for splits
@@ -266,7 +268,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         # Copy train traces for the coding agent
         # workspace/traces/baseline/ — immutable first-run traces (never overwritten)
         # workspace/traces/latest/   — most recent run (overwritten each iteration)
-        if self.split in ("train", None):  # also copy traces for baseline run (split=None)
+        if self.split == "train":
             import shutil
             latest_dir = os.path.join("workspace", "traces", "latest")
             baseline_dir = os.path.join("workspace", "traces", "baseline")
@@ -350,7 +352,7 @@ if __name__ == "__main__":
     val = runner.val_score(results)
 
     print(f"\nval_score: {val:.4f}  ({sum(v >= 0.5 for v in results.values() if v is not None)}/{len(results)} passed)")
-    for task_id, reward in sorted(results.items(), key=lambda x: int(x[0]) if x[0].isdigit() else x[0]):
+    for task_id, reward in sorted(results.items(), key=lambda x: (0, int(x[0])) if x[0].isdigit() else (1, x[0])):
         status = "PASS" if reward is not None and reward >= 0.5 else ("INFRA_ERR" if reward is None else "FAIL")
         print(f"  {status}  {task_id}: {f'{reward:.2f}' if reward is not None else 'N/A'}")
 
