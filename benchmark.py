@@ -69,6 +69,12 @@ class TauBenchRunner(BenchmarkRunner):
         self.seed = seed
 
     def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
+        # tau2 reads TAU2_DATA_DIR at import time — set it before the first import
+        if "TAU2_DATA_DIR" not in os.environ:
+            os.environ["TAU2_DATA_DIR"] = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "tau2_data"
+            )
+
         from tau2.data_model.simulation import TextRunConfig
         from tau2 import registry
         from tau2.run import run_domain
@@ -181,6 +187,7 @@ class TerminalBenchRunner(BenchmarkRunner):
             "--model", self.agent_model,
             "--env", self.env_provider,
             "--agent-timeout-multiplier", f"{agent_timeout_mult:.2f}",
+            "--jobs-dir", jobs_dir,
             "-y",
         ]
         if task_ids is not None:

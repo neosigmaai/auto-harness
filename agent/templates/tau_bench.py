@@ -13,9 +13,7 @@ from tau2.data_model.message import (
 )
 from tau2.utils.llm_utils import generate
 
-if "AGENT_MODEL" not in os.environ:
-    raise RuntimeError("AGENT_MODEL env var is not set")
-AGENT_MODEL: str = os.environ["AGENT_MODEL"]
+AGENT_MODEL: str = os.environ.get("AGENT_MODEL", "")
 AGENT_REASONING_EFFORT: str = os.environ.get("AGENT_REASONING_EFFORT", "")
 
 AGENT_INSTRUCTION = """
