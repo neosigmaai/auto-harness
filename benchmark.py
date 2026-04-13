@@ -325,7 +325,7 @@ if __name__ == "__main__":
             n_concurrent=args.concurrency,
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
         )
-    else:
+    elif benchmark == "tau-bench":
         if not args.domain:
             print("ERROR: 'domain' not set in experiment_config.yaml (or pass --domain)")
             sys.exit(1)
@@ -335,6 +335,9 @@ if __name__ == "__main__":
             split=args.split,
             max_concurrency=args.concurrency,
         )
+    else:
+        print(f"ERROR: unknown benchmark '{benchmark}'")
+        sys.exit(1)
 
     results = runner.run(task_ids=args.task_ids)
     val = runner.val_score(results)

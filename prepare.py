@@ -303,7 +303,7 @@ def run_baseline(cfg: dict) -> None:
             )
             test_results = runner.run()
             val = runner.val_score(test_results)
-    else:
+    elif benchmark == "tau-bench":
         from benchmark import TauBenchRunner
         runner = TauBenchRunner(
             domain=cfg["domain"],
@@ -313,6 +313,9 @@ def run_baseline(cfg: dict) -> None:
         )
         test_results = runner.run()
         val = runner.val_score(test_results)
+    else:
+        print(f"[prepare] ERROR: unknown benchmark '{benchmark}'")
+        sys.exit(1)
 
     ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
     with open(RESULTS_FILE, "a") as f:

@@ -19,7 +19,8 @@
 # threshold: 0.8                 # regression suite pass rate threshold
 # parallel_gate: true            # run gate steps 1 & 2 in parallel
 #
-# Required env vars: OPENAI_API_KEY, E2B_API_KEY (or DAYTONA_API_KEY)
+# Required env vars: LLM API key for your model (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY),
+#                    E2B_API_KEY (or DAYTONA_API_KEY)
 
 # ═══════════════════════════════════════════════════════════════
 # TAU-BENCH
@@ -34,4 +35,4 @@
 # threshold: 0.8
 # parallel_gate: true
 #
-# Required env vars: OPENAI_API_KEY
+# Required env vars: LLM API key for your model (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY)
