@@ -12,7 +12,7 @@ The loop is defined in `PROGRAM.md`. The coding agent edits `agent/agent.py` to 
 
 | Benchmark | Domain | Tasks | Agent Interface |
 |-----------|--------|-------|-----------------|
-| **tau-bench** | Customer service (retail, airline, telecom) | ~50 per domain | Structured tool calls via tau2 |
+| **tau-bench** | Customer service (retail, airline, telecom) | retail: 114, airline: 50, telecom: 114 | Structured tool calls via tau2 |
 | **Terminal-Bench 2.0** | Real-world terminal tasks (coding, sysadmin, security) | 89 | Bash commands via Harbor containers |
 
 ---
