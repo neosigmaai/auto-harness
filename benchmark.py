@@ -227,6 +227,9 @@ class TerminalBenchRunner(BenchmarkRunner):
               f"n={n}, per_task_timeout={self.per_task_timeout}s, "
               f"subprocess_timeout={timeout_sec}s)")
 
+        import time
+        run_start = time.time()
+
         try:
             result = subprocess.run(
                 cmd, env=env, capture_output=True, text=True, timeout=timeout_sec,
@@ -237,13 +240,16 @@ class TerminalBenchRunner(BenchmarkRunner):
         except subprocess.TimeoutExpired:
             print(f"[benchmark] WARNING: harbor run timed out after {timeout_sec}s")
 
-        # Find the job directory (most recently modified in jobs_dir)
+        # Find the job directory created by THIS run. Filter out stale dirs from previous
+        # runs — if harbor fails before creating a new directory, we must not silently
+        # return results from a prior run.
         all_dirs = [
             d for d in os.listdir(jobs_dir)
             if os.path.isdir(os.path.join(jobs_dir, d))
+            and os.path.getmtime(os.path.join(jobs_dir, d)) >= run_start - 1
         ]
         if not all_dirs:
-            print("[benchmark] ERROR: no job output found")
+            print("[benchmark] ERROR: no job output found for this run (harbor may have failed before creating output)")
             return {}
         job_dirs = sorted(
             all_dirs,
@@ -265,11 +271,12 @@ class TerminalBenchRunner(BenchmarkRunner):
                 task_name = data.get("task_name", trial_name)
                 vr = data.get("verifier_result")
                 if vr and isinstance(vr, dict):
-                    reward: float | None = float(vr.get("rewards", {}).get("reward", 0.0))
+                    rewards = vr.get("rewards", {})
+                    reward: float | None = float(rewards.get("reward", 0.0)) if isinstance(rewards, dict) else 0.0
                 else:
                     reward = None  # verifier did not run — infra error
                 results[task_name] = reward
-            except (json.JSONDecodeError, KeyError, TypeError) as e:
+            except (json.JSONDecodeError, KeyError, TypeError, AttributeError) as e:
                 print(f"[benchmark] WARNING: failed to parse {trial_result}: {e}")
                 continue
 

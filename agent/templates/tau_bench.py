@@ -14,7 +14,6 @@ from tau2.data_model.message import (
 from tau2.utils.llm_utils import generate
 
 AGENT_MODEL: str = os.environ.get("AGENT_MODEL", "")
-AGENT_REASONING_EFFORT: str = os.environ.get("AGENT_REASONING_EFFORT", "")
 
 AGENT_INSTRUCTION = """
 You are a helpful assistant that completes tasks according to the <policy> provided below.
@@ -61,9 +60,8 @@ class HarnessAgent(LLMAgent):
             state.messages.append(message)
 
         system = SystemMessage(role="system", content=self.system_prompt)
-        generate_kwargs = (
-            {"reasoning_effort": AGENT_REASONING_EFFORT} if AGENT_REASONING_EFFORT else {}
-        )
+        reasoning_effort = os.environ.get("AGENT_REASONING_EFFORT", "")
+        generate_kwargs = {"reasoning_effort": reasoning_effort} if reasoning_effort else {}
         generate_kwargs.update(self.llm_args)
         response = cast(
             AssistantMessage,

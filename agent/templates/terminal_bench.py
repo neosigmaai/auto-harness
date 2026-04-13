@@ -1,7 +1,6 @@
 # HarnessAgent for Terminal-Bench 2.0 — starting template.
 import json
 import os
-from pathlib import Path
 
 import litellm
 from harbor.agents.base import BaseAgent

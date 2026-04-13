@@ -40,7 +40,13 @@ def load_config() -> dict:
 
 def check_env_tau_bench(cfg: dict) -> bool:
     """Check environment for tau-bench."""
-    required = ["OPENAI_API_KEY"]
+    model = cfg.get("agent_model", "")
+    if model.startswith("gemini"):
+        required = ["GEMINI_API_KEY"]
+    elif model.startswith("claude"):
+        required = ["ANTHROPIC_API_KEY"]
+    else:
+        required = ["OPENAI_API_KEY"]
     missing = [k for k in required if not os.getenv(k)]
     if missing:
         print(f"[prepare] ERROR: missing env vars for tau-bench: {', '.join(missing)}")
