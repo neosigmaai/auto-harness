@@ -125,7 +125,7 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
             newly_fixed = sorted(tid for tid, r in recheck.items() if r is not None and r >= 0.5)
             if newly_fixed:
                 suite["tasks"] = sorted(suite_set | set(newly_fixed))
-                suite["last_results"].update(recheck)
+                suite["last_results"].update({k: v for k, v in recheck.items() if v is not None})
                 save_suite(suite)
                 print(f"       promoted {len(newly_fixed)} task(s) into regression suite: {newly_fixed}")
             else:

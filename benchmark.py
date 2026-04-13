@@ -133,7 +133,7 @@ class TerminalBenchRunner(BenchmarkRunner):
     def __init__(
         self,
         agent_model: str | None = None,
-        split: str = "train",
+        split: str | None = "train",
         env_provider: str = "e2b",
         n_concurrent: int = 50,
         dataset: str = "terminal-bench@2.0",
