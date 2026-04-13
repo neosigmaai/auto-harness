@@ -295,6 +295,11 @@ def run_baseline(cfg: dict) -> None:
 
             # Filter out infra errors (reward stays 0 but no verifier ran)
             actual_results = {k: v for k, v in all_results.items() if v is not None}
+            infra_errors = [k for k, v in all_results.items() if v is None]
+            if infra_errors:
+                print(f"[prepare] WARNING: {len(infra_errors)} task(s) had infra errors and are "
+                      f"permanently excluded from the train/test split: {infra_errors}")
+                print(f"          To include them, delete {SPLIT_FILE} and re-run prepare.py.")
             generate_terminal_bench_split(actual_results)
 
             # Record baseline using the test split score
