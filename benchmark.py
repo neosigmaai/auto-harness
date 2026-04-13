@@ -338,7 +338,8 @@ if __name__ == "__main__":
     if benchmark == "tau-bench":
         parser.add_argument("--domain", default=cfg.get("domain"), help="tau-bench domain (overrides experiment_config.yaml)")
     parser.add_argument("--split", default=cfg.get("split", "train"))
-    parser.add_argument("--concurrency", type=int, default=cfg.get("max_concurrency", 3))
+    _concurrency_default = cfg.get("max_concurrency", 50 if benchmark == "terminal-bench" else 3)
+    parser.add_argument("--concurrency", type=int, default=_concurrency_default)
     args = parser.parse_args()
 
     if benchmark == "terminal-bench":
@@ -368,7 +369,8 @@ if __name__ == "__main__":
     results = runner.run(task_ids=args.task_ids)
     val = runner.val_score(results)
 
-    print(f"\nval_score: {val:.4f}  ({sum(v >= 0.5 for v in results.values() if v is not None)}/{len(results)} passed)")
+    valid_results = [v for v in results.values() if v is not None]
+    print(f"\nval_score: {val:.4f}  ({sum(v >= 0.5 for v in valid_results)}/{len(valid_results)} passed)")
     for task_id, reward in sorted(results.items(), key=lambda x: (0, int(x[0])) if x[0].isdigit() else (1, x[0])):
         status = "PASS" if reward is not None and reward >= 0.5 else ("INFRA_ERR" if reward is None else "FAIL")
         print(f"  {status}  {task_id}: {f'{reward:.2f}' if reward is not None else 'N/A'}")
