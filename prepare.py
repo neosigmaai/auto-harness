@@ -283,6 +283,7 @@ def run_baseline(cfg: dict) -> None:
                 split=None,  # run all tasks
                 env_provider=cfg.get("env_provider", "e2b"),
                 n_concurrent=cfg.get("max_concurrency", 50),
+                reasoning_effort=cfg.get("reasoning_effort"),
             )
             all_results = all_runner.run()
 
@@ -302,6 +303,7 @@ def run_baseline(cfg: dict) -> None:
                 split=cfg.get("gate_split", "test"),
                 env_provider=cfg.get("env_provider", "e2b"),
                 n_concurrent=cfg.get("max_concurrency", 50),
+                reasoning_effort=cfg.get("reasoning_effort"),
             )
             test_results = runner.run()
             val = runner.val_score(test_results)
@@ -312,6 +314,7 @@ def run_baseline(cfg: dict) -> None:
             agent_model=cfg.get("agent_model"),
             split=cfg.get("gate_split", "test"),
             max_concurrency=cfg.get("max_concurrency", 3),
+            reasoning_effort=cfg.get("reasoning_effort"),
         )
         test_results = runner.run()
         val = runner.val_score(test_results)

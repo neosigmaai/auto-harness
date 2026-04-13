@@ -61,12 +61,14 @@ class TauBenchRunner(BenchmarkRunner):
         split: str = "test",
         max_concurrency: int = 3,
         seed: int = 300,
+        reasoning_effort: str | None = None,
     ):
         self.domain = domain
         self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-5.4")
         self.split = split
         self.max_concurrency = max_concurrency
         self.seed = seed
+        self.reasoning_effort = reasoning_effort
 
     def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
         # tau2 reads TAU2_DATA_DIR at import time — set it before the first import
@@ -74,6 +76,8 @@ class TauBenchRunner(BenchmarkRunner):
             os.environ["TAU2_DATA_DIR"] = os.path.join(
                 os.path.dirname(os.path.abspath(__file__)), "tau2_data"
             )
+        if self.reasoning_effort:
+            os.environ["AGENT_REASONING_EFFORT"] = self.reasoning_effort
 
         from tau2.data_model.simulation import TextRunConfig
         from tau2 import registry
@@ -136,6 +140,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         agent_import_path: str = "agent.agent:HarnessAgent",
         per_task_timeout: int = 1200,
         jobs_dir: str = "workspace/tbench_jobs",
+        reasoning_effort: str | None = None,
     ):
         self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-5.4")
         self.split = split
@@ -145,6 +150,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         self.agent_import_path = agent_import_path
         self.per_task_timeout = per_task_timeout
         self.jobs_dir = jobs_dir
+        self.reasoning_effort = reasoning_effort
 
     def _load_split_tasks(self) -> list[str] | None:
         """Load task names for the configured split. Returns None to run all tasks."""
@@ -203,6 +209,8 @@ class TerminalBenchRunner(BenchmarkRunner):
         env = os.environ.copy()
         repo_root = os.path.dirname(os.path.abspath(__file__))
         env["PYTHONPATH"] = repo_root + os.pathsep + env.get("PYTHONPATH", "")
+        if self.reasoning_effort:
+            env["AGENT_REASONING_EFFORT"] = self.reasoning_effort
         # Disable trace saving for test/baseline runs (prevent coding agent from reading test traces).
         # split=None means the baseline all-tasks run; the train/test split doesn't exist yet so
         # we can't know which tasks are test tasks — safest to save nothing.
@@ -333,6 +341,7 @@ if __name__ == "__main__":
             env_provider=cfg.get("env_provider", "e2b"),
             n_concurrent=args.concurrency,
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
+            reasoning_effort=cfg.get("reasoning_effort"),
         )
     elif benchmark == "tau-bench":
         if not args.domain:
@@ -343,6 +352,7 @@ if __name__ == "__main__":
             agent_model=cfg.get("agent_model"),
             split=args.split,
             max_concurrency=args.concurrency,
+            reasoning_effort=cfg.get("reasoning_effort"),
         )
     else:
         print(f"ERROR: unknown benchmark '{benchmark}'")

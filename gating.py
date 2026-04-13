@@ -149,6 +149,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             n_concurrent=cfg.get("max_concurrency", 50),
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
             jobs_dir="workspace/tbench_jobs/train",
+            reasoning_effort=cfg.get("reasoning_effort"),
         )
         gate_runner = TerminalBenchRunner(
             agent_model=cfg.get("agent_model"),
@@ -157,6 +158,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             n_concurrent=cfg.get("max_concurrency", 50),
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
             jobs_dir="workspace/tbench_jobs/test",
+            reasoning_effort=cfg.get("reasoning_effort"),
         )
     elif benchmark == "tau-bench":
         if "domain" not in cfg:
@@ -167,12 +169,14 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             agent_model=cfg.get("agent_model"),
             split=cfg.get("split", "train"),
             max_concurrency=cfg.get("max_concurrency", 3),
+            reasoning_effort=cfg.get("reasoning_effort"),
         )
         gate_runner = TauBenchRunner(
             domain=cfg["domain"],
             agent_model=cfg.get("agent_model"),
             split=cfg.get("gate_split", "test"),
             max_concurrency=cfg.get("max_concurrency", 3),
+            reasoning_effort=cfg.get("reasoning_effort"),
         )
     else:
         print(f"ERROR: unknown benchmark '{benchmark}'")

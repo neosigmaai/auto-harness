@@ -17,6 +17,7 @@
 # env_provider: "e2b"            # "e2b", "daytona", or "docker"
 # max_concurrency: 50            # tasks run in parallel
 # threshold: 0.8                 # regression suite pass rate threshold
+# reasoning_effort: "high"       # optional — for o-series / reasoning models
 #
 # Required env vars: LLM API key for your model (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY),
 #                    E2B_API_KEY (or DAYTONA_API_KEY)
@@ -32,5 +33,6 @@
 # gate_split: "test"
 # max_concurrency: 3
 # threshold: 0.8
+# reasoning_effort: "high"       # optional — for o-series / reasoning models
 #
 # Required env vars: LLM API key for your model (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY)
