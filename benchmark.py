@@ -209,6 +209,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         env = os.environ.copy()
         repo_root = os.path.dirname(os.path.abspath(__file__))
         env["PYTHONPATH"] = repo_root + os.pathsep + env.get("PYTHONPATH", "")
+        env["AGENT_MODEL"] = self.agent_model  # explicit — don't rely on parent env
         if self.reasoning_effort:
             env["AGENT_REASONING_EFFORT"] = self.reasoning_effort
         # Disable trace saving for test/baseline runs (prevent coding agent from reading test traces).
@@ -311,6 +312,14 @@ class TerminalBenchRunner(BenchmarkRunner):
                     if os.path.exists(result_file):
                         shutil.copy2(result_file, os.path.join(base_dest, "result.json"))
             print(f"[benchmark] traces: latest/ updated, baseline/ preserved")
+
+        # Prune old job directories to prevent unbounded disk growth.
+        # Train traces are already copied to workspace/traces/; raw harbor output is no longer needed.
+        for old in os.listdir(jobs_dir):
+            old_path = os.path.join(jobs_dir, old)
+            if os.path.isdir(old_path) and old_path != job_dir:
+                import shutil as _shutil
+                _shutil.rmtree(old_path, ignore_errors=True)
 
         return results
 
