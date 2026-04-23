@@ -13,5 +13,38 @@ dependencies = [
     "tau2",
 ]
 
+[project.optional-dependencies]
+# WebArena has heavy transitive deps (playwright, beartype, tiktoken, ...).
+# Install with: `uv sync --extra webarena` or `pip install -e .[webarena]`.
+# Note: prepare.py also runs `pip install -r webarena_repo/requirements.txt` to
+# cover WebArena's full pinned stack; this extra just ensures the top-level
+# Python imports needed by agent/templates/webarena.py resolve.
+webarena = [
+    "playwright>=1.40",
+    "beartype>=0.14",
+    "tiktoken>=0.5",
+    "beautifulsoup4>=4.11",
+    "aiolimiter>=1.1",
+    "nltk>=3.8",
+    "flask>=3.0",
+]
+
 [tool.uv.sources]
 tau2 = { git = "https://github.com/sierra-research/tau2-bench.git", rev = "73dc24445d28762075e69465d966aee4a9dcbfcb" }
+
+# Pin setuptools package discovery. Without this, auto-discovery complains
+# about multiple top-level packages (agent/, fixtures/, workspace/, ...) now
+# that fixtures/webarena_smoke/ is a package. We only ship `agent` as an
+# importable library; everything else is data/scripts/local state.
+[tool.setuptools.packages.find]
+include = ["agent*"]
+exclude = [
+    "fixtures*",
+    "workspace*",
+    "tau2_data*",
+    "tbench_data*",
+    "webarena*",
+    "webarena_data*",
+    "webarena_repo*",
+    "program_templates*",
+]

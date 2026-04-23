@@ -1,0 +1,23 @@
+{
+  "sites": ["reddit"],
+  "task_id": 10007,
+  "require_login": false,
+  "storage_state": null,
+  "start_url": "http://localhost:9999",
+  "geolocation": null,
+  "intent_template": "Open the post titled 'Ocean Currents Slowing' and quote its body text verbatim.",
+  "instantiation_dict": {},
+  "intent": "Open the post titled 'Ocean Currents Slowing' and quote its body text verbatim.",
+  "require_reset": false,
+  "eval": {
+    "eval_types": ["string_match"],
+    "reference_answers": {
+      "must_include": ["Gulf Stream"]
+    },
+    "reference_url": "",
+    "program_html": [],
+    "string_note": "Target post is deep on the front page (post 7 of 8), past the default observation-truncation cutoff. Agents that rely on the initial observation alone will not see the link and cannot click into it. Body text itself is also only on the detail page.",
+    "reference_answer_raw_annotation": "The Gulf Stream is weakening faster than expected."
+  },
+  "intent_template_id": 10000
+}

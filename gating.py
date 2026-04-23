@@ -16,9 +16,10 @@ import json
 import os
 import sys
 
+import _env  # noqa: F401  — auto-loads .env into os.environ on import
 import yaml
 
-from benchmark import BenchmarkRunner, TauBenchRunner, TerminalBenchRunner
+from benchmark import BenchmarkRunner, TauBenchRunner, TerminalBenchRunner, WebArenaRunner
 
 CONFIG_FILE = "experiment_config.yaml"
 
@@ -177,6 +178,32 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             split=cfg.get("gate_split", "test"),
             max_concurrency=cfg.get("max_concurrency", 3),
             reasoning_effort=cfg.get("reasoning_effort"),
+        )
+    elif benchmark == "webarena":
+        smoke = cfg.get("smoke", False)
+        train_runner = WebArenaRunner(
+            agent_model=cfg.get("agent_model"),
+            split=cfg.get("split", "train"),
+            site=cfg.get("site", "reddit"),
+            n_concurrent=cfg.get("max_concurrency", 1),
+            max_steps=cfg.get("max_steps", 30),
+            per_task_timeout=cfg.get("per_task_timeout", 300),
+            jobs_dir="workspace/webarena_jobs/train",
+            webarena_repo=cfg.get("webarena_repo", "webarena_repo"),
+            reasoning_effort=cfg.get("reasoning_effort"),
+            smoke=smoke,
+        )
+        gate_runner = WebArenaRunner(
+            agent_model=cfg.get("agent_model"),
+            split=cfg.get("gate_split", "test"),
+            site=cfg.get("site", "reddit"),
+            n_concurrent=cfg.get("max_concurrency", 1),
+            max_steps=cfg.get("max_steps", 30),
+            per_task_timeout=cfg.get("per_task_timeout", 300),
+            jobs_dir="workspace/webarena_jobs/test",
+            webarena_repo=cfg.get("webarena_repo", "webarena_repo"),
+            reasoning_effort=cfg.get("reasoning_effort"),
+            smoke=smoke,
         )
     else:
         print(f"ERROR: unknown benchmark '{benchmark}'")

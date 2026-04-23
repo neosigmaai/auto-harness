@@ -36,3 +36,61 @@
 # reasoning_effort: "medium"      # optional
 #
 # Required env vars: LLM API key for your model (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY)
+
+# ═══════════════════════════════════════════════════════════════
+# WEBARENA (Reddit/Postmill starter subset)
+# ═══════════════════════════════════════════════════════════════
+#
+# benchmark: "webarena"
+# agent_model: "gpt-4o-mini"
+# site: "reddit"                 # only "reddit" is wired in the starter split
+# split: "train"
+# gate_split: "test"
+# max_concurrency: 1             # Playwright browsers are heavy; keep at 1
+# max_steps: 30                  # per-task action cap
+# per_task_timeout: 300          # seconds per task subprocess
+# threshold: 0.8
+# webarena_repo: "webarena_repo" # local clone path (prepare.py creates it)
+# install_webarena_deps: true    # run pip install -r webarena_repo/requirements.txt during prepare
+# reasoning_effort: "medium"     # optional
+#
+# Required env vars:
+#   OPENAI_API_KEY (or ANTHROPIC_API_KEY depending on agent_model)
+#   REDDIT=http://localhost:9999  (or wherever your Postmill container serves)
+#
+# Required local setup (Reddit image is NOT on Docker Hub — download + load it):
+#   curl -LO http://metis.lti.cs.cmu.edu/webarena-images/postmill-populated-exposed-withimg.tar
+#   docker load --input postmill-populated-exposed-withimg.tar
+#   docker run --name forum -p 9999:80 -d postmill-populated-exposed-withimg
+#   playwright install chromium
+#
+# Note: the starter split is restricted to pure-Reddit info-seeking tasks that
+# do not require database resets between runs, so the 2-iteration smoke test
+# is deterministic.
+#
+# ─── WebArena Smoke Mode (no 50 GB download) ──────────────────────
+#
+# For a no-download smoke run against a local Flask fixture that mimics a
+# handful of Postmill pages:
+#
+#   benchmark: "webarena"
+#   agent_model: "gpt-4o-mini"
+#   site: "reddit"
+#   smoke: true                    # use webarena_data/smoke_tasks/ (IDs 10001-10008)
+#   split: "train"
+#   gate_split: "test"
+#   max_concurrency: 1
+#   max_steps: 15
+#   per_task_timeout: 120
+#   threshold: 0.5
+#   webarena_repo: "webarena_repo"
+#   install_webarena_deps: false
+#
+# Then in a separate terminal:
+#   python fixtures/webarena_smoke/app.py
+#
+# 8 tasks total (5 train / 3 test). Five are solvable from the front-page listing
+# alone; three (10006, 10007, 10008) require clicking into post detail pages and
+# are designed to fail on the baseline — giving the optimization loop real signal
+# to improve against. This lets you iterate on the agent end-to-end with real
+# Playwright + real evaluators, without needing the Postmill tarball.

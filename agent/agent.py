@@ -5,3 +5,4 @@
 #
 #   tau-bench      → agent/templates/tau_bench.py
 #   terminal-bench → agent/templates/terminal_bench.py
+#   webarena       → agent/templates/webarena.py
