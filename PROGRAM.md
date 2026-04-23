@@ -2,6 +2,6 @@
 #
 # Running `python prepare.py` composes this file from:
 #   program_templates/base.md            (shared sections)
-#   program_templates/tau_bench.md       (or terminal_bench.md)
+#   program_templates/tau_bench.md       (or terminal_bench.md / webarena.md)
 #
 # based on the benchmark set in experiment_config.yaml.

@@ -1,0 +1,23 @@
+{
+  "sites": ["reddit"],
+  "task_id": 10002,
+  "require_login": false,
+  "storage_state": null,
+  "start_url": "http://localhost:9999",
+  "geolocation": null,
+  "intent_template": "Who is the author of the post titled 'Distributed Systems'?",
+  "instantiation_dict": {},
+  "intent": "Who is the author of the post titled 'Distributed Systems'?",
+  "require_reset": false,
+  "eval": {
+    "eval_types": ["string_match"],
+    "reference_answers": {
+      "must_include": ["bob"]
+    },
+    "reference_url": "",
+    "program_html": [],
+    "string_note": "",
+    "reference_answer_raw_annotation": "bob"
+  },
+  "intent_template_id": 10000
+}

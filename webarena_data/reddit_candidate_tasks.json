@@ -1,0 +1,9 @@
+{
+  "description": "Curated starter set of WebArena task IDs for the Reddit/Postmill site. These are pure-Reddit (sites == ['reddit']) info-seeking tasks evaluated via string_match/url_match only (no program_html mutation verification). prepare.py validates each ID against webarena_repo/config_files/ and samples 7 train / 3 test.",
+  "site": "reddit",
+  "candidate_task_ids": [
+    "27", "28", "29", "30", "31",
+    "66", "67", "68", "69",
+    "723", "726"
+  ]
+}

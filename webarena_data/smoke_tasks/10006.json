@@ -1,0 +1,23 @@
+{
+  "sites": ["reddit"],
+  "task_id": 10006,
+  "require_login": false,
+  "storage_state": null,
+  "start_url": "http://localhost:9999",
+  "geolocation": null,
+  "intent_template": "Open the post titled 'A Quiet Week' and quote its body text verbatim.",
+  "instantiation_dict": {},
+  "intent": "Open the post titled 'A Quiet Week' and quote its body text verbatim.",
+  "require_reset": false,
+  "eval": {
+    "eval_types": ["string_match"],
+    "reference_answers": {
+      "must_include": ["Not much going on"]
+    },
+    "reference_url": "",
+    "program_html": [],
+    "string_note": "Body text is only rendered on the post detail page; the front page and forum listing show title/author/score/count only. Agents that stop at the listing cannot answer this.",
+    "reference_answer_raw_annotation": "Not much going on. Hope you are all doing well."
+  },
+  "intent_template_id": 10000
+}

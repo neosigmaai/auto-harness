@@ -1,0 +1,23 @@
+{
+  "sites": ["reddit"],
+  "task_id": 10005,
+  "require_login": false,
+  "storage_state": null,
+  "start_url": "http://localhost:9999",
+  "geolocation": null,
+  "intent_template": "What is the title of the second post on the front page?",
+  "instantiation_dict": {},
+  "intent": "What is the title of the second post on the front page?",
+  "require_reset": false,
+  "eval": {
+    "eval_types": ["string_match"],
+    "reference_answers": {
+      "must_include": ["Distributed Systems"]
+    },
+    "reference_url": "",
+    "program_html": [],
+    "string_note": "",
+    "reference_answer_raw_annotation": "Distributed Systems"
+  },
+  "intent_template_id": 10000
+}
