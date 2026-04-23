@@ -14,6 +14,7 @@ The loop is defined in `PROGRAM.md`. The coding agent edits `agent/agent.py` to 
 |-----------|--------|-------|-----------------|
 | **tau-bench** | Customer service (retail, airline, telecom) | retail: 114, airline: 50, telecom: 114 | Structured tool calls via tau2 |
 | **Terminal-Bench 2.0** | Real-world terminal tasks (coding, sysadmin, security) | 89 | Bash commands via Harbor containers |
+| **BIRD-Interact** | Interactive text-to-SQL (multi-turn, CRUD over Postgres) | lite: 300, full: 600 | Google ADK agent against a 3-service environment (user sim, DB env, system agent) |
 
 ---
 
@@ -61,6 +62,55 @@ python prepare.py
 # Point your coding agent at the repo and prompt:
 #   "Read PROGRAM.md and start the optimization loop."
 ```
+
+## Quick start: BIRD-Interact
+
+**Requirements:** Docker (for Postgres), Python 3.12+, `git-lfs` (for the HF dataset), an `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` depending on model), and a coding agent.
+
+```bash
+# 1. Clone this repo
+git clone https://github.com/neosigmaai/auto-harness
+cd auto-harness
+
+# 2. Set up environment variables
+cp .env.example .env
+# edit .env — set OPENAI_API_KEY (or ANTHROPIC_API_KEY)
+
+# 3. Configure the experiment
+cp experiment_config.yaml.template experiment_config.yaml
+# edit experiment_config.yaml — uncomment the BIRD-INTERACT section
+
+# 4. Initialize — prepare.py auto-provisions everything:
+#      - clones BIRD-Interact-ADK into ./bird_interact_adk/ (gitignored)
+#      - creates an isolated .venv-adk with the ADK's deps
+#      - clones the bird-interact-lite dataset from HuggingFace
+#      - starts the Postgres Docker container
+#      - runs the baseline (300 tasks) and generates the train/test split
+python prepare.py
+
+# 5. Start the optimization loop
+# Point your coding agent at the repo and prompt:
+#   "Read PROGRAM.md and start the optimization loop."
+```
+
+**Ground truth (one-time step):** The public BIRD-Interact dataset ships *without* gold SQL to prevent data leakage. On first run, `prepare.py` will detect this and print the exact email + merge command needed. Briefly:
+
+1. Email `bird.bench25@gmail.com` with subject `[bird-interact-lite GT&Test Cases]`
+2. Run the `combine_public_with_gt.py` script shown by prepare.py, using the jsonl you receive
+3. Re-run `python prepare.py`
+
+**What the integration adds:**
+
+- `BirdInteractRunner` in `benchmark.py` — spawns the three ADK services (user simulator, DB environment, system agent) per run, drives `orchestrator.runner`, parses results into the harness reward format.
+- `agent/bird_service.py` + `agent/bird_adk_runtime.py` — the harness-owned wrapper that lets your `agent/agent.py` be served as the BIRD system agent via FastAPI.
+- `agent/templates/bird_interact.py` — faithful copy of the stock BIRD-Interact-ADK system agent, copied to `agent/agent.py` by `prepare.py` as the iteration starting point.
+- `program_templates/bird_interact.md` — benchmark-specific guidance appended to `PROGRAM.md`.
+- `docs/learnings.md` — iteration notes from running this on `gpt-5.4`, with failure-mode analysis and what worked / didn't.
+
+**Known caveats:**
+- GPT-5-family models reject explicit `temperature=0`; the template omits the temperature kwarg for those models (stock behavior preserved for all other models).
+- `prepare.py` creates a separate `.venv-adk` inside `bird_interact_adk/` because the ADK's deps (google-adk, psycopg2, etc.) may conflict with other benchmarks' deps.
+- Advanced users can point at an existing BIRD-Interact install via `bird_repo` + `bird_python_bin` in `experiment_config.yaml` to skip auto-provisioning.
 
 ## Quick start: tau-bench
 
@@ -114,11 +164,13 @@ Each benchmark has two templates:
 ```
 agent/templates/
 ├── tau_bench.py           # tau-bench agent starting point
-└── terminal_bench.py      # terminal-bench agent starting point
+├── terminal_bench.py      # terminal-bench agent starting point
+└── bird_interact.py       # BIRD-Interact system agent starting point
 
 program_templates/
 ├── tau_bench.md           # tau-bench PROGRAM.md
-└── terminal_bench.md      # terminal-bench PROGRAM.md
+├── terminal_bench.md      # terminal-bench PROGRAM.md
+└── bird_interact.md       # BIRD-Interact PROGRAM.md
 ```
 
 `prepare.py` copies the correct templates into `agent/agent.py` and `PROGRAM.md` based on `experiment_config.yaml`. The coding agent then edits `agent/agent.py` freely. To see what it changed:
@@ -202,7 +254,9 @@ Steps 1 and 2 run sequentially; Step 2 always runs regardless of Step 1's outcom
 agent/
   agent.py                  the agent under optimization — only file the coding agent edits
   templates/                read-only starting points for each benchmark
-benchmark.py                benchmark execution layer (abstract + tau-bench + terminal-bench)
+  bird_service.py           FastAPI service wrapper for BIRD-Interact system agent
+  bird_adk_runtime.py       Google ADK runtime adapter for the BIRD service
+benchmark.py                benchmark execution layer (abstract + tau-bench + terminal-bench + bird-interact)
 gating.py                   three-step gate (regression suite → full test → suite promotion)
 prepare.py                  workspace setup, template copying, baseline run
 record.py                   appends iteration result to results.tsv
@@ -211,9 +265,11 @@ program_templates/          benchmark-specific PROGRAM.md templates
 experiment_config.yaml.template   example configs for each benchmark
 Dockerfile                  container definition (tau-bench)
 docker-compose.yml          mounts agent/ and workspace/ (tau-bench)
+docs/
+  learnings.md              (optional) iteration notes from published runs
 workspace/
   suite.json                regression eval suite (task IDs + threshold)
-  learnings.md              persistent log: patterns, what worked, requests to human
+  learnings.md              per-run log: patterns, what worked, requests to human
   results.tsv               iteration history (val_score, commit, evals, timestamp)
   traces/                   agent conversation traces for failure analysis
 ```

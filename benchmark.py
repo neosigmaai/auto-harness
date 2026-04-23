@@ -4,15 +4,23 @@ Benchmark execution layer.
 BenchmarkRunner: abstract base class — subclass to plug in your own benchmark.
 TauBenchRunner:  implementation for tau-bench (https://github.com/sierra-research/tau2-bench).
 TerminalBenchRunner: implementation for Terminal-Bench 2.0 via Harbor framework.
+BirdInteractRunner: implementation for BIRD-Interact via external BIRD-Interact-ADK.
 
 Both gating.py and the coding agent call this directly.
 """
 
 from __future__ import annotations
 
+import json
 import os
+import shutil
+import subprocess
 import sys
+import tempfile
 import threading
+import time
+import urllib.error
+import urllib.request
 from abc import ABC, abstractmethod
 
 _registry_lock = threading.Lock()
@@ -62,6 +70,7 @@ class TauBenchRunner(BenchmarkRunner):
         max_concurrency: int = 3,
         seed: int = 300,
         reasoning_effort: str | None = None,
+        user_model: str | None = None,
     ):
         self.domain = domain
         self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-5.4")
@@ -69,6 +78,7 @@ class TauBenchRunner(BenchmarkRunner):
         self.max_concurrency = max_concurrency
         self.seed = seed
         self.reasoning_effort = reasoning_effort
+        self.user_model = user_model or self.agent_model
 
     def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
         # tau2 reads TAU2_DATA_DIR at import time — set it before the first import
@@ -79,9 +89,20 @@ class TauBenchRunner(BenchmarkRunner):
         if self.reasoning_effort:
             os.environ["AGENT_REASONING_EFFORT"] = self.reasoning_effort
 
+        # tau2 hardcodes gpt-4.1-2025-04-14 for NL-assertion scoring and env-interface.
+        # Patch both tau2.config AND the consumer modules (which capture the names at import time).
+        import tau2.config as _tau2_config
+        _tau2_config.DEFAULT_LLM_NL_ASSERTIONS = self.agent_model
+        _tau2_config.DEFAULT_LLM_ENV_INTERFACE = self.agent_model
+
         from tau2.data_model.simulation import TextRunConfig
         from tau2 import registry
         from tau2.run import run_domain
+
+        import tau2.evaluator.evaluator_nl_assertions as _nl_mod
+        import tau2.environment.utils.interface_agent as _if_mod
+        _nl_mod.DEFAULT_LLM_NL_ASSERTIONS = self.agent_model
+        _if_mod.DEFAULT_LLM_ENV_INTERFACE = self.agent_model
 
         from agent.agent import HarnessAgent
 
@@ -101,6 +122,7 @@ class TauBenchRunner(BenchmarkRunner):
             domain=self.domain,
             agent="custom_agent",
             llm_agent=self.agent_model,
+            llm_user=self.user_model,
             task_split_name=self.split,
             task_ids=task_ids,
             max_concurrency=self.max_concurrency,
@@ -324,6 +346,453 @@ class TerminalBenchRunner(BenchmarkRunner):
         return results
 
 
+def resolve_bird_adk_dir(configured_path: str | None = None) -> str:
+    """Resolve the BIRD-Interact-ADK directory from a repo root or direct path."""
+    candidates = []
+    if configured_path:
+        candidates.append(configured_path)
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates.extend([
+        os.getenv("BIRD_REPO", ""),
+        # auto-provisioned location (prepare.py clones here)
+        os.path.join(here, "bird_interact_adk", "BIRD-Interact-ADK"),
+        os.path.join(here, "bird_interact_adk"),
+        # sibling-repo fallback (advanced users)
+        os.path.join(here, "..", "BIRD-Interact"),
+        os.path.join(here, "..", "BIRD-Interact", "BIRD-Interact-ADK"),
+        os.path.join(here, "BIRD-Interact-ADK"),
+    ])
+
+    for raw in candidates:
+        if not raw:
+            continue
+        path = os.path.abspath(os.path.expanduser(raw))
+        direct = os.path.join(path, "orchestrator", "runner.py")
+        nested = os.path.join(path, "BIRD-Interact-ADK", "orchestrator", "runner.py")
+        if os.path.exists(direct):
+            return path
+        if os.path.exists(nested):
+            return os.path.join(path, "BIRD-Interact-ADK")
+
+    raise FileNotFoundError(
+        "Could not locate BIRD-Interact-ADK. "
+        "Run `python prepare.py` to auto-provision it into ./bird_interact_adk/, "
+        "or set bird_repo in experiment_config.yaml to point at an existing install."
+    )
+
+
+def resolve_bird_python_bin(adk_dir: str, configured_python: str | None = None) -> str | None:
+    """Pick a Python interpreter that has the BIRD-Interact-ADK dependencies installed."""
+    candidates = []
+    if configured_python:
+        candidates.append(configured_python)
+    candidates.extend([
+        os.getenv("BIRD_PYTHON_BIN", ""),
+        os.path.join(adk_dir, ".venv-adk", "bin", "python"),
+        os.path.join(adk_dir, ".venv", "bin", "python"),
+        os.path.join(adk_dir, ".conda-py310", "bin", "python"),
+        shutil.which("python3") or "",
+        shutil.which("python") or "",
+    ])
+
+    for candidate in candidates:
+        if candidate and os.path.exists(candidate):
+            return os.path.abspath(candidate)
+    return None
+
+
+def resolve_bird_data_path(
+    adk_dir: str,
+    dataset: str = "lite",
+    configured_data_path: str | None = None,
+) -> str:
+    """Resolve the bird_interact_data.jsonl path."""
+    if configured_data_path:
+        return os.path.abspath(os.path.expanduser(configured_data_path))
+    return os.path.join(adk_dir, f"bird-interact-{dataset}", "bird_interact_data.jsonl")
+
+
+class BirdInteractRunner(BenchmarkRunner):
+    """Runner for BIRD-Interact via the external BIRD-Interact-ADK repo."""
+
+    SPLIT_FILE = "bird_data/task_split.json"
+
+    def __init__(
+        self,
+        bird_repo: str | None = None,
+        bird_python_bin: str | None = None,
+        split: str | None = "train",
+        mode: str = "a-interact",
+        dataset: str = "lite",
+        data_path: str | None = None,
+        agent_model: str | None = None,
+        user_model: str | None = None,
+        patience: int = 3,
+        n_concurrent: int = 3,
+        per_task_timeout: int = 1800,
+        jobs_dir: str = "workspace/bird_runs",
+        system_agent_port: int = 6100,
+        user_sim_port: int = 6101,
+        db_env_port: int = 6102,
+        pg_host: str | None = None,
+        pg_port: int | None = None,
+        pg_user: str | None = None,
+        pg_password: str | None = None,
+    ):
+        self.adk_dir = resolve_bird_adk_dir(bird_repo)
+        self.python_bin = resolve_bird_python_bin(self.adk_dir, bird_python_bin)
+        if not self.python_bin:
+            raise FileNotFoundError(
+                "Could not find a Python interpreter for BIRD-Interact-ADK. "
+                "Set bird_python_bin in experiment_config.yaml."
+            )
+
+        self.split = split
+        self.mode = mode
+        self.dataset = dataset
+        self.data_path = resolve_bird_data_path(self.adk_dir, dataset, data_path)
+        self.agent_model = agent_model
+        self.user_model = user_model
+        self.patience = patience
+        self.n_concurrent = n_concurrent
+        self.per_task_timeout = per_task_timeout
+        self.jobs_dir = jobs_dir
+        self.system_agent_port = system_agent_port
+        self.user_sim_port = user_sim_port
+        self.db_env_port = db_env_port
+        self.pg_host = pg_host
+        self.pg_port = pg_port
+        self.pg_user = pg_user
+        self.pg_password = pg_password
+
+    def _load_split_tasks(self) -> list[str] | None:
+        if self.split is None:
+            return None
+
+        if not os.path.exists(self.SPLIT_FILE):
+            raise FileNotFoundError(f"{self.SPLIT_FILE} not found. Run prepare.py first.")
+
+        with open(self.SPLIT_FILE) as f:
+            splits = json.load(f)
+        tasks = splits.get(self.split)
+        if tasks is None:
+            raise ValueError(
+                f"Split '{self.split}' not found in {self.SPLIT_FILE}. "
+                f"Available: {list(splits.keys())}"
+            )
+        return tasks
+
+    def _load_tasks(self) -> list[dict]:
+        if not os.path.exists(self.data_path):
+            raise FileNotFoundError(
+                f"BIRD-Interact dataset not found at {self.data_path}. "
+                "Download the dataset and set bird_data_path or bird_repo in experiment_config.yaml."
+            )
+
+        tasks = []
+        with open(self.data_path) as f:
+            for line in f:
+                if line.strip():
+                    tasks.append(json.loads(line))
+        return tasks
+
+    def _select_tasks(self, task_ids: list[str]) -> list[dict]:
+        task_set = {str(tid) for tid in task_ids}
+        all_tasks = self._load_tasks()
+        selected = [task for task in all_tasks if str(task.get("instance_id")) in task_set]
+        found = {str(task.get("instance_id")) for task in selected}
+        missing = [tid for tid in task_ids if str(tid) not in found]
+        if missing:
+            raise KeyError(f"BIRD-Interact task(s) not found: {missing}")
+
+        order = {str(tid): i for i, tid in enumerate(task_ids)}
+        selected.sort(key=lambda task: order[str(task.get("instance_id"))])
+        return selected
+
+    def _base_env(self) -> dict[str, str]:
+        env = os.environ.copy()
+        auto_root = os.path.dirname(os.path.abspath(__file__))
+        env["PYTHONPATH"] = auto_root + os.pathsep + self.adk_dir + os.pathsep + env.get("PYTHONPATH", "")
+        env["NO_PROXY"] = env.get("NO_PROXY", "127.0.0.1,localhost")
+        env["no_proxy"] = env.get("no_proxy", env["NO_PROXY"])
+        env["SYSTEM_AGENT_PORT"] = str(self.system_agent_port)
+        env["USER_SIM_PORT"] = str(self.user_sim_port)
+        env["DB_ENV_PORT"] = str(self.db_env_port)
+        env["DATASET"] = self.dataset
+        env["PATIENCE"] = str(self.patience)
+        env["PYTHONUNBUFFERED"] = "1"
+
+        if self.agent_model:
+            env["SYSTEM_AGENT_MODEL"] = self.agent_model
+        if self.user_model:
+            env["USER_SIM_MODEL"] = self.user_model
+        if env.get("OPENAI_API_KEY") and not env.get("LITELLM_API_KEY"):
+            env["LITELLM_API_KEY"] = env["OPENAI_API_KEY"]
+        if env.get("OPENAI_API_BASE") and not env.get("LITELLM_API_BASE"):
+            env["LITELLM_API_BASE"] = env["OPENAI_API_BASE"]
+        # Homebrew installs PostgreSQL client tools in a keg-only prefix.
+        for libpq_bin in (
+            "/opt/homebrew/opt/libpq/bin",
+            "/usr/local/opt/libpq/bin",
+        ):
+            if os.path.isdir(libpq_bin):
+                env["PATH"] = libpq_bin + os.pathsep + env.get("PATH", "")
+                break
+        if self.pg_host:
+            env["PG_HOST"] = self.pg_host
+        if self.pg_port is not None:
+            env["PG_PORT"] = str(self.pg_port)
+        if self.pg_user:
+            env["PG_USER"] = self.pg_user
+        if self.pg_password:
+            env["PG_PASSWORD"] = self.pg_password
+
+        return env
+
+    def _start_service(
+        self,
+        module: str,
+        port: int,
+        log_name: str,
+        env: dict[str, str],
+    ) -> tuple[subprocess.Popen, object]:
+        os.makedirs(self.jobs_dir, exist_ok=True)
+        log_dir = os.path.join(self.jobs_dir, "service_logs")
+        os.makedirs(log_dir, exist_ok=True)
+        log_path = os.path.join(log_dir, log_name)
+        log_file = open(log_path, "w")
+        proc = subprocess.Popen(
+            [
+                self.python_bin,
+                "-m",
+                "uvicorn",
+                f"{module}:app",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                str(port),
+                "--log-level",
+                "warning",
+            ],
+            cwd=self.adk_dir,
+            env=env,
+            stdout=log_file,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+        return proc, log_file
+
+    def _wait_for_health(self, port: int, timeout_sec: int = 30) -> None:
+        deadline = time.time() + timeout_sec
+        url = f"http://127.0.0.1:{port}/health"
+        while time.time() < deadline:
+            try:
+                with urllib.request.urlopen(url, timeout=2) as resp:
+                    if 200 <= resp.status < 300:
+                        return
+            except (urllib.error.URLError, TimeoutError, ConnectionError, OSError):
+                time.sleep(1)
+        raise RuntimeError(f"Timed out waiting for health endpoint: {url}")
+
+    def _start_services(self) -> list[tuple[subprocess.Popen, object]]:
+        env = self._base_env()
+        services = [
+            ("agent.bird_service", self.system_agent_port, "system_agent.log"),
+            ("user_simulator.server", self.user_sim_port, "user_simulator.log"),
+            ("db_environment.server", self.db_env_port, "db_environment.log"),
+        ]
+
+        started: list[tuple[subprocess.Popen, object]] = []
+        try:
+            for module, port, log_name in services:
+                proc, log_file = self._start_service(module, port, log_name, env)
+                started.append((proc, log_file))
+                self._wait_for_health(port)
+            return started
+        except Exception:
+            self._stop_services(started)
+            raise
+
+    def _stop_services(self, services: list[tuple[subprocess.Popen, object]]) -> None:
+        for proc, log_file in reversed(services):
+            try:
+                proc.terminate()
+                proc.wait(timeout=10)
+            except Exception:
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
+            finally:
+                try:
+                    log_file.close()
+                except Exception:
+                    pass
+
+    def _copy_train_traces(self, results: list[dict]) -> None:
+        latest_dir = os.path.join("workspace", "traces", "latest")
+        baseline_dir = os.path.join("workspace", "traces", "baseline")
+        os.makedirs(latest_dir, exist_ok=True)
+
+        for item in results:
+            task_name = str(item.get("instance_id") or item.get("task_id") or "")
+            if not task_name:
+                continue
+
+            trace_payload = {
+                "dialogue_history": item.get("dialogue_history", []),
+                "tool_trajectory": item.get("tool_trajectory", []),
+                "adk_events": item.get("adk_events", []),
+                "final_response": item.get("final_response", ""),
+            }
+
+            dest = os.path.join(latest_dir, task_name)
+            os.makedirs(dest, exist_ok=True)
+            with open(os.path.join(dest, "trace.json"), "w") as f:
+                json.dump(trace_payload, f, indent=2)
+            with open(os.path.join(dest, "result.json"), "w") as f:
+                json.dump(item, f, indent=2, default=str)
+
+            base_dest = os.path.join(baseline_dir, task_name)
+            if not os.path.exists(base_dest):
+                os.makedirs(base_dest, exist_ok=True)
+                with open(os.path.join(base_dest, "trace.json"), "w") as f:
+                    json.dump(trace_payload, f, indent=2)
+                with open(os.path.join(base_dest, "result.json"), "w") as f:
+                    json.dump(item, f, indent=2, default=str)
+
+        print("[benchmark] traces: latest/ updated, baseline/ preserved")
+
+    def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
+        selected_ids = task_ids if task_ids is not None else self._load_split_tasks()
+        selected_tasks = None if selected_ids is None else self._select_tasks(selected_ids)
+
+        os.makedirs(self.jobs_dir, exist_ok=True)
+        input_path = None
+        if selected_tasks is not None:
+            tmp_input = tempfile.NamedTemporaryFile(
+                mode="w",
+                suffix=".jsonl",
+                prefix="bird_input_",
+                dir=self.jobs_dir,
+                delete=False,
+            )
+            with tmp_input as f:
+                for task in selected_tasks:
+                    f.write(json.dumps(task) + "\n")
+            input_path = tmp_input.name
+            n_tasks = len(selected_tasks)
+        else:
+            input_path = self.data_path
+            n_tasks = 600 if self.dataset == "full" else 300
+
+        tmp_output = tempfile.NamedTemporaryFile(
+            suffix=".json",
+            prefix="bird_output_",
+            dir=self.jobs_dir,
+            delete=False,
+        )
+        tmp_output.close()
+        output_path = tmp_output.name
+
+        env = self._base_env()
+        concurrency = max(1, self.n_concurrent)
+        timeout_sec = max(
+            600,
+            int((n_tasks / concurrency) * self.per_task_timeout) + 300,
+        )
+
+        print(
+            f"[benchmark] running {n_tasks} bird-interact tasks "
+            f"(mode={self.mode}, dataset={self.dataset}, n={concurrency}, "
+            f"subprocess_timeout={timeout_sec}s)"
+        )
+
+        services = self._start_services()
+        try:
+            cmd = [
+                self.python_bin,
+                "-m",
+                "orchestrator.runner",
+                "--mode",
+                self.mode,
+                "--data",
+                input_path,
+                "--output",
+                output_path,
+                "--concurrency",
+                str(concurrency),
+            ]
+            result = subprocess.run(
+                cmd,
+                cwd=self.adk_dir,
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=timeout_sec,
+            )
+            if result.stdout:
+                print(result.stdout)
+            if result.stderr:
+                print(result.stderr, file=sys.stderr)
+        except subprocess.TimeoutExpired:
+            print(f"[benchmark] WARNING: BIRD-Interact run timed out after {timeout_sec}s")
+        finally:
+            self._stop_services(services)
+
+        if not os.path.exists(output_path):
+            print("[benchmark] ERROR: no BIRD-Interact output file produced")
+            if selected_tasks is not None:
+                try:
+                    os.remove(input_path)
+                except OSError:
+                    pass
+            return {}
+
+        with open(output_path) as f:
+            output = json.load(f)
+
+        raw_results = output.get("results", [])
+        results: dict[str, float | None] = {}
+        for item in raw_results:
+            task_name = str(item.get("instance_id") or item.get("task_id") or "")
+            if not task_name:
+                continue
+            if item.get("error"):
+                results[task_name] = None
+            else:
+                results[task_name] = float(item.get("total_reward", 0.0))
+
+        if selected_ids is not None:
+            for tid in selected_ids:
+                results.setdefault(str(tid), None)
+
+        if self.split == "train":
+            self._copy_train_traces(raw_results)
+
+        # Prune stale temp outputs from prior runs.
+        for old in os.listdir(self.jobs_dir):
+            if old.startswith("bird_input_") or old.startswith("bird_output_"):
+                old_path = os.path.join(self.jobs_dir, old)
+                if old_path not in {input_path, output_path}:
+                    try:
+                        os.remove(old_path)
+                    except OSError:
+                        pass
+
+        if selected_tasks is not None:
+            try:
+                os.remove(input_path)
+            except OSError:
+                pass
+        try:
+            os.remove(output_path)
+        except OSError:
+            pass
+
+        return results
+
+
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -360,6 +829,28 @@ if __name__ == "__main__":
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
             reasoning_effort=cfg.get("reasoning_effort"),
         )
+    elif benchmark == "bird-interact":
+        runner = BirdInteractRunner(
+            bird_repo=cfg.get("bird_repo"),
+            bird_python_bin=cfg.get("bird_python_bin"),
+            split=args.split,
+            mode=cfg.get("mode", "a-interact"),
+            dataset=cfg.get("dataset", "lite"),
+            data_path=cfg.get("bird_data_path"),
+            agent_model=cfg.get("agent_model"),
+            user_model=cfg.get("user_model"),
+            patience=cfg.get("patience", 3),
+            n_concurrent=args.concurrency,
+            per_task_timeout=cfg.get("per_task_timeout", 1800),
+            jobs_dir="workspace/bird_runs/cli",
+            system_agent_port=cfg.get("system_agent_port", 6100),
+            user_sim_port=cfg.get("user_sim_port", 6101),
+            db_env_port=cfg.get("db_env_port", 6102),
+            pg_host=cfg.get("pg_host"),
+            pg_port=cfg.get("pg_port"),
+            pg_user=cfg.get("pg_user"),
+            pg_password=cfg.get("pg_password"),
+        )
     elif benchmark == "tau-bench":
         if not args.domain:
             print("ERROR: 'domain' not set in experiment_config.yaml (or pass --domain)")
@@ -370,6 +861,7 @@ if __name__ == "__main__":
             split=args.split,
             max_concurrency=args.concurrency,
             reasoning_effort=cfg.get("reasoning_effort"),
+            user_model=cfg.get("user_model"),
         )
     else:
         print(f"ERROR: unknown benchmark '{benchmark}'")
