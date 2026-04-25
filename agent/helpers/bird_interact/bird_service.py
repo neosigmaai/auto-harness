@@ -54,11 +54,13 @@ async def run_session(req: SessionRunRequest):
 
 @app.get("/health")
 async def health():
+    if not runtime.available:
+        raise HTTPException(status_code=503, detail=f"ADK runtime unavailable: {runtime.error}")
     return {
         "status": "healthy",
         "service": "auto_harness_bird_system_agent",
         "model": settings.system_agent_model,
-        "adk_available": runtime.available,
+        "adk_available": True,
         "adk_error": runtime.error,
     }
 

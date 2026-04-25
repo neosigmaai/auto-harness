@@ -614,6 +614,7 @@ class BirdInteractRunner(BenchmarkRunner):
             except Exception:
                 try:
                     proc.kill()
+                    proc.wait()
                 except Exception:
                     pass
             finally:
