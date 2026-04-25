@@ -116,7 +116,7 @@ class AdkRuntime:
                 return bool(is_final())
             except Exception:
                 return False
-        return False
+        return bool(is_final) if is_final is not None else False
 
     @staticmethod
     def _session_id(session: Any) -> str:

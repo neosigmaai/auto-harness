@@ -89,20 +89,9 @@ class TauBenchRunner(BenchmarkRunner):
         if self.reasoning_effort:
             os.environ["AGENT_REASONING_EFFORT"] = self.reasoning_effort
 
-        # tau2 hardcodes gpt-4.1-2025-04-14 for NL-assertion scoring and env-interface.
-        # Patch both tau2.config AND the consumer modules (which capture the names at import time).
-        import tau2.config as _tau2_config
-        _tau2_config.DEFAULT_LLM_NL_ASSERTIONS = self.agent_model
-        _tau2_config.DEFAULT_LLM_ENV_INTERFACE = self.agent_model
-
         from tau2.data_model.simulation import TextRunConfig
         from tau2 import registry
         from tau2.run import run_domain
-
-        import tau2.evaluator.evaluator_nl_assertions as _nl_mod
-        import tau2.environment.utils.interface_agent as _if_mod
-        _nl_mod.DEFAULT_LLM_NL_ASSERTIONS = self.agent_model
-        _if_mod.DEFAULT_LLM_ENV_INTERFACE = self.agent_model
 
         from agent.agent import HarnessAgent
 
@@ -561,25 +550,29 @@ class BirdInteractRunner(BenchmarkRunner):
         os.makedirs(log_dir, exist_ok=True)
         log_path = os.path.join(log_dir, log_name)
         log_file = open(log_path, "w")
-        proc = subprocess.Popen(
-            [
-                self.python_bin,
-                "-m",
-                "uvicorn",
-                f"{module}:app",
-                "--host",
-                "127.0.0.1",
-                "--port",
-                str(port),
-                "--log-level",
-                "warning",
-            ],
-            cwd=self.adk_dir,
-            env=env,
-            stdout=log_file,
-            stderr=subprocess.STDOUT,
-            start_new_session=True,
-        )
+        try:
+            proc = subprocess.Popen(
+                [
+                    self.python_bin,
+                    "-m",
+                    "uvicorn",
+                    f"{module}:app",
+                    "--host",
+                    "127.0.0.1",
+                    "--port",
+                    str(port),
+                    "--log-level",
+                    "warning",
+                ],
+                cwd=self.adk_dir,
+                env=env,
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
+        except Exception:
+            log_file.close()
+            raise
         return proc, log_file
 
     def _wait_for_health(self, port: int, timeout_sec: int = 30) -> None:
@@ -597,7 +590,7 @@ class BirdInteractRunner(BenchmarkRunner):
     def _start_services(self) -> list[tuple[subprocess.Popen, object]]:
         env = self._base_env()
         services = [
-            ("agent.bird_service", self.system_agent_port, "system_agent.log"),
+            ("agent.helpers.bird_interact.bird_service", self.system_agent_port, "system_agent.log"),
             ("user_simulator.server", self.user_sim_port, "user_simulator.log"),
             ("db_environment.server", self.db_env_port, "db_environment.log"),
         ]
@@ -695,6 +688,17 @@ class BirdInteractRunner(BenchmarkRunner):
         tmp_output.close()
         output_path = tmp_output.name
 
+        def _cleanup_temp_files() -> None:
+            if selected_tasks is not None and input_path:
+                try:
+                    os.remove(input_path)
+                except OSError:
+                    pass
+            try:
+                os.remove(output_path)
+            except OSError:
+                pass
+
         env = self._base_env()
         concurrency = max(1, self.n_concurrent)
         timeout_sec = max(
@@ -740,17 +744,18 @@ class BirdInteractRunner(BenchmarkRunner):
         finally:
             self._stop_services(services)
 
-        if not os.path.exists(output_path):
+        if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
             print("[benchmark] ERROR: no BIRD-Interact output file produced")
-            if selected_tasks is not None:
-                try:
-                    os.remove(input_path)
-                except OSError:
-                    pass
+            _cleanup_temp_files()
             return {}
 
-        with open(output_path) as f:
-            output = json.load(f)
+        try:
+            with open(output_path) as f:
+                output = json.load(f)
+        except (json.JSONDecodeError, ValueError) as e:
+            print(f"[benchmark] ERROR: failed to parse BIRD-Interact output: {e}")
+            _cleanup_temp_files()
+            return {}
 
         raw_results = output.get("results", [])
         results: dict[str, float | None] = {}
@@ -780,15 +785,7 @@ class BirdInteractRunner(BenchmarkRunner):
                     except OSError:
                         pass
 
-        if selected_tasks is not None:
-            try:
-                os.remove(input_path)
-            except OSError:
-                pass
-        try:
-            os.remove(output_path)
-        except OSError:
-            pass
+        _cleanup_temp_files()
 
         return results
 

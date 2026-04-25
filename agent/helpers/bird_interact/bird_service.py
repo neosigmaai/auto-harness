@@ -6,7 +6,9 @@ from typing import Any, Dict
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from agent.bird_adk_runtime import AdkRuntime
+from agent.helpers.bird_interact.bird_adk_runtime import AdkRuntime
+# Provided by the external BIRD-Interact-ADK repo. BirdInteractRunner starts this
+# service with cwd=self.adk_dir so the ADK's shared/ package is importable.
 from shared.config import settings
 
 logger = logging.getLogger(__name__)

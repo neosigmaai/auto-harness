@@ -102,10 +102,9 @@ python prepare.py
 **What the integration adds:**
 
 - `BirdInteractRunner` in `benchmark.py` — spawns the three ADK services (user simulator, DB environment, system agent) per run, drives `orchestrator.runner`, parses results into the harness reward format.
-- `agent/bird_service.py` + `agent/bird_adk_runtime.py` — the harness-owned wrapper that lets your `agent/agent.py` be served as the BIRD system agent via FastAPI.
+- `agent/helpers/bird_interact/bird_service.py` + `agent/helpers/bird_interact/bird_adk_runtime.py` — the harness-owned wrapper that lets your `agent/agent.py` be served as the BIRD system agent via FastAPI.
 - `agent/templates/bird_interact.py` — faithful copy of the stock BIRD-Interact-ADK system agent, copied to `agent/agent.py` by `prepare.py` as the iteration starting point.
 - `program_templates/bird_interact.md` — benchmark-specific guidance appended to `PROGRAM.md`.
-- `docs/learnings.md` — iteration notes from running this on `gpt-5.4`, with failure-mode analysis and what worked / didn't.
 
 **Known caveats:**
 - GPT-5-family models reject explicit `temperature=0`; the template omits the temperature kwarg for those models (stock behavior preserved for all other models).
@@ -254,8 +253,11 @@ Steps 1 and 2 run sequentially; Step 2 always runs regardless of Step 1's outcom
 agent/
   agent.py                  the agent under optimization — only file the coding agent edits
   templates/                read-only starting points for each benchmark
-  bird_service.py           FastAPI service wrapper for BIRD-Interact system agent
-  bird_adk_runtime.py       Google ADK runtime adapter for the BIRD service
+  helpers/
+    bird_interact/
+      bird_service.py       FastAPI service wrapper for BIRD-Interact system agent
+      bird_adk_runtime.py   Google ADK runtime adapter for the BIRD service
+      setup.py              prepare.py helpers for BIRD-Interact provisioning
 benchmark.py                benchmark execution layer (abstract + tau-bench + terminal-bench + bird-interact)
 gating.py                   three-step gate (regression suite → full test → suite promotion)
 prepare.py                  workspace setup, template copying, baseline run
@@ -265,8 +267,6 @@ program_templates/          benchmark-specific PROGRAM.md templates
 experiment_config.yaml.template   example configs for each benchmark
 Dockerfile                  container definition (tau-bench)
 docker-compose.yml          mounts agent/ and workspace/ (tau-bench)
-docs/
-  learnings.md              (optional) iteration notes from published runs
 workspace/
   suite.json                regression eval suite (task IDs + threshold)
   learnings.md              per-run log: patterns, what worked, requests to human
