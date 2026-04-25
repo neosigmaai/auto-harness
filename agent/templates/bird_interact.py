@@ -103,7 +103,7 @@ Important strategy tips:
 """.strip()
 
 
-def build_agent(mode: str = "c-interact") -> Agent:
+def build_agent(mode: str = "a-interact") -> Agent:
     """Build the BIRD-Interact system agent for the requested mode."""
     if not ADK_AVAILABLE:
         raise RuntimeError(f"google-adk runtime unavailable: {ADK_IMPORT_ERROR}")
