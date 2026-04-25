@@ -259,7 +259,7 @@ class AdkRuntime:
             text = self._extract_text_from_content(content)
             if self._event_is_final(event) and text:
                 final_text = text
-            elif text:
+            elif text and not final_text:
                 final_text = text
 
         session = await runner.session_service.get_session(
