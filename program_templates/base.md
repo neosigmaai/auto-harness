@@ -141,7 +141,7 @@ Go to step 1.
 
 ## Rules
 
-1. **Only edit `agent/agent.py` and `workspace/learnings.md`** — never touch infrastructure files
+1. **Only edit `agent/agent.py` and `workspace/learnings.md`** — never touch infrastructure files. `gating.py` and `record.py` enforce this with a `git diff` check; modifying any other tracked file fails the gate immediately.
 2. **Never skip the gate** — every committed change must pass all three steps
 3. **One hypothesis per iteration** — keep changes small and reversible
 4. **Always update `learnings.md`** — even on failure; the log is your memory

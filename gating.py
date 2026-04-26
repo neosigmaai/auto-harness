@@ -1,12 +1,16 @@
 """
-Three-step gate for agent changes.
+Multi-step gate for agent changes.
 
+Step 0 — File guard:        rejects iterations where tracked files outside the
+                             agent's allowlist (`agent/agent.py`) were touched.
 Step 1 — Regression suite:  re-runs tasks in workspace/suite.json, checks pass rate >= threshold.
 Step 2 — Full test:         always runs the full benchmark, checks val_score >= best seen in results.tsv.
 Step 3 — Suite promotion:   only if Steps 1+2 pass — re-runs previously-failing train tasks,
                              promotes newly-passing ones into suite.json.
 
-Exit 0 only after all three steps complete successfully. Steps 1 or 2 failing exits 1 immediately.
+Exit 0 only after all steps complete successfully. Any failing step returns 1
+from `run_gate`, which the script entry surfaces as exit 1 — the standard
+"revert and try a different approach" signal documented in PROGRAM.md.
 """
 
 from __future__ import annotations
@@ -14,6 +18,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import subprocess
 import sys
 
 import yaml
@@ -22,12 +27,66 @@ from benchmark import BenchmarkRunner, BirdInteractRunner, TauBenchRunner, Termi
 
 CONFIG_FILE = "experiment_config.yaml"
 
+# Files the agent is allowed to modify across iterations. Everything under
+# `workspace/` is gitignored and therefore invisible to git, so it is not
+# listed here — the agent edits `workspace/learnings.md` freely.
+ALLOWED_AGENT_FILES = frozenset({"agent/agent.py"})
+
 
 def load_config() -> dict:
     if not os.path.exists(CONFIG_FILE):
         return {}
     with open(CONFIG_FILE) as f:
         return yaml.safe_load(f) or {}
+
+
+def _git_lines(*args: str) -> list[str]:
+    try:
+        out = subprocess.check_output(["git", *args], text=True, stderr=subprocess.DEVNULL)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return []
+    return [line for line in out.strip().splitlines() if line]
+
+
+def file_guard_violations(*, check_last_commit: bool = False) -> list[str]:
+    """Return tracked paths the agent has touched outside ``ALLOWED_AGENT_FILES``.
+
+    Always inspects:
+      - ``git diff --name-only HEAD`` — staged + unstaged tracked changes.
+      - ``git ls-files --others --exclude-standard`` — new files not yet ignored.
+
+    With ``check_last_commit=True`` the diff of HEAD vs HEAD~1 is also inspected.
+    Use this from ``record.py`` so an agent that commits forbidden files before
+    invoking record cannot slip past the gate.
+    """
+    paths: set[str] = set()
+    paths.update(_git_lines("diff", "--name-only", "HEAD"))
+    paths.update(_git_lines("ls-files", "--others", "--exclude-standard"))
+    if check_last_commit:
+        paths.update(_git_lines("diff", "--name-only", "HEAD~1", "HEAD"))
+    return sorted(paths - ALLOWED_AGENT_FILES)
+
+
+def file_guard_enabled() -> bool:
+    """File guard is on by default; ``file_guard: false`` in experiment_config disables it."""
+    return load_config().get("file_guard", True) is not False
+
+
+def report_file_guard_failure(violations: list[str], *, prefix: str) -> None:
+    """Print a uniform file-guard failure message to stdout.
+
+    ``prefix`` is the caller-side label (``"[gate]"`` or ``"[record]"``) so the
+    message slots into the existing log format the agent already parses for
+    Step 1/2 failures.
+    """
+    allow = ", ".join(sorted(ALLOWED_AGENT_FILES))
+    print(f"{prefix} FAILED — file guard: {len(violations)} file(s) outside the allowlist")
+    print(f"{prefix}          allowed: {allow}  (workspace/ is gitignored — edit there freely)")
+    for path in violations:
+        print(f"{prefix}            - {path}")
+    print(f"{prefix}          revert with `git checkout -- <file>` (or `git rm <file>` if untracked) and re-run.")
+    print(f"{prefix}          bypass: set `file_guard: false` in experiment_config.yaml.")
+
 
 SUITE_FILE = "workspace/suite.json"
 RESULTS_FILE = "workspace/results.tsv"
@@ -64,6 +123,17 @@ def best_val_score() -> float | None:
 
 
 def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int:
+    # ── Step 0: File-edit guard ───────────────────────────────────────────────
+    # Cheap deterministic check: did the agent touch tracked files outside its
+    # allowlist? If so, fail the gate the same way Step 1 / Step 2 fail —
+    # return 1, let PROGRAM.md drive the revert-and-retry loop. No abort.
+    if file_guard_enabled():
+        violations = file_guard_violations()
+        if violations:
+            print("\n[gate] Step 0: file guard")
+            report_file_guard_failure(violations, prefix="[gate]")
+            return 1
+
     suite = load_suite()
     task_ids: list[str] = suite.get("tasks", [])
     threshold: float = suite.get("threshold", 0.8)
