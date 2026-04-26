@@ -5,6 +5,8 @@ BenchmarkRunner: abstract base class — subclass to plug in your own benchmark.
 TauBenchRunner:  implementation for tau-bench (https://github.com/sierra-research/tau2-bench).
 TerminalBenchRunner: implementation for Terminal-Bench 2.0 via Harbor framework.
 BirdInteractRunner: implementation for BIRD-Interact via external BIRD-Interact-ADK.
+BFCLRunner: implementation for BFCL (Berkeley Function-Calling Leaderboard) via
+            the pinned `bfcl-eval` package and a subprocess shim.
 
 Both gating.py and the coding agent call this directly.
 """
@@ -791,6 +793,336 @@ class BirdInteractRunner(BenchmarkRunner):
         return results
 
 
+class BFCLRunner(BenchmarkRunner):
+    """
+    Runner for BFCL (Berkeley Function-Calling Leaderboard) via `bfcl-eval`.
+
+    Each `run()` invocation creates an isolated `BFCL_PROJECT_ROOT` under
+    `workspace/bfcl_runs/<split>/<timestamp>/`, writes a fresh
+    `test_case_ids_to_generate.json`, and shells out to the
+    `agent.helpers.bfcl.run` shim for `generate` and `evaluate`. Per-task
+    rewards are reconstructed from the result JSONL (generated IDs) minus the
+    score JSONL (failure IDs).
+
+    Anti-cheating:
+    - For `split == "train"`, per-task result/score entries are copied to
+      `workspace/traces/latest/<task_id>/` for the coding agent to inspect.
+    - For other splits, the entire raw run directory is removed after parsing
+      so the coding agent cannot read test failure details.
+
+    Usage:
+        runner = BFCLRunner(category="multi_turn_base", split="train")
+        results = runner.run()                                          # full split
+        results = runner.run(task_ids=["multi_turn_base_0"])            # specific tasks
+    """
+
+    SPLIT_FILE = "bfcl_data/task_split.json"
+
+    def __init__(
+        self,
+        category: str = "multi_turn_base",
+        agent_model: str | None = None,
+        split: str | None = "train",
+        n_concurrent: int = 10,
+        runs_dir: str = "workspace/bfcl_runs",
+        include_input_log_train: bool = True,
+        per_task_timeout: int = 300,
+    ):
+        self.category = category
+        self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-5.4")
+        self.split = split
+        self.n_concurrent = max(1, n_concurrent)
+        self.runs_dir = runs_dir
+        self.include_input_log_train = include_input_log_train
+        self.per_task_timeout = per_task_timeout
+
+    # ── helpers ────────────────────────────────────────────────────────────
+
+    def _load_split_tasks(self) -> list[str] | None:
+        if self.split is None:
+            return None  # caller will fall back to all packaged tasks
+        if not os.path.exists(self.SPLIT_FILE):
+            raise FileNotFoundError(
+                f"{self.SPLIT_FILE} not found. Run prepare.py first."
+            )
+        with open(self.SPLIT_FILE) as f:
+            splits = json.load(f)
+        tasks = splits.get(self.split)
+        if tasks is None:
+            raise ValueError(
+                f"Split '{self.split}' not found in {self.SPLIT_FILE}. "
+                f"Available: {list(splits.keys())}"
+            )
+        return tasks
+
+    def _load_all_packaged_tasks(self) -> list[str]:
+        """Load every packaged task ID for the configured category."""
+        from pathlib import Path
+
+        import bfcl_eval
+        from bfcl_eval.constants.category_mapping import VERSION_PREFIX
+
+        data_file = (
+            Path(bfcl_eval.__file__).parent
+            / "data"
+            / f"{VERSION_PREFIX}_{self.category}.json"
+        )
+        if not data_file.exists():
+            raise FileNotFoundError(f"BFCL data file not found: {data_file}")
+        ids: list[str] = []
+        with open(data_file) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                entry = json.loads(line)
+                if entry.get("id"):
+                    ids.append(entry["id"])
+        return ids
+
+    def _find_artifact(self, base_dir: str, filename: str) -> str | None:
+        """Locate `filename` anywhere under `base_dir`. BFCL nests files under
+        `<registry_dir_name>/<group_dir>/`, which depends on the category, so
+        a walk is more robust than computing the exact path."""
+        if not os.path.isdir(base_dir):
+            return None
+        for root, _, files in os.walk(base_dir):
+            if filename in files:
+                return os.path.join(root, filename)
+        return None
+
+    def _read_jsonl(self, path: str) -> list[dict]:
+        """Read a BFCL JSONL file (note: `.json` extension, JSONL on the wire)."""
+        entries: list[dict] = []
+        with open(path) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entries.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+        return entries
+
+    def _parse_rewards(
+        self, run_root: str, requested_ids: list[str]
+    ) -> dict[str, float | None]:
+        """Reconstruct per-task rewards from result + score JSONL.
+
+        Algorithm (per BFCL_INTEGRATION_PLAN.md, Reward Parsing):
+        1. All requested IDs default to None (infrastructure error).
+        2. IDs that appear in the result file move to 1.0 (generated successfully).
+        3. IDs that appear in the score file (after the header row) drop to 0.0
+           (BFCL judged the response incorrect).
+        """
+        from bfcl_eval.constants.category_mapping import VERSION_PREFIX
+
+        result_filename = f"{VERSION_PREFIX}_{self.category}_result.json"
+        score_filename = f"{VERSION_PREFIX}_{self.category}_score.json"
+
+        rewards: dict[str, float | None] = {tid: None for tid in requested_ids}
+
+        result_path = self._find_artifact(
+            os.path.join(run_root, "result"), result_filename
+        )
+        if not result_path:
+            return rewards  # generation never produced output
+
+        generated_ids = {
+            entry["id"] for entry in self._read_jsonl(result_path) if entry.get("id")
+        }
+        for tid in requested_ids:
+            if tid in generated_ids:
+                rewards[tid] = 1.0
+
+        score_path = self._find_artifact(
+            os.path.join(run_root, "score"), score_filename
+        )
+        if not score_path:
+            # Generation succeeded but evaluation never wrote a score file —
+            # treat as infra error rather than silently calling everything correct.
+            return {tid: None for tid in requested_ids}
+
+        for i, entry in enumerate(self._read_jsonl(score_path)):
+            if i == 0 and "accuracy" in entry:
+                continue  # header row inserted by save_eval_results
+            tid = entry.get("id")
+            if tid in rewards:
+                rewards[tid] = 0.0
+
+        return rewards
+
+    def _copy_train_traces(self, run_root: str, requested_ids: list[str]) -> None:
+        from bfcl_eval.constants.category_mapping import VERSION_PREFIX
+
+        result_filename = f"{VERSION_PREFIX}_{self.category}_result.json"
+        score_filename = f"{VERSION_PREFIX}_{self.category}_score.json"
+
+        requested = set(requested_ids)
+
+        result_path = self._find_artifact(
+            os.path.join(run_root, "result"), result_filename
+        )
+        result_by_id: dict[str, dict] = {}
+        if result_path:
+            for entry in self._read_jsonl(result_path):
+                tid = entry.get("id")
+                if tid and tid in requested:
+                    result_by_id[tid] = entry
+
+        score_path = self._find_artifact(
+            os.path.join(run_root, "score"), score_filename
+        )
+        score_by_id: dict[str, dict] = {}
+        if score_path:
+            for i, entry in enumerate(self._read_jsonl(score_path)):
+                if i == 0 and "accuracy" in entry:
+                    continue
+                tid = entry.get("id")
+                if tid and tid in requested:
+                    score_by_id[tid] = entry
+
+        latest_dir = os.path.join("workspace", "traces", "latest")
+        baseline_dir = os.path.join("workspace", "traces", "baseline")
+        os.makedirs(latest_dir, exist_ok=True)
+
+        for tid, entry in result_by_id.items():
+            dest = os.path.join(latest_dir, tid)
+            os.makedirs(dest, exist_ok=True)
+            with open(os.path.join(dest, "trace.json"), "w") as f:
+                json.dump(entry, f, indent=2, default=str)
+            with open(os.path.join(dest, "result.json"), "w") as f:
+                json.dump(entry, f, indent=2, default=str)
+            if tid in score_by_id:
+                with open(os.path.join(dest, "score.json"), "w") as f:
+                    json.dump(score_by_id[tid], f, indent=2, default=str)
+
+            base_dest = os.path.join(baseline_dir, tid)
+            if not os.path.exists(base_dest):
+                os.makedirs(base_dest, exist_ok=True)
+                with open(os.path.join(base_dest, "trace.json"), "w") as f:
+                    json.dump(entry, f, indent=2, default=str)
+                with open(os.path.join(base_dest, "result.json"), "w") as f:
+                    json.dump(entry, f, indent=2, default=str)
+                if tid in score_by_id:
+                    with open(os.path.join(base_dest, "score.json"), "w") as f:
+                        json.dump(score_by_id[tid], f, indent=2, default=str)
+
+        print("[benchmark] traces: latest/ updated, baseline/ preserved")
+
+    # ── main entry ─────────────────────────────────────────────────────────
+
+    def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
+        import datetime
+
+        if task_ids is None:
+            task_ids = self._load_split_tasks()
+        if task_ids is None:
+            task_ids = self._load_all_packaged_tasks()
+        if not task_ids:
+            return {}
+
+        timestamp = datetime.datetime.now(datetime.timezone.utc).strftime(
+            "%Y%m%dT%H%M%SZ"
+        )
+        split_label = self.split or "all"
+        run_root = os.path.abspath(
+            os.path.join(self.runs_dir, split_label, timestamp)
+        )
+        os.makedirs(run_root, exist_ok=True)
+
+        # Fresh test_case_ids_to_generate.json for THIS invocation. The
+        # gating-step subset call passes a different `task_ids` list so the
+        # file must be rewritten every run.
+        with open(
+            os.path.join(run_root, "test_case_ids_to_generate.json"), "w"
+        ) as f:
+            json.dump({self.category: list(task_ids)}, f, indent=2)
+
+        env = os.environ.copy()
+        repo_root = os.path.dirname(os.path.abspath(__file__))
+        env["BFCL_PROJECT_ROOT"] = run_root
+        env["AGENT_MODEL"] = self.agent_model
+        env["PYTHONPATH"] = repo_root + os.pathsep + env.get("PYTHONPATH", "")
+        env["PYTHONUNBUFFERED"] = "1"
+
+        timeout_sec = max(
+            600,
+            int((len(task_ids) / self.n_concurrent) * self.per_task_timeout) + 300,
+        )
+        print(
+            f"[benchmark] running {len(task_ids)} bfcl tasks "
+            f"(category={self.category}, model={self.agent_model}, "
+            f"n={self.n_concurrent}, subprocess_timeout={timeout_sec}s)"
+        )
+
+        # ── Generate ──────────────────────────────────────────────────────
+        gen_cmd = [
+            sys.executable, "-m", "agent.helpers.bfcl.run", "generate",
+            "--model", "harness-agent",
+            "--test-category", self.category,
+            "--run-ids",
+            "--allow-overwrite",
+            "--num-threads", str(self.n_concurrent),
+        ]
+        if self.split == "train" and self.include_input_log_train:
+            gen_cmd.append("--include-input-log")
+
+        try:
+            gen = subprocess.run(
+                gen_cmd, env=env, capture_output=True, text=True, timeout=timeout_sec,
+            )
+            if gen.stdout:
+                print(gen.stdout)
+            if gen.stderr:
+                print(gen.stderr, file=sys.stderr)
+        except subprocess.TimeoutExpired:
+            print(f"[benchmark] WARNING: bfcl generate timed out after {timeout_sec}s")
+            # Fall through to parse partial results
+
+        # ── Evaluate ──────────────────────────────────────────────────────
+        eval_cmd = [
+            sys.executable, "-m", "agent.helpers.bfcl.run", "evaluate",
+            "--model", "harness-agent",
+            "--test-category", self.category,
+            "--partial-eval",
+        ]
+        try:
+            ev = subprocess.run(
+                eval_cmd, env=env, capture_output=True, text=True, timeout=600,
+            )
+            if ev.stdout:
+                print(ev.stdout)
+            if ev.stderr:
+                print(ev.stderr, file=sys.stderr)
+        except subprocess.TimeoutExpired:
+            print("[benchmark] WARNING: bfcl evaluate timed out after 600s")
+
+        # ── Parse rewards ─────────────────────────────────────────────────
+        rewards = self._parse_rewards(run_root, task_ids)
+
+        # ── Trace handling ────────────────────────────────────────────────
+        if self.split == "train":
+            self._copy_train_traces(run_root, task_ids)
+
+        # ── Cleanup ───────────────────────────────────────────────────────
+        # Test/baseline runs: delete raw artifacts immediately so the coding
+        # agent cannot read failure details. Train runs: also delete the raw
+        # run dir — useful traces are already copied to workspace/traces/.
+        shutil.rmtree(run_root, ignore_errors=True)
+
+        # Prune any stale run directories under the same split.
+        split_dir = os.path.join(self.runs_dir, split_label)
+        if os.path.isdir(split_dir):
+            for old in os.listdir(split_dir):
+                old_path = os.path.join(split_dir, old)
+                if os.path.isdir(old_path):
+                    shutil.rmtree(old_path, ignore_errors=True)
+
+        return rewards
+
+
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -814,7 +1146,13 @@ if __name__ == "__main__":
     if benchmark == "tau-bench":
         parser.add_argument("--domain", default=cfg.get("domain"), help="tau-bench domain (overrides experiment_config.yaml)")
     parser.add_argument("--split", default=cfg.get("split", "train"))
-    _concurrency_default = cfg.get("max_concurrency", 50 if benchmark == "terminal-bench" else 3)
+    _concurrency_defaults = {
+        "terminal-bench": 50,
+        "bfcl": 10,
+    }
+    _concurrency_default = cfg.get(
+        "max_concurrency", _concurrency_defaults.get(benchmark, 3)
+    )
     parser.add_argument("--concurrency", type=int, default=_concurrency_default)
     args = parser.parse_args()
 
@@ -860,6 +1198,15 @@ if __name__ == "__main__":
             max_concurrency=args.concurrency,
             reasoning_effort=cfg.get("reasoning_effort"),
             user_model=cfg.get("user_model"),
+        )
+    elif benchmark == "bfcl":
+        runner = BFCLRunner(
+            category=cfg.get("category", "multi_turn_base"),
+            agent_model=cfg.get("agent_model"),
+            split=args.split,
+            n_concurrent=args.concurrency,
+            per_task_timeout=cfg.get("per_task_timeout", 300),
+            runs_dir="workspace/bfcl_runs",
         )
     else:
         print(f"ERROR: unknown benchmark '{benchmark}'")

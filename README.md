@@ -15,6 +15,7 @@ The loop is defined in `PROGRAM.md`. The coding agent edits `agent/agent.py` to 
 | **tau-bench** | Customer service (retail, airline, telecom) | retail: 114, airline: 50, telecom: 114 | Structured tool calls via tau2 |
 | **Terminal-Bench 2.0** | Real-world terminal tasks (coding, sysadmin, security) | 89 | Bash commands via Harbor containers |
 | **BIRD-Interact** | Interactive text-to-SQL (multi-turn, CRUD over Postgres) | lite: 300, full: 600 | Google ADK agent against a 3-service environment (user sim, DB env, system agent) |
+| **BFCL** | Multi-turn function-calling on synthetic stateful APIs | multi_turn_base: 200 | OpenAI Responses handler under canonical `bfcl-eval` execution/scoring |
 
 ---
 
@@ -110,6 +111,51 @@ python prepare.py
 - GPT-5-family models reject explicit `temperature=0`; the template omits the temperature kwarg for those models (stock behavior preserved for all other models).
 - `prepare.py` creates a separate `.venv-adk` inside `bird_interact_adk/` because the ADK's deps (google-adk, psycopg2, etc.) may conflict with other benchmarks' deps.
 - Advanced users can point at an existing BIRD-Interact install via `bird_repo` + `bird_python_bin` in `experiment_config.yaml` to skip auto-provisioning.
+
+## Quick start: BFCL
+
+**Requirements:** Python 3.12+, an `OPENAI_API_KEY`, and a coding agent. The pinned `bfcl-eval==2026.3.23` and its transitive `soundfile` dep are declared in `pyproject.toml`.
+
+```bash
+# 1. Clone this repo
+git clone https://github.com/neosigmaai/auto-harness
+cd auto-harness
+
+# 2. Install deps (pulls bfcl-eval and soundfile)
+uv sync
+
+# 3. Set up environment variables
+cp .env.example .env
+# edit .env — set OPENAI_API_KEY
+
+# 4. Configure the experiment
+cp experiment_config.yaml.template experiment_config.yaml
+# edit experiment_config.yaml — uncomment the BFCL section
+
+# 5. Initialize:
+#      - validates bfcl-eval install + category
+#      - generates a deterministic 70/30 split from packaged task IDs
+#      - runs the test-split baseline (~60 BFCL tasks at default settings)
+python prepare.py
+
+# 6. Start the optimization loop
+# Point your coding agent at the repo and prompt:
+#   "Read PROGRAM.md and start the optimization loop."
+```
+
+**What the integration adds:**
+
+- `BFCLRunner` in `benchmark.py` — creates a per-run `BFCL_PROJECT_ROOT` under `workspace/bfcl_runs/`, drives `bfcl generate` + `bfcl evaluate` via a subprocess shim, parses per-task rewards from result/score JSONL, copies train traces, and wipes raw artifacts after parsing so test failure details never leak to the coding agent.
+- `agent/helpers/bfcl/run.py` — subprocess shim that registers `harness-agent` in `MODEL_CONFIG_MAPPING` before delegating to BFCL's Typer CLI. Required because parent-process monkey-patches don't cross subprocess boundaries.
+- `agent/helpers/bfcl/registry.py` — constructs the current `bfcl-eval` version's `ModelConfig` for `harness-agent` (handler = `agent.agent.HarnessHandler`).
+- `agent/templates/bfcl.py` — `HarnessHandler(OpenAIResponsesHandler)` starting point. `prepare.py` copies it to `agent/agent.py`.
+- `program_templates/bfcl.md` — benchmark-specific guidance appended to `PROGRAM.md`.
+- `scripts/bfcl_spike.py` — committed verifier that re-checks every assumption the integration relies on against the pinned `bfcl-eval`. The full assumption list (A1-A7) and the findings discovered during verification (F1-F7) are inlined in the script's module docstring. Re-run before any `bfcl-eval` version bump.
+
+**Known caveats:**
+- The first PR ships only the OpenAI Responses path. Anthropic/Gemini handlers can be added as separate templates without changing the runner.
+- The split is deterministic-random (seed 42), not baseline-stratified — running 200 multi-turn tasks just to stratify by pass/fail is too expensive. The `threshold: 0.8` regression-suite gate still applies after tasks are promoted.
+- `multi_turn_base` rewards are binary; one wrong turn usually fails the whole task. If the baseline is already near ceiling, switch `category` to `multi_turn_miss_param`, `multi_turn_long_context`, or `multi_turn_miss_func` (predeclare the choice — never pick after seeing test outcomes).
 
 ## Quick start: tau-bench
 
@@ -258,7 +304,11 @@ agent/
       bird_service.py       FastAPI service wrapper for BIRD-Interact system agent
       bird_adk_runtime.py   Google ADK runtime adapter for the BIRD service
       setup.py              prepare.py helpers for BIRD-Interact provisioning
-benchmark.py                benchmark execution layer (abstract + tau-bench + terminal-bench + bird-interact)
+    bfcl/
+      run.py                subprocess shim — registers harness-agent then delegates to bfcl CLI
+      registry.py           constructs ModelConfig for harness-agent
+      setup.py              prepare.py env/package/category checks for BFCL
+benchmark.py                benchmark execution layer (abstract + tau-bench + terminal-bench + bird-interact + bfcl)
 gating.py                   three-step gate (regression suite → full test → suite promotion)
 prepare.py                  workspace setup, template copying, baseline run
 record.py                   appends iteration result to results.tsv

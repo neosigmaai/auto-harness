@@ -5,7 +5,7 @@ Checks required environment variables, validates data/tools for the
 configured benchmark, initializes workspace/ files, copies the correct
 agent template into agent/agent.py, and runs a baseline benchmark.
 
-Supports tau-bench, terminal-bench, and BIRD-Interact.
+Supports tau-bench, terminal-bench, BIRD-Interact, and BFCL.
 """
 
 from __future__ import annotations
@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 
 import yaml
 
+from agent.helpers.bfcl.setup import check_env_bfcl
 from agent.helpers.bird_interact.setup import check_env_bird_interact
 
 WORKSPACE = "workspace"
@@ -204,6 +205,7 @@ def copy_agent_template(benchmark: str) -> None:
         "tau-bench": "agent/templates/tau_bench.py",
         "terminal-bench": "agent/templates/terminal_bench.py",
         "bird-interact": "agent/templates/bird_interact.py",
+        "bfcl": "agent/templates/bfcl.py",
     }
     template = templates.get(benchmark)
     if not template or not os.path.exists(template):
@@ -220,6 +222,7 @@ def copy_program_template(benchmark: str) -> None:
         "tau-bench": "program_templates/tau_bench.md",
         "terminal-bench": "program_templates/terminal_bench.md",
         "bird-interact": "program_templates/bird_interact.md",
+        "bfcl": "program_templates/bfcl.md",
     }
     template = templates.get(benchmark)
     if not template or not os.path.exists(template):
@@ -241,6 +244,7 @@ def copy_program_template(benchmark: str) -> None:
 
 SPLIT_FILE = "tbench_data/task_split.json"
 BIRD_SPLIT_FILE = "bird_data/task_split.json"
+BFCL_SPLIT_FILE = "bfcl_data/task_split.json"
 
 
 def generate_terminal_bench_split(results: dict[str, float], seed: int = 42) -> None:
@@ -271,6 +275,66 @@ def generate_terminal_bench_split(results: dict[str, float], seed: int = 42) -> 
             },
         }, f, indent=2)
     print(f"[prepare] task split created: {len(train)} train, {len(test)} test")
+
+
+def generate_bfcl_split(category: str, seed: int = 42) -> None:
+    """Generate a deterministic 70/30 random split from packaged BFCL task IDs.
+
+    BFCL splits are NOT baseline-stratified — running 200 multi-turn tasks
+    just to stratify by pass/fail is too expensive, and the deterministic seed
+    keeps reproducibility. Train failures are simply whichever tasks landed
+    in the train set and happen to fail at baseline.
+    """
+    import random
+    from pathlib import Path
+
+    import bfcl_eval
+    from bfcl_eval.constants.category_mapping import VERSION_PREFIX
+
+    data_file = (
+        Path(bfcl_eval.__file__).parent
+        / "data"
+        / f"{VERSION_PREFIX}_{category}.json"
+    )
+    if not data_file.exists():
+        print(f"[prepare] ERROR: BFCL data file not found: {data_file}")
+        sys.exit(1)
+
+    ids: list[str] = []
+    with open(data_file) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            entry = json.loads(line)
+            if entry.get("id"):
+                ids.append(entry["id"])
+
+    ids = sorted(ids)
+    rng = random.Random(seed)
+    shuffled = list(ids)
+    rng.shuffle(shuffled)
+    train_n = int(len(shuffled) * 0.7)
+    train = sorted(shuffled[:train_n])
+    test = sorted(shuffled[train_n:])
+
+    os.makedirs("bfcl_data", exist_ok=True)
+    with open(BFCL_SPLIT_FILE, "w") as f:
+        json.dump({
+            "train": train,
+            "test": test,
+            "metadata": {
+                "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                "category": category,
+                "total_tasks": len(ids),
+                "seed": seed,
+                "split_strategy": "deterministic_random",
+            },
+        }, f, indent=2)
+    print(
+        f"[prepare] BFCL split created: {len(train)} train, {len(test)} test "
+        f"(category={category}, seed={seed})"
+    )
 
 
 def generate_bird_interact_split(results: dict[str, float], seed: int = 42) -> None:
@@ -430,6 +494,23 @@ def run_baseline(cfg: dict) -> None:
         )
         test_results = runner.run()
         val = runner.val_score(test_results)
+    elif benchmark == "bfcl":
+        from benchmark import BFCLRunner
+
+        category = cfg.get("category", "multi_turn_base")
+        if not os.path.exists(BFCL_SPLIT_FILE):
+            generate_bfcl_split(category, seed=cfg.get("split_seed", 42))
+
+        runner = BFCLRunner(
+            category=category,
+            agent_model=cfg.get("agent_model"),
+            split=cfg.get("gate_split", "test"),
+            n_concurrent=cfg.get("max_concurrency", 10),
+            per_task_timeout=cfg.get("per_task_timeout", 300),
+            runs_dir="workspace/bfcl_runs",
+        )
+        test_results = runner.run()
+        val = runner.val_score(test_results)
     else:
         print(f"[prepare] ERROR: unknown benchmark '{benchmark}'")
         sys.exit(1)
@@ -461,6 +542,9 @@ if __name__ == "__main__":
         if not check_env_tau_bench(cfg):
             sys.exit(1)
         if not check_tau2_data(cfg):
+            sys.exit(1)
+    elif benchmark == "bfcl":
+        if not check_env_bfcl(cfg):
             sys.exit(1)
     else:
         print(f"[prepare] ERROR: unknown benchmark '{benchmark}'")
