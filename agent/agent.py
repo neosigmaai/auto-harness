@@ -3,5 +3,6 @@
 # Running `python prepare.py` copies the correct agent template here
 # based on the benchmark set in experiment_config.yaml:
 #
-#   tau-bench      → agent/templates/tau_bench.py
-#   terminal-bench → agent/templates/terminal_bench.py
+#   tau-bench      -> agent/templates/tau_bench.py
+#   terminal-bench -> agent/templates/terminal_bench.py
+#   bird-interact  -> agent/templates/bird_interact.py

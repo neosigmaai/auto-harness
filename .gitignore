@@ -8,6 +8,8 @@ __pycache__/
 
 # agent working directory (runtime state, not committed)
 workspace/
+workspace_backups/
+bird_data/
 
 # local coding agent config
 .claude/
@@ -20,3 +22,6 @@ auto_harness.egg-info/
 
 # tau2 data (auto-cloned by prepare.py, not committed)
 tau2_data/
+
+# BIRD-Interact-ADK (auto-cloned by prepare.py, not committed)
+bird_interact_adk/

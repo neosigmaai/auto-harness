@@ -23,6 +23,45 @@
 #                    E2B_API_KEY (or DAYTONA_API_KEY)
 
 # ═══════════════════════════════════════════════════════════════
+# BIRD-INTERACT
+# ═══════════════════════════════════════════════════════════════
+#
+# benchmark: "bird-interact"
+# mode: "a-interact"                             # or "c-interact"
+# dataset: "lite"                                # "lite" or "full"
+# split: "train"
+# gate_split: "test"
+# max_concurrency: 3
+# threshold: 0.8
+# patience: 3
+# per_task_timeout: 1800
+# system_agent_port: 6100
+# user_sim_port: 6101
+# db_env_port: 6102
+# agent_model: "anthropic/claude-sonnet-4-20250514"
+# user_model: "anthropic/claude-haiku-4-5-20251001"
+#
+# # ── Advanced overrides (usually not needed) ────────────────────
+# # By default prepare.py auto-provisions BIRD-Interact-ADK, its venv, the dataset,
+# # and the Postgres Docker container. Set these only if you want to point at
+# # an existing install instead of the auto-provisioned one:
+# # bird_repo: "/abs/path/to/BIRD-Interact"       # repo root or BIRD-Interact-ADK dir
+# # bird_python_bin: "/abs/path/to/python"        # python with ADK deps installed
+# # bird_data_path: "/abs/path/to/bird_interact_data.jsonl"
+# # pg_host: "127.0.0.1"
+# # pg_port: 5432
+# # pg_user: "root"
+# # pg_password: "123123"
+#
+# Required env vars: API key for your configured models (e.g. ANTHROPIC_API_KEY, OPENAI_API_KEY).
+# Required tooling: Docker (for the BIRD Postgres container), git-lfs (for the HF dataset).
+#
+# On first run, prepare.py will email-gate on ground-truth access: the public dataset ships
+# without gold SQL. Email bird.bench25@gmail.com with subject "[bird-interact-lite GT&Test Cases]"
+# to receive it, then merge via the `scripts/combine_public_with_gt.py` script inside the ADK.
+# prepare.py prints the exact command if GT is missing.
+#
+# ═══════════════════════════════════════════════════════════════
 # TAU-BENCH
 # ═══════════════════════════════════════════════════════════════
 #

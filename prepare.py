@@ -5,7 +5,7 @@ Checks required environment variables, validates data/tools for the
 configured benchmark, initializes workspace/ files, copies the correct
 agent template into agent/agent.py, and runs a baseline benchmark.
 
-Supports both tau-bench and terminal-bench.
+Supports tau-bench, terminal-bench, and BIRD-Interact.
 """
 
 from __future__ import annotations
@@ -18,6 +18,8 @@ import sys
 from datetime import datetime, timezone
 
 import yaml
+
+from agent.helpers.bird_interact.setup import check_env_bird_interact
 
 WORKSPACE = "workspace"
 SUITE_FILE = os.path.join(WORKSPACE, "suite.json")
@@ -201,6 +203,7 @@ def copy_agent_template(benchmark: str) -> None:
     templates = {
         "tau-bench": "agent/templates/tau_bench.py",
         "terminal-bench": "agent/templates/terminal_bench.py",
+        "bird-interact": "agent/templates/bird_interact.py",
     }
     template = templates.get(benchmark)
     if not template or not os.path.exists(template):
@@ -216,6 +219,7 @@ def copy_program_template(benchmark: str) -> None:
     templates = {
         "tau-bench": "program_templates/tau_bench.md",
         "terminal-bench": "program_templates/terminal_bench.md",
+        "bird-interact": "program_templates/bird_interact.md",
     }
     template = templates.get(benchmark)
     if not template or not os.path.exists(template):
@@ -236,6 +240,7 @@ def copy_program_template(benchmark: str) -> None:
 
 
 SPLIT_FILE = "tbench_data/task_split.json"
+BIRD_SPLIT_FILE = "bird_data/task_split.json"
 
 
 def generate_terminal_bench_split(results: dict[str, float], seed: int = 42) -> None:
@@ -266,6 +271,36 @@ def generate_terminal_bench_split(results: dict[str, float], seed: int = 42) -> 
             },
         }, f, indent=2)
     print(f"[prepare] task split created: {len(train)} train, {len(test)} test")
+
+
+def generate_bird_interact_split(results: dict[str, float], seed: int = 42) -> None:
+    """Generate train/test split from baseline results. 70/30 stratified by pass/fail."""
+    import random
+
+    passed = sorted(k for k, v in results.items() if v >= 0.5)
+    failed = sorted(k for k, v in results.items() if v < 0.5)
+
+    random.seed(seed)
+    random.shuffle(passed)
+    random.shuffle(failed)
+
+    train_pass_n = int(len(passed) * 0.7)
+    train_fail_n = int(len(failed) * 0.7)
+    train = sorted(passed[:train_pass_n] + failed[:train_fail_n])
+    test = sorted(passed[train_pass_n:] + failed[train_fail_n:])
+
+    os.makedirs("bird_data", exist_ok=True)
+    with open(BIRD_SPLIT_FILE, "w") as f:
+        json.dump({
+            "train": train,
+            "test": test,
+            "metadata": {
+                "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                "total_tasks": len(results),
+                "seed": seed,
+            },
+        }, f, indent=2)
+    print(f"[prepare] BIRD task split created: {len(train)} train, {len(test)} test")
 
 
 def run_baseline(cfg: dict) -> None:
@@ -318,6 +353,71 @@ def run_baseline(cfg: dict) -> None:
             )
             test_results = runner.run()
             val = runner.val_score(test_results)
+    elif benchmark == "bird-interact":
+        from benchmark import BirdInteractRunner
+
+        if not os.path.exists(BIRD_SPLIT_FILE):
+            print("[prepare] running ALL bird-interact tasks to generate train/test split...")
+            all_runner = BirdInteractRunner(
+                bird_repo=cfg.get("bird_repo"),
+                bird_python_bin=cfg.get("bird_python_bin"),
+                split=None,
+                mode=cfg.get("mode", "a-interact"),
+                dataset=cfg.get("dataset", "lite"),
+                data_path=cfg.get("bird_data_path"),
+                agent_model=cfg.get("agent_model"),
+                user_model=cfg.get("user_model"),
+                patience=cfg.get("patience", 3),
+                n_concurrent=cfg.get("max_concurrency", 3),
+                per_task_timeout=cfg.get("per_task_timeout", 1800),
+                jobs_dir="workspace/bird_runs/all",
+                system_agent_port=cfg.get("system_agent_port", 6100),
+                user_sim_port=cfg.get("user_sim_port", 6101),
+                db_env_port=cfg.get("db_env_port", 6102),
+                pg_host=cfg.get("pg_host"),
+                pg_port=cfg.get("pg_port"),
+                pg_user=cfg.get("pg_user"),
+                pg_password=cfg.get("pg_password"),
+            )
+            all_results = all_runner.run()
+
+            actual_results = {k: v for k, v in all_results.items() if v is not None}
+            infra_errors = [k for k, v in all_results.items() if v is None]
+            if infra_errors:
+                print(f"[prepare] WARNING: {len(infra_errors)} BIRD task(s) had infra errors and are "
+                      f"permanently excluded from the train/test split: {infra_errors}")
+                print(f"          To include them, delete {BIRD_SPLIT_FILE} and re-run prepare.py.")
+
+            generate_bird_interact_split(actual_results)
+
+            with open(BIRD_SPLIT_FILE) as f:
+                split = json.load(f)
+            test_results = {k: actual_results.get(k, 0.0) for k in split["test"]}
+            val = sum(test_results.values()) / len(test_results) if test_results else 0.0
+        else:
+            runner = BirdInteractRunner(
+                bird_repo=cfg.get("bird_repo"),
+                bird_python_bin=cfg.get("bird_python_bin"),
+                split=cfg.get("gate_split", "test"),
+                mode=cfg.get("mode", "a-interact"),
+                dataset=cfg.get("dataset", "lite"),
+                data_path=cfg.get("bird_data_path"),
+                agent_model=cfg.get("agent_model"),
+                user_model=cfg.get("user_model"),
+                patience=cfg.get("patience", 3),
+                n_concurrent=cfg.get("max_concurrency", 3),
+                per_task_timeout=cfg.get("per_task_timeout", 1800),
+                jobs_dir="workspace/bird_runs/test",
+                system_agent_port=cfg.get("system_agent_port", 6100),
+                user_sim_port=cfg.get("user_sim_port", 6101),
+                db_env_port=cfg.get("db_env_port", 6102),
+                pg_host=cfg.get("pg_host"),
+                pg_port=cfg.get("pg_port"),
+                pg_user=cfg.get("pg_user"),
+                pg_password=cfg.get("pg_password"),
+            )
+            test_results = runner.run()
+            val = runner.val_score(test_results)
     elif benchmark == "tau-bench":
         from benchmark import TauBenchRunner
         runner = TauBenchRunner(
@@ -326,6 +426,7 @@ def run_baseline(cfg: dict) -> None:
             split=cfg.get("gate_split", "test"),
             max_concurrency=cfg.get("max_concurrency", 3),
             reasoning_effort=cfg.get("reasoning_effort"),
+            user_model=cfg.get("user_model"),
         )
         test_results = runner.run()
         val = runner.val_score(test_results)
@@ -352,6 +453,9 @@ if __name__ == "__main__":
     # Check environment
     if benchmark == "terminal-bench":
         if not check_env_terminal_bench(cfg):
+            sys.exit(1)
+    elif benchmark == "bird-interact":
+        if not check_env_bird_interact(cfg):
             sys.exit(1)
     elif benchmark == "tau-bench":
         if not check_env_tau_bench(cfg):

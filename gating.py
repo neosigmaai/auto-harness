@@ -18,7 +18,7 @@ import sys
 
 import yaml
 
-from benchmark import BenchmarkRunner, TauBenchRunner, TerminalBenchRunner
+from benchmark import BenchmarkRunner, BirdInteractRunner, TauBenchRunner, TerminalBenchRunner
 
 CONFIG_FILE = "experiment_config.yaml"
 
@@ -160,6 +160,49 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             jobs_dir="workspace/tbench_jobs/test",
             reasoning_effort=cfg.get("reasoning_effort"),
         )
+    elif benchmark == "bird-interact":
+        train_runner = BirdInteractRunner(
+            bird_repo=cfg.get("bird_repo"),
+            bird_python_bin=cfg.get("bird_python_bin"),
+            split=cfg.get("split", "train"),
+            mode=cfg.get("mode", "a-interact"),
+            dataset=cfg.get("dataset", "lite"),
+            data_path=cfg.get("bird_data_path"),
+            agent_model=cfg.get("agent_model"),
+            user_model=cfg.get("user_model"),
+            patience=cfg.get("patience", 3),
+            n_concurrent=cfg.get("max_concurrency", 3),
+            per_task_timeout=cfg.get("per_task_timeout", 1800),
+            jobs_dir="workspace/bird_runs/train",
+            system_agent_port=cfg.get("system_agent_port", 6100),
+            user_sim_port=cfg.get("user_sim_port", 6101),
+            db_env_port=cfg.get("db_env_port", 6102),
+            pg_host=cfg.get("pg_host"),
+            pg_port=cfg.get("pg_port"),
+            pg_user=cfg.get("pg_user"),
+            pg_password=cfg.get("pg_password"),
+        )
+        gate_runner = BirdInteractRunner(
+            bird_repo=cfg.get("bird_repo"),
+            bird_python_bin=cfg.get("bird_python_bin"),
+            split=cfg.get("gate_split", "test"),
+            mode=cfg.get("mode", "a-interact"),
+            dataset=cfg.get("dataset", "lite"),
+            data_path=cfg.get("bird_data_path"),
+            agent_model=cfg.get("agent_model"),
+            user_model=cfg.get("user_model"),
+            patience=cfg.get("patience", 3),
+            n_concurrent=cfg.get("max_concurrency", 3),
+            per_task_timeout=cfg.get("per_task_timeout", 1800),
+            jobs_dir="workspace/bird_runs/test",
+            system_agent_port=cfg.get("system_agent_port", 6100),
+            user_sim_port=cfg.get("user_sim_port", 6101),
+            db_env_port=cfg.get("db_env_port", 6102),
+            pg_host=cfg.get("pg_host"),
+            pg_port=cfg.get("pg_port"),
+            pg_user=cfg.get("pg_user"),
+            pg_password=cfg.get("pg_password"),
+        )
     elif benchmark == "tau-bench":
         if "domain" not in cfg:
             print("ERROR: 'domain' not set in experiment_config.yaml")
@@ -170,6 +213,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             split=cfg.get("split", "train"),
             max_concurrency=cfg.get("max_concurrency", 3),
             reasoning_effort=cfg.get("reasoning_effort"),
+            user_model=cfg.get("user_model"),
         )
         gate_runner = TauBenchRunner(
             domain=cfg["domain"],
@@ -177,6 +221,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             split=cfg.get("gate_split", "test"),
             max_concurrency=cfg.get("max_concurrency", 3),
             reasoning_effort=cfg.get("reasoning_effort"),
+            user_model=cfg.get("user_model"),
         )
     else:
         print(f"ERROR: unknown benchmark '{benchmark}'")
