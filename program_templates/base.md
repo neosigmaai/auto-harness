@@ -146,7 +146,8 @@ Go to step 1.
 3. **One hypothesis per iteration** — keep changes small and reversible
 4. **Always update `learnings.md`** — even on failure; the log is your memory
 5. **Never use test data to guide changes** — only train failures inform improvements
-6. **Stop when** val_score has not improved for 5 consecutive iterations — write a summary in `learnings.md` and surface your top findings to the human
+6. **Per-task timeouts count as failures** — under the default `timeout_policy: "agent"`, any task that does not produce a verifier result within `per_task_timeout` scores `0.0` in `val_score`. If you see consistent timeouts, treat that as a signal to make the prompt more direct, not to ignore the missing reward.
+7. **Stop when** val_score has not improved for 5 consecutive iterations — write a summary in `learnings.md` and surface your top findings to the human
 
 ---
 

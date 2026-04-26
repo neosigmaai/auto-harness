@@ -18,6 +18,9 @@
 # max_concurrency: 50            # tasks run in parallel
 # threshold: 0.8                 # regression suite pass rate threshold
 # reasoning_effort: "medium"      # optional
+# timeout_policy: "agent"        # "agent" (default): tasks that miss per_task_timeout
+#                                #   count as 0.0 in val_score (penalises bad trajectories).
+#                                # "infra": exclude timed-out tasks (legacy behaviour).
 #
 # Required env vars: LLM API key for your model (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY),
 #                    E2B_API_KEY (or DAYTONA_API_KEY)
@@ -35,6 +38,7 @@
 # threshold: 0.8
 # patience: 3
 # per_task_timeout: 1800
+# timeout_policy: "agent"                        # "agent" (default) | "infra" (see TERMINAL-BENCH)
 # system_agent_port: 6100
 # user_sim_port: 6101
 # db_env_port: 6102
@@ -73,5 +77,7 @@
 # max_concurrency: 3
 # threshold: 0.8
 # reasoning_effort: "medium"      # optional
+# timeout_policy: "agent"         # "agent" (default) | "infra" (see TERMINAL-BENCH)
+#                                 # tau-bench rarely produces None rewards, so this is mostly a no-op.
 #
 # Required env vars: LLM API key for your model (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY)

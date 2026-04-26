@@ -140,6 +140,7 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
 def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
     """Create train and gate runners based on benchmark config."""
     benchmark = cfg.get("benchmark", "tau-bench")
+    timeout_policy = cfg.get("timeout_policy", "agent")
 
     if benchmark == "terminal-bench":
         train_runner = TerminalBenchRunner(
@@ -150,6 +151,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
             jobs_dir="workspace/tbench_jobs/train",
             reasoning_effort=cfg.get("reasoning_effort"),
+            timeout_policy=timeout_policy,
         )
         gate_runner = TerminalBenchRunner(
             agent_model=cfg.get("agent_model"),
@@ -159,6 +161,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
             jobs_dir="workspace/tbench_jobs/test",
             reasoning_effort=cfg.get("reasoning_effort"),
+            timeout_policy=timeout_policy,
         )
     elif benchmark == "bird-interact":
         train_runner = BirdInteractRunner(
@@ -181,6 +184,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             pg_port=cfg.get("pg_port"),
             pg_user=cfg.get("pg_user"),
             pg_password=cfg.get("pg_password"),
+            timeout_policy=timeout_policy,
         )
         gate_runner = BirdInteractRunner(
             bird_repo=cfg.get("bird_repo"),
@@ -202,6 +206,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             pg_port=cfg.get("pg_port"),
             pg_user=cfg.get("pg_user"),
             pg_password=cfg.get("pg_password"),
+            timeout_policy=timeout_policy,
         )
     elif benchmark == "tau-bench":
         if "domain" not in cfg:
@@ -214,6 +219,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             max_concurrency=cfg.get("max_concurrency", 3),
             reasoning_effort=cfg.get("reasoning_effort"),
             user_model=cfg.get("user_model"),
+            timeout_policy=timeout_policy,
         )
         gate_runner = TauBenchRunner(
             domain=cfg["domain"],
@@ -222,6 +228,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             max_concurrency=cfg.get("max_concurrency", 3),
             reasoning_effort=cfg.get("reasoning_effort"),
             user_model=cfg.get("user_model"),
+            timeout_policy=timeout_policy,
         )
     else:
         print(f"ERROR: unknown benchmark '{benchmark}'")

@@ -26,8 +26,26 @@ from abc import ABC, abstractmethod
 _registry_lock = threading.Lock()
 
 
+TIMEOUT_POLICIES = ("agent", "infra")
+
+
 class BenchmarkRunner(ABC):
-    """Abstract benchmark runner. Subclass and implement `run` to plug in your own benchmark."""
+    """Abstract benchmark runner. Subclass and implement `run` to plug in your own benchmark.
+
+    ``timeout_policy`` controls how missing per-task results (``None`` rewards
+    in :meth:`run`'s output) are scored:
+
+    - ``"agent"`` (default): missing results count as ``0.0``. A task that did
+      not finish within ``per_task_timeout`` is the agent's fault — it went
+      down a long trajectory or got stuck — and should be penalised. This is
+      the operator's contract: set a reasonable timeout, expect the agent to
+      stay within it.
+    - ``"infra"``: missing results are excluded from the mean. Use only if
+      your environment produces frequent transient infrastructure errors
+      that the agent cannot influence.
+    """
+
+    timeout_policy: str = "agent"
 
     @abstractmethod
     def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
@@ -38,16 +56,25 @@ class BenchmarkRunner(ABC):
             task_ids: specific task IDs to run. None runs the full benchmark.
 
         Returns:
-            Mapping of task_id -> reward (float in [0.0, 1.0]), or None if the
-            task could not be evaluated due to an infrastructure error.
+            Mapping of task_id -> reward (float in [0.0, 1.0]). ``None`` means
+            the task did not produce a verifier result — most often the agent
+            timed out or the runner could not reach the verifier. Whether
+            ``None`` counts as a failure or is excluded from the mean depends
+            on ``timeout_policy``.
         """
 
     def val_score(self, results: dict[str, float | None]) -> float:
-        """Mean reward across all results, excluding infra errors (None values)."""
-        valid = [v for v in results.values() if v is not None]
-        if not valid:
+        """Mean reward across all results.
+
+        Under ``timeout_policy="agent"`` (default) ``None`` rewards count as
+        ``0.0``. Under ``timeout_policy="infra"`` they are excluded.
+        """
+        if not results:
             return 0.0
-        return sum(valid) / len(valid)
+        if self.timeout_policy == "agent":
+            return sum(0.0 if v is None else v for v in results.values()) / len(results)
+        valid = [v for v in results.values() if v is not None]
+        return sum(valid) / len(valid) if valid else 0.0
 
 
 class TauBenchRunner(BenchmarkRunner):
@@ -71,7 +98,10 @@ class TauBenchRunner(BenchmarkRunner):
         seed: int = 300,
         reasoning_effort: str | None = None,
         user_model: str | None = None,
+        timeout_policy: str = "agent",
     ):
+        if timeout_policy not in TIMEOUT_POLICIES:
+            raise ValueError(f"timeout_policy must be one of {TIMEOUT_POLICIES}, got {timeout_policy!r}")
         self.domain = domain
         self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-5.4")
         self.split = split
@@ -79,6 +109,7 @@ class TauBenchRunner(BenchmarkRunner):
         self.seed = seed
         self.reasoning_effort = reasoning_effort
         self.user_model = user_model or self.agent_model
+        self.timeout_policy = timeout_policy
 
     def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
         # tau2 reads TAU2_DATA_DIR at import time — set it before the first import
@@ -152,7 +183,10 @@ class TerminalBenchRunner(BenchmarkRunner):
         per_task_timeout: int = 1200,
         jobs_dir: str = "workspace/tbench_jobs",
         reasoning_effort: str | None = None,
+        timeout_policy: str = "agent",
     ):
+        if timeout_policy not in TIMEOUT_POLICIES:
+            raise ValueError(f"timeout_policy must be one of {TIMEOUT_POLICIES}, got {timeout_policy!r}")
         self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-5.4")
         self.split = split
         self.env_provider = env_provider
@@ -162,6 +196,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         self.per_task_timeout = per_task_timeout
         self.jobs_dir = jobs_dir
         self.reasoning_effort = reasoning_effort
+        self.timeout_policy = timeout_policy
 
     def _load_split_tasks(self) -> list[str] | None:
         """Load task names for the configured split. Returns None to run all tasks."""
@@ -427,7 +462,11 @@ class BirdInteractRunner(BenchmarkRunner):
         pg_port: int | None = None,
         pg_user: str | None = None,
         pg_password: str | None = None,
+        timeout_policy: str = "agent",
     ):
+        if timeout_policy not in TIMEOUT_POLICIES:
+            raise ValueError(f"timeout_policy must be one of {TIMEOUT_POLICIES}, got {timeout_policy!r}")
+        self.timeout_policy = timeout_policy
         self.adk_dir = resolve_bird_adk_dir(bird_repo)
         self.python_bin = resolve_bird_python_bin(self.adk_dir, bird_python_bin)
         if not self.python_bin:
