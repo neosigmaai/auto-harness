@@ -72,14 +72,24 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
     if task_ids:
         print(f"\n[gate] Step 1: eval suite ({len(task_ids)} tasks, threshold={threshold:.0%})")
         results = train_runner.run(task_ids=task_ids)
-        valid = {k: v for k, v in results.items() if v is not None}
-        passed = sum(1 for r in valid.values() if r >= 0.5)
-        pass_rate = passed / len(valid) if valid else 0
 
-        suite["last_results"] = valid
+        # Mirror BenchmarkRunner.val_score semantics so Step 1's pass_rate is
+        # consistent with Step 2's val_score. Under "agent", a None reward
+        # (typically a per-task timeout) is the agent's fault and counts
+        # against the denominator. Under "infra", None is excluded.
+        if train_runner.timeout_policy == "agent":
+            denominator = len(results)
+            passed = sum(1 for r in results.values() if r is not None and r >= 0.5)
+            suite["last_results"] = results
+        else:
+            valid = {k: v for k, v in results.items() if v is not None}
+            denominator = len(valid)
+            passed = sum(1 for r in valid.values() if r >= 0.5)
+            suite["last_results"] = valid
+        pass_rate = passed / denominator if denominator else 0
         save_suite(suite)
 
-        print(f"       {passed}/{len(valid)} passed ({pass_rate:.0%})", end="  ")
+        print(f"       {passed}/{denominator} passed ({pass_rate:.0%})", end="  ")
         suite_passed = pass_rate >= threshold
         if suite_passed:
             print("PASS ✓")
@@ -107,6 +117,24 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
         print(f"\n[gate] FAILED — eval suite pass rate {pass_rate:.0%} < threshold {threshold:.0%}")
         return 1
     if not test_passed:
+        # If the run has any None rewards under the "agent" policy, the failure
+        # may be a one-time scoring-semantics change rather than a real regression.
+        # Historical val_scores in results.tsv were written under whatever policy
+        # was active at the time; the first gate after switching policies (or
+        # after this change first lands) can fail spuriously. Operators who
+        # confirm the agent itself hasn't regressed can drop or rewrite the
+        # offending row in workspace/results.tsv to re-baseline.
+        if (
+            gate_runner.timeout_policy == "agent"
+            and any(v is None for v in all_results.values())
+        ):
+            n_none = sum(1 for v in all_results.values() if v is None)
+            print(
+                f"\n[gate] note: {n_none} task(s) returned None and were charged as 0.0 "
+                f"under timeout_policy='agent'. If the prior best was recorded under "
+                f"'infra' (None excluded), re-baseline by editing workspace/results.tsv "
+                f"or set timeout_policy='infra' in experiment_config.yaml."
+            )
         print(f"\n[gate] FAILED — val_score {val:.4f} < best {best:.4f}")
         return 1
 
@@ -117,15 +145,26 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
         print(f"       {TRAIN_RESULTS_FILE} not found — run benchmark.py first to populate it")
     else:
         suite_set = set(suite["tasks"])
-        failing_non_suite = [tid for tid, r in train_results.items()
-                             if r is not None and r < 0.5 and tid not in suite_set]
+        # Symmetric with Step 1/Step 2: under "agent" policy, a timed-out task
+        # (None reward) is a failure and is eligible for re-run; under "infra"
+        # we ignore it because the failure was deemed non-agent.
+        if train_runner.timeout_policy == "agent":
+            failing_non_suite = [tid for tid, r in train_results.items()
+                                 if (r is None or r < 0.5) and tid not in suite_set]
+        else:
+            failing_non_suite = [tid for tid, r in train_results.items()
+                                 if r is not None and r < 0.5 and tid not in suite_set]
         if failing_non_suite:
             print(f"       re-running {len(failing_non_suite)} previously-failing train tasks")
             recheck = train_runner.run(task_ids=failing_non_suite)
+            # Promotion still requires a real verifier pass — None can't be promoted.
             newly_fixed = sorted(tid for tid, r in recheck.items() if r is not None and r >= 0.5)
             if newly_fixed:
                 suite["tasks"] = sorted(suite_set | set(newly_fixed))
-                suite["last_results"].update({k: v for k, v in recheck.items() if v is not None})
+                if train_runner.timeout_policy == "agent":
+                    suite["last_results"].update(recheck)
+                else:
+                    suite["last_results"].update({k: v for k, v in recheck.items() if v is not None})
                 save_suite(suite)
                 print(f"       promoted {len(newly_fixed)} task(s) into regression suite: {newly_fixed}")
             else:
@@ -140,6 +179,7 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
 def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
     """Create train and gate runners based on benchmark config."""
     benchmark = cfg.get("benchmark", "tau-bench")
+    timeout_policy = cfg.get("timeout_policy", "agent")
 
     if benchmark == "terminal-bench":
         train_runner = TerminalBenchRunner(
@@ -150,6 +190,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
             jobs_dir="workspace/tbench_jobs/train",
             reasoning_effort=cfg.get("reasoning_effort"),
+            timeout_policy=timeout_policy,
         )
         gate_runner = TerminalBenchRunner(
             agent_model=cfg.get("agent_model"),
@@ -159,6 +200,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
             jobs_dir="workspace/tbench_jobs/test",
             reasoning_effort=cfg.get("reasoning_effort"),
+            timeout_policy=timeout_policy,
         )
     elif benchmark == "bird-interact":
         train_runner = BirdInteractRunner(
@@ -181,6 +223,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             pg_port=cfg.get("pg_port"),
             pg_user=cfg.get("pg_user"),
             pg_password=cfg.get("pg_password"),
+            timeout_policy=timeout_policy,
         )
         gate_runner = BirdInteractRunner(
             bird_repo=cfg.get("bird_repo"),
@@ -202,6 +245,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             pg_port=cfg.get("pg_port"),
             pg_user=cfg.get("pg_user"),
             pg_password=cfg.get("pg_password"),
+            timeout_policy=timeout_policy,
         )
     elif benchmark == "tau-bench":
         if "domain" not in cfg:
@@ -214,6 +258,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             max_concurrency=cfg.get("max_concurrency", 3),
             reasoning_effort=cfg.get("reasoning_effort"),
             user_model=cfg.get("user_model"),
+            timeout_policy=timeout_policy,
         )
         gate_runner = TauBenchRunner(
             domain=cfg["domain"],
@@ -222,6 +267,7 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             max_concurrency=cfg.get("max_concurrency", 3),
             reasoning_effort=cfg.get("reasoning_effort"),
             user_model=cfg.get("user_model"),
+            timeout_policy=timeout_policy,
         )
     else:
         print(f"ERROR: unknown benchmark '{benchmark}'")

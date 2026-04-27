@@ -26,8 +26,26 @@ from abc import ABC, abstractmethod
 _registry_lock = threading.Lock()
 
 
+TIMEOUT_POLICIES = ("agent", "infra")
+
+
 class BenchmarkRunner(ABC):
-    """Abstract benchmark runner. Subclass and implement `run` to plug in your own benchmark."""
+    """Abstract benchmark runner. Subclass and implement `run` to plug in your own benchmark.
+
+    ``timeout_policy`` controls how missing per-task results (``None`` rewards
+    in :meth:`run`'s output) are scored:
+
+    - ``"agent"`` (default): missing results count as ``0.0``. A task that did
+      not finish within ``per_task_timeout`` is the agent's fault — it went
+      down a long trajectory or got stuck — and should be penalised. This is
+      the operator's contract: set a reasonable timeout, expect the agent to
+      stay within it.
+    - ``"infra"``: missing results are excluded from the mean. Use only if
+      your environment produces frequent transient infrastructure errors
+      that the agent cannot influence.
+    """
+
+    timeout_policy: str = "agent"
 
     @abstractmethod
     def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
@@ -38,16 +56,25 @@ class BenchmarkRunner(ABC):
             task_ids: specific task IDs to run. None runs the full benchmark.
 
         Returns:
-            Mapping of task_id -> reward (float in [0.0, 1.0]), or None if the
-            task could not be evaluated due to an infrastructure error.
+            Mapping of task_id -> reward (float in [0.0, 1.0]). ``None`` means
+            the task did not produce a verifier result — most often the agent
+            timed out or the runner could not reach the verifier. Whether
+            ``None`` counts as a failure or is excluded from the mean depends
+            on ``timeout_policy``.
         """
 
     def val_score(self, results: dict[str, float | None]) -> float:
-        """Mean reward across all results, excluding infra errors (None values)."""
-        valid = [v for v in results.values() if v is not None]
-        if not valid:
+        """Mean reward across all results.
+
+        Under ``timeout_policy="agent"`` (default) ``None`` rewards count as
+        ``0.0``. Under ``timeout_policy="infra"`` they are excluded.
+        """
+        if not results:
             return 0.0
-        return sum(valid) / len(valid)
+        if self.timeout_policy == "agent":
+            return sum(0.0 if v is None else v for v in results.values()) / len(results)
+        valid = [v for v in results.values() if v is not None]
+        return sum(valid) / len(valid) if valid else 0.0
 
 
 class TauBenchRunner(BenchmarkRunner):
@@ -71,7 +98,10 @@ class TauBenchRunner(BenchmarkRunner):
         seed: int = 300,
         reasoning_effort: str | None = None,
         user_model: str | None = None,
+        timeout_policy: str = "agent",
     ):
+        if timeout_policy not in TIMEOUT_POLICIES:
+            raise ValueError(f"timeout_policy must be one of {TIMEOUT_POLICIES}, got {timeout_policy!r}")
         self.domain = domain
         self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-5.4")
         self.split = split
@@ -79,6 +109,7 @@ class TauBenchRunner(BenchmarkRunner):
         self.seed = seed
         self.reasoning_effort = reasoning_effort
         self.user_model = user_model or self.agent_model
+        self.timeout_policy = timeout_policy
 
     def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
         # tau2 reads TAU2_DATA_DIR at import time — set it before the first import
@@ -152,7 +183,10 @@ class TerminalBenchRunner(BenchmarkRunner):
         per_task_timeout: int = 1200,
         jobs_dir: str = "workspace/tbench_jobs",
         reasoning_effort: str | None = None,
+        timeout_policy: str = "agent",
     ):
+        if timeout_policy not in TIMEOUT_POLICIES:
+            raise ValueError(f"timeout_policy must be one of {TIMEOUT_POLICIES}, got {timeout_policy!r}")
         self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-5.4")
         self.split = split
         self.env_provider = env_provider
@@ -162,6 +196,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         self.per_task_timeout = per_task_timeout
         self.jobs_dir = jobs_dir
         self.reasoning_effort = reasoning_effort
+        self.timeout_policy = timeout_policy
 
     def _load_split_tasks(self) -> list[str] | None:
         """Load task names for the configured split. Returns None to run all tasks."""
@@ -427,7 +462,11 @@ class BirdInteractRunner(BenchmarkRunner):
         pg_port: int | None = None,
         pg_user: str | None = None,
         pg_password: str | None = None,
+        timeout_policy: str = "agent",
     ):
+        if timeout_policy not in TIMEOUT_POLICIES:
+            raise ValueError(f"timeout_policy must be one of {TIMEOUT_POLICIES}, got {timeout_policy!r}")
+        self.timeout_policy = timeout_policy
         self.adk_dir = resolve_bird_adk_dir(bird_repo)
         self.python_bin = resolve_bird_python_bin(self.adk_dir, bird_python_bin)
         if not self.python_bin:
@@ -808,6 +847,9 @@ if __name__ == "__main__":
 
     cfg = _load_config()
     benchmark = cfg.get("benchmark", "tau-bench")
+    # Mirror gating.py::_create_runners so `python benchmark.py` and
+    # `python gating.py` compute val_score under the same policy.
+    timeout_policy = cfg.get("timeout_policy", "agent")
 
     parser = argparse.ArgumentParser(description="Run benchmark tasks")
     parser.add_argument("--task-ids", nargs="*", help="Task IDs to run (default: all)")
@@ -826,6 +868,7 @@ if __name__ == "__main__":
             n_concurrent=args.concurrency,
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
             reasoning_effort=cfg.get("reasoning_effort"),
+            timeout_policy=timeout_policy,
         )
     elif benchmark == "bird-interact":
         runner = BirdInteractRunner(
@@ -848,6 +891,7 @@ if __name__ == "__main__":
             pg_port=cfg.get("pg_port"),
             pg_user=cfg.get("pg_user"),
             pg_password=cfg.get("pg_password"),
+            timeout_policy=timeout_policy,
         )
     elif benchmark == "tau-bench":
         if not args.domain:
@@ -860,6 +904,7 @@ if __name__ == "__main__":
             max_concurrency=args.concurrency,
             reasoning_effort=cfg.get("reasoning_effort"),
             user_model=cfg.get("user_model"),
+            timeout_policy=timeout_policy,
         )
     else:
         print(f"ERROR: unknown benchmark '{benchmark}'")
@@ -868,8 +913,18 @@ if __name__ == "__main__":
     results = runner.run(task_ids=args.task_ids)
     val = runner.val_score(results)
 
-    valid_results = [v for v in results.values() if v is not None]
-    print(f"\nval_score: {val:.4f}  ({sum(v >= 0.5 for v in valid_results)}/{len(valid_results)} passed)")
+    # Report counts consistent with the active timeout_policy so the printed
+    # summary matches val_score's denominator.
+    n_total = len(results)
+    n_none = sum(1 for v in results.values() if v is None)
+    n_pass = sum(1 for v in results.values() if v is not None and v >= 0.5)
+    if runner.timeout_policy == "agent":
+        denom = n_total
+        suffix = f" ({n_none} timed out, counted as failures under timeout_policy='agent')" if n_none else ""
+    else:
+        denom = n_total - n_none
+        suffix = f" ({n_none} timed out, excluded under timeout_policy='infra')" if n_none else ""
+    print(f"\nval_score: {val:.4f}  ({n_pass}/{denom} passed){suffix}")
     for task_id, reward in sorted(results.items(), key=lambda x: (0, int(x[0])) if x[0].isdigit() else (1, x[0])):
         status = "PASS" if reward is not None and reward >= 0.5 else ("INFRA_ERR" if reward is None else "FAIL")
         print(f"  {status}  {task_id}: {f'{reward:.2f}' if reward is not None else 'N/A'}")
