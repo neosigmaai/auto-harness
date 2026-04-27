@@ -18,7 +18,13 @@ import sys
 
 import yaml
 
-from benchmark import BenchmarkRunner, BirdInteractRunner, TauBenchRunner, TerminalBenchRunner
+from benchmark import (
+    BenchmarkRunner,
+    BFCLRunner,
+    BirdInteractRunner,
+    TauBenchRunner,
+    TerminalBenchRunner,
+)
 
 CONFIG_FILE = "experiment_config.yaml"
 
@@ -222,6 +228,23 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             max_concurrency=cfg.get("max_concurrency", 3),
             reasoning_effort=cfg.get("reasoning_effort"),
             user_model=cfg.get("user_model"),
+        )
+    elif benchmark == "bfcl":
+        train_runner = BFCLRunner(
+            category=cfg.get("category", "multi_turn_base"),
+            agent_model=cfg.get("agent_model"),
+            split=cfg.get("split", "train"),
+            n_concurrent=cfg.get("max_concurrency", 10),
+            per_task_timeout=cfg.get("per_task_timeout", 300),
+            runs_dir="workspace/bfcl_runs",
+        )
+        gate_runner = BFCLRunner(
+            category=cfg.get("category", "multi_turn_base"),
+            agent_model=cfg.get("agent_model"),
+            split=cfg.get("gate_split", "test"),
+            n_concurrent=cfg.get("max_concurrency", 10),
+            per_task_timeout=cfg.get("per_task_timeout", 300),
+            runs_dir="workspace/bfcl_runs",
         )
     else:
         print(f"ERROR: unknown benchmark '{benchmark}'")

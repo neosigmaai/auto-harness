@@ -6,3 +6,4 @@
 #   tau-bench      -> agent/templates/tau_bench.py
 #   terminal-bench -> agent/templates/terminal_bench.py
 #   bird-interact  -> agent/templates/bird_interact.py
+#   bfcl           -> agent/templates/bfcl.py

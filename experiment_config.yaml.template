@@ -75,3 +75,26 @@
 # reasoning_effort: "medium"      # optional
 #
 # Required env vars: LLM API key for your model (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY)
+
+# ═══════════════════════════════════════════════════════════════
+# BFCL (Berkeley Function-Calling Leaderboard)
+# ═══════════════════════════════════════════════════════════════
+#
+# benchmark: "bfcl"
+# category: "multi_turn_base"     # 200 stateful tasks; see Risks R5 for fallback categories
+# agent_model: "gpt-5.2-2025-12-11"  # any OpenAI Responses-compatible model id
+# split: "train"
+# gate_split: "test"
+# max_concurrency: 10              # validated against gpt-5.4; lower if you hit OpenAI rate limits
+# per_task_timeout: 300
+# threshold: 0.8
+# split_seed: 42                  # deterministic 70/30 random split from packaged task IDs
+#
+# Required env vars: OPENAI_API_KEY (the first PR ships only the OpenAI Responses path)
+# Required deps: bfcl-eval==2026.3.23 and soundfile (both pinned in pyproject.toml)
+#
+# Notes:
+# - The split is deterministic-random, NOT baseline-stratified. Train failures are
+#   simply whichever tasks happen to fail at baseline within the train half.
+# - Multi-turn rewards are binary; one wrong turn usually fails the whole task.
+# - Re-run scripts/bfcl_spike.py before any bfcl-eval version bump.
