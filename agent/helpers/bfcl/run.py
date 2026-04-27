@@ -75,5 +75,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    # Don't wrap in `sys.exit(0)`: BFCL's Typer `cli()` raises SystemExit with
+    # its own status code on every code path, and a hard-coded `sys.exit(0)`
+    # would mask any non-zero exit that escaped via a normal return. Letting
+    # main() propagate naturally preserves the subcommand's real exit code.
     main()
-    sys.exit(0)

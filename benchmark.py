@@ -1016,6 +1016,22 @@ class BFCLRunner(BenchmarkRunner):
     def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
         import datetime
 
+        # Parent-process bfcl_eval imports (in `_load_all_packaged_tasks`,
+        # `_parse_rewards`, `_copy_train_traces`) need `BFCL_PROJECT_ROOT`
+        # set BEFORE the first import — `eval_config` calls mkdir() at import
+        # time (Finding F1 in scripts/bfcl_spike.py). `prepare.py` happens to
+        # be protected because `check_env_bfcl()` runs first in the same
+        # process; gating.py and direct `python benchmark.py` invocations are
+        # not. `setdefault` so we don't trample an env var the caller (or
+        # `check_env_bfcl`) may already have set.
+        os.environ.setdefault(
+            "BFCL_PROJECT_ROOT", tempfile.mkdtemp(prefix="bfcl-runner-")
+        )
+
+        # Mark our run start so the stale-dir cleanup at the end can avoid
+        # touching directories created by a concurrent runner.
+        run_started_at = time.time()
+
         if task_ids is None:
             task_ids = self._load_split_tasks()
         if task_ids is None:
@@ -1058,10 +1074,14 @@ class BFCLRunner(BenchmarkRunner):
         )
 
         # ── Generate ──────────────────────────────────────────────────────
+        # `--run-ids` is exclusive of `--test-category` (Finding F2 in
+        # scripts/bfcl_spike.py): when run-ids is set, BFCL infers the
+        # category from the keys of test_case_ids_to_generate.json (written
+        # above) and silently ignores any --test-category flag. Pass only
+        # --run-ids to avoid misleading future maintainers.
         gen_cmd = [
             sys.executable, "-m", "agent.helpers.bfcl.run", "generate",
             "--model", "harness-agent",
-            "--test-category", self.category,
             "--run-ids",
             "--allow-overwrite",
             "--num-threads", str(self.n_concurrent),
@@ -1112,13 +1132,23 @@ class BFCLRunner(BenchmarkRunner):
         # run dir — useful traces are already copied to workspace/traces/.
         shutil.rmtree(run_root, ignore_errors=True)
 
-        # Prune any stale run directories under the same split.
+        # Prune leftover run directories from prior crashed runs. Only touch
+        # directories whose mtime predates this run's start — this keeps the
+        # cleanup safe under future parallelization (two concurrent runners
+        # against the same split would otherwise race to delete each other's
+        # active run_root before the parse/copy phase finishes).
         split_dir = os.path.join(self.runs_dir, split_label)
         if os.path.isdir(split_dir):
             for old in os.listdir(split_dir):
                 old_path = os.path.join(split_dir, old)
-                if os.path.isdir(old_path):
-                    shutil.rmtree(old_path, ignore_errors=True)
+                if not os.path.isdir(old_path):
+                    continue
+                try:
+                    if os.path.getmtime(old_path) >= run_started_at:
+                        continue
+                except OSError:
+                    continue
+                shutil.rmtree(old_path, ignore_errors=True)
 
         return rewards
 
