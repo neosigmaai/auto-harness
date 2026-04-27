@@ -193,7 +193,7 @@ def report_file_guard_failure(violations: list[str], *, prefix: str) -> None:
     print(f"{prefix}          allowed: {allow}  (workspace/ is gitignored — edit there freely)")
     for path in violations:
         print(f"{prefix}            - {path}")
-    print(f"{prefix}          revert with `git checkout -- <file>` (or `git rm <file>` if untracked) and re-run.")
+    print(f"{prefix}          revert with `git checkout -- <file>` (tracked) or `rm <file>` (untracked) and re-run.")
     print(f"{prefix}          bypass: set `file_guard: false` in experiment_config.yaml.")
 
 
