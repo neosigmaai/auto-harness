@@ -21,6 +21,11 @@
 # timeout_policy: "agent"        # "agent" (default): tasks that miss per_task_timeout
 #                                #   count as 0.0 in val_score (penalises bad trajectories).
 #                                # "infra": exclude timed-out tasks (legacy behaviour).
+#                                # NOTE: switching this on an existing project changes
+#                                # how val_score is computed, so the first gate run after
+#                                # the switch may FAIL Step 2 because workspace/results.tsv
+#                                # holds historical scores under the previous policy.
+#                                # Re-baseline by truncating results.tsv if needed.
 #
 # Required env vars: LLM API key for your model (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY),
 #                    E2B_API_KEY (or DAYTONA_API_KEY)
