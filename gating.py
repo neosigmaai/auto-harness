@@ -27,10 +27,16 @@ from benchmark import BenchmarkRunner, BirdInteractRunner, TauBenchRunner, Termi
 
 CONFIG_FILE = "experiment_config.yaml"
 
-# Files the agent is allowed to modify across iterations. Everything under
-# `workspace/` is gitignored and therefore invisible to git, so it is not
-# listed here — the agent edits `workspace/learnings.md` freely.
-ALLOWED_AGENT_FILES = frozenset({"agent/agent.py"})
+# Files the agent is allowed to modify across iterations.
+#   - `agent/agent.py`: the agent's own scaffold, edited on every iteration.
+#   - `PROGRAM.md`:     rewritten by `prepare.py` from `program_templates/`
+#                       on a fresh checkout, so it always shows up as dirty
+#                       in `git diff HEAD` until committed; whitelisting
+#                       avoids forcing every user to commit the generated
+#                       file before the first gate run.
+# Everything under `workspace/` is gitignored and therefore invisible to git,
+# so it is not listed here — the agent edits `workspace/learnings.md` freely.
+ALLOWED_AGENT_FILES = frozenset({"agent/agent.py", "PROGRAM.md"})
 
 
 def load_config() -> dict:
@@ -38,6 +44,57 @@ def load_config() -> dict:
         return {}
     with open(CONFIG_FILE) as f:
         return yaml.safe_load(f) or {}
+
+
+# Module-level latch so we warn at most once per process when git is missing
+# or the cwd is not a repo (otherwise every gate step would re-print the same
+# message). Kept private; reset only by re-importing the module.
+_GIT_WARNED = False
+
+
+def _warn_once(reason: str) -> None:
+    global _GIT_WARNED
+    if _GIT_WARNED:
+        return
+    print(
+        f"[gate] WARNING: file guard skipped — {reason}. "
+        "Set `file_guard: false` in experiment_config.yaml to silence.",
+        file=sys.stderr,
+    )
+    _GIT_WARNED = True
+
+
+def _git_unavailable_reason() -> str | None:
+    """Return None if `git` works in this directory, else a human-readable reason.
+
+    Distinguishes "git binary missing" from "not in a git repo" so the warning
+    actually tells the user what to fix. Anything else (transient permission
+    errors, etc.) surfaces as the generic CalledProcessError branch.
+    """
+    try:
+        subprocess.check_output(
+            ["git", "rev-parse", "--is-inside-work-tree"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+        return None
+    except FileNotFoundError:
+        return "`git` is not installed or not on PATH"
+    except subprocess.CalledProcessError:
+        return "current directory is not a git repository"
+
+
+def _has_parent_commit() -> bool:
+    """True iff `HEAD~1` exists. False on the very first commit in a repo."""
+    try:
+        subprocess.check_output(
+            ["git", "rev-parse", "--verify", "HEAD~1"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
 
 
 def _git_lines(*args: str) -> list[str]:
@@ -52,24 +109,56 @@ def file_guard_violations(*, check_last_commit: bool = False) -> list[str]:
     """Return tracked paths the agent has touched outside ``ALLOWED_AGENT_FILES``.
 
     Always inspects:
-      - ``git diff --name-only HEAD`` — staged + unstaged tracked changes.
-      - ``git ls-files --others --exclude-standard`` — new files not yet ignored.
+      - ``git diff-index --name-only HEAD`` — files differing from HEAD in
+        either the working tree OR the index (catches a `git add` that was
+        followed by a working-tree restore, which `git diff HEAD` misses).
+      - ``git ls-files --others --exclude-standard`` — new files that aren't
+        gitignored. ``--exclude-standard`` honours `.gitignore`,
+        `.git/info/exclude`, and the user's global gitignore, so editor
+        droppings (`.idea/`, `*.swp`, ...) only leak through if they aren't
+        ignored anywhere; the repo `.gitignore` covers the common cases.
 
-    With ``check_last_commit=True`` the diff of HEAD vs HEAD~1 is also inspected.
-    Use this from ``record.py`` so an agent that commits forbidden files before
-    invoking record cannot slip past the gate.
+    With ``check_last_commit=True`` the diff of HEAD vs HEAD~1 is also
+    inspected. Used from ``record.py`` so an agent that committed forbidden
+    files before invoking record cannot slip past the gate. Skipped silently
+    when there is no parent commit (first commit only — the working-tree
+    check above has already run by the time we get here, so anything bad
+    would have been caught upstream in `gating.py`).
+
+    If git is unavailable or we're not in a git repo, prints a one-time
+    warning to stderr and returns ``[]`` (treated as no violations) so the
+    rest of the gate can still run in degraded mode rather than failing
+    confusingly mid-pipeline.
     """
+    reason = _git_unavailable_reason()
+    if reason is not None:
+        _warn_once(reason)
+        return []
+
     paths: set[str] = set()
-    paths.update(_git_lines("diff", "--name-only", "HEAD"))
+    paths.update(_git_lines("diff-index", "--name-only", "HEAD"))
     paths.update(_git_lines("ls-files", "--others", "--exclude-standard"))
-    if check_last_commit:
+    if check_last_commit and _has_parent_commit():
         paths.update(_git_lines("diff", "--name-only", "HEAD~1", "HEAD"))
     return sorted(paths - ALLOWED_AGENT_FILES)
 
 
 def file_guard_enabled() -> bool:
-    """File guard is on by default; ``file_guard: false`` in experiment_config disables it."""
-    return load_config().get("file_guard", True) is not False
+    """File guard is on by default.
+
+    Disabled by any of these in ``experiment_config.yaml``:
+      - boolean ``false`` / ``no`` / ``off``  (PyYAML parses these as Python ``False``)
+      - integer ``0``
+      - string ``"false"`` / ``"no"`` / ``"off"`` / ``"0"`` / ``""`` (case-insensitive)
+
+    Anything else (including missing key) leaves the guard on. Conservative
+    by design — accidentally typing ``file_guard: maybe`` shouldn't silently
+    turn the guard off.
+    """
+    val = load_config().get("file_guard", True)
+    if isinstance(val, str):
+        return val.strip().lower() not in {"false", "no", "off", "0", ""}
+    return bool(val)
 
 
 def report_file_guard_failure(violations: list[str], *, prefix: str) -> None:
