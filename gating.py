@@ -20,10 +20,18 @@ import json
 import os
 import subprocess
 import sys
+from typing import TYPE_CHECKING
 
 import yaml
 
-from benchmark import BenchmarkRunner, BirdInteractRunner, TauBenchRunner, TerminalBenchRunner
+# `benchmark` is heavyweight (pulls in tau-bench, terminal-bench, bird-interact
+# stacks). `record.py` re-uses the file-guard helpers below, and we don't want
+# `python record.py` to pay for that import when all it does is append a row
+# to results.tsv. Concrete runner classes are imported lazily inside
+# `_create_runners()` (the only consumer); type-only references stay as
+# strings thanks to `from __future__ import annotations` above.
+if TYPE_CHECKING:
+    from benchmark import BenchmarkRunner
 
 CONFIG_FILE = "experiment_config.yaml"
 
@@ -53,11 +61,17 @@ _GIT_WARNED = False
 
 
 def _warn_once(reason: str) -> None:
+    """Print a one-shot stderr warning when the file guard can't run.
+
+    No caller-side prefix (``[gate]`` / ``[record]``) on this line: the same
+    helper fires from both ``gating.py`` and ``record.py``, and a wrong prefix
+    is more confusing in logs than no prefix at all. The body is unambiguous.
+    """
     global _GIT_WARNED
     if _GIT_WARNED:
         return
     print(
-        f"[gate] WARNING: file guard skipped — {reason}. "
+        f"WARNING: file guard skipped — {reason}. "
         "Set `file_guard: false` in experiment_config.yaml to silence.",
         file=sys.stderr,
     )
@@ -151,11 +165,17 @@ def file_guard_enabled() -> bool:
       - integer ``0``
       - string ``"false"`` / ``"no"`` / ``"off"`` / ``"0"`` / ``""`` (case-insensitive)
 
-    Anything else (including missing key) leaves the guard on. Conservative
-    by design — accidentally typing ``file_guard: maybe`` shouldn't silently
-    turn the guard off.
+    Anything else — including the missing key, ``file_guard:`` (empty value),
+    ``file_guard: null``, ``file_guard: ~``, and unknown strings like
+    ``file_guard: maybe`` — leaves the guard on. Conservative by design:
+    a typo in the config shouldn't silently disable the safety guard.
     """
     val = load_config().get("file_guard", True)
+    # Treat YAML null / empty value as "no opinion expressed" → leave guard on.
+    # Otherwise `bool(None) is False` would silently disable the guard, which
+    # contradicts the conservative-default contract above.
+    if val is None:
+        return True
     if isinstance(val, str):
         return val.strip().lower() not in {"false", "no", "off", "0", ""}
     return bool(val)
@@ -298,6 +318,11 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
 
 def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
     """Create train and gate runners based on benchmark config."""
+    # Deferred import — see top-of-file note. Importing here means
+    # `record.py` (which only needs the file-guard helpers above) doesn't
+    # pull in the entire benchmark dependency tree at import time.
+    from benchmark import BirdInteractRunner, TauBenchRunner, TerminalBenchRunner
+
     benchmark = cfg.get("benchmark", "tau-bench")
 
     if benchmark == "terminal-bench":
