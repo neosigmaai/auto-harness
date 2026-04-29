@@ -107,13 +107,6 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
         print(f"\n[gate] FAILED — eval suite pass rate {pass_rate:.0%} < threshold {threshold:.0%}")
         return 1
     if not test_passed:
-        # If the run has any None rewards under the "agent" policy, the failure
-        # may be a one-time scoring-semantics change rather than a real regression.
-        # Historical val_scores in results.tsv were written under whatever policy
-        # was active at the time; the first gate after switching policies (or
-        # after this change first lands) can fail spuriously. Operators who
-        # confirm the agent itself hasn't regressed can drop or rewrite the
-        # offending row in workspace/results.tsv to re-baseline.
         print(f"\n[gate] FAILED — val_score {val:.4f} < best {best:.4f}")
         return 1
 
