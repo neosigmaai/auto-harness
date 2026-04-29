@@ -38,16 +38,16 @@ class BenchmarkRunner(ABC):
             task_ids: specific task IDs to run. None runs the full benchmark.
 
         Returns:
-            Mapping of task_id -> reward (float in [0.0, 1.0]), or None if the
-            task could not be evaluated due to an infrastructure error.
+            Mapping of task_id -> reward (float in [0.0, 1.0]). ``None`` means
+            the task did not produce a verifier result — most often the agent
+            timed out. ``None`` counts as ``0.0`` in :meth:`val_score`.
         """
 
     def val_score(self, results: dict[str, float | None]) -> float:
-        """Mean reward across all results, excluding infra errors (None values)."""
-        valid = [v for v in results.values() if v is not None]
-        if not valid:
+        """Mean reward across all results. ``None`` rewards count as ``0.0``."""
+        if not results:
             return 0.0
-        return sum(valid) / len(valid)
+        return sum(0.0 if v is None else v for v in results.values()) / len(results)
 
 
 class TauBenchRunner(BenchmarkRunner):
@@ -291,6 +291,10 @@ class TerminalBenchRunner(BenchmarkRunner):
             except (json.JSONDecodeError, KeyError, TypeError, AttributeError) as e:
                 print(f"[benchmark] WARNING: failed to parse {trial_result}: {e}")
                 continue
+
+        if task_ids is not None:
+            for tid in task_ids:
+                results.setdefault(tid, None)
 
         # Copy train traces for the coding agent
         # workspace/traces/baseline/ — immutable first-run traces (never overwritten)
@@ -868,10 +872,13 @@ if __name__ == "__main__":
     results = runner.run(task_ids=args.task_ids)
     val = runner.val_score(results)
 
-    valid_results = [v for v in results.values() if v is not None]
-    print(f"\nval_score: {val:.4f}  ({sum(v >= 0.5 for v in valid_results)}/{len(valid_results)} passed)")
+    n_total = len(results)
+    n_none = sum(1 for v in results.values() if v is None)
+    n_pass = sum(1 for v in results.values() if v is not None and v >= 0.5)
+    suffix = f" ({n_none} timed out, counted as failures)" if n_none else ""
+    print(f"\nval_score: {val:.4f}  ({n_pass}/{n_total} passed){suffix}")
     for task_id, reward in sorted(results.items(), key=lambda x: (0, int(x[0])) if x[0].isdigit() else (1, x[0])):
-        status = "PASS" if reward is not None and reward >= 0.5 else ("INFRA_ERR" if reward is None else "FAIL")
+        status = "PASS" if reward is not None and reward >= 0.5 else ("TIMEOUT" if reward is None else "FAIL")
         print(f"  {status}  {task_id}: {f'{reward:.2f}' if reward is not None else 'N/A'}")
 
     train_results_path = "workspace/train_results.json"

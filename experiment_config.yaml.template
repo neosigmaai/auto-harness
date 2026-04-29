@@ -18,6 +18,7 @@
 # max_concurrency: 50            # tasks run in parallel
 # threshold: 0.8                 # regression suite pass rate threshold
 # reasoning_effort: "medium"      # optional
+# per_task_timeout: 1200         # seconds; tasks that exceed this score 0.0 in val_score.
 #
 # Required env vars: LLM API key for your model (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY),
 #                    E2B_API_KEY (or DAYTONA_API_KEY)

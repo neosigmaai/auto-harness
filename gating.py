@@ -240,14 +240,16 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
     if task_ids:
         print(f"\n[gate] Step 1: eval suite ({len(task_ids)} tasks, threshold={threshold:.0%})")
         results = train_runner.run(task_ids=task_ids)
-        valid = {k: v for k, v in results.items() if v is not None}
-        passed = sum(1 for r in valid.values() if r >= 0.5)
-        pass_rate = passed / len(valid) if valid else 0
 
-        suite["last_results"] = valid
+        # Use task_ids as the denominator so tasks the runner silently dropped
+        # count as failures rather than disappearing from the pass rate.
+        denominator = len(task_ids)
+        passed = sum(1 for tid in task_ids if (r := results.get(tid)) is not None and r >= 0.5)
+        suite["last_results"] = {tid: results.get(tid) for tid in task_ids}
+        pass_rate = passed / denominator
         save_suite(suite)
 
-        print(f"       {passed}/{len(valid)} passed ({pass_rate:.0%})", end="  ")
+        print(f"       {passed}/{denominator} passed ({pass_rate:.0%})", end="  ")
         suite_passed = pass_rate >= threshold
         if suite_passed:
             print("PASS ✓")
@@ -286,14 +288,15 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
     else:
         suite_set = set(suite["tasks"])
         failing_non_suite = [tid for tid, r in train_results.items()
-                             if r is not None and r < 0.5 and tid not in suite_set]
+                             if (r is None or r < 0.5) and tid not in suite_set]
         if failing_non_suite:
             print(f"       re-running {len(failing_non_suite)} previously-failing train tasks")
             recheck = train_runner.run(task_ids=failing_non_suite)
+            # Promotion still requires a real verifier pass — None can't be promoted.
             newly_fixed = sorted(tid for tid, r in recheck.items() if r is not None and r >= 0.5)
             if newly_fixed:
                 suite["tasks"] = sorted(suite_set | set(newly_fixed))
-                suite["last_results"].update({k: v for k, v in recheck.items() if v is not None})
+                suite["last_results"].update(recheck)
                 save_suite(suite)
                 print(f"       promoted {len(newly_fixed)} task(s) into regression suite: {newly_fixed}")
             else:

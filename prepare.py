@@ -328,12 +328,13 @@ def run_baseline(cfg: dict) -> None:
             )
             all_results = all_runner.run()
 
-            # Filter out infra errors (reward stays 0 but no verifier ran)
+            # Exclude timed-out tasks from the split — they'd permanently drag down
+            # the baseline and the train/test split should reflect runnable tasks.
             actual_results = {k: v for k, v in all_results.items() if v is not None}
-            infra_errors = [k for k, v in all_results.items() if v is None]
-            if infra_errors:
-                print(f"[prepare] WARNING: {len(infra_errors)} task(s) had infra errors and are "
-                      f"permanently excluded from the train/test split: {infra_errors}")
+            timed_out = [k for k, v in all_results.items() if v is None]
+            if timed_out:
+                print(f"[prepare] WARNING: {len(timed_out)} task(s) timed out and are "
+                      f"permanently excluded from the train/test split: {timed_out}")
                 print(f"          To include them, delete {SPLIT_FILE} and re-run prepare.py.")
             generate_terminal_bench_split(actual_results)
 
@@ -341,7 +342,7 @@ def run_baseline(cfg: dict) -> None:
             with open(SPLIT_FILE) as f:
                 split = json.load(f)
             test_results = {k: actual_results.get(k, 0.0) for k in split["test"]}
-            val = sum(test_results.values()) / len(test_results) if test_results else 0.0
+            val = all_runner.val_score(test_results)
         else:
             # Split exists — just run the test split for baseline
             runner = TerminalBenchRunner(
@@ -382,10 +383,10 @@ def run_baseline(cfg: dict) -> None:
             all_results = all_runner.run()
 
             actual_results = {k: v for k, v in all_results.items() if v is not None}
-            infra_errors = [k for k, v in all_results.items() if v is None]
-            if infra_errors:
-                print(f"[prepare] WARNING: {len(infra_errors)} BIRD task(s) had infra errors and are "
-                      f"permanently excluded from the train/test split: {infra_errors}")
+            timed_out = [k for k, v in all_results.items() if v is None]
+            if timed_out:
+                print(f"[prepare] WARNING: {len(timed_out)} BIRD task(s) timed out and are "
+                      f"permanently excluded from the train/test split: {timed_out}")
                 print(f"          To include them, delete {BIRD_SPLIT_FILE} and re-run prepare.py.")
 
             generate_bird_interact_split(actual_results)
@@ -393,7 +394,7 @@ def run_baseline(cfg: dict) -> None:
             with open(BIRD_SPLIT_FILE) as f:
                 split = json.load(f)
             test_results = {k: actual_results.get(k, 0.0) for k in split["test"]}
-            val = sum(test_results.values()) / len(test_results) if test_results else 0.0
+            val = all_runner.val_score(test_results)
         else:
             runner = BirdInteractRunner(
                 bird_repo=cfg.get("bird_repo"),
