@@ -13,25 +13,15 @@ from `run_gate`, which the script entry surfaces as exit 1 — the standard
 "revert and try a different approach" signal documented in PROGRAM.md.
 """
 
-from __future__ import annotations
-
 import csv
 import json
 import os
 import subprocess
 import sys
-from typing import TYPE_CHECKING
 
 import yaml
 
-# `benchmark` is heavyweight (pulls in tau-bench, terminal-bench, bird-interact
-# stacks). `record.py` re-uses the file-guard helpers below, and we don't want
-# `python record.py` to pay for that import when all it does is append a row
-# to results.tsv. Concrete runner classes are imported lazily inside
-# `_create_runners()` (the only consumer); type-only references stay as
-# strings thanks to `from __future__ import annotations` above.
-if TYPE_CHECKING:
-    from benchmark import BenchmarkRunner
+from benchmark import BenchmarkRunner, BirdInteractRunner, TauBenchRunner, TerminalBenchRunner
 
 CONFIG_FILE = "experiment_config.yaml"
 
@@ -318,11 +308,6 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
 
 def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
     """Create train and gate runners based on benchmark config."""
-    # Deferred import — see top-of-file note. Importing here means
-    # `record.py` (which only needs the file-guard helpers above) doesn't
-    # pull in the entire benchmark dependency tree at import time.
-    from benchmark import BirdInteractRunner, TauBenchRunner, TerminalBenchRunner
-
     benchmark = cfg.get("benchmark", "tau-bench")
 
     if benchmark == "terminal-bench":
