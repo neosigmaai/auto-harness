@@ -78,15 +78,16 @@ Make one focused change per iteration. Smaller changes are easier to gate and ea
 python gating.py
 ```
 
-Three steps run in sequence:
+Four steps run in sequence:
 
+- **Step 0 — File guard**: rejects the iteration if any tracked files outside the allowlist (`agent/agent.py`, `PROGRAM.md`) were modified. Fails immediately with exit 1.
 - **Step 1 — Regression suite**: re-runs tasks in `suite.json` on the train split. Pass rate must be ≥ threshold. Protects previously-fixed tasks from regressing.
 - **Step 2 — Full test**: runs the test split. val_score must be ≥ best recorded in `results.tsv`.
 - **Step 3 — Suite promotion** *(only if Steps 1+2 pass)*: re-runs previously-failing train tasks; newly-passing ones are automatically added to `suite.json`.
 
 **Exit 0** → proceed to Record.
 
-**Exit 1** (Step 1 or 2 failed) → revert and try a different approach:
+**Exit 1** (any step failed) → revert and try a different approach:
 
 ```bash
 git checkout agent/agent.py
