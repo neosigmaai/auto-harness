@@ -73,10 +73,12 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
         print(f"\n[gate] Step 1: eval suite ({len(task_ids)} tasks, threshold={threshold:.0%})")
         results = train_runner.run(task_ids=task_ids)
 
-        denominator = len(results)
-        passed = sum(1 for r in results.values() if r is not None and r >= 0.5)
-        suite["last_results"] = results
-        pass_rate = passed / denominator if denominator else 0
+        # Use task_ids as the denominator so tasks the runner silently dropped
+        # count as failures rather than disappearing from the pass rate.
+        denominator = len(task_ids)
+        passed = sum(1 for tid in task_ids if results.get(tid) is not None and results.get(tid) >= 0.5)
+        suite["last_results"] = {tid: results.get(tid) for tid in task_ids}
+        pass_rate = passed / denominator
         save_suite(suite)
 
         print(f"       {passed}/{denominator} passed ({pass_rate:.0%})", end="  ")
