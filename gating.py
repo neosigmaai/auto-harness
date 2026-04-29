@@ -151,7 +151,6 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
             jobs_dir="workspace/tbench_jobs/train",
             reasoning_effort=cfg.get("reasoning_effort"),
-
         )
         gate_runner = TerminalBenchRunner(
             agent_model=cfg.get("agent_model"),
@@ -161,7 +160,6 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
             jobs_dir="workspace/tbench_jobs/test",
             reasoning_effort=cfg.get("reasoning_effort"),
-
         )
     elif benchmark == "bird-interact":
         train_runner = BirdInteractRunner(
@@ -184,7 +182,6 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             pg_port=cfg.get("pg_port"),
             pg_user=cfg.get("pg_user"),
             pg_password=cfg.get("pg_password"),
-
         )
         gate_runner = BirdInteractRunner(
             bird_repo=cfg.get("bird_repo"),
@@ -206,7 +203,6 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             pg_port=cfg.get("pg_port"),
             pg_user=cfg.get("pg_user"),
             pg_password=cfg.get("pg_password"),
-
         )
     elif benchmark == "tau-bench":
         if "domain" not in cfg:
@@ -219,7 +215,6 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             max_concurrency=cfg.get("max_concurrency", 3),
             reasoning_effort=cfg.get("reasoning_effort"),
             user_model=cfg.get("user_model"),
-
         )
         gate_runner = TauBenchRunner(
             domain=cfg["domain"],
@@ -228,7 +223,6 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             max_concurrency=cfg.get("max_concurrency", 3),
             reasoning_effort=cfg.get("reasoning_effort"),
             user_model=cfg.get("user_model"),
-
         )
     else:
         print(f"ERROR: unknown benchmark '{benchmark}'")
