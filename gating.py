@@ -113,9 +113,8 @@ def file_guard_violations(*, check_last_commit: bool = False) -> list[str]:
     """Return tracked paths the agent has touched outside ``ALLOWED_AGENT_FILES``.
 
     Always inspects:
-      - ``git diff-index --name-only HEAD`` — files differing from HEAD in
-        either the working tree OR the index (catches a `git add` that was
-        followed by a working-tree restore, which `git diff HEAD` misses).
+      - ``git diff-index --name-only HEAD`` — files in the working tree that
+        differ from HEAD.
       - ``git ls-files --others --exclude-standard`` — new files that aren't
         gitignored. ``--exclude-standard`` honours `.gitignore`,
         `.git/info/exclude`, and the user's global gitignore, so editor
