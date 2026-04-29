@@ -6,6 +6,15 @@ __pycache__/
 .DS_Store
 *.log
 
+# editor droppings — not from the harness itself, but kept here so the
+# file guard's `git ls-files --others` check doesn't false-positive on
+# them when contributors run with these tools.
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
 # agent working directory (runtime state, not committed)
 workspace/
 workspace_backups/
