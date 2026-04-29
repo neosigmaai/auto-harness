@@ -292,6 +292,10 @@ class TerminalBenchRunner(BenchmarkRunner):
                 print(f"[benchmark] WARNING: failed to parse {trial_result}: {e}")
                 continue
 
+        if task_ids is not None:
+            for tid in task_ids:
+                results.setdefault(tid, None)
+
         # Copy train traces for the coding agent
         # workspace/traces/baseline/ — immutable first-run traces (never overwritten)
         # workspace/traces/latest/   — most recent run (overwritten each iteration)
