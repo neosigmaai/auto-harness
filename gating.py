@@ -76,7 +76,7 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
         # Use task_ids as the denominator so tasks the runner silently dropped
         # count as failures rather than disappearing from the pass rate.
         denominator = len(task_ids)
-        passed = sum(1 for tid in task_ids if results.get(tid) is not None and results.get(tid) >= 0.5)
+        passed = sum(1 for tid in task_ids if (r := results.get(tid)) is not None and r >= 0.5)
         suite["last_results"] = {tid: results.get(tid) for tid in task_ids}
         pass_rate = passed / denominator
         save_suite(suite)
