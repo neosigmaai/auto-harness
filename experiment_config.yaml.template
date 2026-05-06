@@ -61,6 +61,24 @@
 # without gold SQL. Email bird.bench25@gmail.com with subject "[bird-interact-lite GT&Test Cases]"
 # to receive it, then merge via the `scripts/combine_public_with_gt.py` script inside the ADK.
 # prepare.py prints the exact command if GT is missing.
+
+# ═══════════════════════════════════════════════════════════════
+# AGENTBENCH OS
+# ═══════════════════════════════════════════════════════════════
+#
+# benchmark: "agentbench"
+# agent_model: "gpt-4o"
+# split: "dev"                  # train split
+# gate_split: "test"            # held-out split
+# max_concurrency: 5
+# threshold: 0.8
+# agentbench_data_dir: "../AgentBench/data/os_interaction"
+#
+# Required env vars: OPENAI_API_KEY, plus ANTHROPIC_API_KEY if using Claude.
+# Required tooling: Docker and AgentBench OS images:
+#   docker build -t local-os/default -f ../AgentBench/data/os_interaction/res/dockerfiles/default ../AgentBench/data/os_interaction/res/dockerfiles
+#   docker build -t local-os/packages -f ../AgentBench/data/os_interaction/res/dockerfiles/packages ../AgentBench/data/os_interaction/res/dockerfiles
+#   docker build -t local-os/ubuntu -f ../AgentBench/data/os_interaction/res/dockerfiles/ubuntu ../AgentBench/data/os_interaction/res/dockerfiles
 #
 # ═══════════════════════════════════════════════════════════════
 # TAU-BENCH
