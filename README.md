@@ -15,6 +15,7 @@ The loop is defined in `PROGRAM.md`. The coding agent edits `agent/agent.py` to 
 | **tau-bench** | Customer service (retail, airline, telecom) | retail: 114, airline: 50, telecom: 114 | Structured tool calls via tau2 |
 | **Terminal-Bench 2.0** | Real-world terminal tasks (coding, sysadmin, security) | 89 | Bash commands via Harbor containers |
 | **BIRD-Interact** | Interactive text-to-SQL (multi-turn, CRUD over Postgres) | lite: 300, full: 600 | Google ADK agent against a 3-service environment (user sim, DB env, system agent) |
+| **ProgramBench** | Reverse-engineer a binary into a working codebase from scratch | 200 | Bash commands inside a per-task `task_cleanroom` Docker container; submission is a tar.gz of `/workspace` + `compile.sh` |
 
 ---
 
@@ -110,6 +111,55 @@ python prepare.py
 - GPT-5-family models reject explicit `temperature=0`; the template omits the temperature kwarg for those models (stock behavior preserved for all other models).
 - `prepare.py` creates a separate `.venv-adk` inside `bird_interact_adk/` because the ADK's deps (google-adk, psycopg2, etc.) may conflict with other benchmarks' deps.
 - Advanced users can point at an existing BIRD-Interact install via `bird_repo` + `bird_python_bin` in `experiment_config.yaml` to skip auto-provisioning.
+
+## Quick start: ProgramBench
+
+**Requirements:** Linux x86_64 host (WSL2 + Docker Desktop works), `docker` daemon running, an `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY`), and a coding agent.
+
+> **Disk:** ProgramBench task images are several GB each. The default 10-task slice pulls ~50–100 GB of images; running the full 200-task benchmark pulls ~2 TB. Configure `slice_spec` accordingly.
+
+> **Anti-tuning philosophy:** ProgramBench's authors deliberately avoid harness tuning to prevent inflated scores on curated tasks. Auto-harness is doing exactly that — point the loop at this benchmark only if you understand the philosophical mismatch.
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/neosigmaai/auto-harness
+cd auto-harness
+
+# 2. Configure the experiment
+cp experiment_config.yaml.template experiment_config.yaml
+# edit experiment_config.yaml — uncomment the PROGRAM-BENCH section
+
+# 3. Set up environment variables
+cp .env.example .env
+# edit .env — set OPENAI_API_KEY (or ANTHROPIC_API_KEY)
+
+# 4. Initialize — prepare.py will:
+#      - check linux/amd64 + docker daemon
+#      - resolve slice_spec against ProgramBench's 200 instances
+#      - run `programbench blob sync` for each instance (test-blob fetch from HuggingFace)
+#      - parallel `docker pull` of each instance's task_cleanroom + task images
+#      - write programbench_data/task_split.json (random seeded 70/30 — no baseline run)
+python prepare.py
+
+# 5. Start the optimization loop
+# Point your coding agent at the repo and prompt:
+#   "Read PROGRAM.md and start the optimization loop."
+```
+
+**What the integration adds:**
+
+- `ProgramBenchRunner` in `benchmark.py` — drives per-task offline `task_cleanroom` containers via `programbench.container.ContainerEnvironment`, packages each `/workspace` as `submission.tar.gz`, calls `programbench.eval.eval_batch.run_eval_batch`, then parses each `<iid>.eval.json` (filtered through `programbench info`'s ignored-tests logic) into per-task scores.
+- `agent/helpers/program_bench/` — non-editable orchestration: `bash_tool.py` (LLM-facing Docker exec wrapper), `image.py` (parallel docker pulls), `submission.py` (tar packaging), `orchestrator.py` (parallel inference with try/finally container lifecycle).
+- `agent/templates/program_bench.py` — starting-point HarnessAgent: scripted bootstrap (discovery commands) + LLM-driven bash loop with truncation. Copied to `agent/agent.py` by `prepare.py`.
+- `program_templates/program_bench.md` — benchmark-specific guidance appended to `PROGRAM.md`.
+
+**Known caveats:**
+- ProgramBench's pip package handles **eval only**. The inference loop above is implemented in this repo; Meta's official mini-swe-agent runner had not landed when this was built.
+- LLM calls happen **on the host** (the cleanroom container has no internet by design). Only `bash` invocations run inside the container via `docker exec`.
+- The cleanroom image ships its rebuilt copy of the binary at `/workspace/executable`. The orchestrator pre-moves it to `/opt/orig/executable`, runs agent bash commands as an unprivileged user, and makes the reference execute-only so it can be used for behavioral checks without being copied into the submission tar.
+- Gate/test ProgramBench runs use a temporary run directory outside `workspace/`; only train traces are mirrored into `workspace/traces/`.
+- The default `slice_spec="0:10"` keeps iteration cadence livable. Increase only when you've validated end-to-end at small scale.
+- The split is random (not stratified by score) because ProgramBench scores cluster low; stratification at `>=0.5` would degenerate. Once you have real per-task scores, you can manually edit `programbench_data/task_split.json` to rebalance.
 
 ## Quick start: tau-bench
 

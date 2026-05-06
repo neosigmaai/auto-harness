@@ -56,6 +56,38 @@ def check_env_tau_bench(cfg: dict) -> bool:
     return True
 
 
+def check_env_program_bench(cfg: dict) -> bool:
+    """Check environment for program-bench: linux/amd64, docker, LLM key."""
+    import platform
+
+    if platform.system() != "Linux" or platform.machine() not in ("x86_64", "amd64"):
+        print(
+            f"[prepare] ERROR: program-bench requires linux/amd64. "
+            f"Detected {platform.system()}/{platform.machine()}."
+        )
+        return False
+    if shutil.which("docker") is None:
+        print("[prepare] ERROR: docker CLI not found.")
+        return False
+    docker_info = subprocess.run(["docker", "info"], capture_output=True, text=True, timeout=15)
+    if docker_info.returncode != 0:
+        print(f"[prepare] ERROR: 'docker info' failed (is the daemon running?): {docker_info.stderr.strip()[:300]}")
+        return False
+
+    model = cfg.get("agent_model", "")
+    if model.startswith("gemini"):
+        required = ["GEMINI_API_KEY"]
+    elif model.startswith("claude") or model.startswith("anthropic"):
+        required = ["ANTHROPIC_API_KEY"]
+    else:
+        required = ["OPENAI_API_KEY"]
+    missing = [k for k in required if not os.getenv(k)]
+    if missing:
+        print(f"[prepare] ERROR: missing env vars for program-bench: {', '.join(missing)}")
+        return False
+    return True
+
+
 def check_env_terminal_bench(cfg: dict) -> bool:
     """Check environment for terminal-bench."""
     env_provider = cfg.get("env_provider", "e2b")
@@ -204,6 +236,7 @@ def copy_agent_template(benchmark: str) -> None:
         "tau-bench": "agent/templates/tau_bench.py",
         "terminal-bench": "agent/templates/terminal_bench.py",
         "bird-interact": "agent/templates/bird_interact.py",
+        "program-bench": "agent/templates/program_bench.py",
     }
     template = templates.get(benchmark)
     if not template or not os.path.exists(template):
@@ -220,6 +253,7 @@ def copy_program_template(benchmark: str) -> None:
         "tau-bench": "program_templates/tau_bench.md",
         "terminal-bench": "program_templates/terminal_bench.md",
         "bird-interact": "program_templates/bird_interact.md",
+        "program-bench": "program_templates/program_bench.md",
     }
     template = templates.get(benchmark)
     if not template or not os.path.exists(template):
@@ -241,6 +275,7 @@ def copy_program_template(benchmark: str) -> None:
 
 SPLIT_FILE = "tbench_data/task_split.json"
 BIRD_SPLIT_FILE = "bird_data/task_split.json"
+PROGRAMBENCH_SPLIT_FILE = "programbench_data/task_split.json"
 
 
 def generate_terminal_bench_split(results: dict[str, float], seed: int = 42) -> None:
@@ -273,6 +308,32 @@ def generate_terminal_bench_split(results: dict[str, float], seed: int = 42) -> 
     print(f"[prepare] task split created: {len(train)} train, {len(test)} test")
 
 
+def generate_programbench_split(task_ids: list[str], seed: int = 42) -> None:
+    """Random 70/30 split (no stratification — see plan: scores cluster low)."""
+    import random
+
+    ordered = sorted(task_ids)
+    random.seed(seed)
+    random.shuffle(ordered)
+    n_train = int(len(ordered) * 0.7)
+    train = sorted(ordered[:n_train])
+    test = sorted(ordered[n_train:])
+
+    os.makedirs("programbench_data", exist_ok=True)
+    with open(PROGRAMBENCH_SPLIT_FILE, "w") as f:
+        json.dump({
+            "train": train,
+            "test": test,
+            "metadata": {
+                "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                "total_tasks": len(ordered),
+                "seed": seed,
+                "stratified": False,
+            },
+        }, f, indent=2)
+    print(f"[prepare] programbench split created: {len(train)} train, {len(test)} test (random, seed={seed})")
+
+
 def generate_bird_interact_split(results: dict[str, float], seed: int = 42) -> None:
     """Generate train/test split from baseline results. 70/30 stratified by pass/fail."""
     import random
@@ -301,6 +362,51 @@ def generate_bird_interact_split(results: dict[str, float], seed: int = 42) -> N
             },
         }, f, indent=2)
     print(f"[prepare] BIRD task split created: {len(train)} train, {len(test)} test")
+
+
+def prepare_program_bench(cfg: dict) -> None:
+    """Resolve slice → blob sync → parallel image pulls → write split."""
+    from programbench.utils.instance_filters import filter_instances
+    from programbench.utils.load_data import load_all_instances
+
+    from agent.helpers.program_bench.image import pull_images_parallel
+
+    slice_spec = cfg.get("slice_spec", "0:10")
+    blob_sync = cfg.get("blob_sync", True)
+    cleanroom_tag = cfg.get("cleanroom_tag", "task_cleanroom")
+    eval_image_tag = cfg.get("eval_image_tag", "task")
+
+    all_insts = load_all_instances()
+    selected = filter_instances(all_insts, slice_spec=slice_spec)
+    iids = [i["instance_id"] for i in selected]
+    print(f"[prepare] selected {len(iids)} instance(s) via slice_spec={slice_spec!r}")
+    if not iids:
+        print("[prepare] ERROR: slice_spec selected zero instances.")
+        sys.exit(1)
+
+    if blob_sync:
+        print(f"[prepare] running 'programbench blob sync' for {len(iids)} instance(s)...")
+        for iid in iids:
+            r = subprocess.run(["programbench", "blob", "sync", iid], capture_output=True, text=True, timeout=1800)
+            if r.returncode != 0:
+                print(f"[prepare] WARNING: blob sync failed for {iid}: {r.stderr.strip()[:300]}")
+    else:
+        print("[prepare] blob_sync=false — eval will pull blobs lazily on first run")
+
+    image_refs = []
+    for inst in selected:
+        image_refs.append(f"{inst['image_name']}:{cleanroom_tag}")
+        image_refs.append(f"{inst['image_name']}:{eval_image_tag}")
+    print(f"[prepare] pulling {len(image_refs)} docker image(s) (4-wide parallel, 600s/image)...")
+    pull_results = pull_images_parallel(image_refs, workers=4, timeout=600)
+    failed = [(ref, msg) for ref, (ok, msg) in pull_results.items() if not ok]
+    if failed:
+        print(f"[prepare] WARNING: {len(failed)} image pull(s) failed:")
+        for ref, msg in failed[:10]:
+            print(f"           {ref}: {msg.splitlines()[0] if msg else '?'}")
+
+    generate_programbench_split(iids)
+    print(f"[prepare] program-bench prep complete. Skipping baseline run (per design).")
 
 
 def run_baseline(cfg: dict) -> None:
@@ -431,6 +537,12 @@ def run_baseline(cfg: dict) -> None:
         )
         test_results = runner.run()
         val = runner.val_score(test_results)
+    elif benchmark == "program-bench":
+        # Per plan: skip baseline, generate split deterministically. The first
+        # benchmark.py invocation produces real scores. No iteration-0 row is
+        # written since we have no scores to record.
+        prepare_program_bench(cfg)
+        return
     else:
         print(f"[prepare] ERROR: unknown benchmark '{benchmark}'")
         sys.exit(1)
@@ -462,6 +574,9 @@ if __name__ == "__main__":
         if not check_env_tau_bench(cfg):
             sys.exit(1)
         if not check_tau2_data(cfg):
+            sys.exit(1)
+    elif benchmark == "program-bench":
+        if not check_env_program_bench(cfg):
             sys.exit(1)
     else:
         print(f"[prepare] ERROR: unknown benchmark '{benchmark}'")
