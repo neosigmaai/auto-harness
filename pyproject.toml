@@ -11,7 +11,11 @@ dependencies = [
     "openai",
     "pyyaml",
     "tau2",
+    "programbench>=1.0",
 ]
 
 [tool.uv.sources]
 tau2 = { git = "https://github.com/sierra-research/tau2-bench.git", rev = "73dc24445d28762075e69465d966aee4a9dcbfcb" }
+
+[tool.setuptools.packages.find]
+include = ["agent*"]

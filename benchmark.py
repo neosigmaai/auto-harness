@@ -5,6 +5,7 @@ BenchmarkRunner: abstract base class — subclass to plug in your own benchmark.
 TauBenchRunner:  implementation for tau-bench (https://github.com/sierra-research/tau2-bench).
 TerminalBenchRunner: implementation for Terminal-Bench 2.0 via Harbor framework.
 BirdInteractRunner: implementation for BIRD-Interact via external BIRD-Interact-ADK.
+ProgramBenchRunner: implementation for ProgramBench (https://github.com/facebookresearch/ProgramBench).
 
 Both gating.py and the coding agent call this directly.
 """
@@ -795,6 +796,222 @@ class BirdInteractRunner(BenchmarkRunner):
         return results
 
 
+class ProgramBenchRunner(BenchmarkRunner):
+    """
+    Runner for ProgramBench (https://github.com/facebookresearch/ProgramBench).
+
+    Inference: drives a per-task task_cleanroom container via
+    ``programbench.container.ContainerEnvironment`` (orchestrated by
+    ``agent/helpers/program_bench/orchestrator.py``). The agent class is
+    imported from ``agent.agent`` — same convention as the other runners.
+
+    Eval: calls ``programbench.eval.eval_batch.run_eval_batch`` directly,
+    then reads each ``<iid>/<iid>.eval.json`` and applies the same
+    ignored-tests filter that ``programbench info`` applies.
+
+    Per-task reward is ``EvaluationResult.score`` (already in [0, 1]). None
+    means infra error (image pull / container start / no submission written
+    / eval crashed) — counted as 0.0 in val_score.
+    """
+
+    SPLIT_FILE = "programbench_data/task_split.json"
+
+    def __init__(
+        self,
+        agent_model: str | None = None,
+        split: str | None = "train",
+        slice_spec: str = "",
+        max_concurrency: int = 4,
+        eval_workers: int = 2,
+        eval_branch_workers: int = 1,
+        docker_cpus: int = 4,
+        per_task_timeout: int = 1800,
+        reasoning_effort: str | None = None,
+        save_traces: bool = True,
+        runs_dir: str = "workspace/programbench_runs",
+        cleanroom_tag: str = "task_cleanroom",
+        eval_image_tag: str = "task",
+    ):
+        self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-5.4")
+        self.split = split
+        self.slice_spec = slice_spec
+        self.max_concurrency = max_concurrency
+        self.eval_workers = eval_workers
+        self.eval_branch_workers = eval_branch_workers
+        self.docker_cpus = docker_cpus
+        self.per_task_timeout = per_task_timeout
+        self.reasoning_effort = reasoning_effort
+        self.save_traces = save_traces
+        self.runs_dir = runs_dir
+        self.cleanroom_tag = cleanroom_tag
+        self.eval_image_tag = eval_image_tag
+
+    def _load_split_tasks(self) -> list[str] | None:
+        if self.split is None:
+            return None
+        if not os.path.exists(self.SPLIT_FILE):
+            raise FileNotFoundError(f"{self.SPLIT_FILE} not found. Run prepare.py first.")
+        with open(self.SPLIT_FILE) as f:
+            splits = json.load(f)
+        tasks = splits.get(self.split)
+        if tasks is None:
+            raise ValueError(f"Split '{self.split}' not found in {self.SPLIT_FILE}. Available: {list(splits.keys())}")
+        return tasks
+
+    def _select_instances(self, task_ids: list[str] | None) -> tuple[list[str], dict[str, dict]]:
+        from programbench.utils.load_data import load_all_instances
+        from programbench.utils.instance_filters import filter_instances
+
+        all_insts = load_all_instances()
+        lookup = {i["instance_id"]: i for i in all_insts}
+
+        if task_ids is None:
+            task_ids = self._load_split_tasks()
+
+        if task_ids is None:
+            insts = filter_instances(all_insts, slice_spec=self.slice_spec)
+            selected = [i["instance_id"] for i in insts]
+        else:
+            selected = [t for t in task_ids if t in lookup]
+            missing = sorted(set(task_ids) - set(selected))
+            if missing:
+                print(f"[programbench] WARNING: unknown task_ids skipped: {missing}")
+        return selected, lookup
+
+    def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
+        from pathlib import Path
+        from programbench.eval.eval import EvaluationResult
+        from programbench.eval.eval_batch import run_eval_batch
+        from programbench.utils.load_data import get_ignored_tests
+
+        selected, lookup = self._select_instances(task_ids)
+        if not selected:
+            print("[programbench] no tasks selected — nothing to run")
+            return {}
+
+        # Trace gating mirrors terminal-bench: never write the test split's traces
+        # to disk where the coding agent could read them. The orchestrator
+        # always writes per-iid trace.json into the run_dir, but those are
+        # only mirrored into workspace/traces/ for the train split.
+        os.environ["AGENT_MODEL"] = self.agent_model
+        if self.reasoning_effort:
+            os.environ["AGENT_REASONING_EFFORT"] = self.reasoning_effort
+
+        from agent.agent import HarnessAgent
+        from agent.helpers.program_bench.orchestrator import run_inference
+
+        temp_runs = tempfile.TemporaryDirectory(prefix="auto-harness-programbench-gate-") if not self.save_traces else None
+        try:
+            run_root = temp_runs.name if temp_runs is not None else self.runs_dir
+            run_id = time.strftime("run-%Y%m%d-%H%M%S")
+            run_dir = os.path.join(run_root, run_id)
+            os.makedirs(run_dir, exist_ok=True)
+
+            print(
+                f"[programbench] inference: {len(selected)} task(s), "
+                f"split={self.split}, max_concurrency={self.max_concurrency}, "
+                f"per_task_timeout={self.per_task_timeout}s, run_dir={run_dir}"
+            )
+
+            run_dir_path = Path(run_dir)
+            summaries = run_inference(
+                agent_cls=HarnessAgent,
+                task_ids=selected,
+                instances=lookup,
+                run_dir=run_dir_path,
+                model_name=self.agent_model,
+                reasoning_effort=self.reasoning_effort,
+                max_concurrency=self.max_concurrency,
+                per_task_timeout=self.per_task_timeout,
+                docker_cpus=self.docker_cpus,
+                cleanroom_tag=self.cleanroom_tag,
+            )
+
+            # Eval: programbench reads <run_dir>/<iid>/submission.tar.gz, writes
+            # <run_dir>/<iid>/<iid>.eval.json. Force=True so re-runs always
+            # re-score (otherwise stale-branch caching could mask regressions).
+            with_submission = [iid for iid, s in summaries.items() if s.get("tar_path")]
+            if with_submission:
+                print(f"[programbench] evaluating {len(with_submission)}/{len(selected)} submissions")
+                try:
+                    run_eval_batch(
+                        sources=[run_dir],
+                        workers=self.eval_workers,
+                        branch_workers=self.eval_branch_workers,
+                        docker_cpus=self.docker_cpus,
+                        force=True,
+                        image_tag=self.eval_image_tag,
+                    )
+                except Exception as e:
+                    print(f"[programbench] WARNING: run_eval_batch raised: {type(e).__name__}: {e}")
+
+            # Parse per-iid eval JSONs into rewards before temporary gate
+            # artifacts leave the filesystem.
+            results: dict[str, float | None] = {}
+            for iid in selected:
+                summary = summaries.get(iid, {})
+                if not summary.get("tar_path"):
+                    results[iid] = None
+                    continue
+                eval_json = run_dir_path / iid / f"{iid}.eval.json"
+                if not eval_json.exists():
+                    results[iid] = None
+                    continue
+                try:
+                    result = EvaluationResult.model_validate_json(eval_json.read_text())
+                    inst = lookup.get(iid)
+                    if inst is not None:
+                        result = result.without_ignored(get_ignored_tests(inst))
+                    results[iid] = None if result.error_code else float(result.score)
+                except Exception as e:
+                    print(f"[programbench] WARNING: failed to parse {eval_json}: {type(e).__name__}: {e}")
+                    results[iid] = None
+
+            if self.save_traces and self.split == "train":
+                self._copy_train_traces(run_dir_path, selected)
+
+            # Prune older train run dirs (keep the latest only); gate/test runs
+            # use a temp root outside workspace and are removed below.
+            if temp_runs is None:
+                for old in os.listdir(self.runs_dir):
+                    old_path = os.path.join(self.runs_dir, old)
+                    if os.path.isdir(old_path) and old_path != run_dir:
+                        shutil.rmtree(old_path, ignore_errors=True)
+
+            return results
+        finally:
+            if temp_runs is not None:
+                temp_runs.cleanup()
+
+    def _copy_train_traces(self, run_dir, iids: list[str]) -> None:
+        """Mirror per-iid trace.json/manifest.txt/eval.json into workspace/traces/."""
+        from pathlib import Path
+
+        latest_dir = Path("workspace/traces/latest")
+        baseline_dir = Path("workspace/traces/baseline")
+        latest_dir.mkdir(parents=True, exist_ok=True)
+        for iid in iids:
+            src_dir = run_dir / iid
+            if not src_dir.is_dir():
+                continue
+            dst_latest = latest_dir / iid
+            dst_latest.mkdir(parents=True, exist_ok=True)
+            for fname in ("trace.json", "manifest.txt", f"{iid}.eval.json"):
+                src = src_dir / fname
+                if src.exists():
+                    out_name = "eval.json" if fname.endswith(".eval.json") else fname
+                    shutil.copy2(src, dst_latest / out_name)
+            dst_base = baseline_dir / iid
+            if not dst_base.exists():
+                dst_base.mkdir(parents=True, exist_ok=True)
+                for fname in ("trace.json", "manifest.txt", f"{iid}.eval.json"):
+                    src = src_dir / fname
+                    if src.exists():
+                        out_name = "eval.json" if fname.endswith(".eval.json") else fname
+                        shutil.copy2(src, dst_base / out_name)
+        print(f"[programbench] traces: latest/ updated, baseline/ preserved")
+
+
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -818,7 +1035,10 @@ if __name__ == "__main__":
     if benchmark == "tau-bench":
         parser.add_argument("--domain", default=cfg.get("domain"), help="tau-bench domain (overrides experiment_config.yaml)")
     parser.add_argument("--split", default=cfg.get("split", "train"))
-    _concurrency_default = cfg.get("max_concurrency", 50 if benchmark == "terminal-bench" else 3)
+    _concurrency_default = cfg.get(
+        "max_concurrency",
+        50 if benchmark == "terminal-bench" else (4 if benchmark == "program-bench" else 3),
+    )
     parser.add_argument("--concurrency", type=int, default=_concurrency_default)
     args = parser.parse_args()
 
@@ -852,6 +1072,18 @@ if __name__ == "__main__":
             pg_port=cfg.get("pg_port"),
             pg_user=cfg.get("pg_user"),
             pg_password=cfg.get("pg_password"),
+        )
+    elif benchmark == "program-bench":
+        runner = ProgramBenchRunner(
+            agent_model=cfg.get("agent_model"),
+            split=args.split,
+            slice_spec=cfg.get("slice_spec", ""),
+            max_concurrency=args.concurrency,
+            eval_workers=cfg.get("eval_workers", 2),
+            eval_branch_workers=cfg.get("eval_branch_workers", 1),
+            docker_cpus=cfg.get("docker_cpus", 4),
+            per_task_timeout=cfg.get("per_task_timeout", 1800),
+            reasoning_effort=cfg.get("reasoning_effort"),
         )
     elif benchmark == "tau-bench":
         if not args.domain:

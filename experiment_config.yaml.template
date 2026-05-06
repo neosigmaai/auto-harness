@@ -76,3 +76,28 @@
 # reasoning_effort: "medium"      # optional
 #
 # Required env vars: LLM API key for your model (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY)
+
+# ═══════════════════════════════════════════════════════════════
+# PROGRAM-BENCH
+# ═══════════════════════════════════════════════════════════════
+#
+# benchmark: "program-bench"
+# agent_model: "anthropic/claude-opus-4-7"
+# split: "train"
+# gate_split: "test"
+# slice_spec: "0:10"             # IMPORTANT: full 200 tasks pulls ~2 TB of Docker images
+# max_concurrency: 4             # parallel inference containers (each ~docker_cpus CPU + a few GB RAM)
+# eval_workers: 2                # parallel eval containers (multiplies with eval_branch_workers and docker_cpus)
+# eval_branch_workers: 1         # per-instance test branch parallelism
+# docker_cpus: 4                 # CPU per container; sets PYTEST_XDIST_AUTO_NUM_WORKERS inside
+# per_task_timeout: 1800         # seconds per inference run (excludes eval)
+# threshold: 0.05                # regression suite pass-rate threshold (low — ProgramBench scores cluster low)
+# reasoning_effort: "high"       # optional
+# blob_sync: true                # pre-fetch test blobs for the configured slice during prepare
+#
+# # ── Linux x86_64 ONLY ──
+# # ProgramBench task images are linux/amd64. macOS/ARM hosts will not run them.
+# # WSL2 + Docker Desktop works.
+#
+# Required env vars: LLM API key (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY)
+# Required tooling: docker

@@ -18,10 +18,11 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 
 import yaml
 
-from benchmark import BenchmarkRunner, BirdInteractRunner, TauBenchRunner, TerminalBenchRunner
+from benchmark import BenchmarkRunner, BirdInteractRunner, ProgramBenchRunner, TauBenchRunner, TerminalBenchRunner
 
 CONFIG_FILE = "experiment_config.yaml"
 
@@ -373,6 +374,29 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             pg_port=cfg.get("pg_port"),
             pg_user=cfg.get("pg_user"),
             pg_password=cfg.get("pg_password"),
+        )
+    elif benchmark == "program-bench":
+        common = dict(
+            agent_model=cfg.get("agent_model"),
+            slice_spec=cfg.get("slice_spec", ""),
+            max_concurrency=cfg.get("max_concurrency", 4),
+            eval_workers=cfg.get("eval_workers", 2),
+            eval_branch_workers=cfg.get("eval_branch_workers", 1),
+            docker_cpus=cfg.get("docker_cpus", 4),
+            per_task_timeout=cfg.get("per_task_timeout", 1800),
+            reasoning_effort=cfg.get("reasoning_effort"),
+        )
+        train_runner = ProgramBenchRunner(
+            split=cfg.get("split", "train"),
+            save_traces=True,
+            runs_dir="workspace/programbench_runs/train",
+            **common,
+        )
+        gate_runner = ProgramBenchRunner(
+            split=cfg.get("gate_split", "test"),
+            save_traces=False,
+            runs_dir=os.path.join(tempfile.gettempdir(), "auto-harness-programbench-gate"),
+            **common,
         )
     elif benchmark == "tau-bench":
         if "domain" not in cfg:

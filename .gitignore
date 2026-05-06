@@ -19,6 +19,7 @@ __pycache__/
 workspace/
 workspace_backups/
 bird_data/
+programbench_data/
 
 # local coding agent config
 .claude/
