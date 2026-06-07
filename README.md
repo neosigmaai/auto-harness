@@ -1,286 +1,301 @@
-# auto-harness
+# Prepare /auto-harness API
 
-> Give a coding agent a benchmark and an agent file. Let it iterate overnight. It reads failures, improves the system prompt and tools, gates every change against a self-maintained eval suite, and repeats.
+HTTP API for accepting a benchmark task list, running the benchmark on those
+tasks, and returning task-level results via job status polling.
 
-This repo is a simplified version of our auto-harness agent setup. We demonstrate our system on Tau3 benchmark tasks where the agent's score improves from 0.56 to 0.78 (~40% jump) while mining failures and auto maintaining live evals. If you are curious to learn more, read the full blog here - https://www.neosigma.ai/blog/self-improving-agentic-systems.
+The production goal is:
 
-The loop is defined in `PROGRAM.md`. The coding agent edits `agent/agent.py` to improve the agent and appends findings to `workspace/learnings.md` after each iteration.
+1. Receive Terminal-Bench task IDs from the client.
+2. Send a coding-agent instruction to the worker sandbox to run the benchmark
+   for those tasks.
+3. Return a job ID immediately.
+4. Let clients poll for pass/fail results and summary counts.
+5. Queue the auto-harness agent for follow-up optimization work.
 
----
+This version implements the benchmark bootstrap through the worker coding-agent
+API. It does not queue the follow-up optimization loop yet.
 
-## Supported Benchmarks
+Benchmark configuration still comes from `experiment_config.yaml`.
 
-| Benchmark | Domain | Tasks | Agent Interface |
-|-----------|--------|-------|-----------------|
-| **tau-bench** | Customer service (retail, airline, telecom) | retail: 114, airline: 50, telecom: 114 | Structured tool calls via tau2 |
-| **Terminal-Bench 2.0** | Real-world terminal tasks (coding, sysadmin, security) | 89 | Bash commands via Harbor containers |
-| **BIRD-Interact** | Interactive text-to-SQL (multi-turn, CRUD over Postgres) | lite: 300, full: 600 | Google ADK agent against a 3-service environment (user sim, DB env, system agent) |
+## Architecture
 
----
+The runtime is split into two containers:
 
-## How it works
+- `orchestrator` exposes the public `/auto-harness` API on port `8800`. It does
+  not mount or import the benchmark code. It builds a deterministic instruction
+  that tells the worker coding agent to run `prepare.py` for the requested task
+  IDs and write JSON to `workspace/coding_agent_result.json`.
+- `worker` exposes internal `POST /coding_agent`, `GET /coding_agent/{job_id}`,
+  and `GET /health` routes on port `8810`. For each coding-agent job, it creates
+  an E2B sandbox, uploads the repo snapshot, runs the Cursor SDK agent inside
+  that sandbox, and copies `workspace/coding_agent_result.json` back into the
+  worker job result.
 
-```
-run benchmark → analyze → improve agent/agent.py → gate → record → update learnings → repeat
-```
+`/auto-harness` is the only public entry point. The worker's `/coding_agent`
+API is internal to the Compose network.
 
-- **`agent/agent.py`** — the agent being optimized (copied from a benchmark-specific template)
-- **`agent/templates/`** — starting-point templates for each benchmark (read-only)
-- **`benchmark.py`** — runs your benchmark, returns per-task rewards
-- **`gating.py`** — three-step gate: eval suite + full test val_score + suite promotion
-- **`record.py`** — appends iteration results to `workspace/results.tsv`
-- **`prepare.py`** — sets up workspace, copies templates, runs baseline
-- **`program_templates/`** — benchmark-specific PROGRAM.md instructions
-- **`PROGRAM.md`** — instructions the coding agent follows (copied from template by prepare.py)
+## Setup instructions
 
----
+**Requirements:** Docker, `CURSOR_API_KEY`, `E2B_API_KEY`, and an LLM key for
+`prepare.py` / Terminal-Bench (typically `OPENAI_API_KEY`).
 
-## Quick start: Terminal-Bench 2.0
-
-**Requirements:** `harbor` CLI, an `OPENAI_API_KEY`, an `E2B_API_KEY` (or `DAYTONA_API_KEY`), and a coding agent (Claude Code, Codex CLI, or similar).
+From the repo root:
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/neosigmaai/auto-harness
 cd auto-harness
-
-# 2. Install harbor
-uv tool install harbor
-
-# 3. Set up environment variables
 cp .env.example .env
-# edit .env — set OPENAI_API_KEY and E2B_API_KEY
-
-# 4. Configure the experiment
-cp experiment_config.yaml.template experiment_config.yaml
-# edit experiment_config.yaml — uncomment the terminal-bench section
-
-# 5. Initialize workspace + run baseline (runs all 89 tasks, generates train/test split)
-python prepare.py
-
-# 6. Start the optimization loop
-# Point your coding agent at the repo and prompt:
-#   "Read PROGRAM.md and start the optimization loop."
 ```
 
-## Quick start: BIRD-Interact
-
-**Requirements:** Docker (for Postgres), Python 3.12+, `git-lfs` (for the HF dataset), an `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` depending on model), and a coding agent.
+Edit `.env` and set at least:
 
 ```bash
-# 1. Clone this repo
-git clone https://github.com/neosigmaai/auto-harness
-cd auto-harness
+CURSOR_API_KEY=...
+E2B_API_KEY=...
+OPENAI_API_KEY=...
+CURSOR_AGENT_MODEL=composer-2.5
 
-# 2. Set up environment variables
-cp .env.example .env
-# edit .env — set OPENAI_API_KEY (or ANTHROPIC_API_KEY)
-
-# 3. Configure the experiment
-cp experiment_config.yaml.template experiment_config.yaml
-# edit experiment_config.yaml — uncomment the BIRD-INTERACT section
-
-# 4. Initialize — prepare.py auto-provisions everything:
-#      - clones BIRD-Interact-ADK into ./bird_interact_adk/ (gitignored)
-#      - creates an isolated .venv-adk with the ADK's deps
-#      - clones the bird-interact-lite dataset from HuggingFace
-#      - starts the Postgres Docker container
-#      - runs the baseline (300 tasks) and generates the train/test split
-python prepare.py
-
-# 5. Start the optimization loop
-# Point your coding agent at the repo and prompt:
-#   "Read PROGRAM.md and start the optimization loop."
+ORCHESTRATOR_PORT=8800
+WORKER_PORT=8810
+WORKER_BASE_URL=http://worker:8810
 ```
 
-**Ground truth (one-time step):** The public BIRD-Interact dataset ships *without* gold SQL to prevent data leakage. On first run, `prepare.py` will detect this and print the exact email + merge command needed. Briefly:
+Ensure `experiment_config.yaml` is configured for Terminal-Bench (see
+`experiment_config.yaml.template`).
 
-1. Email `bird.bench25@gmail.com` with subject `[bird-interact-lite GT&Test Cases]`
-2. Run the `combine_public_with_gt.py` script shown by prepare.py, using the jsonl you receive
-3. Re-run `python prepare.py`
+Build and start both containers:
+```bash
+docker compose up --build
+```
 
-**What the integration adds:**
-
-- `BirdInteractRunner` in `benchmark.py` — spawns the three ADK services (user simulator, DB environment, system agent) per run, drives `orchestrator.runner`, parses results into the harness reward format.
-- `agent/helpers/bird_interact/bird_service.py` + `agent/helpers/bird_interact/bird_adk_runtime.py` — the harness-owned wrapper that lets your `agent/agent.py` be served as the BIRD system agent via FastAPI.
-- `agent/templates/bird_interact.py` — faithful copy of the stock BIRD-Interact-ADK system agent, copied to `agent/agent.py` by `prepare.py` as the iteration starting point.
-- `program_templates/bird_interact.md` — benchmark-specific guidance appended to `PROGRAM.md`.
-
-**Known caveats:**
-- GPT-5-family models reject explicit `temperature=0`; the template omits the temperature kwarg for those models (stock behavior preserved for all other models).
-- `prepare.py` creates a separate `.venv-adk` inside `bird_interact_adk/` because the ADK's deps (google-adk, psycopg2, etc.) may conflict with other benchmarks' deps.
-- Advanced users can point at an existing BIRD-Interact install via `bird_repo` + `bird_python_bin` in `experiment_config.yaml` to skip auto-provisioning.
-
-## Quick start: tau-bench
-
-**Requirements:** Docker, an `OPENAI_API_KEY`, and a coding agent.
+In another terminal, verify the public API and worker reachability:
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/neosigmaai/auto-harness
-cd auto-harness
-
-# 2. Set up environment variables
-cp .env.example .env
-# edit .env — set OPENAI_API_KEY
-
-# 3. Configure the experiment
-cp experiment_config.yaml.template experiment_config.yaml
-# edit experiment_config.yaml — uncomment the tau-bench section
-
-# 4. Build the Docker image (installs tau-bench and all deps via uv)
-docker compose build
-
-# 5. Initialize the workspace + run baseline
-docker compose run autoeval python prepare.py
-
-# 6. Start the optimization loop
-# Point your coding agent at the repo and prompt:
-#   "Read PROGRAM.md and start the optimization loop."
+curl -s localhost:8800/health | jq
 ```
 
----
-
-## Running the loop
-
-Point your coding agent at the repo and prompt:
-
-```
-Read PROGRAM.md and start the optimization loop.
-The baseline is already recorded. Start from step 2 (analyze failures).
-```
-
-The agent will read traces, diagnose failures, edit `agent/agent.py`, gate the change, record the result, and repeat.
-
----
-
-## How benchmarks are structured
-
-### Templates
-
-Each benchmark has two templates:
-
-```
-agent/templates/
-├── tau_bench.py           # tau-bench agent starting point
-├── terminal_bench.py      # terminal-bench agent starting point
-└── bird_interact.py       # BIRD-Interact system agent starting point
-
-program_templates/
-├── tau_bench.md           # tau-bench PROGRAM.md
-├── terminal_bench.md      # terminal-bench PROGRAM.md
-└── bird_interact.md       # BIRD-Interact PROGRAM.md
-```
-
-`prepare.py` copies the correct templates into `agent/agent.py` and `PROGRAM.md` based on `experiment_config.yaml`. The coding agent then edits `agent/agent.py` freely. To see what it changed:
+Start a benchmark job:
 
 ```bash
-diff agent/templates/terminal_bench.py agent/agent.py
+start_response="$(curl -s -X POST localhost:8800/auto-harness \
+  -H 'content-type: application/json' \
+  -d '{"tasks":["pypi-server", "kv-store-grpc"]}')"
+
+echo "$start_response" | jq
+job_id="$(echo "$start_response" | jq -r '.job_id')"
 ```
 
-### Using a different Harbor benchmark
+Poll until `status` is `completed` or `failed`:
 
-If your benchmark runs via `harbor run`, you only need four steps:
-
-**1. Point to your dataset in `experiment_config.yaml`:**
-
-```yaml
-benchmark: "terminal-bench"   # reuses TerminalBenchRunner
-dataset: "my-harbor-dataset@1.0"
-agent_model: "gpt-4o"
-env_provider: "e2b"           # or "daytona" / "docker"
-split: "train"
-gate_split: "test"
+```bash
+curl -s "localhost:8800/auto-harness/$job_id" | jq
 ```
 
-**2. Check your verifier's `result.json` schema.**
-`TerminalBenchRunner` expects:
+Notes:
+
+- Only `POST /auto-harness` and `GET /auto-harness/{job_id}` are public. The
+  worker `/coding_agent` API is internal to the Compose network.
+- Each job runs a fresh E2B sandbox. The Cursor agent executes inside E2B; the
+  worker copies `workspace/coding_agent_result.json` back after the run.
+- Worker job state is in-memory. Restarting containers clears active/historical
+  job IDs — start a new job after rebuild.
+
+### Which Terminal-Bench tasks you selected and why?
+
+Selected 10 tasks from the following buckets: systems, coding and debugging.
+The aim is to have similar tasks for each buckets in order to have higher transferability of Agents' improvement.
+
+System:
+1. kv-store-grpc
+2. pypi-server
+3. torch-pipeline-parallelism
+4. torch-tensor-parallelism
+Coding:
+5. polyglot-c-py
+6. polyglot-rust-c
+7. cobol-modernization
+8. build-cython-ext
+Debugging:
+9. build-cython-ext
+10. merge-diff-arc-agi-task
+
+
+### Key design decisions and why you made them?
+
+1. Two containers: Orchestrator: Public API and Worker: Triggers E2B sandbox
+Orchestrator acts a reverse-proxy, controlling the input to Worker's agent. This provides flexibility to build a generalized worker layer ,i.e., worker's function can guided with a prompt
+
+2. Reused `prepare.py` instead of creating a new handler for benchmarking. Updated in `prepare.py`: added `--tasks` CLI for subset benchmarking.
+
+### What would you do differently with more time?
+
+1. Currently the state of API is pushed to `coding_agent_result.json`, the final state of the API could be moved to a database instead for longer persistence. Currently, a new call wipese the older state.
+
+2. Would go a multi-threaded setup at the Worker container, especially because E2B setup is in place and we could make parallel calls to E2B server. 
+
+
+## Endpoint
+
+```http
+POST /auto-harness
+Content-Type: application/json
+```
+
+Starts a benchmark job and returns immediately.
+
+```http
+GET /auto-harness/{job_id}
+```
+
+Returns the status of a running or finished benchmark job.
+
+## Input Schema
 
 ```json
 {
-  "task_name": "<id>",
-  "verifier_result": {
-    "rewards": { "reward": 0.85 }
+  "tasks": ["string"]
+}
+```
+
+Example:
+
+```json
+{
+  "tasks": [
+    "adaptive-rejection-sampler",
+    "bn-fit-modify",
+    "build-cython-ext"
+  ]
+}
+```
+
+## Start Job Output Schema
+
+```json
+{
+  "job_id": "string",
+  "status": "running",
+  "tasks": ["string"],
+  "started_at": "string"
+}
+```
+
+Example:
+
+```json
+{
+  "job_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "running",
+  "tasks": ["adaptive-rejection-sampler", "bn-fit-modify", "build-cython-ext"],
+  "started_at": "2026-06-07T16:30:00+00:00"
+}
+```
+
+## Status Output Schema
+
+While the job is running:
+
+```json
+{
+  "job_id": "string",
+  "status": "running",
+  "tasks": ["string"],
+  "started_at": "string"
+}
+```
+
+When the job completes:
+
+```json
+{
+  "job_id": "string",
+  "status": "completed",
+  "tasks": ["string"],
+  "started_at": "string",
+  "finished_at": "string",
+  "result": {
+    "results": [
+      {
+        "task_id": "string",
+        "status": "passed | failed"
+      }
+    ],
+    "summary": {
+      "val_score": "number",
+      "passed": "number",
+      "failed": "number",
+      "total": "number"
+    }
   }
 }
 ```
 
-If your verifier writes rewards at a different path, update the parser in `TerminalBenchRunner.run()` in `benchmark.py`.
+When the job fails:
 
-**3. Update the split directory name (optional).**
-The split file is currently saved to `tbench_data/task_split.json`. If you want a separate directory per benchmark, change `SPLIT_FILE` in `TerminalBenchRunner` and update `prepare.py` accordingly.
-
-**4. Add a PROGRAM.md supplement.**
-Create `program_templates/<your_benchmark>.md` with benchmark-specific guidance (trace paths, task ID format, known techniques) following the same pattern as `terminal_bench.md`. Then register it in `copy_program_template()` in `prepare.py`.
-
-The train/test split generation, gating, trace copying, and optimization loop all work as-is — no other changes needed.
-
----
-
-### Plugging in your own benchmark
-
-Subclass `BenchmarkRunner` in `benchmark.py`:
-
-```python
-class MyBenchmarkRunner(BenchmarkRunner):
-    def run(self, task_ids=None):
-        # call your benchmark CLI or API
-        # return {task_id: reward} where reward is 0.0–1.0
-        ...
+```json
+{
+  "job_id": "string",
+  "status": "failed",
+  "tasks": ["string"],
+  "started_at": "string",
+  "finished_at": "string",
+  "error": "string"
+}
 ```
 
-Add a branch in `gating.py`'s `_create_runners()` and `prepare.py`'s `__main__`. Create templates in `agent/templates/` and `program_templates/`. The loop, gating, recording, and workspace format are all benchmark-agnostic.
+## Behavior
 
----
+- Server accepts a list of Terminal-Bench task IDs.
+- Orchestrator builds a coding-agent instruction and forwards it to the worker's
+  `/coding_agent` endpoint.
+- Worker creates an in-memory job record and returns its `job_id` immediately.
+- The worker launches an E2B sandbox and runs the Cursor agent there. The agent
+  runs the existing `prepare.py` benchmark path for those task IDs.
+- `prepare.py` runs the supplied tasks, generates the train/test split, records
+  the baseline row, and the agent writes task-level benchmark results plus
+  summary counts to `workspace/coding_agent_result.json`.
+- `summary.total` is the number of submitted task results counted by the API.
+- `summary.val_score` is still the validation score from the generated test
+  split.
+- Future version: after the benchmark result is available, queue a second
+  coding-agent instruction to run the optimization loop.
 
-## Eval suite
+## Internal Worker Coding-Agent API
 
-The coding agent self-maintains `workspace/suite.json` — task IDs it must always pass.
+The worker endpoint is generic and instruction-driven, but it is not exposed to
+clients directly:
 
-`gating.py` runs three steps before any change is committed:
-
-1. **Regression suite**: tasks in `suite.json` must pass at ≥ threshold (default 80%)
-2. **Full test**: full benchmark on the test split; mean reward must be ≥ the best score seen so far
-3. **Suite promotion**: previously-failing tasks that now pass are added to the suite
-
-Steps 1 and 2 run sequentially; Step 2 always runs regardless of Step 1's outcome.
-
----
-
-## Project structure
-
-```
-agent/
-  agent.py                  the agent under optimization — only file the coding agent edits
-  templates/                read-only starting points for each benchmark
-  helpers/
-    bird_interact/
-      bird_service.py       FastAPI service wrapper for BIRD-Interact system agent
-      bird_adk_runtime.py   Google ADK runtime adapter for the BIRD service
-      setup.py              prepare.py helpers for BIRD-Interact provisioning
-benchmark.py                benchmark execution layer (abstract + tau-bench + terminal-bench + bird-interact)
-gating.py                   three-step gate (regression suite → full test → suite promotion)
-prepare.py                  workspace setup, template copying, baseline run
-record.py                   appends iteration result to results.tsv
-PROGRAM.md                  loop instructions for the coding agent (copied from template)
-program_templates/          benchmark-specific PROGRAM.md templates
-experiment_config.yaml.template   example configs for each benchmark
-Dockerfile                  container definition (tau-bench)
-docker-compose.yml          mounts agent/ and workspace/ (tau-bench)
-workspace/
-  suite.json                regression eval suite (task IDs + threshold)
-  learnings.md              per-run log: patterns, what worked, requests to human
-  results.tsv               iteration history (val_score, commit, evals, timestamp)
-  traces/                   agent conversation traces for failure analysis
+```http
+POST /coding_agent
+Content-Type: application/json
 ```
 
----
+```json
+{
+  "instruction": "Write {\"ok\": true} as JSON to workspace/coding_agent_result.json",
+  "model": "composer-2.5"
+}
+```
 
-## Design
+The worker returns a running job immediately and stores the final structured
+response by parsing `workspace/coding_agent_result.json`.
 
-- **Program the loop, not the agent directly.** The human steers through `PROGRAM.md`; the coding agent edits `agent/agent.py`.
-- **Benchmark-agnostic loop.** The same gating, recording, and workspace format works for any benchmark that returns per-task rewards.
-- **Self-maintained evals.** The coding agent decides which tasks belong in the regression suite — no manual curation needed.
-- **Learnings close the feedback loop.** After each iteration the agent writes `workspace/learnings.md`: what it tried, what worked, what it needs from the human.
-- **Gate everything.** No change is committed without passing both the eval suite and the full test score gate.
-- **Structural anti-cheating.** Test traces are not saved to disk. The coding agent can only read train traces.
+## Error Cases
+
+- Empty `tasks` list returns `422`.
+- Concurrent `POST /auto-harness` while one request is already running returns `409`.
+- Unknown `GET /auto-harness/{job_id}` returns `404`.
+- `prepare.py` failures are stored on the job as `status: "failed"` with an
+  `error` message.
+
+## Example Curl
+
+```bash
+start_response="$(curl -s -X POST localhost:8800/auto-harness \
+  -H 'content-type: application/json' \
+  -d '{"tasks":["adaptive-rejection-sampler","bn-fit-modify","build-cython-ext"]}')"
+
+echo "$start_response" | jq
+
+job_id="$(echo "$start_response" | jq -r '.job_id')"
+curl -s "localhost:8800/auto-harness/$job_id" | jq
+```
