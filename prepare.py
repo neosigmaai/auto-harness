@@ -10,6 +10,7 @@ Supports tau-bench, terminal-bench, and BIRD-Interact.
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import shutil
@@ -303,22 +304,36 @@ def generate_bird_interact_split(results: dict[str, float], seed: int = 42) -> N
     print(f"[prepare] BIRD task split created: {len(train)} train, {len(test)} test")
 
 
-def run_baseline(cfg: dict) -> None:
+def format_task_results(results: dict[str, float | None]) -> list[dict[str, str]]:
+    return [
+        {
+            "task_id": task_id,
+            "status": "passed" if score is not None and score >= 0.5 else "failed",
+        }
+        for task_id, score in sorted(results.items())
+    ]
+
+
+def run_baseline(cfg: dict, task_ids: list[str] | None = None) -> dict | None:
     """Run baseline benchmark, generate split if needed, record iteration 0."""
     with open(RESULTS_FILE) as f:
         rows = [line for line in f if line.strip() and not line.startswith("iteration")]
     if rows:
         print("[prepare] baseline already recorded — skipping")
-        return
+        return None
 
     benchmark = cfg.get("benchmark", "tau-bench")
+    summary_results = None
 
     if benchmark == "terminal-bench":
         from benchmark import TerminalBenchRunner
 
-        # First run: all tasks (no split yet) to generate the split
+        # First run: all tasks, or the requested task IDs, to generate the split.
         if not os.path.exists(SPLIT_FILE):
-            print("[prepare] running ALL terminal-bench tasks to generate train/test split...")
+            if task_ids:
+                print(f"[prepare] running {len(task_ids)} terminal-bench task(s) to generate train/test split...")
+            else:
+                print("[prepare] running ALL terminal-bench tasks to generate train/test split...")
             all_runner = TerminalBenchRunner(
                 agent_model=cfg.get("agent_model"),
                 split=None,  # run all tasks
@@ -326,7 +341,8 @@ def run_baseline(cfg: dict) -> None:
                 n_concurrent=cfg.get("max_concurrency", 50),
                 reasoning_effort=cfg.get("reasoning_effort"),
             )
-            all_results = all_runner.run()
+            all_results = all_runner.run(task_ids=task_ids)
+            summary_results = all_results
 
             # Exclude timed-out tasks from the split — they'd permanently drag down
             # the baseline and the train/test split should reflect runnable tasks.
@@ -441,12 +457,23 @@ def run_baseline(cfg: dict) -> None:
 
     passed = sum(v >= 0.5 for v in test_results.values() if v is not None)
     print(f"[prepare] baseline val_score={val:.4f} ({passed}/{len(test_results)} passed) — recorded as iteration 0")
+    summary_results = summary_results or test_results
+    summary_passed = sum(v >= 0.5 for v in summary_results.values() if v is not None)
+    return {
+        "results": format_task_results(summary_results),
+        "summary": {
+            "val_score": val,
+            "passed": summary_passed,
+            "failed": len(summary_results) - summary_passed,
+            "total": len(summary_results),
+        },
+    }
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 
-if __name__ == "__main__":
+def main(task_ids: list[str] | None = None) -> dict | None:
     cfg = load_config()
     benchmark = cfg.get("benchmark", "tau-bench")
     print(f"[prepare] benchmark: {benchmark}")
@@ -475,7 +502,15 @@ if __name__ == "__main__":
     copy_program_template(benchmark)
 
     # Run baseline
-    run_baseline(cfg)
+    result = run_baseline(cfg, task_ids=task_ids)
 
     print(f"\n[prepare] done. Ready to start the optimization loop.")
     print(f"          Read PROGRAM.md and run: python benchmark.py")
+    return result
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--tasks", nargs="*", help="Task IDs (terminal-bench only)")
+    args = parser.parse_args()
+    main(task_ids=args.tasks or None)
