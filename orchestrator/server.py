@@ -2,15 +2,18 @@
 
 Design (single process, runs on the host that has the repo + harbor + keys):
 
-    POST /auto-harness -> run prepare.py and return benchmark results
+    POST /auto-harness -> start prepare.py and return a job id
+    GET  /auto-harness/{job_id} -> return benchmark job status/result
     GET  /health  -> liveness
 """
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import os
 import sys
 import threading
+import uuid
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -44,7 +47,8 @@ _load_env_file(os.path.join(REPO_ROOT, ".env"))
 
 app = FastAPI(title="auto-harness orchestrator", version="0.1.0")
 
-_ACTIVE_LOCK = threading.Lock()  # For local setup, one benchmark request executes at a time.
+_job_lock = threading.Lock()
+_current_job: dict | None = None  # For local setup, only the latest job is retained.
 
 
 class PrepareRequest(BaseModel):
@@ -68,51 +72,91 @@ def _reset_prepare_state() -> None:
         os.remove(split_file)
 
 
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
 def _run_active() -> bool:
-    """True if prepare.py is currently running."""
-    acquired = _ACTIVE_LOCK.acquire(blocking=False)
-    if acquired:
-        _ACTIVE_LOCK.release()
-        return False
-    return True
+    with _job_lock:
+        return _current_job is not None and _current_job["status"] == "running"
 
 
-@app.get("/health")
-def health() -> dict:
-    return {
-        "status": "ok",
-        "repo_root": REPO_ROOT,
-        "run_active": _run_active(),
-    }
+def _set_job_finished(job_id: str, fields: dict) -> None:
+    with _job_lock:
+        if _current_job is None or _current_job["job_id"] != job_id:
+            return
+        _current_job.update(fields)
+        _current_job["finished_at"] = _now_iso()
 
 
-@app.post("/auto-harness")
-def create_auto_harness(req: PrepareRequest) -> dict:
-    tasks = _normalize_tasks(req.tasks)
-
-    if not _ACTIVE_LOCK.acquire(blocking=False):
-        raise HTTPException(status_code=409, detail="a prepare job is already active")
-
+def _run_prepare_job(job_id: str, tasks: list[str]) -> None:
     original_cwd = os.getcwd()
     try:
         os.chdir(REPO_ROOT)
         _reset_prepare_state()
         result = prepare.main(task_ids=tasks)
         if not result:
-            raise HTTPException(status_code=500, detail="prepare.py returned no result")
-        return result
+            _set_job_finished(
+                job_id,
+                {
+                    "status": "failed",
+                    "error": "prepare.py returned no result",
+                },
+            )
+            return
+        _set_job_finished(job_id, {"status": "completed", "result": result})
     except SystemExit as exc:
         code = exc.code if isinstance(exc.code, int) else 1
         if code in (0, None):
-            raise HTTPException(status_code=500, detail="prepare.py returned no result") from exc
-        raise HTTPException(status_code=500, detail=f"prepare.py exited with {code}") from exc
-    except HTTPException:
-        raise
+            error = "prepare.py returned no result"
+        else:
+            error = f"prepare.py exited with {code}"
+        _set_job_finished(job_id, {"status": "failed", "error": error})
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"prepare failed: {exc!r}") from exc
+        _set_job_finished(job_id, {"status": "failed", "error": f"prepare failed: {exc!r}"})
     finally:
         os.chdir(original_cwd)
-        _ACTIVE_LOCK.release()
+
+
+@app.get("/health")
+def health() -> dict:
+    return {
+        "status": "ok",
+        "run_active": _run_active(),
+    }
+
+
+@app.post("/auto-harness")
+def create_auto_harness(req: PrepareRequest) -> dict:
+    global _current_job
+
+    tasks = _normalize_tasks(req.tasks)
+
+    with _job_lock:
+        if _current_job is not None and _current_job["status"] == "running":
+            raise HTTPException(status_code=409, detail="a prepare job is already active")
+
+        job_id = str(uuid.uuid4())
+        _current_job = {
+            "job_id": job_id,
+            "status": "running",
+            "tasks": tasks,
+            "started_at": _now_iso(),
+        }
+        job = dict(_current_job)
+
+    thread = threading.Thread(target=_run_prepare_job, args=(job_id, tasks), daemon=True)
+    thread.start()
+
+    return dict(job)
+
+
+@app.get("/auto-harness/{job_id}")
+def get_auto_harness_job(job_id: str) -> dict:
+    with _job_lock:
+        if _current_job is None or _current_job["job_id"] != job_id:
+            raise HTTPException(status_code=404, detail="job not found")
+        return dict(_current_job)
 
 
 if __name__ == "__main__":
