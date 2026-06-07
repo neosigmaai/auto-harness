@@ -1,4 +1,5 @@
 fastapi>=0.110
-httpx>=0.27
 PyYAML>=6.0
+cursor-sdk
+e2b
 uvicorn[standard]>=0.29

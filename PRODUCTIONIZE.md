@@ -6,15 +6,33 @@ tasks, and returning task-level results via job status polling.
 The production goal is:
 
 1. Receive Terminal-Bench task IDs from the client.
-2. Run the benchmark for those tasks.
+2. Send a coding-agent instruction to the worker sandbox to run the benchmark
+   for those tasks.
 3. Return a job ID immediately.
 4. Let clients poll for pass/fail results and summary counts.
 5. Queue the auto-harness agent for follow-up optimization work.
 
-This version implements **only the benchmark part**. It does not queue or run the
-auto-harness agent yet.
+This version implements the benchmark bootstrap through the worker coding-agent
+API. It does not queue the follow-up optimization loop yet.
 
 Benchmark configuration still comes from `experiment_config.yaml`.
+
+## Architecture
+
+The runtime is split into two containers:
+
+- `orchestrator` exposes the public `/auto-harness` API on port `8800`. It does
+  not mount or import the benchmark code. It builds a deterministic instruction
+  that tells the worker coding agent to run `prepare.py` for the requested task
+  IDs and write JSON to `workspace/coding_agent_result.json`.
+- `worker` exposes internal `POST /coding_agent`, `GET /coding_agent/{job_id}`,
+  and `GET /health` routes on port `8810`. For each coding-agent job, it creates
+  an E2B sandbox, uploads the repo snapshot, runs the Cursor SDK agent inside
+  that sandbox, and copies `workspace/coding_agent_result.json` back into the
+  worker job result.
+
+`/auto-harness` is the only public entry point. The worker's `/coding_agent`
+API is internal to the Compose network.
 
 ## Endpoint
 
@@ -128,18 +146,39 @@ When the job fails:
 ## Behavior
 
 - Server accepts a list of Terminal-Bench task IDs.
-- Server creates an in-memory job record and returns its `job_id` immediately.
-- Server clears `workspace/results.tsv` and `tbench_data/task_split.json` in the
-  background job.
-- Server calls the existing `prepare.py` benchmark path for those task IDs in a
-  background thread.
+- Orchestrator builds a coding-agent instruction and forwards it to the worker's
+  `/coding_agent` endpoint.
+- Worker creates an in-memory job record and returns its `job_id` immediately.
+- The worker launches an E2B sandbox and runs the Cursor agent there. The agent
+  runs the existing `prepare.py` benchmark path for those task IDs.
 - `prepare.py` runs the supplied tasks, generates the train/test split, records
-  the baseline row, and returns task-level benchmark results plus summary counts.
+  the baseline row, and the agent writes task-level benchmark results plus
+  summary counts to `workspace/coding_agent_result.json`.
 - `summary.total` is the number of submitted task results counted by the API.
 - `summary.val_score` is still the validation score from the generated test
   split.
-- Future version: after the benchmark result is available, queue the auto-harness
-  agent. This is intentionally out of scope for the current implementation.
+- Future version: after the benchmark result is available, queue a second
+  coding-agent instruction to run the optimization loop.
+
+## Internal Worker Coding-Agent API
+
+The worker endpoint is generic and instruction-driven, but it is not exposed to
+clients directly:
+
+```http
+POST /coding_agent
+Content-Type: application/json
+```
+
+```json
+{
+  "instruction": "Write {\"ok\": true} as JSON to workspace/coding_agent_result.json",
+  "model": "composer-2.5"
+}
+```
+
+The worker returns a running job immediately and stores the final structured
+response by parsing `workspace/coding_agent_result.json`.
 
 ## Error Cases
 

@@ -1,20 +1,22 @@
 FROM python:3.12-slim
 
 WORKDIR /app
+ENV UV_LINK_MODE=copy
 
-# Install git (needed for uv to fetch tau2 from git) and uv
+# Install git (useful for agent workflows) and uv
 RUN apt-get update && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir uv
+RUN uv tool install harbor
 
 # Copy dependency manifest first for better layer caching
 COPY pyproject.toml ./
 
-# Install all dependencies (including tau2 from git) into a venv
-RUN uv sync --no-dev
+# Install dependencies into a venv; the repo runs from the checkout, not as a package
+RUN uv sync --no-dev --no-install-project
 
 # Activate venv so plain `python` resolves to the venv interpreter
-ENV PATH="/app/.venv/bin:$PATH"
+ENV PATH="/app/.venv/bin:/root/.local/bin:$PATH"
 
 # Copy project files
 COPY . .

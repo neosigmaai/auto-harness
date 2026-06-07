@@ -1,0 +1,16 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+workspace/tbench_jobs
+workspace/traces
+workspace/*.log
+workspace/coding_agent_result.json
+
+tau2_data
+tbench_data

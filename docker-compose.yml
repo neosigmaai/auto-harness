@@ -1,10 +1,24 @@
 services:
-  autoeval:
+  orchestrator:
+    build:
+      context: .
+      dockerfile: orchestrator/Dockerfile
+    ports:
+      - "${ORCHESTRATOR_PORT:-8800}:8800"
+    environment:
+      - WORKER_BASE_URL=http://worker:8810
+    depends_on:
+      - worker
+
+  worker:
     build: .
+    command: ["python", "-m", "uvicorn", "worker.server:app", "--host", "0.0.0.0", "--port", "8810"]
     env_file: .env
     environment:
       - AGENT_MODEL=${AGENT_MODEL:-gpt-5.4}
-      - TAU2_DATA_DIR=/tau2_data
+      - CURSOR_AGENT_MODEL=${CURSOR_AGENT_MODEL:-composer-2.5}
+    expose:
+      - "8810"
     volumes:
       # Mount all editable files so changes take effect without rebuilding
       - ./agent:/app/agent
@@ -14,9 +28,3 @@ services:
       - ./gating.py:/app/gating.py
       - ./prepare.py:/app/prepare.py
       - ./record.py:/app/record.py
-      # TAU2_DATA_DIR has two layers: the host-side substitution here controls which
-      # directory is mounted; the container always sees it as /tau2_data (set above
-      # in environment:). To use a different data directory, set TAU2_DATA_DIR in .env.
-      - ${TAU2_DATA_DIR:-./tau2_data}:/tau2_data
-    stdin_open: true
-    tty: true
