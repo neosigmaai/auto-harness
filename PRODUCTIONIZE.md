@@ -10,8 +10,8 @@ The production goal is:
 3. Return pass/fail results and summary counts.
 4. Queue the auto-harness agent for follow-up optimization work.
 
-This version implements **only the benchmark part**. It does not queue or run the
-auto-harness agent yet.
+This version runs the benchmark synchronously, returns the benchmark response,
+and starts the Cursor agent in the background after a successful benchmark.
 
 Benchmark configuration still comes from `experiment_config.yaml`.
 
@@ -59,6 +59,14 @@ Example:
     "passed": "number",
     "failed": "number",
     "total": "number"
+  },
+  "agent": {
+    "status": "idle | queued | running | finished | error | failed_to_start",
+    "prompt": "string",
+    "run_id": "string | null",
+    "error": "string | null",
+    "started_at": "string | null",
+    "finished_at": "string | null"
   }
 }
 ```
@@ -86,6 +94,14 @@ Example:
     "passed": 2,
     "failed": 1,
     "total": 3
+  },
+  "agent": {
+    "status": "queued",
+    "prompt": "Refer to PROGRAM.md and perform the tasks",
+    "run_id": null,
+    "error": null,
+    "started_at": "2026-06-07T13:13:00.000000+00:00",
+    "finished_at": null
   }
 }
 ```
@@ -100,14 +116,22 @@ Example:
 - `summary.total` is the number of submitted task results counted by the API.
 - `summary.val_score` is still the validation score from the generated test
   split.
-- Future version: after the benchmark result is available, queue the auto-harness
-  agent. This is intentionally out of scope for the current implementation.
+- After the benchmark result is available, the server queues a local Cursor SDK
+  agent with prompt `Refer to PROGRAM.md and perform the tasks`.
+- The HTTP response is returned immediately after the agent is queued. Clients
+  can poll `GET /health` for the latest `agent` state.
+- A second `POST /auto-harness` is rejected while either the benchmark or
+  background agent is active because both share the same repo checkout and
+  workspace files.
 
 ## Error Cases
 
 - Empty `tasks` list returns `422`.
-- Concurrent `POST /auto-harness` while one request is already running returns `409`.
+- Concurrent `POST /auto-harness` while one benchmark or optimization agent is
+  already running returns `409`.
 - `prepare.py` failures return `500`.
+- If `CURSOR_API_KEY` is missing, the benchmark still returns `200` and the
+  response includes `agent.status: failed_to_start`.
 
 ## Example Curl
 

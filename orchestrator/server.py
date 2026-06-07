@@ -2,8 +2,8 @@
 
 Design (single process, runs on the host that has the repo + harbor + keys):
 
-    POST /auto-harness -> run prepare.py and return benchmark results
-    GET  /health  -> liveness
+    POST /auto-harness -> run prepare.py, queue Cursor agent, and return benchmark results
+    GET  /health  -> liveness + active job status
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
 import prepare
+from orchestrator import agent_runner
 
 
 def _load_env_file(path: str) -> None:
@@ -44,7 +45,7 @@ _load_env_file(os.path.join(REPO_ROOT, ".env"))
 
 app = FastAPI(title="auto-harness orchestrator", version="0.1.0")
 
-_ACTIVE_LOCK = threading.Lock()  # For local setup, one benchmark request executes at a time.
+_ACTIVE_LOCK = threading.Lock()  # Requests share this repo checkout and workspace files.
 
 
 class PrepareRequest(BaseModel):
@@ -81,8 +82,8 @@ def _run_active() -> bool:
 def health() -> dict:
     return {
         "status": "ok",
-        "repo_root": REPO_ROOT,
         "run_active": _run_active(),
+        "agent": agent_runner.get_state_dict(),
     }
 
 
@@ -95,12 +96,16 @@ def create_auto_harness(req: PrepareRequest) -> dict:
 
     original_cwd = os.getcwd()
     try:
+        if agent_runner.is_active():
+            raise HTTPException(status_code=409, detail="an optimization agent is already running")
+
         os.chdir(REPO_ROOT)
         _reset_prepare_state()
         result = prepare.main(task_ids=tasks)
         if not result:
             raise HTTPException(status_code=500, detail="prepare.py returned no result")
-        return result
+        agent_info = agent_runner.start_optimization_agent(REPO_ROOT)
+        return {**result, "agent": agent_info}
     except SystemExit as exc:
         code = exc.code if isinstance(exc.code, int) else 1
         if code in (0, None):
