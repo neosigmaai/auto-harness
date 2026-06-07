@@ -132,6 +132,11 @@ Orchestrator acts a reverse-proxy, controlling the input to Worker's agent. This
 
 2. Would go a multi-threaded setup at the Worker container, especially because E2B setup is in place and we could make parallel calls to E2B server. 
 
+### Challenges & Learnings
+
+1. **Milestone 2 scope:** Wired the self-optimization loop as post-request async work instead of making the benchmark step async. Aligning on the intended integration point earlier would have reduced rework.
+
+2. **Optimization loop tuning:** End-to-end runs were sensitive to model choice and hyperparameters, faster models improved iteration speed but made convergence harder, which kept eval scores flat until parameters were tuned. Spent additional time fixing this.
 
 ## Endpoint
 
