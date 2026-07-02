@@ -17,6 +17,7 @@ pytestmark = pytest.mark.skipif(
 
 def test_store_init_schema_is_idempotent_and_persists_records():
     store = PostgresStore(os.environ["DATABASE_URL"])
+    # The store uses aos_* tables so a legacy public runs table does not collide.
     store.init_schema()
     store.init_schema()
 

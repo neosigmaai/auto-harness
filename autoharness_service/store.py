@@ -13,6 +13,10 @@ from psycopg.types.json import Jsonb
 from autoharness_service.models import IterationRecord, RunRecord, TaskResultRecord
 from autoharness_service.schemas import RunCreateRequest
 
+RUNS_TABLE = "aos_runs"
+TASK_RESULTS_TABLE = "aos_task_results"
+ITERATIONS_TABLE = "aos_iterations"
+
 
 class PostgresStore:
     def __init__(self, database_url: str):
@@ -26,8 +30,8 @@ class PostgresStore:
     def init_schema(self) -> None:
         with self._connect() as conn:
             conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS runs (
+                f"""
+                CREATE TABLE IF NOT EXISTS {RUNS_TABLE} (
                   id uuid PRIMARY KEY,
                   org_id text NOT NULL,
                   created_by text NOT NULL,
@@ -47,12 +51,12 @@ class PostgresStore:
                 """
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_runs_org_created_at ON runs (org_id, created_at DESC)"
+                f"CREATE INDEX IF NOT EXISTS idx_aos_runs_org_created_at ON {RUNS_TABLE} (org_id, created_at DESC)"
             )
             conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS task_results (
-                  run_id uuid NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
+                f"""
+                CREATE TABLE IF NOT EXISTS {TASK_RESULTS_TABLE} (
+                  run_id uuid NOT NULL REFERENCES {RUNS_TABLE}(id) ON DELETE CASCADE,
                   task_id text NOT NULL,
                   status text NOT NULL,
                   reward double precision,
@@ -60,16 +64,16 @@ class PostgresStore:
                   error_summary text,
                   trace_path text,
                   result_path text,
-                  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+                  metadata jsonb NOT NULL DEFAULT '{{}}'::jsonb,
                   created_at timestamptz NOT NULL DEFAULT now(),
                   PRIMARY KEY (run_id, task_id)
                 )
                 """
             )
             conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS iterations (
-                  run_id uuid NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
+                f"""
+                CREATE TABLE IF NOT EXISTS {ITERATIONS_TABLE} (
+                  run_id uuid NOT NULL REFERENCES {RUNS_TABLE}(id) ON DELETE CASCADE,
                   iteration_index integer NOT NULL,
                   status text NOT NULL,
                   agent_version text NOT NULL,
@@ -91,8 +95,8 @@ class PostgresStore:
         run_id = str(uuid.uuid4())
         with self._connect() as conn:
             row = conn.execute(
-                """
-                INSERT INTO runs (
+                f"""
+                INSERT INTO {RUNS_TABLE} (
                   id, org_id, created_by, status, mode, model, sandbox_provider,
                   requested_concurrency, max_iterations, task_ids
                 )
@@ -116,7 +120,7 @@ class PostgresStore:
     def get_run(self, run_id: str, org_id: str) -> RunRecord | None:
         with self._connect() as conn:
             row = conn.execute(
-                "SELECT * FROM runs WHERE id = %s AND org_id = %s",
+                f"SELECT * FROM {RUNS_TABLE} WHERE id = %s AND org_id = %s",
                 (run_id, org_id),
             ).fetchone()
         return _run_from_row(row) if row else None
@@ -125,10 +129,10 @@ class PostgresStore:
         with self._connect() as conn:
             conn.execute(
                 """
-                UPDATE runs
+                UPDATE {runs_table}
                 SET status = 'running', started_at = COALESCE(started_at, now())
                 WHERE id = %s AND org_id = %s AND status IN ('queued', 'running')
-                """,
+                """.format(runs_table=RUNS_TABLE),
                 (run_id, org_id),
             )
 
@@ -136,11 +140,11 @@ class PostgresStore:
         with self._connect() as conn:
             conn.execute(
                 """
-                UPDATE runs
+                UPDATE {runs_table}
                 SET status = 'succeeded', score = %s, completed_at = now()
                 WHERE id = %s AND org_id = %s
                   AND status NOT IN ('succeeded', 'failed', 'timed_out', 'cancelled')
-                """,
+                """.format(runs_table=RUNS_TABLE),
                 (score, run_id, org_id),
             )
 
@@ -150,11 +154,11 @@ class PostgresStore:
         with self._connect() as conn:
             conn.execute(
                 """
-                UPDATE runs
+                UPDATE {runs_table}
                 SET status = %s, error = %s, completed_at = now()
                 WHERE id = %s AND org_id = %s
                   AND status NOT IN ('succeeded', 'failed', 'timed_out', 'cancelled')
-                """,
+                """.format(runs_table=RUNS_TABLE),
                 (status, error[:4000], run_id, org_id),
             )
 
@@ -168,24 +172,27 @@ class PostgresStore:
         with self._connect() as conn:
             conn.execute(
                 """
-                DELETE FROM task_results
-                USING runs
-                WHERE task_results.run_id = runs.id
-                  AND runs.id = %s
-                  AND runs.org_id = %s
-                """,
+                DELETE FROM {task_results_table}
+                USING {runs_table}
+                WHERE {task_results_table}.run_id = {runs_table}.id
+                  AND {runs_table}.id = %s
+                  AND {runs_table}.org_id = %s
+                """.format(
+                    task_results_table=TASK_RESULTS_TABLE,
+                    runs_table=RUNS_TABLE,
+                ),
                 (run_id, org_id),
             )
             for result in task_results:
                 conn.execute(
-                    """
-                    INSERT INTO task_results (
+                    f"""
+                    INSERT INTO {TASK_RESULTS_TABLE} (
                       run_id, task_id, status, reward, failure_type, error_summary,
                       trace_path, result_path, metadata
                     )
-                    SELECT runs.id, %s, %s, %s, %s, %s, %s, %s, %s
-                    FROM runs
-                    WHERE runs.id = %s AND runs.org_id = %s
+                    SELECT {RUNS_TABLE}.id, %s, %s, %s, %s, %s, %s, %s, %s
+                    FROM {RUNS_TABLE}
+                    WHERE {RUNS_TABLE}.id = %s AND {RUNS_TABLE}.org_id = %s
                     ON CONFLICT (run_id, task_id) DO UPDATE SET
                       status = EXCLUDED.status,
                       reward = EXCLUDED.reward,
@@ -213,12 +220,15 @@ class PostgresStore:
         with self._connect() as conn:
             rows = conn.execute(
                 """
-                SELECT task_results.*
-                FROM task_results
-                JOIN runs ON runs.id = task_results.run_id
-                WHERE task_results.run_id = %s AND runs.org_id = %s
+                SELECT {task_results_table}.*
+                FROM {task_results_table}
+                JOIN {runs_table} ON {runs_table}.id = {task_results_table}.run_id
+                WHERE {task_results_table}.run_id = %s AND {runs_table}.org_id = %s
                 ORDER BY task_id
-                """,
+                """.format(
+                    task_results_table=TASK_RESULTS_TABLE,
+                    runs_table=RUNS_TABLE,
+                ),
                 (run_id, org_id),
             ).fetchall()
         return [_task_result_from_row(row) for row in rows]
@@ -236,13 +246,13 @@ class PostgresStore:
     ) -> IterationRecord:
         with self._connect() as conn:
             row = conn.execute(
-                """
-                INSERT INTO iterations (
+                f"""
+                INSERT INTO {ITERATIONS_TABLE} (
                   run_id, iteration_index, status, agent_version, score, proposal, accepted
                 )
-                SELECT runs.id, %s, %s, %s, %s, %s, %s
-                FROM runs
-                WHERE runs.id = %s AND runs.org_id = %s
+                SELECT {RUNS_TABLE}.id, %s, %s, %s, %s, %s, %s
+                FROM {RUNS_TABLE}
+                WHERE {RUNS_TABLE}.id = %s AND {RUNS_TABLE}.org_id = %s
                 ON CONFLICT (run_id, iteration_index) DO UPDATE SET
                   status = EXCLUDED.status,
                   agent_version = EXCLUDED.agent_version,
@@ -270,12 +280,15 @@ class PostgresStore:
         with self._connect() as conn:
             rows = conn.execute(
                 """
-                SELECT iterations.*
-                FROM iterations
-                JOIN runs ON runs.id = iterations.run_id
-                WHERE iterations.run_id = %s AND runs.org_id = %s
+                SELECT {iterations_table}.*
+                FROM {iterations_table}
+                JOIN {runs_table} ON {runs_table}.id = {iterations_table}.run_id
+                WHERE {iterations_table}.run_id = %s AND {runs_table}.org_id = %s
                 ORDER BY iteration_index
-                """,
+                """.format(
+                    iterations_table=ITERATIONS_TABLE,
+                    runs_table=RUNS_TABLE,
+                ),
                 (run_id, org_id),
             ).fetchall()
         return [_iteration_from_row(row) for row in rows]
