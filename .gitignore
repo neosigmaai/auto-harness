@@ -22,6 +22,7 @@ bird_data/
 
 # local coding agent config
 .claude/
+AGENTS.md
 
 # local experiment config (created by prepare.py from template)
 experiment_config.yaml
