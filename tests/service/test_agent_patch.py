@@ -5,14 +5,13 @@ import textwrap
 from pathlib import Path
 
 import pytest
-
 from autoharness_service.agent_patch import AgentPatchService
 
 
 def _write_agent(tmp_path: Path, source: str) -> Path:
     agent_path = tmp_path / "agent" / "agent.py"
     agent_path.parent.mkdir(parents=True, exist_ok=True)
-    agent_path.write_text(textwrap.dedent(source))
+    agent_path.write_text(textwrap.dedent(source), encoding="utf-8")
     return agent_path
 
 
@@ -45,7 +44,7 @@ def test_apply_instruction_patch_changes_only_agent_instruction(
         TOOLS = [{"name": "bash"}]
         """,
     )
-    original_source = agent_path.read_text()
+    original_source = agent_path.read_text(encoding="utf-8")
     snapshot_dir = tmp_path / "snapshots"
 
     service = AgentPatchService(agent_path)
@@ -54,7 +53,7 @@ def test_apply_instruction_patch_changes_only_agent_instruction(
         snapshot_dir=snapshot_dir,
     )
 
-    patched_source = agent_path.read_text()
+    patched_source = agent_path.read_text(encoding="utf-8")
 
     assert result.original_source == original_source
     assert result.patched_source == patched_source
@@ -64,8 +63,10 @@ def test_apply_instruction_patch_changes_only_agent_instruction(
     assert 'TOOLS = [{"name": "bash"}]' in patched_source
     assert 'AGENT_INSTRUCTION = "new line 1\\nnew line 2"' in patched_source
     py_compile.compile(str(agent_path), doraise=True)
-    assert (snapshot_dir / "initial.py").read_text() == original_source
-    assert (snapshot_dir / "proposal-1.py").read_text() == patched_source
+    assert (snapshot_dir / "initial.py").read_text(encoding="utf-8") == original_source
+    assert (snapshot_dir / "proposal-1.py").read_text(
+        encoding="utf-8"
+    ) == patched_source
     assert result.snapshot_paths == {
         "initial": str(snapshot_dir / "initial.py"),
         "proposal-1": str(snapshot_dir / "proposal-1.py"),
@@ -124,7 +125,7 @@ def test_apply_instruction_patch_rejects_dangerous_content(
         AGENT_INSTRUCTION = \"\"\"old\"\"\"
         """,
     )
-    original_source = agent_path.read_text()
+    original_source = agent_path.read_text(encoding="utf-8")
     service = AgentPatchService(agent_path)
 
     with pytest.raises(ValueError):
@@ -133,7 +134,7 @@ def test_apply_instruction_patch_rejects_dangerous_content(
             snapshot_dir=tmp_path / "snapshots",
         )
 
-    assert agent_path.read_text() == original_source
+    assert agent_path.read_text(encoding="utf-8") == original_source
 
 
 def test_apply_instruction_patch_rejects_missing_or_duplicate_assignment(
@@ -187,6 +188,27 @@ def test_apply_instruction_patch_supports_annotated_assignment(
 
     assert agent_path.read_text() == '\nAGENT_INSTRUCTION = "updated"\n'
     assert result.original_instruction == "old"
+
+
+def test_apply_instruction_patch_rejects_annotated_assignment_without_value(
+    tmp_path: Path,
+) -> None:
+    agent_path = _write_agent(
+        tmp_path,
+        """
+        AGENT_INSTRUCTION: str
+        """,
+    )
+    original_source = agent_path.read_text(encoding="utf-8")
+    service = AgentPatchService(agent_path)
+
+    with pytest.raises(ValueError):
+        service.apply_instruction_patch(
+            "updated",
+            snapshot_dir=tmp_path / "snapshots",
+        )
+
+    assert agent_path.read_text(encoding="utf-8") == original_source
 
 
 @pytest.mark.parametrize(

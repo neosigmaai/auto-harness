@@ -7,7 +7,6 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-
 _DANGEROUS_SUBSTRINGS = (
     "```",
     "import ",
@@ -42,7 +41,7 @@ class AgentPatchService:
         self.agent_path = Path(agent_path)
 
     def read_instruction(self) -> str:
-        source = self.agent_path.read_text()
+        source = self.agent_path.read_text(encoding="utf-8")
         return self._find_instruction_assignment(source).value
 
     def apply_instruction_patch(
@@ -50,7 +49,7 @@ class AgentPatchService:
         new_instruction: str,
         snapshot_dir: Path | str,
     ) -> AgentPatchResult:
-        original_source = self.agent_path.read_text()
+        original_source = self.agent_path.read_text(encoding="utf-8")
         try:
             assignment = self._find_instruction_assignment(original_source)
             self._validate_instruction(new_instruction)
@@ -64,7 +63,7 @@ class AgentPatchService:
                 original_source=original_source,
                 patched_source=patched_source,
             )
-            self.agent_path.write_text(patched_source)
+            self.agent_path.write_text(patched_source, encoding="utf-8")
             self._compile_agent()
         except Exception:
             self.restore(original_source)
@@ -79,7 +78,7 @@ class AgentPatchService:
         )
 
     def restore(self, source: str) -> None:
-        self.agent_path.write_text(source)
+        self.agent_path.write_text(source, encoding="utf-8")
 
     def _find_instruction_assignment(self, source: str) -> _InstructionAssignment:
         module = ast.parse(source)
@@ -91,10 +90,12 @@ class AgentPatchService:
                 continue
             write_count += 1
 
-            if isinstance(node, ast.AugAssign):
+            if isinstance(node, ast.Assign):
+                matches.append(self._extract_instruction_assignment(node))
                 continue
-
-            matches.append(self._extract_instruction_assignment(node))
+            if isinstance(node, ast.AnnAssign):
+                matches.append(self._extract_instruction_assignment(node))
+                continue
 
         if write_count != 1 or len(matches) != 1:
             raise ValueError(
@@ -123,8 +124,12 @@ class AgentPatchService:
         if node.end_lineno is None:
             raise ValueError("AGENT_INSTRUCTION assignment is missing end_lineno")
 
+        value = node.value
+        if value is None:
+            raise ValueError("AGENT_INSTRUCTION must be a string literal")
+
         try:
-            instruction = ast.literal_eval(node.value)
+            instruction = ast.literal_eval(value)
         except (SyntaxError, ValueError) as exc:
             raise ValueError("AGENT_INSTRUCTION must be a string literal") from exc
 
@@ -166,8 +171,8 @@ class AgentPatchService:
         snapshot_dir.mkdir(parents=True, exist_ok=True)
         initial_path = snapshot_dir / "initial.py"
         proposal_path = snapshot_dir / "proposal-1.py"
-        initial_path.write_text(original_source)
-        proposal_path.write_text(patched_source)
+        initial_path.write_text(original_source, encoding="utf-8")
+        proposal_path.write_text(patched_source, encoding="utf-8")
         return {
             "initial": str(initial_path),
             "proposal-1": str(proposal_path),
