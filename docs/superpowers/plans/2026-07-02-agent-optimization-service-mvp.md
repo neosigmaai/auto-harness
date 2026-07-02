@@ -21,6 +21,11 @@
 - Local PostgreSQL is written only by the service process; Daytona sandboxes do not connect to local PostgreSQL.
 - Simulated mode must work without Daytona, Harbor, or OpenAI keys so reviewers can validate API and lifecycle quickly.
 - Real mode may require `OPENAI_API_KEY`, `DAYTONA_API_KEY`, and `harbor` CLI.
+- Request input is trusted only after validation: task ids must match a strict local-safe identifier regex, model names must be from a server whitelist, and real mode is Daytona-only for this MVP.
+- Every persistence read or write that refers to an existing run must include `org_id`; `run_id` alone is not an authorization boundary.
+- Real Harbor/Daytona runs are serialized with a process-local semaphore in this MVP to avoid shared trace/artifact races and quota explosions.
+- Real Harbor/Daytona runs must use a per-run `jobs_dir`; API responses must not depend on shared `workspace/traces/latest` when multiple real runs could overlap.
+- `X-Org-Id`, `X-User-Id`, and `X-Role` are local demo headers only; production auth is out of scope and must be documented as future JWT/OAuth/RBAC work.
 
 ---
 
@@ -123,7 +128,12 @@ Edge rules:
 ```text
 POST /runs:
   validate task_ids non-empty and max 20
+  validate each task_id with ^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$
+  validate model through ALLOWED_MODELS
+  validate simulated mode uses sandbox_provider=simulated
+  validate real mode uses sandbox_provider=daytona
   validate requested_concurrency <= 8
+  require X-Role in runner/admin; viewer receives 403
   return 202 before work starts
 
 GET /runs/{id}:
@@ -146,7 +156,8 @@ MVP result source priority:
 ```text
 1. Simulated mode deterministic reward map.
 2. Real mode TerminalBenchRunner returns {task_id: reward | None}.
-3. Existing benchmark.py copies traces into workspace/traces/latest/{task_id}/.
+3. Real mode uses a per-run jobs_dir under workspace/service_runs/{run_id}/tbench_jobs.
+4. Existing benchmark.py may also copy traces into workspace/traces/latest/{task_id}/; the service may expose those paths only as best-effort local artifacts while real runs are serialized.
 4. Missing reward for a requested task becomes infra_failed/missing_result.
 ```
 
@@ -157,7 +168,9 @@ reward >= 0.5 -> passed
 reward < 0.5  -> failed / agent_failed
 reward is None -> infra_failed / missing_result
 Harbor subprocess timeout inside benchmark.py -> missing or None results
-No jobs_dir output -> raw result map may be empty; every requested task becomes infra_failed
+No jobs_dir output -> raw result map may be empty; every requested task becomes infra_failed and the run is marked failed, not succeeded
+Malformed/non-finite reward -> infra_failed/invalid_result
+Optimizer proposal error -> proposal_failed iteration; benchmark run status remains succeeded if benchmark results were valid
 ```
 
 Current MVP does not parse every Harbor exception type directly. That is
@@ -171,6 +184,8 @@ MVP choice:
 ```text
 Use one daemon background thread per submitted run.
 The thread may block on Harbor in real mode.
+Use one process-local semaphore for real Harbor/Daytona execution.
+If another real run is active, the later real run fails quickly with a clear capacity error.
 ```
 
 Known limitation:
@@ -208,7 +223,9 @@ Pass command args as lists through existing TerminalBenchRunner.
 Never return API keys, env vars, or .env contents from API responses.
 Do not allow clients to set arbitrary dataset paths, agent import paths, or shell commands.
 Limit task_ids count and requested_concurrency through Pydantic.
-Keep org scoping on every read endpoint through X-Org-Id.
+Keep org scoping on every read and write path through X-Org-Id.
+Use X-Role only for local demo authorization: viewer can read; runner/admin can create.
+Cap proposal/error text before persisting.
 Do not stage AGENTS.md or .env.
 Do not let Daytona sandbox write directly to local Postgres.
 ```
@@ -455,6 +472,8 @@ git commit -m "feat: add service package skeleton"
 Create `tests/service/test_normalizer.py`:
 
 ```python
+import pytest
+
 from autoharness_service.normalizer import (
     build_failure_summary,
     normalize_missing_result,
@@ -488,6 +507,14 @@ def test_normalize_missing_result_as_infra_failure():
     assert result.error_summary == "Trial result.json missing"
 
 
+def test_normalize_non_finite_reward_as_invalid_result():
+    result = normalize_reward_result("task-nan", float("nan"))
+
+    assert result.status == "infra_failed"
+    assert result.reward is None
+    assert result.failure_type == "invalid_result"
+
+
 def test_build_failure_summary_counts_failure_types():
     results = [
         normalize_reward_result("task-pass", 1.0),
@@ -502,6 +529,41 @@ def test_build_failure_summary_counts_failure_types():
     assert summary.tasks_passed == 1
     assert summary.tasks_total == 3
     assert summary.top_failure_modes == ["agent_failed", "missing_result"]
+
+
+def test_run_create_request_rejects_unsafe_task_ids():
+    from pydantic import ValidationError
+
+    from autoharness_service.schemas import RunCreateRequest
+
+    with pytest.raises(ValidationError):
+        RunCreateRequest(task_ids=["../secret"], mode="simulated")
+
+
+def test_run_create_request_validates_mode_provider_pair():
+    from pydantic import ValidationError
+
+    from autoharness_service.schemas import RunCreateRequest
+
+    assert RunCreateRequest(
+        task_ids=["task-pass"],
+        mode="simulated",
+        sandbox_provider="simulated",
+    ).sandbox_provider == "simulated"
+
+    with pytest.raises(ValidationError):
+        RunCreateRequest(
+            task_ids=["task-pass"],
+            mode="simulated",
+            sandbox_provider="daytona",
+        )
+
+    with pytest.raises(ValidationError):
+        RunCreateRequest(
+            task_ids=["break-filter-js-from-html"],
+            mode="real",
+            sandbox_provider="simulated",
+        )
 ```
 
 - [ ] **Step 2: Run and verify failure**
@@ -598,19 +660,41 @@ Create `autoharness_service/schemas.py`:
 ```python
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+
+TASK_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
+ALLOWED_MODELS = {"gpt-5.4", "gpt-5.4-mini", "gpt-4o", "gpt-4o-mini"}
 
 
 class RunCreateRequest(BaseModel):
     task_ids: list[str] = Field(min_length=1, max_length=20)
     max_iterations: int = Field(default=0, ge=0, le=1)
-    sandbox_provider: Literal["daytona", "e2b", "docker", "simulated"] = "daytona"
+    sandbox_provider: Literal["daytona", "simulated"] = "simulated"
     model: str = "gpt-5.4"
     mode: Literal["simulated", "real"] = "simulated"
     requested_concurrency: int = Field(default=1, ge=1, le=8)
+
+    @model_validator(mode="after")
+    def validate_request(self) -> "RunCreateRequest":
+        for task_id in self.task_ids:
+            if not TASK_ID_RE.fullmatch(task_id):
+                raise ValueError(
+                    "task_ids must match ^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+                )
+        if self.model not in ALLOWED_MODELS:
+            raise ValueError(
+                f"model must be one of: {', '.join(sorted(ALLOWED_MODELS))}"
+            )
+        if self.mode == "simulated" and self.sandbox_provider != "simulated":
+            raise ValueError("simulated mode requires sandbox_provider=simulated")
+        if self.mode == "real" and self.sandbox_provider != "daytona":
+            raise ValueError("real mode requires sandbox_provider=daytona")
+        return self
 
 
 class RunCreateResponse(BaseModel):
@@ -697,6 +781,7 @@ Create `autoharness_service/normalizer.py`:
 ```python
 from __future__ import annotations
 
+import math
 from collections import Counter
 from collections.abc import Iterable, Mapping
 from typing import Any
@@ -726,6 +811,17 @@ def normalize_reward_result(
             trace_path=trace_path,
             result_path=result_path,
             metadata=metadata,
+        )
+    if not math.isfinite(float(reward)):
+        return TaskResultRecord(
+            task_id=task_id,
+            status="infra_failed",
+            reward=None,
+            failure_type="invalid_result",
+            error_summary="Verifier reward was not a finite number",
+            trace_path=trace_path,
+            result_path=result_path,
+            metadata=_metadata_dict(metadata),
         )
 
     if reward >= PASS_THRESHOLD:
@@ -788,7 +884,7 @@ def build_failure_summary(task_results: Iterable[TaskResultRecord]) -> FailureSu
     infra_failures = sum(
         1
         for result in results
-        if result.failure_type in {"missing_result", "sandbox_timeout", "runner_failed"}
+        if result.failure_type in {"missing_result", "sandbox_timeout", "runner_failed", "invalid_result"}
         or result.status in {"infra_failed", "timed_out"}
     )
     return FailureSummary(
@@ -815,7 +911,7 @@ python -m pytest tests/service/test_normalizer.py -q
 Expected:
 
 ```text
-4 passed
+7 passed
 ```
 
 - [ ] **Step 7: Commit Task 2**
@@ -840,11 +936,11 @@ git commit -m "feat: add service schemas and result normalizer"
 - Produces `init_schema() -> None`.
 - Produces `create_run(request, org_id, created_by) -> RunRecord`.
 - Produces `get_run(run_id, org_id) -> RunRecord | None`.
-- Produces `mark_run_running(run_id)`, `mark_run_succeeded(run_id, score)`, `mark_run_failed(run_id, status, error)`.
-- Produces `replace_task_results(run_id, task_results) -> None`.
-- Produces `list_task_results(run_id) -> list[TaskResultRecord]`.
-- Produces `create_iteration(run_id, iteration_index, status, agent_version, score=None, proposal=None, accepted=None) -> IterationRecord`.
-- Produces `list_iterations(run_id) -> list[IterationRecord]`.
+- Produces `mark_run_running(run_id, org_id)`, `mark_run_succeeded(run_id, org_id, score)`, `mark_run_failed(run_id, org_id, status, error)`.
+- Produces `replace_task_results(run_id, org_id, task_results) -> None`.
+- Produces `list_task_results(run_id, org_id) -> list[TaskResultRecord]`.
+- Produces `create_iteration(run_id, org_id, iteration_index, status, agent_version, score=None, proposal=None, accepted=None) -> IterationRecord`.
+- Produces `list_iterations(run_id, org_id) -> list[IterationRecord]`.
 
 - [ ] **Step 1: Write row mapping and optional live DB tests**
 
@@ -873,19 +969,21 @@ def test_store_creates_run_and_task_results():
     request = RunCreateRequest(
         task_ids=[f"task-{uuid.uuid4()}"],
         mode="simulated",
+        sandbox_provider="simulated",
         requested_concurrency=1,
     )
 
     run = store.create_run(request, org_id="org-test", created_by="user-test")
-    store.mark_run_running(run.run_id)
+    store.mark_run_running(run.run_id, org_id="org-test")
     store.replace_task_results(
         run.run_id,
+        org_id="org-test",
         [normalize_reward_result(request.task_ids[0], 1.0)],
     )
-    store.mark_run_succeeded(run.run_id, 1.0)
+    store.mark_run_succeeded(run.run_id, org_id="org-test", score=1.0)
 
     loaded = store.get_run(run.run_id, org_id="org-test")
-    results = store.list_task_results(run.run_id)
+    results = store.list_task_results(run.run_id, org_id="org-test")
 
     assert loaded is not None
     assert loaded.status == "succeeded"
@@ -897,12 +995,17 @@ def test_store_creates_run_and_task_results():
 def test_store_filters_runs_by_org():
     store = PostgresStore(os.environ["DATABASE_URL"])
     store.init_schema()
-    request = RunCreateRequest(task_ids=[f"task-{uuid.uuid4()}"], mode="simulated")
+    request = RunCreateRequest(
+        task_ids=[f"task-{uuid.uuid4()}"],
+        mode="simulated",
+        sandbox_provider="simulated",
+    )
 
     run = store.create_run(request, org_id="org-a", created_by="user-a")
 
     assert store.get_run(run.run_id, org_id="org-a") is not None
     assert store.get_run(run.run_id, org_id="org-b") is None
+    assert store.list_task_results(run.run_id, org_id="org-b") == []
 ```
 
 - [ ] **Step 2: Run tests and verify skip or failure**
@@ -980,6 +1083,9 @@ class PostgresStore:
                 """
             )
             conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_runs_org_created_at ON runs (org_id, created_at DESC)"
+            )
+            conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS task_results (
                   run_id uuid NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
@@ -1052,29 +1158,30 @@ class PostgresStore:
             ).fetchone()
         return _run_from_row(row) if row else None
 
-    def mark_run_running(self, run_id: str) -> None:
+    def mark_run_running(self, run_id: str, *, org_id: str) -> None:
         with self._connect() as conn:
             conn.execute(
                 """
                 UPDATE runs
                 SET status = 'running', started_at = COALESCE(started_at, now())
-                WHERE id = %s AND status IN ('queued', 'running')
+                WHERE id = %s AND org_id = %s AND status IN ('queued', 'running')
                 """,
-                (run_id,),
+                (run_id, org_id),
             )
 
-    def mark_run_succeeded(self, run_id: str, score: float) -> None:
+    def mark_run_succeeded(self, run_id: str, *, org_id: str, score: float) -> None:
         with self._connect() as conn:
             conn.execute(
                 """
                 UPDATE runs
                 SET status = 'succeeded', score = %s, completed_at = now()
-                WHERE id = %s AND status NOT IN ('succeeded', 'failed', 'timed_out', 'cancelled')
+                WHERE id = %s AND org_id = %s
+                  AND status NOT IN ('succeeded', 'failed', 'timed_out', 'cancelled')
                 """,
-                (score, run_id),
+                (score, run_id, org_id),
             )
 
-    def mark_run_failed(self, run_id: str, *, status: str, error: str) -> None:
+    def mark_run_failed(self, run_id: str, *, org_id: str, status: str, error: str) -> None:
         if status not in {"failed", "timed_out", "cancelled"}:
             raise ValueError("terminal failure status expected")
         with self._connect() as conn:
@@ -1082,17 +1189,26 @@ class PostgresStore:
                 """
                 UPDATE runs
                 SET status = %s, error = %s, completed_at = now()
-                WHERE id = %s AND status NOT IN ('succeeded', 'failed', 'timed_out', 'cancelled')
+                WHERE id = %s AND org_id = %s
+                  AND status NOT IN ('succeeded', 'failed', 'timed_out', 'cancelled')
                 """,
-                (status, error, run_id),
+                (status, error[:4000], run_id, org_id),
             )
 
     def replace_task_results(
         self,
         run_id: str,
+        *,
+        org_id: str,
         task_results: Iterable[TaskResultRecord],
     ) -> None:
         with self._connect() as conn:
+            exists = conn.execute(
+                "SELECT 1 FROM runs WHERE id = %s AND org_id = %s",
+                (run_id, org_id),
+            ).fetchone()
+            if exists is None:
+                return
             for result in task_results:
                 conn.execute(
                     """
@@ -1123,11 +1239,17 @@ class PostgresStore:
                     ),
                 )
 
-    def list_task_results(self, run_id: str) -> list[TaskResultRecord]:
+    def list_task_results(self, run_id: str, *, org_id: str) -> list[TaskResultRecord]:
         with self._connect() as conn:
             rows = conn.execute(
-                "SELECT * FROM task_results WHERE run_id = %s ORDER BY task_id",
-                (run_id,),
+                """
+                SELECT task_results.*
+                FROM task_results
+                JOIN runs ON runs.id = task_results.run_id
+                WHERE task_results.run_id = %s AND runs.org_id = %s
+                ORDER BY task_id
+                """,
+                (run_id, org_id),
             ).fetchall()
         return [_task_result_from_row(row) for row in rows]
 
@@ -1135,6 +1257,7 @@ class PostgresStore:
         self,
         run_id: str,
         *,
+        org_id: str,
         iteration_index: int,
         status: str,
         agent_version: str,
@@ -1143,6 +1266,12 @@ class PostgresStore:
         accepted: bool | None = None,
     ) -> IterationRecord:
         with self._connect() as conn:
+            exists = conn.execute(
+                "SELECT 1 FROM runs WHERE id = %s AND org_id = %s",
+                (run_id, org_id),
+            ).fetchone()
+            if exists is None:
+                raise KeyError("run not found")
             row = conn.execute(
                 """
                 INSERT INTO iterations (
@@ -1163,17 +1292,23 @@ class PostgresStore:
                     status,
                     agent_version,
                     score,
-                    proposal,
+                    proposal[:4000] if proposal else None,
                     accepted,
                 ),
             ).fetchone()
         return _iteration_from_row(row)
 
-    def list_iterations(self, run_id: str) -> list[IterationRecord]:
+    def list_iterations(self, run_id: str, *, org_id: str) -> list[IterationRecord]:
         with self._connect() as conn:
             rows = conn.execute(
-                "SELECT * FROM iterations WHERE run_id = %s ORDER BY iteration_index",
-                (run_id,),
+                """
+                SELECT iterations.*
+                FROM iterations
+                JOIN runs ON runs.id = iterations.run_id
+                WHERE iterations.run_id = %s AND runs.org_id = %s
+                ORDER BY iteration_index
+                """,
+                (run_id, org_id),
             ).fetchall()
         return [_iteration_from_row(row) for row in rows]
 
@@ -1279,7 +1414,7 @@ git commit -m "feat: add postgres run store"
 
 **Interfaces:**
 - Produces `SimulatedBenchmarkRunner.run(task_ids) -> dict[str, float | None]`.
-- Produces `TerminalBenchRunnerAdapter.run(task_ids, model, sandbox_provider, requested_concurrency) -> dict[str, float | None]`.
+- Produces `TerminalBenchRunnerAdapter.run(task_ids, model, sandbox_provider, requested_concurrency, run_id) -> dict[str, float | None]`.
 - Produces `RunService.submit_run(request, org_id, created_by) -> RunRecord`.
 - Produces `RunService.execute_run(run_id, org_id) -> None`.
 - Produces `RunService.get_run_status(run_id, org_id) -> RunStatusResponse | None`.
@@ -1348,30 +1483,35 @@ class FakeStore:
             return None
         return run
 
-    def mark_run_running(self, run_id):
+    def mark_run_running(self, run_id, *, org_id):
         run = self.runs[run_id]
         self.runs[run_id] = RunRecord(**{**run.__dict__, "status": "running"})
 
-    def mark_run_succeeded(self, run_id, score):
+    def mark_run_succeeded(self, run_id, *, org_id, score):
         run = self.runs[run_id]
         self.runs[run_id] = RunRecord(**{**run.__dict__, "status": "succeeded", "score": score})
 
-    def mark_run_failed(self, run_id, *, status, error):
+    def mark_run_failed(self, run_id, *, org_id, status, error):
         run = self.runs[run_id]
         self.runs[run_id] = RunRecord(**{**run.__dict__, "status": status, "error": error})
 
-    def replace_task_results(self, run_id, task_results):
+    def replace_task_results(self, run_id, *, org_id, task_results):
         self.results[run_id] = list(task_results)
 
-    def list_task_results(self, run_id):
+    def list_task_results(self, run_id, *, org_id):
         return self.results.get(run_id, [])
 
     def create_iteration(self, run_id, **kwargs):
-        self.iterations.setdefault(run_id, []).append(kwargs)
+        existing = self.iterations.setdefault(run_id, [])
+        for index, item in enumerate(existing):
+            if item["iteration_index"] == kwargs["iteration_index"]:
+                existing[index] = kwargs
+                return kwargs
+        existing.append(kwargs)
         return kwargs
 
-    def list_iterations(self, run_id):
-        return []
+    def list_iterations(self, run_id, *, org_id):
+        return self.iterations.get(run_id, [])
 
 
 def test_run_service_executes_simulated_run():
@@ -1380,6 +1520,7 @@ def test_run_service_executes_simulated_run():
     request = RunCreateRequest(
         task_ids=["task-pass", "task-fail"],
         mode="simulated",
+        sandbox_provider="simulated",
         requested_concurrency=1,
     )
 
@@ -1419,6 +1560,7 @@ Create `autoharness_service/runner.py`:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 
 class SimulatedBenchmarkRunner:
@@ -1446,15 +1588,18 @@ class TerminalBenchRunnerAdapter:
         model: str,
         sandbox_provider: str,
         requested_concurrency: int,
+        run_id: str,
     ) -> dict[str, float | None]:
         from benchmark import TerminalBenchRunner
 
+        jobs_dir = Path("workspace") / "service_runs" / run_id / "tbench_jobs"
+        jobs_dir.mkdir(parents=True, exist_ok=True)
         runner = TerminalBenchRunner(
             agent_model=model,
             split=self.split,
             env_provider=sandbox_provider,
             n_concurrent=max(1, min(requested_concurrency, len(task_ids))),
-            jobs_dir="workspace/tbench_jobs",
+            jobs_dir=str(jobs_dir),
         )
         return runner.run(task_ids=task_ids)
 ```
@@ -1473,6 +1618,7 @@ from typing import Any
 from autoharness_service.models import TaskResultRecord
 from autoharness_service.normalizer import (
     build_failure_summary,
+    normalize_missing_result,
     normalize_reward_result,
 )
 from autoharness_service.runner import SimulatedBenchmarkRunner, TerminalBenchRunnerAdapter
@@ -1499,6 +1645,7 @@ class RunService:
         self.simulated_runner = simulated_runner or SimulatedBenchmarkRunner()
         self.terminal_runner = terminal_runner or TerminalBenchRunnerAdapter()
         self.max_local_concurrency = max_local_concurrency
+        self._real_run_lock = threading.BoundedSemaphore(value=1)
 
     def submit_run(
         self,
@@ -1512,6 +1659,7 @@ class RunService:
         run = self.store.create_run(request, org_id=org_id, created_by=created_by)
         self.store.create_iteration(
             run.run_id,
+            org_id=org_id,
             iteration_index=0,
             status="queued",
             agent_version="initial",
@@ -1530,50 +1678,94 @@ class RunService:
         if run is None:
             return
         try:
-            self.store.mark_run_running(run_id)
+            self.store.mark_run_running(run_id, org_id=org_id)
             raw_results = self._run_benchmark(run)
-            task_results = self._normalize_results(run.task_ids, raw_results)
-            self.store.replace_task_results(run_id, task_results)
+            task_results = self._normalize_results(
+                run.run_id,
+                run.task_ids,
+                raw_results,
+                source="simulated" if run.mode == "simulated" else "harbor",
+            )
+            self.store.replace_task_results(
+                run_id,
+                org_id=org_id,
+                task_results=task_results,
+            )
             score = _score(task_results)
             self.store.create_iteration(
                 run_id,
+                org_id=org_id,
                 iteration_index=0,
-                status="completed",
+                status="failed" if run.mode == "real" and not raw_results else "completed",
                 agent_version="initial",
                 score=score,
             )
-            self.store.mark_run_succeeded(run_id, score)
+            if run.mode == "real" and not raw_results:
+                self.store.mark_run_failed(
+                    run_id,
+                    org_id=org_id,
+                    status="failed",
+                    error="runner produced no task results",
+                )
+                return
+            self.store.mark_run_succeeded(run_id, org_id=org_id, score=score)
         except TimeoutError as exc:
-            self.store.mark_run_failed(run_id, status="timed_out", error=str(exc))
+            self.store.mark_run_failed(run_id, org_id=org_id, status="timed_out", error=str(exc))
         except Exception as exc:
-            self.store.mark_run_failed(run_id, status="failed", error=str(exc))
+            self.store.mark_run_failed(run_id, org_id=org_id, status="failed", error=str(exc))
 
     def _run_benchmark(self, run) -> dict[str, float | None]:
         if run.mode == "simulated":
             return self.simulated_runner.run(run.task_ids)
-        return self.terminal_runner.run(
-            run.task_ids,
-            model=run.model,
-            sandbox_provider=run.sandbox_provider,
-            requested_concurrency=min(run.requested_concurrency, self.max_local_concurrency),
-        )
+        if not self._real_run_lock.acquire(blocking=False):
+            raise RuntimeError("another real Harbor/Daytona run is already active")
+        try:
+            return self.terminal_runner.run(
+                run.task_ids,
+                model=run.model,
+                sandbox_provider=run.sandbox_provider,
+                requested_concurrency=min(run.requested_concurrency, self.max_local_concurrency),
+                run_id=run.run_id,
+            )
+        finally:
+            self._real_run_lock.release()
 
     def _normalize_results(
         self,
+        run_id: str,
         task_ids: list[str],
         raw_results: dict[str, float | None],
+        *,
+        source: str,
     ) -> list[TaskResultRecord]:
         normalized: list[TaskResultRecord] = []
         for task_id in task_ids:
             trace_path = Path("workspace") / "traces" / "latest" / task_id / "trace.json"
             result_path = Path("workspace") / "traces" / "latest" / task_id / "result.json"
+            metadata = {
+                "source": source if raw_results else "missing",
+                "run_id": run_id,
+                "trace_exists": trace_path.exists(),
+                "result_exists": result_path.exists(),
+            }
+            if task_id not in raw_results:
+                normalized.append(
+                    normalize_missing_result(
+                        task_id,
+                        "Task result missing from runner output",
+                        trace_path=str(trace_path) if trace_path.exists() else None,
+                        result_path=str(result_path) if result_path.exists() else None,
+                        metadata=metadata,
+                    )
+                )
+                continue
             normalized.append(
                 normalize_reward_result(
                     task_id,
                     raw_results.get(task_id),
                     trace_path=str(trace_path) if trace_path.exists() else None,
                     result_path=str(result_path) if result_path.exists() else None,
-                    metadata={"source": "harbor" if raw_results else "missing"},
+                    metadata=metadata,
                 )
             )
         return normalized
@@ -1582,7 +1774,7 @@ class RunService:
         run = self.store.get_run(run_id, org_id=org_id)
         if run is None:
             return None
-        task_results = self.store.list_task_results(run_id)
+        task_results = self.store.list_task_results(run_id, org_id=org_id)
         completed = len(task_results)
         total = len(run.task_ids)
         running = 1 if run.status == "running" and completed < total else 0
@@ -1607,7 +1799,7 @@ class RunService:
         run = self.store.get_run(run_id, org_id=org_id)
         if run is None:
             return None
-        task_results = self.store.list_task_results(run_id)
+        task_results = self.store.list_task_results(run_id, org_id=org_id)
         summary = build_failure_summary(task_results)
         return RunResultsResponse(
             run_id=run.run_id,
@@ -1701,9 +1893,10 @@ def test_api_submit_poll_and_read_results():
         json={
             "task_ids": ["task-pass", "task-fail"],
             "mode": "simulated",
+            "sandbox_provider": "simulated",
             "requested_concurrency": 1,
         },
-        headers={"X-Org-Id": "org-1", "X-User-Id": "user-1"},
+        headers={"X-Org-Id": "org-1", "X-User-Id": "user-1", "X-Role": "runner"},
     )
 
     assert create_response.status_code == 202
@@ -1713,11 +1906,11 @@ def test_api_submit_poll_and_read_results():
 
     status_response = client.get(
         f"/runs/{run_id}",
-        headers={"X-Org-Id": "org-1", "X-User-Id": "user-1"},
+        headers={"X-Org-Id": "org-1", "X-User-Id": "user-1", "X-Role": "viewer"},
     )
     results_response = client.get(
         f"/runs/{run_id}/results",
-        headers={"X-Org-Id": "org-1", "X-User-Id": "user-1"},
+        headers={"X-Org-Id": "org-1", "X-User-Id": "user-1", "X-Role": "viewer"},
     )
 
     assert status_response.status_code == 200
@@ -1734,8 +1927,12 @@ def test_api_enforces_org_boundary():
 
     create_response = client.post(
         "/runs",
-        json={"task_ids": ["task-pass"], "mode": "simulated"},
-        headers={"X-Org-Id": "org-a", "X-User-Id": "user-a"},
+        json={
+            "task_ids": ["task-pass"],
+            "mode": "simulated",
+            "sandbox_provider": "simulated",
+        },
+        headers={"X-Org-Id": "org-a", "X-User-Id": "user-a", "X-Role": "runner"},
     )
     run_id = create_response.json()["run_id"]
 
@@ -1745,6 +1942,48 @@ def test_api_enforces_org_boundary():
     )
 
     assert response.status_code == 404
+
+
+def test_api_forbids_viewer_create_run():
+    service = RunService(store=FakeStore(), simulated_runner=SimulatedBenchmarkRunner())
+    app = create_app(service=service, start_background=False)
+    client = TestClient(app)
+
+    response = client.post(
+        "/runs",
+        json={
+            "task_ids": ["task-pass"],
+            "mode": "simulated",
+            "sandbox_provider": "simulated",
+        },
+        headers={"X-Org-Id": "org-1", "X-User-Id": "user-1", "X-Role": "viewer"},
+    )
+
+    assert response.status_code == 403
+
+
+def test_api_results_returns_409_before_run_finishes():
+    service = RunService(store=FakeStore(), simulated_runner=SimulatedBenchmarkRunner())
+    app = create_app(service=service, start_background=False)
+    client = TestClient(app)
+
+    create_response = client.post(
+        "/runs",
+        json={
+            "task_ids": ["task-pass"],
+            "mode": "simulated",
+            "sandbox_provider": "simulated",
+        },
+        headers={"X-Org-Id": "org-1", "X-User-Id": "user-1", "X-Role": "runner"},
+    )
+    run_id = create_response.json()["run_id"]
+
+    response = client.get(
+        f"/runs/{run_id}/results",
+        headers={"X-Org-Id": "org-1", "X-User-Id": "user-1", "X-Role": "viewer"},
+    )
+
+    assert response.status_code == 409
 ```
 
 - [ ] **Step 2: Run API tests and verify failure**
@@ -1816,7 +2055,10 @@ def create_app(
         response: Response,
         x_org_id: str = Header(default="default-org"),
         x_user_id: str = Header(default="local-user"),
+        x_role: str = Header(default="runner"),
     ) -> RunCreateResponse:
+        if x_role not in {"runner", "admin"}:
+            raise HTTPException(status_code=403, detail="viewer cannot create runs")
         run = app.state.service.submit_run(
             request,
             org_id=x_org_id,
@@ -1862,7 +2104,7 @@ def create_app(
         run_status = app.state.service.get_run_status(run_id, org_id=x_org_id)
         if run_status is None:
             raise HTTPException(status_code=404, detail="run not found")
-        iterations = app.state.service.store.list_iterations(run_id)
+        iterations = app.state.service.store.list_iterations(run_id, org_id=x_org_id)
         return IterationsResponse(
             run_id=run_id,
             iterations=[
@@ -1906,7 +2148,7 @@ python -m pytest tests/service/test_api.py -q
 Expected:
 
 ```text
-2 passed
+4 passed
 ```
 
 - [ ] **Step 5: Commit Task 5**
@@ -2023,8 +2265,8 @@ class Optimizer:
         prompt = build_optimizer_prompt(task_results, failure_summary)
         if not os.getenv("OPENAI_API_KEY"):
             return (
-                "LLM proposal skipped because OPENAI_API_KEY is not set.\n\n"
-                f"Prompt that would be sent:\n{prompt}"
+                "LLM proposal skipped because OPENAI_API_KEY is not set. "
+                "Benchmark results were still recorded; set OPENAI_API_KEY to enable proposals."
             )
         client = OpenAI()
         response = client.responses.create(
@@ -2065,6 +2307,7 @@ def __init__(
     self.terminal_runner = terminal_runner or TerminalBenchRunnerAdapter()
     self.optimizer = optimizer or Optimizer()
     self.max_local_concurrency = max_local_concurrency
+    self._real_run_lock = threading.BoundedSemaphore(value=1)
 ```
 
 After `self.store.create_iteration(... iteration_index=0 ...)` in `execute_run`, add:
@@ -2072,11 +2315,17 @@ After `self.store.create_iteration(... iteration_index=0 ...)` in `execute_run`,
 ```python
 if run.max_iterations > 0:
     summary = build_failure_summary(task_results)
-    proposal = self.optimizer.propose(task_results, summary, model=run.model)
+    try:
+        proposal = self.optimizer.propose(task_results, summary, model=run.model)
+        proposal_status = "proposal_created"
+    except Exception as exc:
+        proposal = f"LLM proposal failed: {exc}"
+        proposal_status = "proposal_failed"
     self.store.create_iteration(
         run_id,
+        org_id=org_id,
         iteration_index=1,
-        status="proposal_created",
+        status=proposal_status,
         agent_version="proposal-1",
         score=score,
         proposal=proposal,
@@ -2104,6 +2353,7 @@ def test_run_service_records_optimizer_proposal_when_requested():
     request = RunCreateRequest(
         task_ids=["task-fail"],
         mode="simulated",
+        sandbox_provider="simulated",
         requested_concurrency=1,
         max_iterations=1,
     )
@@ -2111,12 +2361,12 @@ def test_run_service_records_optimizer_proposal_when_requested():
     run = service.submit_run(request, org_id="org-1", created_by="user-1", start_background=False)
     service.execute_run(run.run_id, org_id="org-1")
 
-    assert len(store.iterations[run.run_id]) == 3
+    assert len(store.iterations[run.run_id]) == 2
     assert store.iterations[run.run_id][-1]["status"] == "proposal_created"
     assert "proposed_change" in store.iterations[run.run_id][-1]["proposal"]
 ```
 
-The expected length is 3 because `submit_run()` creates queued iteration 0, `execute_run()` updates completed iteration 0, and optimizer adds proposal iteration 1.
+The expected length is 2 because `submit_run()` creates iteration 0, `execute_run()` upserts iteration 0 to completed, and optimizer adds proposal iteration 1.
 
 - [ ] **Step 6: Run optimizer/service tests**
 
@@ -2238,6 +2488,7 @@ def submit_run(
     max_iterations: int,
     requested_concurrency: int,
 ) -> str:
+    sandbox_provider = "simulated" if mode == "simulated" else "daytona"
     response = client.post(
         "/runs",
         json={
@@ -2245,8 +2496,9 @@ def submit_run(
             "mode": mode,
             "max_iterations": max_iterations,
             "requested_concurrency": requested_concurrency,
-            "sandbox_provider": "daytona",
+            "sandbox_provider": sandbox_provider,
         },
+        headers={"X-Org-Id": "demo-org", "X-User-Id": "demo-user", "X-Role": "runner"},
     )
     response.raise_for_status()
     return str(response.json()["run_id"])
@@ -2261,7 +2513,10 @@ def poll_run(
 ) -> dict[str, Any]:
     started = time.monotonic()
     while True:
-        response = client.get(f"/runs/{run_id}")
+        response = client.get(
+            f"/runs/{run_id}",
+            headers={"X-Org-Id": "demo-org", "X-User-Id": "demo-user", "X-Role": "viewer"},
+        )
         response.raise_for_status()
         payload = response.json()
         print(json.dumps({"poll": payload}, indent=2))
@@ -2298,8 +2553,9 @@ def main() -> None:
             poll_interval_sec=args.poll_interval_sec,
             timeout_sec=args.timeout_sec,
         )
-        results = client.get(f"/runs/{run_id}/results").json()
-        iterations = client.get(f"/runs/{run_id}/iterations").json()
+        headers = {"X-Org-Id": "demo-org", "X-User-Id": "demo-user", "X-Role": "viewer"}
+        results = client.get(f"/runs/{run_id}/results", headers=headers).json()
+        iterations = client.get(f"/runs/{run_id}/iterations", headers=headers).json()
         print(json.dumps(build_summary(status=status, results=results, iterations=iterations), indent=2))
 
 
@@ -2370,6 +2626,23 @@ cp .env.example .env
 
 For simulated mode, no sandbox key is required.
 
+Start a local PostgreSQL database:
+
+```bash
+docker run --name autoharness-postgres \
+  -e POSTGRES_USER=autoharness \
+  -e POSTGRES_PASSWORD=autoharness \
+  -e POSTGRES_DB=autoharness \
+  -p 5432:5432 \
+  -d postgres:16
+```
+
+If that container already exists, start it instead:
+
+```bash
+docker start autoharness-postgres
+```
+
 For real Terminal-Bench mode, set:
 
 ```text
@@ -2389,6 +2662,10 @@ uv tool install harbor
 ```bash
 uvicorn autoharness_service.main:app --host 127.0.0.1 --port 8000
 ```
+
+Run a single Uvicorn worker for the MVP. The background executor and real-mode
+Harbor semaphore are process-local; production should use a durable queue and
+separate workers instead of multiple Uvicorn workers.
 
 ### Run the end-to-end client in simulated mode
 
@@ -2431,6 +2708,11 @@ keeping a mix of file manipulation, coding, parsing, and verifier-failure cases.
   reconciliation.
 - The optimizer stores one LLM proposal and does not do multi-candidate search,
   GateEngine regression suites, suite promotion, or merge evaluation.
+- `X-Org-Id`, `X-User-Id`, and `X-Role` are local demo headers. They demonstrate
+  API-level scoping, not production authentication.
+- Real Harbor/Daytona runs are serialized in-process and use a per-run
+  `workspace/service_runs/<run_id>/tbench_jobs` directory to reduce artifact
+  cross-contamination.
 
 ### What I would do with more time
 
@@ -2439,6 +2721,8 @@ keeping a mix of file manipulation, coding, parsing, and verifier-failure cases.
 - Add direct Daytona SDK support with sandbox_id/session_id/cmd_id tracking.
 - Add GateEngine regression protection and candidate promotion.
 - Add JWT/OAuth-backed organization membership and role-based access control.
+- Replace local demo headers with real identity, audit logging, quotas, and
+  per-organization sandbox policies.
 ```
 
 - [ ] **Step 2: Run full test suite**
@@ -2498,9 +2782,9 @@ tasks_passed=1
 tasks_failed=1
 ```
 
-- [ ] **Step 5: Optional real Daytona smoke**
+- [ ] **Step 5: Real Daytona smoke when credentials are present**
 
-Run only if `OPENAI_API_KEY`, `DAYTONA_API_KEY`, `harbor`, and local Postgres are configured:
+Run when `OPENAI_API_KEY`, `DAYTONA_API_KEY`, `harbor`, and local Postgres are configured:
 
 ```bash
 python test_client.py \
