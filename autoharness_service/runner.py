@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from benchmark import TerminalBenchRunner
-
 
 class SimulatedBenchmarkRunner:
     def run(self, task_ids: list[str]) -> dict[str, float | None]:
@@ -33,6 +31,8 @@ class TerminalBenchRunnerAdapter:
         requested_concurrency: int,
         run_id: str,
     ) -> dict[str, float | None]:
+        from benchmark import TerminalBenchRunner
+
         jobs_dir = Path("workspace") / "service_runs" / run_id / "tbench_jobs"
         jobs_dir.mkdir(parents=True, exist_ok=True)
         runner = TerminalBenchRunner(

@@ -1,6 +1,13 @@
+import builtins
+import importlib
+import sys
+import types
 from pathlib import Path
 
-from autoharness_service.runner import SimulatedBenchmarkRunner, TerminalBenchRunnerAdapter
+from autoharness_service.runner import (
+    SimulatedBenchmarkRunner,
+    TerminalBenchRunnerAdapter,
+)
 
 
 def test_simulated_runner_returns_deterministic_rewards():
@@ -43,7 +50,9 @@ def test_terminal_runner_adapter_uses_per_run_jobs_dir_and_caps_concurrency(
             return {task_id: 1.0 for task_id in task_ids}
 
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr("autoharness_service.runner.TerminalBenchRunner", FakeTerminalBenchRunner)
+    benchmark_module = types.ModuleType("benchmark")
+    benchmark_module.TerminalBenchRunner = FakeTerminalBenchRunner
+    monkeypatch.setitem(sys.modules, "benchmark", benchmark_module)
 
     runner = TerminalBenchRunnerAdapter(split="train")
     results = runner.run(
@@ -59,5 +68,26 @@ def test_terminal_runner_adapter_uses_per_run_jobs_dir_and_caps_concurrency(
     assert created["split"] == "train"
     assert created["env_provider"] == "daytona"
     assert created["n_concurrent"] == 2
-    assert Path(created["jobs_dir"]) == Path("workspace/service_runs/run-123/tbench_jobs")
+    assert Path(created["jobs_dir"]) == Path(
+        "workspace/service_runs/run-123/tbench_jobs"
+    )
     assert created["task_ids"] == ["task-a", "task-b"]
+
+
+def test_runner_module_import_does_not_import_benchmark(monkeypatch):
+    imported = []
+    real_import = builtins.__import__
+
+    def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "benchmark":
+            imported.append(name)
+            raise AssertionError("benchmark was imported during module import")
+        return real_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", guarded_import)
+    monkeypatch.delitem(sys.modules, "autoharness_service.runner", raising=False)
+
+    module = importlib.import_module("autoharness_service.runner")
+
+    assert imported == []
+    assert hasattr(module, "SimulatedBenchmarkRunner")

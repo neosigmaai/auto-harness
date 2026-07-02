@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import threading
-from pathlib import Path
 
 from autoharness_service.models import TaskResultRecord
 from autoharness_service.normalizer import (
@@ -9,7 +8,10 @@ from autoharness_service.normalizer import (
     normalize_missing_result,
     normalize_reward_result,
 )
-from autoharness_service.runner import SimulatedBenchmarkRunner, TerminalBenchRunnerAdapter
+from autoharness_service.runner import (
+    SimulatedBenchmarkRunner,
+    TerminalBenchRunnerAdapter,
+)
 from autoharness_service.schemas import (
     FailureSummaryResponse,
     RunCreateRequest,
@@ -78,7 +80,9 @@ class RunService:
                 run_id,
                 org_id,
                 iteration_index=0,
-                status="failed" if run.mode == "real" and not raw_results else "completed",
+                status=(
+                    "failed" if run.mode == "real" and not raw_results else "completed"
+                ),
                 agent_version="initial",
                 score=score,
             )
@@ -92,21 +96,30 @@ class RunService:
                 return
             self.store.mark_run_succeeded(run_id, org_id, score=score)
         except TimeoutError as exc:
-            self.store.mark_run_failed(run_id, org_id, status="timed_out", error=str(exc))
+            self.store.mark_run_failed(
+                run_id, org_id, status="timed_out", error=str(exc)
+            )
         except Exception as exc:
             self.store.mark_run_failed(run_id, org_id, status="failed", error=str(exc))
 
     def _run_benchmark(self, run):
         if run.mode == "simulated":
             return self.simulated_runner.run(run.task_ids)
-        with self._real_run_lock:
+        if not self._real_run_lock.acquire(blocking=False):
+            raise RuntimeError("another real Harbor/Daytona run is already active")
+        try:
             return self.terminal_runner.run(
                 run.task_ids,
                 model=run.model,
                 sandbox_provider=run.sandbox_provider,
-                requested_concurrency=min(run.requested_concurrency, self.max_local_concurrency),
+                requested_concurrency=min(
+                    run.requested_concurrency,
+                    self.max_local_concurrency,
+                ),
                 run_id=run.run_id,
             )
+        finally:
+            self._real_run_lock.release()
 
     def _normalize_results(
         self,
@@ -118,21 +131,20 @@ class RunService:
     ) -> list[TaskResultRecord]:
         normalized: list[TaskResultRecord] = []
         for task_id in task_ids:
-            trace_path = Path("workspace") / "traces" / "latest" / task_id / "trace.json"
-            result_path = Path("workspace") / "traces" / "latest" / task_id / "result.json"
             metadata = {
                 "source": source if raw_results else "missing",
                 "run_id": run_id,
-                "trace_exists": trace_path.exists(),
-                "result_exists": result_path.exists(),
+                "artifact_scope": "omitted_shared_latest",
+                "trace_exists": False,
+                "result_exists": False,
             }
             if task_id not in raw_results:
                 normalized.append(
                     normalize_missing_result(
                         task_id,
                         "Task result missing from runner output",
-                        trace_path=str(trace_path) if trace_path.exists() else None,
-                        result_path=str(result_path) if result_path.exists() else None,
+                        trace_path=None,
+                        result_path=None,
                         metadata=metadata,
                     )
                 )
@@ -141,8 +153,8 @@ class RunService:
                 normalize_reward_result(
                     task_id,
                     raw_results.get(task_id),
-                    trace_path=str(trace_path) if trace_path.exists() else None,
-                    result_path=str(result_path) if result_path.exists() else None,
+                    trace_path=None,
+                    result_path=None,
                     metadata=metadata,
                 )
             )
