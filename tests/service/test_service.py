@@ -336,6 +336,33 @@ def test_run_service_persists_task_results_when_runner_raises():
     )
 
 
+def test_run_service_marks_initial_iteration_failed_when_runner_raises():
+    class ExplodingRunner:
+        def run(
+            self, task_ids, *, model, sandbox_provider, requested_concurrency, run_id
+        ):
+            raise RuntimeError("runner blew up")
+
+    store = FakeStore()
+    service = RunService(
+        store=store, terminal_runner=ExplodingRunner(), max_local_concurrency=2
+    )
+    request = RunCreateRequest(
+        task_ids=["task-pass"],
+        mode="real",
+        sandbox_provider="daytona",
+        requested_concurrency=1,
+    )
+
+    run = service.submit_run(
+        request, org_id="org-1", created_by="user-1", start_background=False
+    )
+    service.execute_run(run.run_id, org_id="org-1")
+
+    assert store.iterations[run.run_id][0]["status"] == "failed"
+    assert store.iterations[run.run_id][0]["score"] == 0.0
+
+
 def test_service_module_import_does_not_import_benchmark(monkeypatch):
     imported = []
     real_import = builtins.__import__

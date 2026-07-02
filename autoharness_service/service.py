@@ -123,21 +123,43 @@ class RunService:
                 )
             self.store.mark_run_succeeded(run_id, org_id, score=score)
         except TimeoutError as exc:
-            self.store.replace_task_results(
+            self._record_runner_exception(
                 run_id,
                 org_id,
-                self._runner_failed_results(run_id, run.task_ids, exc),
-            )
-            self.store.mark_run_failed(
-                run_id, org_id, status="timed_out", error=str(exc)
+                run.task_ids,
+                status="timed_out",
+                exc=exc,
             )
         except Exception as exc:
-            self.store.replace_task_results(
+            self._record_runner_exception(
                 run_id,
                 org_id,
-                self._runner_failed_results(run_id, run.task_ids, exc),
+                run.task_ids,
+                status="failed",
+                exc=exc,
             )
-            self.store.mark_run_failed(run_id, org_id, status="failed", error=str(exc))
+
+    def _record_runner_exception(
+        self,
+        run_id: str,
+        org_id: str,
+        task_ids: list[str],
+        *,
+        status: str,
+        exc: Exception,
+    ) -> None:
+        task_results = self._runner_failed_results(run_id, task_ids, exc)
+        score = _score(task_results)
+        self.store.replace_task_results(run_id, org_id, task_results)
+        self.store.create_iteration(
+            run_id,
+            org_id,
+            iteration_index=0,
+            status=status,
+            agent_version="initial",
+            score=score,
+        )
+        self.store.mark_run_failed(run_id, org_id, status=status, error=str(exc))
 
     def _run_benchmark(self, run):
         if run.mode == "simulated":

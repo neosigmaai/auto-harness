@@ -20,6 +20,8 @@ class RunCreateRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_request(self) -> "RunCreateRequest":
+        if len(set(self.task_ids)) != len(self.task_ids):
+            raise ValueError("task_ids must be unique")
         for task_id in self.task_ids:
             if not TASK_ID_RE.fullmatch(task_id):
                 raise ValueError(

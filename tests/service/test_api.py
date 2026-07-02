@@ -150,6 +150,22 @@ def test_api_requires_x_role_header_for_create_run():
     assert response.status_code == 422
 
 
+def test_api_rejects_duplicate_task_ids():
+    client, _service = _build_client()
+
+    response = client.post(
+        "/runs",
+        json={
+            "task_ids": ["task-pass", "task-pass"],
+            "mode": "simulated",
+            "sandbox_provider": "simulated",
+        },
+        headers={"X-Org-Id": "org-1", "X-User-Id": "user-1", "X-Role": "runner"},
+    )
+
+    assert response.status_code == 422
+
+
 def test_api_results_returns_409_before_run_finishes():
     client, _service = _build_client()
 
