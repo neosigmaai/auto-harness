@@ -3,7 +3,7 @@ import uuid
 
 import pytest
 
-from autoharness_service.models import IterationRecord, TaskResultRecord
+from autoharness_service.models import TaskResultRecord
 from autoharness_service.normalizer import normalize_reward_result
 from autoharness_service.schemas import RunCreateRequest
 from autoharness_service.store import PostgresStore
@@ -91,6 +91,24 @@ def test_store_enforces_org_boundaries_for_reads_and_writes():
     assert store.list_task_results(run.run_id, org_id="org-b") == []
     assert store.list_iterations(run.run_id, org_id="org-b") == []
 
+    before = store.get_run(run.run_id, org_id="org-a")
+    assert before is not None
+
+    store.mark_run_running(run.run_id, org_id="org-b")
+    store.mark_run_succeeded(run.run_id, org_id="org-b", score=2.0)
+    store.mark_run_failed(
+        run.run_id,
+        org_id="org-b",
+        status="failed",
+        error="wrong org",
+    )
+
+    after = store.get_run(run.run_id, org_id="org-a")
+    assert after is not None
+    assert after.status == before.status
+    assert after.score == before.score
+    assert after.error == before.error
+
     store.replace_task_results(
         run.run_id,
         org_id="org-b",
@@ -116,3 +134,29 @@ def test_store_enforces_org_boundaries_for_reads_and_writes():
 
     assert store.list_task_results(run.run_id, org_id="org-a") == [original_result]
     assert store.list_iterations(run.run_id, org_id="org-a") == [original_iteration]
+
+
+def test_store_marks_run_failed_for_matching_org():
+    store = PostgresStore(os.environ["DATABASE_URL"])
+    store.init_schema()
+
+    request = RunCreateRequest(
+        task_ids=[f"task-{uuid.uuid4()}"],
+        mode="simulated",
+        sandbox_provider="simulated",
+    )
+
+    run = store.create_run(request, org_id="org-a", created_by="user-a")
+    store.mark_run_running(run.run_id, org_id="org-a")
+    store.mark_run_failed(
+        run.run_id,
+        org_id="org-a",
+        status="failed",
+        error="boom",
+    )
+
+    loaded = store.get_run(run.run_id, org_id="org-a")
+    assert loaded is not None
+    assert loaded.status == "failed"
+    assert loaded.error == "boom"
+    assert loaded.completed_at is not None

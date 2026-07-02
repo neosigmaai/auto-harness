@@ -164,14 +164,18 @@ class PostgresStore:
         org_id: str,
         task_results: Iterable[TaskResultRecord],
     ) -> None:
+        task_results = list(task_results)
         with self._connect() as conn:
-            exists = conn.execute(
-                "SELECT 1 FROM runs WHERE id = %s AND org_id = %s",
+            conn.execute(
+                """
+                DELETE FROM task_results
+                USING runs
+                WHERE task_results.run_id = runs.id
+                  AND runs.id = %s
+                  AND runs.org_id = %s
+                """,
                 (run_id, org_id),
-            ).fetchone()
-            if exists is None:
-                return
-            conn.execute("DELETE FROM task_results WHERE run_id = %s", (run_id,))
+            )
             for result in task_results:
                 conn.execute(
                     """
@@ -179,7 +183,9 @@ class PostgresStore:
                       run_id, task_id, status, reward, failure_type, error_summary,
                       trace_path, result_path, metadata
                     )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    SELECT runs.id, %s, %s, %s, %s, %s, %s, %s, %s
+                    FROM runs
+                    WHERE runs.id = %s AND runs.org_id = %s
                     ON CONFLICT (run_id, task_id) DO UPDATE SET
                       status = EXCLUDED.status,
                       reward = EXCLUDED.reward,
@@ -190,7 +196,6 @@ class PostgresStore:
                       metadata = EXCLUDED.metadata
                     """,
                     (
-                        run_id,
                         result.task_id,
                         result.status,
                         result.reward,
@@ -199,6 +204,8 @@ class PostgresStore:
                         result.trace_path,
                         result.result_path,
                         Jsonb(result.metadata),
+                        run_id,
+                        org_id,
                     ),
                 )
 
@@ -228,18 +235,14 @@ class PostgresStore:
         accepted: bool | None = None,
     ) -> IterationRecord:
         with self._connect() as conn:
-            exists = conn.execute(
-                "SELECT 1 FROM runs WHERE id = %s AND org_id = %s",
-                (run_id, org_id),
-            ).fetchone()
-            if exists is None:
-                raise KeyError("run not found")
             row = conn.execute(
                 """
                 INSERT INTO iterations (
                   run_id, iteration_index, status, agent_version, score, proposal, accepted
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                SELECT runs.id, %s, %s, %s, %s, %s, %s
+                FROM runs
+                WHERE runs.id = %s AND runs.org_id = %s
                 ON CONFLICT (run_id, iteration_index) DO UPDATE SET
                   status = EXCLUDED.status,
                   agent_version = EXCLUDED.agent_version,
@@ -249,15 +252,18 @@ class PostgresStore:
                 RETURNING *
                 """,
                 (
-                    run_id,
                     iteration_index,
                     status,
                     agent_version,
                     score,
                     proposal[:4000] if proposal else None,
                     accepted,
+                    run_id,
+                    org_id,
                 ),
             ).fetchone()
+            if row is None:
+                raise KeyError("run not found")
         return _iteration_from_row(row)
 
     def list_iterations(self, run_id: str, org_id: str) -> list[IterationRecord]:
