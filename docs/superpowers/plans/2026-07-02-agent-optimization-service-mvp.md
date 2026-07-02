@@ -64,6 +64,199 @@ README.md             add take-home service setup, API, task selection, design d
 
 ---
 
+## Pre-Implementation Whiteboard: Edges, Control Flow, and Scope Decisions
+
+### A. MVP Control Flow
+
+```mermaid
+flowchart TD
+    C[test_client.py / reviewer] --> API[POST /runs]
+    API --> STORE1[(Postgres: runs status=queued)]
+    API --> RSP[202 run_id returned immediately]
+    API --> BG[Background thread]
+    BG --> STORE2[(runs status=running)]
+    BG --> MODE{mode}
+    MODE -->|simulated| SIM[SimulatedBenchmarkRunner]
+    MODE -->|real| HARBOR[TerminalBenchRunner -> harbor run --env daytona]
+    HARBOR --> JOBS[local workspace/tbench_jobs + traces]
+    SIM --> RAW[raw task rewards]
+    JOBS --> RAW
+    RAW --> NORM[ResultNormalizer]
+    NORM --> TASKS[(Postgres: task_results)]
+    TASKS --> SCORE[compute run score]
+    SCORE --> ITER[(Postgres: iterations)]
+    ITER --> DONE[(runs terminal status)]
+    C --> POLL[GET /runs/{run_id}]
+    C --> RESULTS[GET /runs/{run_id}/results]
+```
+
+Important distinction:
+
+```text
+HTTP async = implemented in this MVP.
+Daytona command/session async = future direct-Daytona implementation.
+```
+
+The MVP may block a background thread while Harbor runs. That still satisfies
+the assignment because the client request returns immediately and observes
+progress through the service API. A future direct-Daytona runner can replace
+the Harbor adapter without changing public API shape.
+
+### B. Lifecycle State Rules
+
+```text
+runs.status:
+  queued -> running -> succeeded
+  queued -> running -> failed
+  queued -> running -> timed_out
+  queued -> running -> cancelled
+
+terminal statuses:
+  succeeded, failed, timed_out, cancelled
+
+task_results.status:
+  passed, failed, infra_failed, timed_out
+```
+
+Edge rules:
+
+```text
+POST /runs:
+  validate task_ids non-empty and max 20
+  validate requested_concurrency <= 8
+  return 202 before work starts
+
+GET /runs/{id}:
+  return 404 if run_id not found or org_id mismatch
+  return status/progress for queued and running runs
+
+GET /runs/{id}/results:
+  return 404 if run_id not found or org_id mismatch
+  return 409 if run is not terminal
+  return structured results once terminal
+
+GET /runs/{id}/iterations:
+  return iteration history even if only iteration 0 exists
+```
+
+### C. Result Recovery Edge Cases
+
+MVP result source priority:
+
+```text
+1. Simulated mode deterministic reward map.
+2. Real mode TerminalBenchRunner returns {task_id: reward | None}.
+3. Existing benchmark.py copies traces into workspace/traces/latest/{task_id}/.
+4. Missing reward for a requested task becomes infra_failed/missing_result.
+```
+
+Failure mapping:
+
+```text
+reward >= 0.5 -> passed
+reward < 0.5  -> failed / agent_failed
+reward is None -> infra_failed / missing_result
+Harbor subprocess timeout inside benchmark.py -> missing or None results
+No jobs_dir output -> raw result map may be empty; every requested task becomes infra_failed
+```
+
+Current MVP does not parse every Harbor exception type directly. That is
+intentional: it keeps the service focused, while preserving `metadata`,
+`trace_path`, and `result_path` so richer classification can be added later.
+
+### D. Background Execution Edge Cases
+
+MVP choice:
+
+```text
+Use one daemon background thread per submitted run.
+The thread may block on Harbor in real mode.
+```
+
+Known limitation:
+
+```text
+If the FastAPI process is killed while a run is running, the in-process worker
+does not resume automatically.
+```
+
+README should frame this as future work:
+
+```text
+Production: durable queue + worker leases + heartbeat + resume/reconcile loop.
+```
+
+Do not implement `subprocess.Popen` + local process polling or direct Daytona
+SDK polling in this MVP unless all core tasks are complete. Those are useful
+future designs but expand failure handling substantially:
+
+```text
+pid tracking
+process reaping
+service restart reconciliation
+partial jobs_dir parsing
+timeout/cancel semantics
+```
+
+### E. Security and Safety Edge Cases
+
+Required low-scope safeguards:
+
+```text
+Never shell=True for Harbor commands.
+Pass command args as lists through existing TerminalBenchRunner.
+Never return API keys, env vars, or .env contents from API responses.
+Do not allow clients to set arbitrary dataset paths, agent import paths, or shell commands.
+Limit task_ids count and requested_concurrency through Pydantic.
+Keep org scoping on every read endpoint through X-Org-Id.
+Do not stage AGENTS.md or .env.
+Do not let Daytona sandbox write directly to local Postgres.
+```
+
+MVP mock tenancy is intentionally weak authentication. README must say:
+
+```text
+X-Org-Id/X-User-Id are demo scoping headers, not production auth.
+Production requires JWT/OAuth-backed identity and role checks.
+```
+
+### F. Architecture Decisions
+
+Chosen:
+
+```text
+Run = MVP batch unit.
+task_results = per-task output.
+iterations = baseline/proposal history.
+Harbor-first real mode.
+Simulated mode for reliable API verification.
+One LLM proposal, no automatic patch by default.
+```
+
+Rejected for MVP:
+
+```text
+eval_batches table
+GateEngine regression suite
+suite promotion
+CandidateGraphManager
+multi-candidate optimization
+direct Daytona SDK
+webhooks
+Redis/Kafka
+Kubernetes workers
+```
+
+Reason:
+
+```text
+The assignment evaluates service interface, async processing, sandbox boundary,
+state persistence, and reasoning about tradeoffs. These rejected items are good
+production follow-ups but are not required for a reviewable one-day MVP.
+```
+
+---
+
 ## Task 1: Dependencies, Package Skeleton, and Import Baseline
 
 **Files:**
