@@ -363,6 +363,37 @@ def test_run_service_marks_initial_iteration_failed_when_runner_raises():
     assert store.iterations[run.run_id][0]["score"] == 0.0
 
 
+def test_run_service_marks_initial_iteration_timed_out_when_runner_times_out():
+    class TimeoutRunner:
+        def run(
+            self, task_ids, *, model, sandbox_provider, requested_concurrency, run_id
+        ):
+            raise TimeoutError("runner timed out")
+
+    store = FakeStore()
+    service = RunService(
+        store=store, terminal_runner=TimeoutRunner(), max_local_concurrency=2
+    )
+    request = RunCreateRequest(
+        task_ids=["task-pass"],
+        mode="real",
+        sandbox_provider="daytona",
+        requested_concurrency=1,
+    )
+
+    run = service.submit_run(
+        request, org_id="org-1", created_by="user-1", start_background=False
+    )
+    service.execute_run(run.run_id, org_id="org-1")
+
+    status = service.get_run_status(run.run_id, org_id="org-1")
+
+    assert status is not None
+    assert status.status == "timed_out"
+    assert store.iterations[run.run_id][0]["status"] == "timed_out"
+    assert store.iterations[run.run_id][0]["score"] == 0.0
+
+
 def test_service_module_import_does_not_import_benchmark(monkeypatch):
     imported = []
     real_import = builtins.__import__
