@@ -11,6 +11,11 @@ dependencies = [
     "openai",
     "pyyaml",
     "tau2",
+    "fastapi",
+    "uvicorn[standard]",
+    "psycopg[binary]",
+    "pytest",
+    "httpx",
 ]
 
 [tool.uv.sources]
