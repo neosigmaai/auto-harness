@@ -4,6 +4,7 @@ import json
 import os
 from dataclasses import dataclass
 
+from autoharness_service.agent_patch import AgentPatchService
 from autoharness_service.models import FailureSummary, TaskResultRecord
 
 
@@ -24,12 +25,17 @@ def parse_optimizer_json(text: str) -> OptimizationProposal:
     if not isinstance(payload, dict):
         raise ValueError("Optimizer response must be a JSON object")
 
-    required_fields = (
+    required_fields = {
         "hypothesis",
         "new_agent_instruction",
         "expected_effect",
         "risks",
-    )
+    }
+    if set(payload) != required_fields:
+        raise ValueError(
+            "Optimizer response must contain exactly hypothesis, "
+            "new_agent_instruction, expected_effect, and risks"
+        )
     values: dict[str, str] = {}
     for field_name in required_fields:
         value = payload.get(field_name)
@@ -124,10 +130,11 @@ class Optimizer:
         *,
         model: str,
     ) -> str:
+        current_instruction = AgentPatchService().read_instruction()
         proposal = self.propose_instruction_patch(
             task_results,
             failure_summary,
             model=model,
-            current_instruction="",
+            current_instruction=current_instruction,
         )
         return json.dumps(proposal.__dict__)

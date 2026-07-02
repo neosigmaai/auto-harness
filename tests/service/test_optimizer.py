@@ -40,6 +40,21 @@ def test_parse_optimizer_json_rejects_free_text():
         parse_optimizer_json("hypothesis: maybe this helps")
 
 
+def test_parse_optimizer_json_rejects_extra_fields():
+    payload = """
+    {
+      "hypothesis": "The agent skips verification.",
+      "new_agent_instruction": "Replacement instruction",
+      "expected_effect": "The agent verifies files.",
+      "risks": "Runs take longer.",
+      "extra": "unexpected"
+    }
+    """
+
+    with pytest.raises(ValueError, match="exactly"):
+        parse_optimizer_json(payload)
+
+
 def test_build_optimizer_prompt_includes_current_instruction_and_artifact_paths():
     results = [
         TaskResultRecord(
@@ -119,7 +134,18 @@ def test_optimizer_propose_instruction_patch_parses_single_json_object(monkeypat
         sys.modules, "openai", SimpleNamespace(OpenAI=lambda: FakeClient())
     )
 
-    results = [normalize_reward_result("task-fail", 0.0)]
+    results = [
+        TaskResultRecord(
+            task_id="task-fail",
+            status="failed",
+            reward=0.0,
+            failure_type="agent_failed",
+            error_summary="Verifier reward below pass threshold",
+            trace_path="/tmp/task-fail/trace.json",
+            result_path="/tmp/task-fail/result.json",
+            metadata={"artifacts": ["/tmp/task-fail/report.md"]},
+        )
+    ]
     summary = build_failure_summary(results)
 
     proposal = Optimizer().propose_instruction_patch(
@@ -137,3 +163,63 @@ def test_optimizer_propose_instruction_patch_parses_single_json_object(monkeypat
     )
     assert captured["model"] == "test-model"
     assert isinstance(captured["input"], list)
+    user_prompt = captured["input"][1]["content"]
+    assert "Current instruction:\nCurrent instruction text." in user_prompt
+    assert "Return JSON only as a single object" in user_prompt
+    assert "exactly these string fields" in user_prompt
+    assert "Do not propose multiple candidates" in user_prompt
+    assert "/tmp/task-fail/report.md" in user_prompt
+
+
+def test_optimizer_propose_reads_current_instruction_and_serializes_json(monkeypatch):
+    captured: dict[str, object] = {}
+
+    class FakeAgentPatchService:
+        def read_instruction(self) -> str:
+            captured["read_instruction_called"] = True
+            return "Instruction from agent patch service."
+
+    def fake_propose_instruction_patch(
+        self,
+        task_results,
+        failure_summary,
+        *,
+        model,
+        current_instruction,
+    ):
+        captured["model"] = model
+        captured["current_instruction"] = current_instruction
+        return OptimizationProposal(
+            hypothesis="Need a stronger verification step.",
+            new_agent_instruction="Always inspect the produced artifact before exiting.",
+            expected_effect="More runs verify the expected file.",
+            risks="Slightly longer runs.",
+        )
+
+    monkeypatch.setattr(
+        "autoharness_service.optimizer.AgentPatchService",
+        FakeAgentPatchService,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        Optimizer,
+        "propose_instruction_patch",
+        fake_propose_instruction_patch,
+    )
+
+    results = [normalize_reward_result("task-fail", 0.0)]
+    summary = build_failure_summary(results)
+
+    proposal_json = Optimizer().propose(results, summary, model="test-model")
+
+    assert captured == {
+        "read_instruction_called": True,
+        "model": "test-model",
+        "current_instruction": "Instruction from agent patch service.",
+    }
+    assert proposal_json == (
+        '{"hypothesis": "Need a stronger verification step.", '
+        '"new_agent_instruction": "Always inspect the produced artifact before '
+        'exiting.", "expected_effect": "More runs verify the expected file.", '
+        '"risks": "Slightly longer runs."}'
+    )
