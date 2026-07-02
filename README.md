@@ -34,6 +34,14 @@ cp .env.example .env
 ```
 
 For simulated mode, no sandbox key is required.
+The service does not load `.env` automatically, so source it before starting
+Uvicorn or any real-mode command:
+
+```bash
+set -a
+source .env
+set +a
+```
 
 Start a local PostgreSQL database:
 
@@ -69,6 +77,9 @@ uv tool install harbor
 ### Start the service
 
 ```bash
+set -a
+source .env
+set +a
 uvicorn autoharness_service.main:app --host 127.0.0.1 --port 8000 --workers 1
 ```
 
@@ -90,6 +101,9 @@ python test_client.py \
 ### Run a real Harbor/Daytona task
 
 ```bash
+set -a
+source .env
+set +a
 python test_client.py \
   --base-url http://127.0.0.1:8000 \
   --task-id break-filter-js-from-html \
@@ -102,12 +116,13 @@ Real mode expects `OPENAI_API_KEY`, `DAYTONA_API_KEY`, and the `harbor` CLI.
 
 ### Selected Terminal-Bench tasks
 
-The default demo set uses four Terminal-Bench task IDs:
+The default demo set uses one real Terminal-Bench smoke task and three
+simulated demo IDs:
 
 - `break-filter-js-from-html` for a real Harbor/Daytona smoke
-- `task-pass` for a clean passing case
-- `task-fail` for a deterministic benchmark failure
-- `task-infra` for an infra-failure path
+- `task-pass` as a simulated clean passing demo ID
+- `task-fail` as a simulated deterministic failure demo ID
+- `task-infra` as a simulated infra-failure demo ID
 
 This mix gives the reviewer one live sandbox run plus simple pass, fail, and
 infrastructure outcomes without requiring a large benchmark sweep.

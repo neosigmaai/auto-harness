@@ -22,9 +22,9 @@ flowchart TD
 
     POST -->|"validate request, org scope, role"| RS["RunService"]
     RS -->|"insert run: queued"| PG[("Postgres")]
-    PG --> RUNS["runs"]
-    PG --> TASK_RESULTS["task_results"]
-    PG --> ITERATIONS["iterations"]
+    PG --> RUNS["aos_runs"]
+    PG --> TASK_RESULTS["aos_task_results"]
+    PG --> ITERATIONS["aos_iterations"]
 
     RS -->|"return 202 + run_id immediately"| U
 
@@ -113,4 +113,3 @@ lifecycle for the benchmark trial:
 This is why the MVP treats Harbor as the sandbox adapter. Daytona provides the
 isolated execution substrate; Harbor adds benchmark semantics, task setup,
 verification, artifact collection, timeout handling, and cleanup.
-
