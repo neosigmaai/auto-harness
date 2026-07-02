@@ -50,7 +50,7 @@ def create_app(
         response: Response,
         x_org_id: str = Header(default="default-org", alias="X-Org-Id"),
         x_user_id: str = Header(default="local-user", alias="X-User-Id"),
-        x_role: str = Header(default="runner", alias="X-Role"),
+        x_role: str = Header(alias="X-Role"),
     ) -> RunCreateResponse:
         if x_role not in {"runner", "admin"}:
             raise HTTPException(status_code=403, detail="viewer cannot create runs")

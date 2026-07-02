@@ -22,6 +22,8 @@ from autoharness_service.schemas import (
     TaskResultResponse,
 )
 
+MAX_ERROR_SUMMARY_LENGTH = 4000
+
 
 class RunService:
     def __init__(
@@ -121,17 +123,26 @@ class RunService:
                 )
             self.store.mark_run_succeeded(run_id, org_id, score=score)
         except TimeoutError as exc:
+            self.store.replace_task_results(
+                run_id,
+                org_id,
+                self._runner_failed_results(run_id, run.task_ids, exc),
+            )
             self.store.mark_run_failed(
                 run_id, org_id, status="timed_out", error=str(exc)
             )
         except Exception as exc:
+            self.store.replace_task_results(
+                run_id,
+                org_id,
+                self._runner_failed_results(run_id, run.task_ids, exc),
+            )
             self.store.mark_run_failed(run_id, org_id, status="failed", error=str(exc))
 
     def _run_benchmark(self, run):
         if run.mode == "simulated":
             return self.simulated_runner.run(run.task_ids)
-        if not self._real_run_lock.acquire(blocking=False):
-            raise RuntimeError("another real Harbor/Daytona run is already active")
+        self._real_run_lock.acquire(blocking=True)
         try:
             return self.terminal_runner.run(
                 run.task_ids,
@@ -145,6 +156,27 @@ class RunService:
             )
         finally:
             self._real_run_lock.release()
+
+    def _runner_failed_results(
+        self, run_id: str, task_ids: list[str], exc: Exception
+    ) -> list[TaskResultRecord]:
+        return [
+            TaskResultRecord(
+                task_id=task_id,
+                status="infra_failed",
+                reward=None,
+                failure_type="runner_failed",
+                error_summary=_truncate_error_summary(str(exc)),
+                metadata={
+                    "source": "runner_failed",
+                    "run_id": run_id,
+                    "artifact_scope": "omitted_shared_latest",
+                    "trace_exists": False,
+                    "result_exists": False,
+                },
+            )
+            for task_id in task_ids
+        ]
 
     def _normalize_results(
         self,
@@ -233,6 +265,10 @@ def _score(task_results: list[TaskResultRecord]) -> float:
     if not task_results:
         return 0.0
     return sum(result.reward or 0.0 for result in task_results) / len(task_results)
+
+
+def _truncate_error_summary(error: str) -> str:
+    return error[:MAX_ERROR_SUMMARY_LENGTH]
 
 
 def _task_response(result: TaskResultRecord) -> TaskResultResponse:

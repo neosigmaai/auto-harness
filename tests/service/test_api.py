@@ -134,6 +134,22 @@ def test_api_forbids_viewer_create_run():
     assert response.status_code == 403
 
 
+def test_api_requires_x_role_header_for_create_run():
+    client, _service = _build_client()
+
+    response = client.post(
+        "/runs",
+        json={
+            "task_ids": ["task-pass"],
+            "mode": "simulated",
+            "sandbox_provider": "simulated",
+        },
+        headers={"X-Org-Id": "org-1", "X-User-Id": "user-1"},
+    )
+
+    assert response.status_code == 422
+
+
 def test_api_results_returns_409_before_run_finishes():
     client, _service = _build_client()
 
