@@ -2,12 +2,10 @@ import os
 import uuid
 
 import pytest
-
 from autoharness_service.models import TaskResultRecord
 from autoharness_service.normalizer import normalize_reward_result
 from autoharness_service.schemas import RunCreateRequest
 from autoharness_service.store import PostgresStore
-
 
 pytestmark = pytest.mark.skipif(
     not os.getenv("DATABASE_URL"),

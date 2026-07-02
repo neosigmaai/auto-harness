@@ -8,7 +8,10 @@ def test_load_settings_defaults(monkeypatch):
     settings = load_settings()
 
     assert isinstance(settings, ServiceSettings)
-    assert settings.database_url == "postgresql://autoharness:autoharness@localhost:5432/autoharness"
+    assert (
+        settings.database_url
+        == "postgresql://autoharness:autoharness@localhost:5432/autoharness"
+    )
     assert settings.default_mode == "simulated"
     assert settings.default_sandbox_provider == "daytona"
     assert settings.max_local_concurrency == 4

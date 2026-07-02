@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
-
 DEFAULT_DATABASE_URL = "postgresql://autoharness:autoharness@localhost:5432/autoharness"
 
 

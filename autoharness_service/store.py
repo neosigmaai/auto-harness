@@ -7,11 +7,10 @@ from contextlib import contextmanager
 from typing import Any
 
 import psycopg
-from psycopg.rows import dict_row
-from psycopg.types.json import Jsonb
-
 from autoharness_service.models import IterationRecord, RunRecord, TaskResultRecord
 from autoharness_service.schemas import RunCreateRequest
+from psycopg.rows import dict_row
+from psycopg.types.json import Jsonb
 
 RUNS_TABLE = "aos_runs"
 TASK_RESULTS_TABLE = "aos_task_results"
@@ -128,37 +127,39 @@ class PostgresStore:
     def mark_run_running(self, run_id: str, org_id: str) -> None:
         with self._connect() as conn:
             conn.execute(
-                """
-                UPDATE {runs_table}
+                f"""
+                UPDATE {RUNS_TABLE}
                 SET status = 'running', started_at = COALESCE(started_at, now())
                 WHERE id = %s AND org_id = %s AND status IN ('queued', 'running')
-                """.format(runs_table=RUNS_TABLE),
+                """,
                 (run_id, org_id),
             )
 
     def mark_run_succeeded(self, run_id: str, org_id: str, score: float) -> None:
         with self._connect() as conn:
             conn.execute(
-                """
-                UPDATE {runs_table}
+                f"""
+                UPDATE {RUNS_TABLE}
                 SET status = 'succeeded', score = %s, completed_at = now()
                 WHERE id = %s AND org_id = %s
                   AND status NOT IN ('succeeded', 'failed', 'timed_out', 'cancelled')
-                """.format(runs_table=RUNS_TABLE),
+                """,
                 (score, run_id, org_id),
             )
 
-    def mark_run_failed(self, run_id: str, org_id: str, status: str, error: str) -> None:
+    def mark_run_failed(
+        self, run_id: str, org_id: str, status: str, error: str
+    ) -> None:
         if status not in {"failed", "timed_out", "cancelled"}:
             raise ValueError("terminal failure status expected")
         with self._connect() as conn:
             conn.execute(
-                """
-                UPDATE {runs_table}
+                f"""
+                UPDATE {RUNS_TABLE}
                 SET status = %s, error = %s, completed_at = now()
                 WHERE id = %s AND org_id = %s
                   AND status NOT IN ('succeeded', 'failed', 'timed_out', 'cancelled')
-                """.format(runs_table=RUNS_TABLE),
+                """,
                 (status, error[:4000], run_id, org_id),
             )
 
