@@ -1,19 +1,36 @@
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Iterable
 from math import isfinite
-from typing import Any, Iterable
+from typing import Any
 
 from autoharness_service.models import FailureSummary, TaskResultRecord
+
+PASS_THRESHOLD = 0.5
 
 
 def normalize_reward_result(
     task_id: str,
-    reward: float,
+    reward: float | None,
     trace_path: str | None = None,
     result_path: str | None = None,
     metadata: dict[str, Any] | None = None,
 ) -> TaskResultRecord:
+    copied_metadata = {} if metadata is None else dict(metadata)
+
+    if reward is None:
+        return TaskResultRecord(
+            task_id=task_id,
+            status="infra_failed",
+            reward=None,
+            failure_type="missing_result",
+            error_summary="Verifier result missing",
+            trace_path=trace_path,
+            result_path=result_path,
+            metadata=copied_metadata,
+        )
+
     if not isfinite(reward):
         return TaskResultRecord(
             task_id=task_id,
@@ -23,17 +40,17 @@ def normalize_reward_result(
             error_summary="Reward must be a finite number",
             trace_path=trace_path,
             result_path=result_path,
-            metadata={} if metadata is None else dict(metadata),
+            metadata=copied_metadata,
         )
 
-    if reward > 0:
+    if reward >= PASS_THRESHOLD:
         return TaskResultRecord(
             task_id=task_id,
             status="passed",
             reward=reward,
             trace_path=trace_path,
             result_path=result_path,
-            metadata={} if metadata is None else dict(metadata),
+            metadata=copied_metadata,
         )
 
     return TaskResultRecord(
@@ -44,13 +61,15 @@ def normalize_reward_result(
         error_summary="Verifier reward below pass threshold",
         trace_path=trace_path,
         result_path=result_path,
-        metadata={} if metadata is None else dict(metadata),
+        metadata=copied_metadata,
     )
 
 
 def normalize_missing_result(
     task_id: str,
     reason: str,
+    trace_path: str | None = None,
+    result_path: str | None = None,
     metadata: dict[str, Any] | None = None,
 ) -> TaskResultRecord:
     return TaskResultRecord(
@@ -59,6 +78,8 @@ def normalize_missing_result(
         reward=None,
         failure_type="missing_result",
         error_summary=reason,
+        trace_path=trace_path,
+        result_path=result_path,
         metadata={} if metadata is None else dict(metadata),
     )
 
@@ -79,7 +100,7 @@ def build_failure_summary(task_results: Iterable[TaskResultRecord]) -> FailureSu
             tasks_passed += 1
         elif result.status == "failed":
             tasks_failed += 1
-        elif result.status == "infra_failed":
+        elif result.status in {"infra_failed", "timed_out"}:
             tasks_infra_failed += 1
 
         if result.failure_type:
@@ -89,6 +110,8 @@ def build_failure_summary(task_results: Iterable[TaskResultRecord]) -> FailureSu
                 agent_failures += 1
             else:
                 infra_failures += 1
+        elif result.status in {"infra_failed", "timed_out"}:
+            infra_failures += 1
 
     top_failure_modes = [
         failure_type

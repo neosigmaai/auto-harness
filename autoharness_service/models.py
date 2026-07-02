@@ -4,8 +4,12 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Literal
 
-RunStatus = Literal["queued", "running", "succeeded", "failed", "timed_out", "cancelled"]
-TaskStatus = Literal["queued", "running", "passed", "failed", "infra_failed", "timed_out"]
+RunStatus = Literal[
+    "queued", "running", "succeeded", "failed", "timed_out", "cancelled"
+]
+TaskStatus = Literal[
+    "queued", "running", "passed", "failed", "infra_failed", "timed_out"
+]
 
 RUN_STATUSES = {"queued", "running", "succeeded", "failed", "timed_out", "cancelled"}
 TERMINAL_RUN_STATUSES = {"succeeded", "failed", "timed_out", "cancelled"}

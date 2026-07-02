@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -22,9 +22,13 @@ class RunCreateRequest(BaseModel):
     def validate_request(self) -> "RunCreateRequest":
         for task_id in self.task_ids:
             if not TASK_ID_RE.fullmatch(task_id):
-                raise ValueError("task_ids must match ^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
+                raise ValueError(
+                    "task_ids must match ^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+                )
         if self.model not in ALLOWED_MODELS:
-            raise ValueError(f"model must be one of: {', '.join(sorted(ALLOWED_MODELS))}")
+            raise ValueError(
+                f"model must be one of: {', '.join(sorted(ALLOWED_MODELS))}"
+            )
         if self.mode == "simulated" and self.sandbox_provider != "simulated":
             raise ValueError("simulated mode requires sandbox_provider=simulated")
         if self.mode == "real" and self.sandbox_provider != "daytona":
@@ -45,3 +49,65 @@ class RunProgress(BaseModel):
     queued: int
     running: int
     completed: int
+
+
+class RunStatusResponse(BaseModel):
+    run_id: str
+    status: str
+    progress: RunProgress
+    score: float | None
+    error: str | None
+    created_at: datetime | None
+    started_at: datetime | None
+    completed_at: datetime | None
+
+
+class TaskResultResponse(BaseModel):
+    task_id: str
+    status: str
+    reward: float | None
+    failure_type: str | None
+    error_summary: str | None
+    trace_path: str | None
+    result_path: str | None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class FailureSummaryResponse(BaseModel):
+    tasks_total: int
+    tasks_passed: int
+    tasks_failed: int
+    tasks_infra_failed: int
+    agent_failures: int
+    infra_failures: int
+    top_failure_modes: list[str]
+
+
+class RunResultsResponse(BaseModel):
+    run_id: str
+    status: str
+    score: float | None
+    tasks_total: int
+    tasks_passed: int
+    tasks_failed: int
+    tasks_infra_failed: int
+    task_results: list[TaskResultResponse]
+    failure_summary: FailureSummaryResponse
+
+
+class IterationResponse(BaseModel):
+    iteration: int
+    agent_version: str
+    status: str
+    score: float | None
+    proposal: str | None
+    accepted: bool | None
+
+
+class IterationsResponse(BaseModel):
+    run_id: str
+    iterations: list[IterationResponse]
+
+
+class TaskListResponse(BaseModel):
+    tasks: list[str]
