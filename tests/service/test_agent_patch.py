@@ -70,6 +70,34 @@ def test_apply_instruction_patch_changes_only_agent_instruction(
         "initial": str(snapshot_dir / "initial.py"),
         "proposal-1": str(snapshot_dir / "proposal-1.py"),
     }
+    assert patched_source == textwrap.dedent(
+        """
+        import os
+
+        MAX_STEPS = 80
+        AGENT_INSTRUCTION = "new line 1\\nnew line 2"
+        TOOLS = [{"name": "bash"}]
+        """
+    )
+
+
+def test_apply_instruction_patch_does_not_create_agent_pycache(
+    tmp_path: Path,
+) -> None:
+    agent_path = _write_agent(
+        tmp_path,
+        """
+        AGENT_INSTRUCTION = "old"
+        """,
+    )
+
+    service = AgentPatchService(agent_path)
+    service.apply_instruction_patch(
+        "updated",
+        snapshot_dir=tmp_path / "snapshots",
+    )
+
+    assert not (agent_path.parent / "__pycache__").exists()
 
 
 @pytest.mark.parametrize(
@@ -139,3 +167,57 @@ def test_apply_instruction_patch_rejects_missing_or_duplicate_assignment(
             "updated",
             snapshot_dir=tmp_path / "duplicate-snapshots",
         )
+
+
+def test_apply_instruction_patch_supports_annotated_assignment(
+    tmp_path: Path,
+) -> None:
+    agent_path = _write_agent(
+        tmp_path,
+        """
+        AGENT_INSTRUCTION: str = "old"
+        """,
+    )
+    service = AgentPatchService(agent_path)
+
+    result = service.apply_instruction_patch(
+        "updated",
+        snapshot_dir=tmp_path / "snapshots",
+    )
+
+    assert agent_path.read_text() == '\nAGENT_INSTRUCTION = "updated"\n'
+    assert result.original_instruction == "old"
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        """
+        AGENT_INSTRUCTION = "old"
+        AGENT_INSTRUCTION += "more"
+        """,
+        """
+        AGENT_INSTRUCTION: str = "old"
+        AGENT_INSTRUCTION = "new"
+        """,
+        """
+        AGENT_INSTRUCTION = "old"
+        AGENT_INSTRUCTION: str = "new"
+        """,
+    ],
+)
+def test_apply_instruction_patch_rejects_ambiguous_instruction_writes(
+    tmp_path: Path,
+    source: str,
+) -> None:
+    agent_path = _write_agent(tmp_path, source)
+    original_source = agent_path.read_text()
+    service = AgentPatchService(agent_path)
+
+    with pytest.raises(ValueError):
+        service.apply_instruction_patch(
+            "updated",
+            snapshot_dir=tmp_path / "snapshots",
+        )
+
+    assert agent_path.read_text() == original_source

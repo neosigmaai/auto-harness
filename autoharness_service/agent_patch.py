@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import json
 import py_compile
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -64,7 +65,7 @@ class AgentPatchService:
                 patched_source=patched_source,
             )
             self.agent_path.write_text(patched_source)
-            py_compile.compile(str(self.agent_path), doraise=True)
+            self._compile_agent()
         except Exception:
             self.restore(original_source)
             raise
@@ -83,36 +84,58 @@ class AgentPatchService:
     def _find_instruction_assignment(self, source: str) -> _InstructionAssignment:
         module = ast.parse(source)
         matches: list[_InstructionAssignment] = []
+        write_count = 0
 
         for node in module.body:
-            if not isinstance(node, ast.Assign):
+            if not self._is_instruction_write(node):
                 continue
-            if len(node.targets) != 1:
-                continue
-            target = node.targets[0]
-            if not isinstance(target, ast.Name) or target.id != "AGENT_INSTRUCTION":
-                continue
-            if node.end_lineno is None:
-                raise ValueError("AGENT_INSTRUCTION assignment is missing end_lineno")
-            try:
-                instruction = ast.literal_eval(node.value)
-            except (SyntaxError, ValueError) as exc:
-                raise ValueError("AGENT_INSTRUCTION must be a string literal") from exc
-            if not isinstance(instruction, str):
-                raise ValueError("AGENT_INSTRUCTION must be a string literal")
-            matches.append(
-                _InstructionAssignment(
-                    value=instruction,
-                    lineno=node.lineno,
-                    end_lineno=node.end_lineno,
-                )
-            )
+            write_count += 1
 
-        if len(matches) != 1:
+            if isinstance(node, ast.AugAssign):
+                continue
+
+            matches.append(self._extract_instruction_assignment(node))
+
+        if write_count != 1 or len(matches) != 1:
             raise ValueError(
                 "Expected exactly one top-level AGENT_INSTRUCTION assignment"
             )
         return matches[0]
+
+    def _is_instruction_write(self, node: ast.stmt) -> bool:
+        if isinstance(node, ast.Assign):
+            if len(node.targets) != 1:
+                return False
+            return self._is_instruction_name(node.targets[0])
+        if isinstance(node, ast.AnnAssign):
+            return self._is_instruction_name(node.target)
+        if isinstance(node, ast.AugAssign):
+            return self._is_instruction_name(node.target)
+        return False
+
+    def _is_instruction_name(self, target: ast.expr) -> bool:
+        return isinstance(target, ast.Name) and target.id == "AGENT_INSTRUCTION"
+
+    def _extract_instruction_assignment(
+        self,
+        node: ast.Assign | ast.AnnAssign,
+    ) -> _InstructionAssignment:
+        if node.end_lineno is None:
+            raise ValueError("AGENT_INSTRUCTION assignment is missing end_lineno")
+
+        try:
+            instruction = ast.literal_eval(node.value)
+        except (SyntaxError, ValueError) as exc:
+            raise ValueError("AGENT_INSTRUCTION must be a string literal") from exc
+
+        if not isinstance(instruction, str):
+            raise ValueError("AGENT_INSTRUCTION must be a string literal")
+
+        return _InstructionAssignment(
+            value=instruction,
+            lineno=node.lineno,
+            end_lineno=node.end_lineno,
+        )
 
     def _validate_instruction(self, new_instruction: str) -> None:
         for token in _DANGEROUS_SUBSTRINGS:
@@ -149,3 +172,11 @@ class AgentPatchService:
             "initial": str(initial_path),
             "proposal-1": str(proposal_path),
         }
+
+    def _compile_agent(self) -> None:
+        with tempfile.NamedTemporaryFile(suffix=".pyc") as compiled_file:
+            py_compile.compile(
+                str(self.agent_path),
+                cfile=compiled_file.name,
+                doraise=True,
+            )
