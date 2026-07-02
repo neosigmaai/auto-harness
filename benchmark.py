@@ -89,8 +89,8 @@ class TauBenchRunner(BenchmarkRunner):
         if self.reasoning_effort:
             os.environ["AGENT_REASONING_EFFORT"] = self.reasoning_effort
 
-        from tau2.data_model.simulation import TextRunConfig
         from tau2 import registry
+        from tau2.data_model.simulation import TextRunConfig
         from tau2.run import run_domain
 
         from agent.agent import HarnessAgent
@@ -198,13 +198,20 @@ class TerminalBenchRunner(BenchmarkRunner):
         # Build harbor run command
         agent_timeout_mult = self.per_task_timeout / 180  # Harbor default is 180s
         cmd = [
-            "harbor", "run",
-            "-d", self.dataset,
-            "--agent-import-path", self.agent_import_path,
-            "--model", self.agent_model,
-            "--env", self.env_provider,
-            "--agent-timeout-multiplier", f"{agent_timeout_mult:.2f}",
-            "--jobs-dir", jobs_dir,
+            "harbor",
+            "run",
+            "-d",
+            self.dataset,
+            "--agent-import-path",
+            self.agent_import_path,
+            "--model",
+            self.agent_model,
+            "--env",
+            self.env_provider,
+            "--agent-timeout-multiplier",
+            f"{agent_timeout_mult:.2f}",
+            "--jobs-dir",
+            jobs_dir,
             "-y",
         ]
         if task_ids is not None:
@@ -231,20 +238,30 @@ class TerminalBenchRunner(BenchmarkRunner):
 
         # Subprocess timeout: generous for full dataset, computed for splits
         import math
-        n_tasks = len(task_ids) if task_ids else 150  # conservative upper bound for full dataset
+
+        n_tasks = (
+            len(task_ids) if task_ids else 150
+        )  # conservative upper bound for full dataset
         n_batches = math.ceil(n_tasks / max(n, 1))
         timeout_sec = self.per_task_timeout * n_batches + 300
-        print(f"[benchmark] running {n_tasks} terminal-bench tasks "
-              f"(model={self.agent_model}, env={self.env_provider}, "
-              f"n={n}, per_task_timeout={self.per_task_timeout}s, "
-              f"subprocess_timeout={timeout_sec}s)")
+        print(
+            f"[benchmark] running {n_tasks} terminal-bench tasks "
+            f"(model={self.agent_model}, env={self.env_provider}, "
+            f"n={n}, per_task_timeout={self.per_task_timeout}s, "
+            f"subprocess_timeout={timeout_sec}s)"
+        )
 
         import time
+
         run_start = time.time()
 
         try:
             result = subprocess.run(
-                cmd, env=env, capture_output=True, text=True, timeout=timeout_sec,
+                cmd,
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=timeout_sec,
             )
             print(result.stdout)
             if result.stderr:
@@ -256,12 +273,15 @@ class TerminalBenchRunner(BenchmarkRunner):
         # runs — if harbor fails before creating a new directory, we must not silently
         # return results from a prior run.
         all_dirs = [
-            d for d in os.listdir(jobs_dir)
+            d
+            for d in os.listdir(jobs_dir)
             if os.path.isdir(os.path.join(jobs_dir, d))
             and os.path.getmtime(os.path.join(jobs_dir, d)) >= run_start - 1
         ]
         if not all_dirs:
-            print("[benchmark] ERROR: no job output found for this run (harbor may have failed before creating output)")
+            print(
+                "[benchmark] ERROR: no job output found for this run (harbor may have failed before creating output)"
+            )
             return {}
         job_dirs = sorted(
             all_dirs,
@@ -270,6 +290,28 @@ class TerminalBenchRunner(BenchmarkRunner):
         )
 
         job_dir = os.path.join(jobs_dir, job_dirs[0])
+        if _harbor_job_is_pending(job_dir):
+            resume_cmd = ["harbor", "job", "resume", "--job-path", job_dir]
+            try:
+                resume_result = subprocess.run(
+                    resume_cmd,
+                    env=env,
+                    capture_output=True,
+                    text=True,
+                    timeout=timeout_sec,
+                )
+                print(resume_result.stdout)
+                if resume_result.stderr:
+                    print(resume_result.stderr, file=sys.stderr)
+            except subprocess.TimeoutExpired:
+                print(
+                    f"[benchmark] WARNING: harbor job resume timed out after {timeout_sec}s"
+                )
+
+            if _harbor_job_is_pending(job_dir):
+                raise RuntimeError(
+                    f"harbor job did not complete after resume: {job_dir}"
+                )
 
         # Parse per-trial result.json files
         results = {}
@@ -284,7 +326,11 @@ class TerminalBenchRunner(BenchmarkRunner):
                 vr = data.get("verifier_result")
                 if vr and isinstance(vr, dict):
                     rewards = vr.get("rewards", {})
-                    reward: float | None = float(rewards.get("reward", 0.0)) if isinstance(rewards, dict) else 0.0
+                    reward: float | None = (
+                        float(rewards.get("reward", 0.0))
+                        if isinstance(rewards, dict)
+                        else 0.0
+                    )
                 else:
                     reward = None  # verifier did not run — infra error
                 results[task_name] = reward
@@ -301,6 +347,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         # workspace/traces/latest/   — most recent run (overwritten each iteration)
         if self.split == "train":
             import shutil
+
             latest_dir = os.path.join("workspace", "traces", "latest")
             baseline_dir = os.path.join("workspace", "traces", "baseline")
             os.makedirs(latest_dir, exist_ok=True)
@@ -325,7 +372,9 @@ class TerminalBenchRunner(BenchmarkRunner):
                     if os.path.exists(trace_file):
                         shutil.copy2(trace_file, os.path.join(base_dest, "trace.json"))
                     if os.path.exists(result_file):
-                        shutil.copy2(result_file, os.path.join(base_dest, "result.json"))
+                        shutil.copy2(
+                            result_file, os.path.join(base_dest, "result.json")
+                        )
             print(f"[benchmark] traces: latest/ updated, baseline/ preserved")
 
         # Prune old job directories to prevent unbounded disk growth.
@@ -334,9 +383,38 @@ class TerminalBenchRunner(BenchmarkRunner):
             old_path = os.path.join(jobs_dir, old)
             if os.path.isdir(old_path) and old_path != job_dir:
                 import shutil as _shutil
+
                 _shutil.rmtree(old_path, ignore_errors=True)
 
         return results
+
+
+def _harbor_job_is_pending(job_dir: str) -> bool:
+    result_file = os.path.join(job_dir, "result.json")
+    if not os.path.exists(result_file):
+        return False
+    try:
+        with open(result_file) as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return False
+
+    stats = data.get("stats")
+    if not isinstance(stats, dict):
+        return False
+
+    pending = int(stats.get("n_pending_trials") or 0)
+    running = int(stats.get("n_running_trials") or 0)
+    if pending > 0 or running > 0:
+        return True
+
+    total = int(data.get("n_total_trials") or 0)
+    finished = (
+        int(stats.get("n_completed_trials") or 0)
+        + int(stats.get("n_errored_trials") or 0)
+        + int(stats.get("n_cancelled_trials") or 0)
+    )
+    return data.get("finished_at") is None and total > finished
 
 
 def resolve_bird_adk_dir(configured_path: str | None = None) -> str:
@@ -345,16 +423,18 @@ def resolve_bird_adk_dir(configured_path: str | None = None) -> str:
     if configured_path:
         candidates.append(configured_path)
     here = os.path.dirname(os.path.abspath(__file__))
-    candidates.extend([
-        os.getenv("BIRD_REPO", ""),
-        # auto-provisioned location (prepare.py clones here)
-        os.path.join(here, "bird_interact_adk", "BIRD-Interact-ADK"),
-        os.path.join(here, "bird_interact_adk"),
-        # sibling-repo fallback (advanced users)
-        os.path.join(here, "..", "BIRD-Interact"),
-        os.path.join(here, "..", "BIRD-Interact", "BIRD-Interact-ADK"),
-        os.path.join(here, "BIRD-Interact-ADK"),
-    ])
+    candidates.extend(
+        [
+            os.getenv("BIRD_REPO", ""),
+            # auto-provisioned location (prepare.py clones here)
+            os.path.join(here, "bird_interact_adk", "BIRD-Interact-ADK"),
+            os.path.join(here, "bird_interact_adk"),
+            # sibling-repo fallback (advanced users)
+            os.path.join(here, "..", "BIRD-Interact"),
+            os.path.join(here, "..", "BIRD-Interact", "BIRD-Interact-ADK"),
+            os.path.join(here, "BIRD-Interact-ADK"),
+        ]
+    )
 
     for raw in candidates:
         if not raw:
@@ -374,19 +454,23 @@ def resolve_bird_adk_dir(configured_path: str | None = None) -> str:
     )
 
 
-def resolve_bird_python_bin(adk_dir: str, configured_python: str | None = None) -> str | None:
+def resolve_bird_python_bin(
+    adk_dir: str, configured_python: str | None = None
+) -> str | None:
     """Pick a Python interpreter that has the BIRD-Interact-ADK dependencies installed."""
     candidates = []
     if configured_python:
         candidates.append(configured_python)
-    candidates.extend([
-        os.getenv("BIRD_PYTHON_BIN", ""),
-        os.path.join(adk_dir, ".venv-adk", "bin", "python"),
-        os.path.join(adk_dir, ".venv", "bin", "python"),
-        os.path.join(adk_dir, ".conda-py310", "bin", "python"),
-        shutil.which("python3") or "",
-        shutil.which("python") or "",
-    ])
+    candidates.extend(
+        [
+            os.getenv("BIRD_PYTHON_BIN", ""),
+            os.path.join(adk_dir, ".venv-adk", "bin", "python"),
+            os.path.join(adk_dir, ".venv", "bin", "python"),
+            os.path.join(adk_dir, ".conda-py310", "bin", "python"),
+            shutil.which("python3") or "",
+            shutil.which("python") or "",
+        ]
+    )
 
     for candidate in candidates:
         if candidate and os.path.exists(candidate):
@@ -463,7 +547,9 @@ class BirdInteractRunner(BenchmarkRunner):
             return None
 
         if not os.path.exists(self.SPLIT_FILE):
-            raise FileNotFoundError(f"{self.SPLIT_FILE} not found. Run prepare.py first.")
+            raise FileNotFoundError(
+                f"{self.SPLIT_FILE} not found. Run prepare.py first."
+            )
 
         with open(self.SPLIT_FILE) as f:
             splits = json.load(f)
@@ -492,7 +578,9 @@ class BirdInteractRunner(BenchmarkRunner):
     def _select_tasks(self, task_ids: list[str]) -> list[dict]:
         task_set = {str(tid) for tid in task_ids}
         all_tasks = self._load_tasks()
-        selected = [task for task in all_tasks if str(task.get("instance_id")) in task_set]
+        selected = [
+            task for task in all_tasks if str(task.get("instance_id")) in task_set
+        ]
         found = {str(task.get("instance_id")) for task in selected}
         missing = [tid for tid in task_ids if str(tid) not in found]
         if missing:
@@ -505,7 +593,13 @@ class BirdInteractRunner(BenchmarkRunner):
     def _base_env(self) -> dict[str, str]:
         env = os.environ.copy()
         auto_root = os.path.dirname(os.path.abspath(__file__))
-        env["PYTHONPATH"] = auto_root + os.pathsep + self.adk_dir + os.pathsep + env.get("PYTHONPATH", "")
+        env["PYTHONPATH"] = (
+            auto_root
+            + os.pathsep
+            + self.adk_dir
+            + os.pathsep
+            + env.get("PYTHONPATH", "")
+        )
         env["NO_PROXY"] = env.get("NO_PROXY", "127.0.0.1,localhost")
         env["no_proxy"] = env.get("no_proxy", env["NO_PROXY"])
         env["SYSTEM_AGENT_PORT"] = str(self.system_agent_port)
@@ -594,7 +688,11 @@ class BirdInteractRunner(BenchmarkRunner):
     def _start_services(self) -> list[tuple[subprocess.Popen, object]]:
         env = self._base_env()
         services = [
-            ("agent.helpers.bird_interact.bird_service", self.system_agent_port, "system_agent.log"),
+            (
+                "agent.helpers.bird_interact.bird_service",
+                self.system_agent_port,
+                "system_agent.log",
+            ),
             ("user_simulator.server", self.user_sim_port, "user_simulator.log"),
             ("db_environment.server", self.db_env_port, "db_environment.log"),
         ]
@@ -663,7 +761,9 @@ class BirdInteractRunner(BenchmarkRunner):
 
     def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
         selected_ids = task_ids if task_ids is not None else self._load_split_tasks()
-        selected_tasks = None if selected_ids is None else self._select_tasks(selected_ids)
+        selected_tasks = (
+            None if selected_ids is None else self._select_tasks(selected_ids)
+        )
 
         os.makedirs(self.jobs_dir, exist_ok=True)
         input_path = None
@@ -745,7 +845,9 @@ class BirdInteractRunner(BenchmarkRunner):
             if result.stderr:
                 print(result.stderr, file=sys.stderr)
         except subprocess.TimeoutExpired:
-            print(f"[benchmark] WARNING: BIRD-Interact run timed out after {timeout_sec}s")
+            print(
+                f"[benchmark] WARNING: BIRD-Interact run timed out after {timeout_sec}s"
+            )
         finally:
             self._stop_services(services)
 
@@ -816,9 +918,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run benchmark tasks")
     parser.add_argument("--task-ids", nargs="*", help="Task IDs to run (default: all)")
     if benchmark == "tau-bench":
-        parser.add_argument("--domain", default=cfg.get("domain"), help="tau-bench domain (overrides experiment_config.yaml)")
+        parser.add_argument(
+            "--domain",
+            default=cfg.get("domain"),
+            help="tau-bench domain (overrides experiment_config.yaml)",
+        )
     parser.add_argument("--split", default=cfg.get("split", "train"))
-    _concurrency_default = cfg.get("max_concurrency", 50 if benchmark == "terminal-bench" else 3)
+    _concurrency_default = cfg.get(
+        "max_concurrency", 50 if benchmark == "terminal-bench" else 3
+    )
     parser.add_argument("--concurrency", type=int, default=_concurrency_default)
     args = parser.parse_args()
 
@@ -855,7 +963,9 @@ if __name__ == "__main__":
         )
     elif benchmark == "tau-bench":
         if not args.domain:
-            print("ERROR: 'domain' not set in experiment_config.yaml (or pass --domain)")
+            print(
+                "ERROR: 'domain' not set in experiment_config.yaml (or pass --domain)"
+            )
             sys.exit(1)
         runner = TauBenchRunner(
             domain=args.domain,
@@ -877,16 +987,30 @@ if __name__ == "__main__":
     n_pass = sum(1 for v in results.values() if v is not None and v >= 0.5)
     suffix = f" ({n_none} timed out, counted as failures)" if n_none else ""
     print(f"\nval_score: {val:.4f}  ({n_pass}/{n_total} passed){suffix}")
-    for task_id, reward in sorted(results.items(), key=lambda x: (0, int(x[0])) if x[0].isdigit() else (1, x[0])):
-        status = "PASS" if reward is not None and reward >= 0.5 else ("TIMEOUT" if reward is None else "FAIL")
-        print(f"  {status}  {task_id}: {f'{reward:.2f}' if reward is not None else 'N/A'}")
+    for task_id, reward in sorted(
+        results.items(), key=lambda x: (0, int(x[0])) if x[0].isdigit() else (1, x[0])
+    ):
+        status = (
+            "PASS"
+            if reward is not None and reward >= 0.5
+            else ("TIMEOUT" if reward is None else "FAIL")
+        )
+        print(
+            f"  {status}  {task_id}: {f'{reward:.2f}' if reward is not None else 'N/A'}"
+        )
 
     train_results_path = "workspace/train_results.json"
     os.makedirs("workspace", exist_ok=True)
     with open(train_results_path, "w") as f:
-        _json.dump({
-            "split": args.split,
-            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
-            "results": results,
-        }, f, indent=2)
+        _json.dump(
+            {
+                "split": args.split,
+                "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(
+                    timespec="seconds"
+                ),
+                "results": results,
+            },
+            f,
+            indent=2,
+        )
     print(f"[benchmark] results saved to {train_results_path}")
