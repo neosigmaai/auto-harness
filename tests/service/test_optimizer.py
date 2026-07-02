@@ -1,4 +1,7 @@
-from autoharness_service.normalizer import build_failure_summary, normalize_reward_result
+from autoharness_service.normalizer import (
+    build_failure_summary,
+    normalize_reward_result,
+)
 from autoharness_service.optimizer import Optimizer, build_optimizer_prompt
 
 

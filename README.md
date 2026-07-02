@@ -8,6 +8,148 @@ The loop is defined in `PROGRAM.md`. The coding agent edits `agent/agent.py` to 
 
 ---
 
+## Take-home: Agent Optimization Service MVP
+
+This branch adds a small FastAPI backend service for the take-home assignment.
+It intentionally focuses on the first three milestones:
+
+- API design with structured request, status, result, and iteration shapes
+- asynchronous run lifecycle with polling
+- sandboxed Terminal-Bench execution through Harbor and Daytona in real mode
+- PostgreSQL persistence for runs, task results, and iteration history
+
+Milestone 4 is represented by a minimal LLM proposal history. The service does
+not automatically patch `agent/agent.py` in this MVP. Milestone 5 is represented
+by API-level `X-Org-Id` / `X-User-Id` / `X-Role` scoping and documented RBAC
+extensions.
+
+Companion system design notes live in
+[docs/takehome_mvp_system_design.md](docs/takehome_mvp_system_design.md).
+
+### Setup
+
+```bash
+python -m pip install -e .
+cp .env.example .env
+```
+
+For simulated mode, no sandbox key is required.
+
+Start a local PostgreSQL database:
+
+```bash
+docker run --name autoharness-postgres \
+  -e POSTGRES_USER=autoharness \
+  -e POSTGRES_PASSWORD=autoharness \
+  -e POSTGRES_DB=autoharness \
+  -p 5432:5432 \
+  -d postgres:16
+```
+
+If that container already exists, start it instead:
+
+```bash
+docker start autoharness-postgres
+```
+
+For real Terminal-Bench mode, set:
+
+```text
+OPENAI_API_KEY=...
+DAYTONA_API_KEY=...
+DATABASE_URL=postgresql://autoharness:autoharness@localhost:5432/autoharness
+```
+
+Install Harbor:
+
+```bash
+uv tool install harbor
+```
+
+### Start the service
+
+```bash
+uvicorn autoharness_service.main:app --host 127.0.0.1 --port 8000 --workers 1
+```
+
+Run one Uvicorn worker for the MVP. The background executor and real-mode
+Harbor semaphore are process-local, so multiple workers would split state and
+break serialization. A production version should use a durable queue and
+separate workers instead.
+
+### Run the end-to-end client in simulated mode
+
+```bash
+python test_client.py \
+  --base-url http://127.0.0.1:8000 \
+  --task-id task-pass \
+  --task-id task-fail \
+  --mode simulated
+```
+
+### Run a real Harbor/Daytona task
+
+```bash
+python test_client.py \
+  --base-url http://127.0.0.1:8000 \
+  --task-id break-filter-js-from-html \
+  --mode real \
+  --requested-concurrency 1 \
+  --timeout-sec 1800
+```
+
+Real mode expects `OPENAI_API_KEY`, `DAYTONA_API_KEY`, and the `harbor` CLI.
+
+### Selected Terminal-Bench tasks
+
+The default demo set uses four Terminal-Bench task IDs:
+
+- `break-filter-js-from-html` for a real Harbor/Daytona smoke
+- `task-pass` for a clean passing case
+- `task-fail` for a deterministic benchmark failure
+- `task-infra` for an infra-failure path
+
+This mix gives the reviewer one live sandbox run plus simple pass, fail, and
+infrastructure outcomes without requiring a large benchmark sweep.
+
+### Key design decisions
+
+- The service treats a run as the MVP batch unit. There is no separate
+  `eval_batches` table in this branch.
+- Real mode uses Harbor as the Daytona adapter. The service does not call the
+  Daytona SDK directly.
+- One Uvicorn worker is the safe MVP default because the background executor and
+  real-run semaphore live in-process.
+- Local MVP uses polling. Daytona webhooks are reserved for production
+  lifecycle reconciliation.
+- The optimizer records one proposal history entry and does not do multi-candidate
+  search, GateEngine regression suites, or suite promotion.
+- `X-Org-Id`, `X-User-Id`, and `X-Role` are local demo headers. They demonstrate
+  API-level scoping, not production authentication.
+- Real Harbor/Daytona runs are serialized in-process and use a per-run
+  `workspace/service_runs/<run_id>/tbench_jobs` directory to reduce artifact
+  cross-contamination.
+
+### Intentionally not implemented
+
+- Durable queue or worker pool
+- Object storage for large traces and logs
+- Direct Daytona SDK support
+- JWT/OAuth auth and real RBAC
+- GateEngine, candidate graphs, beam search, and promotion logic
+- Automatic patching of `agent/agent.py`
+
+### Production follow-ups
+
+- Replace in-process background threads with Redis Streams, Kafka, or another
+  durable queue
+- Move run artifacts and traces to S3 or MinIO
+- Add direct Daytona SDK support with sandbox and command tracking
+- Replace demo headers with real identity, audit logging, quotas, and RBAC
+- Add GateEngine regression protection and candidate promotion
+
+---
+
 ## Supported Benchmarks
 
 | Benchmark | Domain | Tasks | Agent Interface |

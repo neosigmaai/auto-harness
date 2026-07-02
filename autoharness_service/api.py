@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from fastapi import FastAPI, Header, HTTPException, Response, status
-
 from autoharness_service.config import load_settings
 from autoharness_service.runner import SimulatedBenchmarkRunner
 from autoharness_service.schemas import (
@@ -15,6 +13,7 @@ from autoharness_service.schemas import (
 )
 from autoharness_service.service import RunService
 from autoharness_service.store import PostgresStore
+from fastapi import FastAPI, Header, HTTPException, Response, status
 
 DEFAULT_TASKS = [
     "break-filter-js-from-html",

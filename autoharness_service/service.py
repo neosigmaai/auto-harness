@@ -3,12 +3,12 @@ from __future__ import annotations
 import threading
 
 from autoharness_service.models import TaskResultRecord
-from autoharness_service.optimizer import Optimizer
 from autoharness_service.normalizer import (
     build_failure_summary,
     normalize_missing_result,
     normalize_reward_result,
 )
+from autoharness_service.optimizer import Optimizer
 from autoharness_service.runner import (
     SimulatedBenchmarkRunner,
     TerminalBenchRunnerAdapter,

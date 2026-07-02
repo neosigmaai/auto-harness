@@ -51,9 +51,7 @@ def build_summary(
         "tasks_infra_failed": results.get("tasks_infra_failed"),
         "failure_summary": results.get("failure_summary"),
         "failed_task_ids": [
-            item["task_id"]
-            for item in task_results
-            if item.get("status") != "passed"
+            item["task_id"] for item in task_results if item.get("status") != "passed"
         ],
         "iterations": iterations.get("iterations", []),
     }
@@ -100,7 +98,9 @@ def poll_run(
         time.sleep(poll_interval_sec)
 
 
-def fetch_run_artifacts(client: httpx.Client, run_id: str) -> tuple[dict[str, Any], dict[str, Any]]:
+def fetch_run_artifacts(
+    client: httpx.Client, run_id: str
+) -> tuple[dict[str, Any], dict[str, Any]]:
     headers = build_headers("viewer")
     results = client.get(f"/runs/{run_id}/results", headers=headers)
     results.raise_for_status()
@@ -110,7 +110,9 @@ def fetch_run_artifacts(client: httpx.Client, run_id: str) -> tuple[dict[str, An
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Submit and inspect an AutoHarness run")
+    parser = argparse.ArgumentParser(
+        description="Submit and inspect an AutoHarness run"
+    )
     parser.add_argument("--base-url", default="http://127.0.0.1:8000")
     parser.add_argument("--task-id", action="append", dest="task_ids", required=True)
     parser.add_argument("--mode", choices=["simulated", "real"], default="simulated")

@@ -1,8 +1,7 @@
-from fastapi.testclient import TestClient
-
 from autoharness_service.api import create_app
 from autoharness_service.runner import SimulatedBenchmarkRunner
 from autoharness_service.service import RunService
+from fastapi.testclient import TestClient
 from tests.service.test_service import FakeStore
 
 
@@ -46,8 +45,14 @@ def test_api_submit_poll_and_read_results():
 
     assert create_response.status_code == 202
     assert create_response.headers["location"].startswith("/runs/")
-    assert create_response.json()["status_url"] == f"/runs/{create_response.json()['run_id']}"
-    assert create_response.json()["result_url"] == f"/runs/{create_response.json()['run_id']}/results"
+    assert (
+        create_response.json()["status_url"]
+        == f"/runs/{create_response.json()['run_id']}"
+    )
+    assert (
+        create_response.json()["result_url"]
+        == f"/runs/{create_response.json()['run_id']}/results"
+    )
 
     run_id = create_response.json()["run_id"]
 
