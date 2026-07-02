@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
+from typing import Any
 
 from autoharness_service.agent_patch import AgentPatchService
 from autoharness_service.models import FailureSummary, TaskResultRecord
@@ -14,6 +15,27 @@ class OptimizationProposal:
     new_agent_instruction: str
     expected_effect: str
     risks: str
+
+
+def _iter_artifact_path_strings(value: Any) -> list[str]:
+    paths: list[str] = []
+    if isinstance(value, str):
+        if "/" in value or "\\" in value:
+            paths.append(value)
+        return paths
+    if isinstance(value, dict):
+        for nested_value in value.values():
+            paths.extend(_iter_artifact_path_strings(nested_value))
+        return paths
+    if isinstance(value, (list, tuple)):
+        for nested_value in value:
+            paths.extend(_iter_artifact_path_strings(nested_value))
+        return paths
+    if isinstance(value, set):
+        for nested_value in sorted(value, key=repr):
+            paths.extend(_iter_artifact_path_strings(nested_value))
+        return paths
+    return paths
 
 
 def parse_optimizer_json(text: str) -> OptimizationProposal:
@@ -56,7 +78,9 @@ def build_optimizer_prompt(
     for result in task_results:
         if result.status == "passed":
             continue
-        artifact_paths = result.metadata.get("artifacts", [])
+        artifact_paths = _iter_artifact_path_strings(
+            result.metadata.get("artifacts", [])
+        )
         artifact_summary = (
             ", ".join(str(path) for path in artifact_paths)
             if artifact_paths
@@ -108,9 +132,9 @@ class Optimizer:
         from openai import OpenAI
 
         client = OpenAI()
-        response = client.responses.create(
+        response = client.chat.completions.create(
             model=model,
-            input=[
+            messages=[
                 {
                     "role": "system",
                     "content": (
@@ -120,8 +144,12 @@ class Optimizer:
                 },
                 {"role": "user", "content": prompt},
             ],
+            response_format={"type": "json_object"},
         )
-        return parse_optimizer_json(response.output_text)
+        message_content = response.choices[0].message.content
+        if not isinstance(message_content, str):
+            raise ValueError("Optimizer response content must be a string")
+        return parse_optimizer_json(message_content)
 
     def propose(
         self,

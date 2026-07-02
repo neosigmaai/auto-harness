@@ -93,6 +93,39 @@ def test_build_optimizer_prompt_includes_current_instruction_and_artifact_paths(
     assert "no Markdown" in prompt
 
 
+def test_build_optimizer_prompt_flattens_artifact_metadata_values():
+    results = [
+        TaskResultRecord(
+            task_id="task-fail",
+            status="failed",
+            reward=0.0,
+            failure_type="agent_failed",
+            error_summary="Verifier reward below pass threshold",
+            trace_path="/tmp/task-fail/trace.json",
+            result_path="/tmp/task-fail/result.json",
+            metadata={
+                "artifacts": {
+                    "trace": "/tmp/task-fail/trace.json",
+                    "trial_result": "/tmp/task-fail/result.json",
+                    "json_files": ["/tmp/task-fail/x.json"],
+                }
+            },
+        )
+    ]
+    summary = build_failure_summary(results)
+
+    prompt = build_optimizer_prompt(
+        results,
+        summary,
+        current_instruction="Always verify generated files before finishing.",
+    )
+
+    assert "/tmp/task-fail/trace.json" in prompt
+    assert "/tmp/task-fail/result.json" in prompt
+    assert "/tmp/task-fail/x.json" in prompt
+    assert "trace, trial_result, json_files" not in prompt
+
+
 def test_optimizer_propose_instruction_patch_raises_without_openai_api_key(monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
 
@@ -115,19 +148,27 @@ def test_optimizer_propose_instruction_patch_parses_single_json_object(monkeypat
 
     class FakeClient:
         def __init__(self) -> None:
-            self.responses = SimpleNamespace(create=self._create)
+            self.chat = SimpleNamespace(
+                completions=SimpleNamespace(create=self._create)
+            )
 
         def _create(self, **kwargs):
             captured.update(kwargs)
             return SimpleNamespace(
-                output_text="""
-                {
-                  "hypothesis": "The agent exits before checking artifacts.",
-                  "new_agent_instruction": "Before finishing, inspect artifact paths and confirm expected files exist.",
-                  "expected_effect": "Fewer runs end without validating outputs.",
-                  "risks": "Runs may take slightly longer."
-                }
-                """
+                choices=[
+                    SimpleNamespace(
+                        message=SimpleNamespace(
+                            content="""
+                            {
+                              "hypothesis": "The agent exits before checking artifacts.",
+                              "new_agent_instruction": "Before finishing, inspect artifact paths and confirm expected files exist.",
+                              "expected_effect": "Fewer runs end without validating outputs.",
+                              "risks": "Runs may take slightly longer."
+                            }
+                            """
+                        )
+                    )
+                ]
             )
 
     monkeypatch.setitem(
@@ -162,8 +203,9 @@ def test_optimizer_propose_instruction_patch_parses_single_json_object(monkeypat
         risks="Runs may take slightly longer.",
     )
     assert captured["model"] == "test-model"
-    assert isinstance(captured["input"], list)
-    user_prompt = captured["input"][1]["content"]
+    assert isinstance(captured["messages"], list)
+    assert captured["response_format"] == {"type": "json_object"}
+    user_prompt = captured["messages"][1]["content"]
     assert "Current instruction:\nCurrent instruction text." in user_prompt
     assert "Return JSON only as a single object" in user_prompt
     assert "exactly these string fields" in user_prompt
