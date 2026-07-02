@@ -3,6 +3,7 @@ from __future__ import annotations
 import threading
 
 from autoharness_service.models import TaskResultRecord
+from autoharness_service.optimizer import Optimizer
 from autoharness_service.normalizer import (
     build_failure_summary,
     normalize_missing_result,
@@ -28,11 +29,13 @@ class RunService:
         store,
         simulated_runner: SimulatedBenchmarkRunner | None = None,
         terminal_runner: TerminalBenchRunnerAdapter | None = None,
+        optimizer: Optimizer | None = None,
         max_local_concurrency: int = 4,
     ):
         self.store = store
         self.simulated_runner = simulated_runner or SimulatedBenchmarkRunner()
         self.terminal_runner = terminal_runner or TerminalBenchRunnerAdapter()
+        self.optimizer = optimizer or Optimizer()
         self.max_local_concurrency = max_local_concurrency
         self._real_run_lock = threading.BoundedSemaphore(value=1)
 
@@ -94,6 +97,28 @@ class RunService:
                     error="runner produced no task results",
                 )
                 return
+            if run.max_iterations > 0:
+                summary = build_failure_summary(task_results)
+                try:
+                    proposal = self.optimizer.propose(
+                        task_results,
+                        summary,
+                        model=run.model,
+                    )
+                    proposal_status = "proposal_created"
+                except Exception as exc:
+                    proposal = f"LLM proposal failed: {exc}"
+                    proposal_status = "proposal_failed"
+                self.store.create_iteration(
+                    run_id,
+                    org_id,
+                    iteration_index=1,
+                    status=proposal_status,
+                    agent_version="proposal-1",
+                    score=score,
+                    proposal=proposal,
+                    accepted=None,
+                )
             self.store.mark_run_succeeded(run_id, org_id, score=score)
         except TimeoutError as exc:
             self.store.mark_run_failed(

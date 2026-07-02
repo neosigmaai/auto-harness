@@ -111,6 +111,11 @@ class FakeStore:
         return self.iterations.get(run_id, [])
 
 
+class FakeOptimizer:
+    def propose(self, task_results, failure_summary, *, model):
+        return "hypothesis: improve bash verification\nproposed_change: inspect output before final answer"
+
+
 def test_run_service_executes_simulated_run():
     store = FakeStore()
     service = RunService(store=store, simulated_runner=SimulatedBenchmarkRunner())
@@ -148,6 +153,31 @@ def test_run_service_executes_simulated_run():
     assert all(
         result.metadata["result_exists"] is False for result in results.task_results
     )
+
+
+def test_run_service_records_optimizer_proposal_when_requested():
+    store = FakeStore()
+    service = RunService(
+        store=store,
+        simulated_runner=SimulatedBenchmarkRunner(),
+        optimizer=FakeOptimizer(),
+    )
+    request = RunCreateRequest(
+        task_ids=["task-fail"],
+        mode="simulated",
+        sandbox_provider="simulated",
+        requested_concurrency=1,
+        max_iterations=1,
+    )
+
+    run = service.submit_run(
+        request, org_id="org-1", created_by="user-1", start_background=False
+    )
+    service.execute_run(run.run_id, org_id="org-1")
+
+    assert len(store.iterations[run.run_id]) == 2
+    assert store.iterations[run.run_id][-1]["status"] == "proposal_created"
+    assert "proposed_change" in store.iterations[run.run_id][-1]["proposal"]
 
 
 def test_run_service_marks_real_run_failed_when_runner_returns_no_results():
