@@ -28,16 +28,17 @@ version name is `proposal-1`. Milestone 5 is represented by API-level
 Companion system design notes live in
 [docs/takehome_mvp_system_design.md](docs/takehome_mvp_system_design.md).
 
-### Setup
+### Setup and dependencies
+
+Use Python 3.12+ for the service and tests.
 
 ```bash
 python -m pip install -e .
 cp .env.example .env
 ```
 
-For simulated mode, no sandbox key is required.
-The service does not load `.env` automatically, so source it before starting
-Uvicorn or any real-mode command:
+The service does not load `.env` automatically. Source it before starting
+Uvicorn, running the real smoke scripts, or running the manual client:
 
 ```bash
 set -a
@@ -70,20 +71,31 @@ DAYTONA_API_KEY=...
 DATABASE_URL=postgresql://autoharness:autoharness@localhost:5432/autoharness
 ```
 
-The same shell that starts Uvicorn must have these variables available. Harbor
-CLI must also be installed for real `mode=real` reruns.
-
-Install Harbor:
+The same shell that starts Uvicorn must have these variables available.
+Harbor CLI must also be installed for real `mode=real` runs:
 
 ```bash
 uv tool install harbor
 ```
+
+For a local demo of the full optimization path, you can disable the conservative
+instruction-patch guard so the reviewer can see baseline -> LLM proposal ->
+patch -> rerun -> accept/reject in one short run:
+
+```bash
+export AUTOHARNESS_DISABLE_PATCH_GUARD=1
+```
+
+Only use that flag for the local take-home demo. The default guard rejects
+dangerous instruction content and only allows replacing `AGENT_INSTRUCTION` in
+`agent/agent.py`.
 
 ### Start the service
 
 ```bash
 set -a
 source .env
+export AUTOHARNESS_DISABLE_PATCH_GUARD=1
 set +a
 uvicorn autoharness_service.main:app --host 127.0.0.1 --port 8000 --workers 1
 ```
@@ -93,45 +105,167 @@ Harbor semaphore are process-local, so multiple workers would split state and
 break serialization. A production version should use a durable queue and
 separate workers instead.
 
-### Run the end-to-end client in simulated mode
+### Run automated test cases
+
+Run the full service test suite:
 
 ```bash
-python test_client.py \
-  --base-url http://127.0.0.1:8000 \
-  --task-id task-pass \
-  --task-id task-fail \
-  --mode simulated
+python -m pytest tests/service -q
 ```
 
-### Run a real Harbor/Daytona task
+Expected result: all service tests pass. In this branch the normal local result
+is currently `103 passed, 7 skipped`; skipped tests are optional environment
+cases that depend on local database availability.
+
+Useful focused test commands:
 
 ```bash
-set -a
-source .env
-set +a
+# API contract, async polling, per-task status, auth boundaries, result reads
+python -m pytest tests/service/test_api.py -q
+
+# Run lifecycle, durable resume behavior, optimization accept/reject/revert
+python -m pytest tests/service/test_service.py -q
+
+# PostgreSQL persistence and durable queue row transitions
+python -m pytest tests/service/test_store.py -q
+
+# AGENT_INSTRUCTION patch safety and proposal cleanup
+python -m pytest tests/service/test_agent_patch.py -q
+
+# Result normalization, failure summaries, and request validation
+python -m pytest tests/service/test_normalizer.py -q
+
+# Harbor/Terminal-Bench runner adapter behavior with faked subprocesses
+python -m pytest tests/service/test_runner.py tests/service/test_terminal_bench_runner.py -q
+
+# Optimizer JSON parsing, prompt compaction, and client/smoke formatting helpers
+python -m pytest tests/service/test_optimizer.py tests/service/test_optimize_smoke_check.py tests/service/test_test_client.py -q
+```
+
+Run lightweight syntax and formatting checks:
+
+```bash
+python -m py_compile autoharness_service/*.py scripts/*.py test_client.py benchmark.py
+python -m black --check autoharness_service scripts tests/service test_client.py benchmark.py
+python -m isort --check-only autoharness_service scripts tests/service test_client.py benchmark.py
+```
+
+### Run the manual real-mode client
+
+`test_client.py` is intentionally real-only for reviewer-facing manual runs. It
+submits a run, polls until a terminal status, then prints a structured summary:
+
+```bash
 python test_client.py \
   --base-url http://127.0.0.1:8000 \
   --task-id break-filter-js-from-html \
   --mode real \
   --requested-concurrency 1 \
+  --max-iterations 0 \
   --timeout-sec 1800
 ```
 
-Real mode expects `OPENAI_API_KEY`, `DAYTONA_API_KEY`, `DATABASE_URL`, and the
-`harbor` CLI.
+Expected result: the client prints `submitted run_id=...`, waits while the
+service runs Harbor/Daytona in the background, and finally prints JSON with
+`score`, `tasks_passed`, `tasks_failed`, `tasks_infra_failed`,
+`failure_summary`, and `iteration_statuses`.
+
+For a small batch, use the built-in real demo task list:
+
+```bash
+python test_client.py \
+  --base-url http://127.0.0.1:8000 \
+  --demo-batch \
+  --requested-concurrency 1 \
+  --max-iterations 0 \
+  --timeout-sec 1800
+```
+
+### Run the Milestone 4 optimization smoke test
+
+This is the clearest single command to demonstrate the implemented loop:
+
+```bash
+python scripts/optimize_smoke_check.py \
+  --base-url http://127.0.0.1:8000 \
+  --task-id break-filter-js-from-html \
+  --requested-concurrency 1 \
+  --poll-interval-sec 5 \
+  --timeout-sec 1800
+```
+
+Expected result: the script prints a compact guided order and phase updates:
+
+1. `Submit`: `POST /runs` returns a run id immediately.
+2. `Baseline`: Harbor/Daytona runs the requested Terminal-Bench task.
+3. `Collect`: task result, trace path, result path, and artifact metadata are
+   persisted.
+4. `Optimize`: the LLM proposes one `AGENT_INSTRUCTION` replacement.
+5. `Rerun`: the service applies the patch and reruns the same task ids through
+   Harbor/Daytona.
+6. `Decide`: the patch is accepted only if rerun score is strictly higher;
+   otherwise `agent/agent.py` is restored and the optimized snapshot is
+   discarded.
+7. `FinalSummary`: the script prints final score, task counts, failed tasks,
+   iteration states, and optimization metadata.
+
+Baseline artifacts and rerun artifacts are stored separately under:
+
+```text
+workspace/service_runs/<run_id>/tbench_jobs/baseline/
+workspace/service_runs/<run_id>/tbench_jobs/proposal-1/
+```
+
+### Run the durable queue restart smoke test
+
+This script starts its own Uvicorn process, submits a run while background
+execution is disabled, kills that process, restarts the service, and verifies
+the queued run is still readable and resumes:
+
+```bash
+python scripts/durable_queue_restart_check.py \
+  --port 8015 \
+  --task-id break-filter-js-from-html \
+  --requested-concurrency 1 \
+  --poll-interval-sec 5 \
+  --timeout-sec 1800
+```
+
+Expected result: the script prints the first queued status, restarts the
+backend, then polls the same `run_id` until it reaches `succeeded`, `failed`,
+or another terminal state. The final section prints artifact locations for each
+task.
+
+### What each service test covers
+
+| Test file | Purpose | Expected result |
+|-----------|---------|-----------------|
+| `tests/service/test_api.py` | FastAPI request and response shapes, immediate `202` submit, polling, per-task lifecycle rows, org/user/role access checks, duplicate task validation, and `409` before results are ready | Passes without real Harbor/Daytona by using fake service wiring |
+| `tests/service/test_service.py` | RunService lifecycle, background worker resume, durable task claiming, real-run serialization, runner exception handling, timeout handling, optimization accept/reject/revert, and proposal failure states | Passes with fake runners and fake optimizers |
+| `tests/service/test_store.py` | PostgreSQL schema creation, idempotent initialization, org boundaries, task queue claiming, requeue on resume, structured proposal storage, and oversized proposal rejection | Passes when the local test database is reachable; otherwise DB-dependent cases may skip |
+| `tests/service/test_agent_patch.py` | `AgentPatchService` only changes top-level `AGENT_INSTRUCTION`, compiles patched `agent.py`, rejects dangerous content by default, supports the local demo guard override, and deletes rejected proposal snapshots | Passes using temporary files |
+| `tests/service/test_normalizer.py` | Reward-to-status normalization, infra-vs-agent failure summaries, non-finite reward handling, unsafe task-id rejection, and mode/provider validation | Passes with pure unit tests |
+| `tests/service/test_runner.py` | Simulated runner behavior, real adapter per-run jobs directory, per-attempt artifact separation, Terminal-Bench template installation, and lazy import behavior | Passes with monkeypatched runner dependencies |
+| `tests/service/test_terminal_bench_runner.py` | Harbor resume behavior, result extraction from pending jobs, and stderr reporting when a resumed Harbor job fails | Passes with fake Harbor subprocess output |
+| `tests/service/test_optimizer.py` | Strict optimizer JSON parsing, prompt content, artifact metadata flattening, missing API key handling, and LLM response parsing | Passes with mocked LLM clients |
+| `tests/service/test_optimize_smoke_check.py` | Smoke-script guided order, polling phase formatting, rejected-state formatting, and artifact timeline extraction | Passes without starting the service |
+| `tests/service/test_test_client.py` | Manual client summary generation, demo auth headers, real-only request validation, demo batch task ids, and polling callbacks | Passes without starting the service |
+| `tests/service/test_main.py` | App startup settings and background worker enable/disable flag handling | Passes with settings monkeypatches |
+| `tests/service/test_imports.py` | Import-time defaults and avoiding heavyweight benchmark imports during service startup | Passes as a quick import-safety check |
 
 ### Selected Terminal-Bench tasks
 
-The default demo set uses one real Terminal-Bench smoke task and three
-simulated demo IDs:
+The reviewer-facing real demo set uses fast Terminal-Bench tasks that exercise
+the real Harbor/Daytona path without requiring a large benchmark sweep:
 
-- `break-filter-js-from-html` for a real Harbor/Daytona smoke
-- `task-pass` as a simulated clean passing demo ID
-- `task-fail` as a simulated deterministic failure demo ID
-- `task-infra` as a simulated infra-failure demo ID
+- `break-filter-js-from-html`: recommended one-task smoke; useful for showing
+  pass/fail normalization, trace collection, and the Milestone 4 rerun path.
+- `multi-source-data-merger`: second demo task used by `--demo-batch`; useful
+  for showing batch submission and per-task lifecycle rows.
 
-This mix gives the reviewer one live sandbox run plus simple pass, fail, and
-infrastructure outcomes without requiring a large benchmark sweep.
+The internal unit tests still use fake IDs such as `task-pass`, `task-fail`,
+and `task-infra`, but those are simulated test fixtures rather than manual
+reviewer tasks.
 
 ### Key design decisions
 
