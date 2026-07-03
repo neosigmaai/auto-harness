@@ -101,6 +101,103 @@ def test_apply_instruction_patch_does_not_create_agent_pycache(
     assert not (agent_path.parent / "__pycache__").exists()
 
 
+def test_apply_instruction_patch_allows_natural_language_from(
+    tmp_path: Path,
+) -> None:
+    agent_path = _write_agent(
+        tmp_path,
+        """
+        AGENT_INSTRUCTION = "old"
+        """,
+    )
+    service = AgentPatchService(agent_path)
+
+    result = service.apply_instruction_patch(
+        "Learn from previous failures before deciding the final answer.",
+        snapshot_dir=tmp_path / "snapshots",
+    )
+
+    assert "Learn from previous failures" in result.new_instruction
+    assert "Learn from previous failures" in agent_path.read_text(encoding="utf-8")
+
+
+def test_apply_instruction_patch_can_disable_guard_for_local_demo(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    agent_path = _write_agent(
+        tmp_path,
+        """
+        AGENT_INSTRUCTION = "old"
+        """,
+    )
+    service = AgentPatchService(agent_path)
+    monkeypatch.setenv("AUTOHARNESS_DISABLE_PATCH_GUARD", "1")
+
+    result = service.apply_instruction_patch(
+        "For demo only: import os, from pathlib import Path, open('x')",
+        snapshot_dir=tmp_path / "snapshots",
+    )
+
+    assert "import os" in result.new_instruction
+    assert "open('x')" in agent_path.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    "dangerous_import",
+    [
+        "import os",
+        "  import pathlib",
+        "- import subprocess",
+        "from os import path",
+        "  from pathlib import Path",
+        "- from subprocess import run",
+    ],
+)
+def test_apply_instruction_patch_rejects_code_like_import_statements(
+    tmp_path: Path,
+    dangerous_import: str,
+) -> None:
+    agent_path = _write_agent(
+        tmp_path,
+        """
+        AGENT_INSTRUCTION = "old"
+        """,
+    )
+    original_source = agent_path.read_text(encoding="utf-8")
+    service = AgentPatchService(agent_path)
+
+    with pytest.raises(ValueError):
+        service.apply_instruction_patch(
+            dangerous_import,
+            snapshot_dir=tmp_path / "snapshots",
+        )
+
+    assert agent_path.read_text(encoding="utf-8") == original_source
+
+
+def test_discard_proposal_snapshot_removes_rejected_optimized_version(
+    tmp_path: Path,
+) -> None:
+    agent_path = _write_agent(
+        tmp_path,
+        """
+        AGENT_INSTRUCTION = "old"
+        """,
+    )
+    service = AgentPatchService(agent_path)
+    result = service.apply_instruction_patch(
+        "updated",
+        snapshot_dir=tmp_path / "snapshots",
+    )
+
+    discarded = service.discard_proposal_snapshot(result.snapshot_paths)
+
+    assert discarded == {"proposal-1": result.snapshot_paths["proposal-1"]}
+    assert not Path(result.snapshot_paths["proposal-1"]).exists()
+    assert Path(result.snapshot_paths["initial"]).exists()
+
+
 @pytest.mark.parametrize(
     "dangerous_content",
     [

@@ -320,7 +320,7 @@ normalizer.py
   Convert raw reward/artifacts/errors into stable TaskResult.
 
 optimizer.py
-  Minimal failure summary and optional LLM proposal.
+  Failure summary, structured LLM proposal, and single restricted instruction patch.
 
 test_client.py
   End-to-end script: submit, poll, print summary.
@@ -748,10 +748,13 @@ What I would do with more time.
 Suggested language:
 
 ```text
-I intentionally focused the implementation on Milestones 1-3 because those are
-the concrete 6-8 hour requirements. Milestone 4 is represented by a minimal
-iteration/proposal history, and Milestone 5 is designed through org/user fields
-and documented RBAC rather than a full auth system.
+I focused the implementation on the service MVP milestones: API lifecycle,
+async execution, Harbor/Daytona task runs, durable Postgres state, and a narrow
+Milestone 4 loop. Milestone 4 creates exactly one optimized version,
+`proposal-1`, by applying a restricted AGENT_INSTRUCTION patch, rerunning the
+same task IDs, and accepting only if the rerun score improves. Milestone 5 is
+designed through org/user fields and documented RBAC rather than a full auth
+system.
 ```
 
 ```text
@@ -792,9 +795,10 @@ This maps directly to the archived design but avoids shipping it as the MVP.
 ```text
 Use archive as reference, not base branch.
 Start MVP from origin/main.
-Focus on service API, async state, sandbox boundary, result persistence.
+Focus on service API, async state, sandbox boundary, result persistence, and one
+restricted optimization rerun.
 Do not carry over GateEngine/CandidateGraph into implementation.
 Keep real-mode Harbor/Daytona path, with simulated mode for reliable API tests.
-Persist enough iteration history to satisfy Milestone 4 if time allows.
+Persist baseline and proposal-1 iteration history for Milestone 4.
 Document multi-tenancy as API-level design unless time remains for mock headers.
 ```

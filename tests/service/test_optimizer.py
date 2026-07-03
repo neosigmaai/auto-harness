@@ -55,6 +55,32 @@ def test_parse_optimizer_json_rejects_extra_fields():
         parse_optimizer_json(payload)
 
 
+@pytest.mark.parametrize(
+    "payload",
+    [
+        "[]",
+        """
+        {
+          "hypothesis": "The agent skips verification.",
+          "new_agent_instruction": "Replacement instruction",
+          "expected_effect": "The agent verifies files."
+        }
+        """,
+        """
+        {
+          "hypothesis": "The agent skips verification.",
+          "new_agent_instruction": "   ",
+          "expected_effect": "The agent verifies files.",
+          "risks": "Runs take longer."
+        }
+        """,
+    ],
+)
+def test_parse_optimizer_json_rejects_non_object_missing_or_blank_fields(payload):
+    with pytest.raises(ValueError):
+        parse_optimizer_json(payload)
+
+
 def test_build_optimizer_prompt_includes_current_instruction_and_artifact_paths():
     results = [
         TaskResultRecord(

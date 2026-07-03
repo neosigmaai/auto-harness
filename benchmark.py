@@ -162,6 +162,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         self.per_task_timeout = per_task_timeout
         self.jobs_dir = jobs_dir
         self.reasoning_effort = reasoning_effort
+        self.last_artifacts: dict[str, dict[str, object]] = {}
 
     def _load_split_tasks(self) -> list[str] | None:
         """Load task names for the configured split. Returns None to run all tasks."""
@@ -188,6 +189,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         import json
         import subprocess
 
+        self.last_artifacts = {}
         if task_ids is None:
             task_ids = self._load_split_tasks()
 
@@ -268,6 +270,7 @@ class TerminalBenchRunner(BenchmarkRunner):
                 print(result.stderr, file=sys.stderr)
         except subprocess.TimeoutExpired:
             print(f"[benchmark] WARNING: harbor run timed out after {timeout_sec}s")
+            result = None
 
         # Find the job directory created by THIS run. Filter out stale dirs from previous
         # runs — if harbor fails before creating a new directory, we must not silently
@@ -279,6 +282,8 @@ class TerminalBenchRunner(BenchmarkRunner):
             and os.path.getmtime(os.path.join(jobs_dir, d)) >= run_start - 1
         ]
         if not all_dirs:
+            if result is not None and result.returncode != 0:
+                raise RuntimeError(_format_subprocess_failure("harbor run", result))
             print(
                 "[benchmark] ERROR: no job output found for this run (harbor may have failed before creating output)"
             )
@@ -307,10 +312,19 @@ class TerminalBenchRunner(BenchmarkRunner):
                 print(
                     f"[benchmark] WARNING: harbor job resume timed out after {timeout_sec}s"
                 )
+                resume_result = None
+
+            if resume_result is not None and resume_result.returncode != 0:
+                raise RuntimeError(
+                    _format_subprocess_failure("harbor job resume", resume_result)
+                )
 
             if _harbor_job_is_pending(job_dir):
+                detail = ""
+                if resume_result is not None:
+                    detail = "\n" + _format_subprocess_output(resume_result)
                 raise RuntimeError(
-                    f"harbor job did not complete after resume: {job_dir}"
+                    f"harbor job did not complete after resume: {job_dir}{detail}"
                 )
 
         # Parse per-trial result.json files
@@ -334,6 +348,9 @@ class TerminalBenchRunner(BenchmarkRunner):
                 else:
                     reward = None  # verifier did not run — infra error
                 results[task_name] = reward
+                self.last_artifacts[task_name] = _collect_harbor_artifacts(
+                    job_dir, os.path.join(job_dir, trial_name)
+                )
             except (json.JSONDecodeError, KeyError, TypeError, AttributeError) as e:
                 print(f"[benchmark] WARNING: failed to parse {trial_result}: {e}")
                 continue
@@ -387,6 +404,77 @@ class TerminalBenchRunner(BenchmarkRunner):
                 _shutil.rmtree(old_path, ignore_errors=True)
 
         return results
+
+
+def _collect_harbor_artifacts(job_dir: str, trial_dir: str) -> dict[str, object]:
+    artifact_paths = {
+        "artifact_manifest": os.path.join(trial_dir, "artifacts", "manifest.json"),
+        "job_config": os.path.join(job_dir, "config.json"),
+        "job_lock": os.path.join(job_dir, "lock.json"),
+        "job_log": os.path.join(job_dir, "job.log"),
+        "job_result": os.path.join(job_dir, "result.json"),
+        "trace": os.path.join(trial_dir, "agent", "trace.json"),
+        "trial_config": os.path.join(trial_dir, "config.json"),
+        "trial_log": os.path.join(trial_dir, "trial.log"),
+        "trial_result": os.path.join(trial_dir, "result.json"),
+        "verifier_ctrf": os.path.join(trial_dir, "verifier", "ctrf.json"),
+        "verifier_reward": os.path.join(trial_dir, "verifier", "reward.txt"),
+        "verifier_stdout": os.path.join(trial_dir, "verifier", "test-stdout.txt"),
+    }
+    artifacts: dict[str, object] = {
+        name: path for name, path in artifact_paths.items() if os.path.exists(path)
+    }
+    all_files = _collect_files(job_dir)
+    artifacts["all_files"] = all_files
+    artifacts["json_files"] = [path for path in all_files if path.endswith(".json")]
+    artifacts["jsonl_files"] = [path for path in all_files if path.endswith(".jsonl")]
+    artifacts["log_files"] = [path for path in all_files if path.endswith(".log")]
+    artifacts["error_files"] = [
+        path
+        for path in all_files
+        if "error" in os.path.basename(path).lower()
+        or "stderr" in os.path.basename(path).lower()
+    ]
+    return artifacts
+
+
+def _collect_files(root_dir: str) -> list[str]:
+    collected: list[str] = []
+    for current_root, _dirs, filenames in os.walk(root_dir):
+        for filename in filenames:
+            path = os.path.join(current_root, filename)
+            if os.path.isfile(path):
+                collected.append(path)
+    return sorted(collected)
+
+
+def _format_subprocess_failure(label: str, result: subprocess.CompletedProcess) -> str:
+    return (
+        f"{label} failed with exit code {result.returncode}"
+        + _format_subprocess_output(result)
+    )
+
+
+def _format_subprocess_output(result: subprocess.CompletedProcess) -> str:
+    parts = []
+    if result.stdout:
+        parts.append(f"stdout:\n{_truncate_error_text(result.stdout)}")
+    if result.stderr:
+        parts.append(f"stderr:\n{_truncate_error_text(result.stderr)}")
+    if not parts:
+        return ""
+    return "\n" + "\n".join(parts)
+
+
+def _truncate_error_text(text: str, limit: int = 4000) -> str:
+    if len(text) <= limit:
+        return text
+    half = limit // 2
+    return (
+        text[:half]
+        + f"\n\n... [{len(text) - limit} chars truncated] ...\n\n"
+        + text[-half:]
+    )
 
 
 def _harbor_job_is_pending(job_dir: str) -> bool:

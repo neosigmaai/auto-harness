@@ -50,6 +50,10 @@ def test_terminal_runner_adapter_uses_per_run_jobs_dir_and_caps_concurrency(
             return {task_id: 1.0 for task_id in task_ids}
 
     monkeypatch.chdir(tmp_path)
+    template_path = tmp_path / "agent" / "templates" / "terminal_bench.py"
+    template_path.parent.mkdir(parents=True)
+    template_path.write_text("class HarnessAgent:\n    pass\n")
+
     benchmark_module = types.ModuleType("benchmark")
     benchmark_module.TerminalBenchRunner = FakeTerminalBenchRunner
     monkeypatch.setitem(sys.modules, "benchmark", benchmark_module)
@@ -61,6 +65,7 @@ def test_terminal_runner_adapter_uses_per_run_jobs_dir_and_caps_concurrency(
         sandbox_provider="daytona",
         requested_concurrency=8,
         run_id="run-123",
+        attempt="baseline",
     )
 
     assert results == {"task-a": 1.0, "task-b": 1.0}
@@ -69,9 +74,118 @@ def test_terminal_runner_adapter_uses_per_run_jobs_dir_and_caps_concurrency(
     assert created["env_provider"] == "daytona"
     assert created["n_concurrent"] == 2
     assert Path(created["jobs_dir"]) == Path(
-        "workspace/service_runs/run-123/tbench_jobs"
+        "workspace/service_runs/run-123/tbench_jobs/baseline"
     )
     assert created["task_ids"] == ["task-a", "task-b"]
+
+
+def test_terminal_runner_adapter_uses_distinct_jobs_dir_per_attempt(
+    monkeypatch, tmp_path
+):
+    created_dirs = []
+
+    class FakeTerminalBenchRunner:
+        def __init__(self, **kwargs):
+            created_dirs.append(kwargs["jobs_dir"])
+
+        def run(self, task_ids):
+            return {task_id: 0.0 for task_id in task_ids}
+
+    monkeypatch.chdir(tmp_path)
+    template_path = tmp_path / "agent" / "templates" / "terminal_bench.py"
+    template_path.parent.mkdir(parents=True)
+    template_path.write_text("class HarnessAgent:\n    pass\n")
+    benchmark_module = types.ModuleType("benchmark")
+    benchmark_module.TerminalBenchRunner = FakeTerminalBenchRunner
+    monkeypatch.setitem(sys.modules, "benchmark", benchmark_module)
+
+    runner = TerminalBenchRunnerAdapter(split="train")
+    for attempt in ("baseline", "proposal-1"):
+        runner.run(
+            ["task-a"],
+            model="gpt-5.4",
+            sandbox_provider="daytona",
+            requested_concurrency=1,
+            run_id="run-123",
+            attempt=attempt,
+        )
+
+    assert [Path(path) for path in created_dirs] == [
+        Path("workspace/service_runs/run-123/tbench_jobs/baseline"),
+        Path("workspace/service_runs/run-123/tbench_jobs/proposal-1"),
+    ]
+
+
+def test_terminal_runner_adapter_installs_terminal_agent_template_for_real_run(
+    monkeypatch, tmp_path
+):
+    created = {}
+    agent_path = tmp_path / "agent" / "agent.py"
+    template_path = tmp_path / "agent" / "templates" / "terminal_bench.py"
+    template_path.parent.mkdir(parents=True)
+    agent_path.write_text("# Placeholder\n")
+    template_path.write_text("class HarnessAgent:\n    pass\n")
+
+    class FakeTerminalBenchRunner:
+        def __init__(self, **kwargs):
+            created.update(kwargs)
+
+        def run(self, task_ids):
+            created["task_ids"] = list(task_ids)
+            return {task_id: 1.0 for task_id in task_ids}
+
+    monkeypatch.chdir(tmp_path)
+    benchmark_module = types.ModuleType("benchmark")
+    benchmark_module.TerminalBenchRunner = FakeTerminalBenchRunner
+    monkeypatch.setitem(sys.modules, "benchmark", benchmark_module)
+
+    runner = TerminalBenchRunnerAdapter(split="train")
+    results = runner.run(
+        ["task-a"],
+        model="gpt-5.4",
+        sandbox_provider="daytona",
+        requested_concurrency=1,
+        run_id="run-123",
+    )
+
+    assert results == {"task-a": 1.0}
+    assert agent_path.read_text() == template_path.read_text()
+    assert created["agent_import_path"] == "agent.agent:HarnessAgent"
+
+
+def test_terminal_runner_adapter_exposes_last_artifacts(monkeypatch, tmp_path):
+    artifacts = {
+        "task-a": {
+            "trace": "workspace/service_runs/run-123/tbench_jobs/job/task-a/trace.json",
+            "trial_result": "workspace/service_runs/run-123/tbench_jobs/job/task-a/result.json",
+        }
+    }
+
+    class FakeTerminalBenchRunner:
+        def __init__(self, **kwargs):
+            self.last_artifacts = artifacts
+
+        def run(self, task_ids):
+            return {task_id: 1.0 for task_id in task_ids}
+
+    monkeypatch.chdir(tmp_path)
+    template_path = tmp_path / "agent" / "templates" / "terminal_bench.py"
+    template_path.parent.mkdir(parents=True)
+    template_path.write_text("class HarnessAgent:\n    pass\n")
+    benchmark_module = types.ModuleType("benchmark")
+    benchmark_module.TerminalBenchRunner = FakeTerminalBenchRunner
+    monkeypatch.setitem(sys.modules, "benchmark", benchmark_module)
+
+    runner = TerminalBenchRunnerAdapter(split="train")
+    runner.run(
+        ["task-a"],
+        model="gpt-5.4",
+        sandbox_provider="daytona",
+        requested_concurrency=1,
+        run_id="run-123",
+    )
+
+    assert runner.last_artifacts == artifacts
 
 
 def test_runner_module_import_does_not_import_benchmark(monkeypatch):

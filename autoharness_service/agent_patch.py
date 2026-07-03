@@ -2,21 +2,25 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import py_compile
+import re
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
 _DANGEROUS_SUBSTRINGS = (
     "```",
-    "import ",
-    "from ",
     "os.environ",
     "subprocess",
     "open(",
     "eval(",
     "exec(",
     "__",
+)
+_DANGEROUS_PATTERNS = (
+    re.compile(r"(?im)^\s*(?:[-*]\s*)?import\s+[A-Za-z_][\w.]*\b"),
+    re.compile(r"(?im)^\s*(?:[-*]\s*)?from\s+[A-Za-z_][\w.]*\s+import\b"),
 )
 
 
@@ -79,6 +83,21 @@ class AgentPatchService:
 
     def restore(self, source: str) -> None:
         self.agent_path.write_text(source, encoding="utf-8")
+
+    def discard_proposal_snapshot(
+        self,
+        snapshot_paths: dict[str, str],
+    ) -> dict[str, str]:
+        discarded: dict[str, str] = {}
+        proposal_path = snapshot_paths.get("proposal-1")
+        if not proposal_path:
+            return discarded
+
+        path = Path(proposal_path)
+        if path.exists():
+            path.unlink()
+            discarded["proposal-1"] = proposal_path
+        return discarded
 
     def _find_instruction_assignment(self, source: str) -> _InstructionAssignment:
         module = ast.parse(source)
@@ -143,9 +162,16 @@ class AgentPatchService:
         )
 
     def _validate_instruction(self, new_instruction: str) -> None:
+        if _patch_guard_disabled():
+            return
         for token in _DANGEROUS_SUBSTRINGS:
             if token in new_instruction:
                 raise ValueError(f"Rejected dangerous instruction content: {token}")
+        for pattern in _DANGEROUS_PATTERNS:
+            if pattern.search(new_instruction):
+                raise ValueError(
+                    "Rejected dangerous instruction content: import statement"
+                )
 
     def _build_patched_source(
         self,
@@ -185,3 +211,8 @@ class AgentPatchService:
                 cfile=compiled_file.name,
                 doraise=True,
             )
+
+
+def _patch_guard_disabled() -> bool:
+    value = os.getenv("AUTOHARNESS_DISABLE_PATCH_GUARD", "").strip().lower()
+    return value in {"1", "true", "yes", "on"}

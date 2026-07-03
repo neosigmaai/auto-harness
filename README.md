@@ -11,17 +11,19 @@ The loop is defined in `PROGRAM.md`. The coding agent edits `agent/agent.py` to 
 ## Take-home: Agent Optimization Service MVP
 
 This branch adds a small FastAPI backend service for the take-home assignment.
-It intentionally focuses on the first three milestones:
+It focuses on the take-home MVP milestones:
 
 - API design with structured request, status, result, and iteration shapes
 - asynchronous run lifecycle with polling
 - sandboxed Terminal-Bench execution through Harbor and Daytona in real mode
 - PostgreSQL persistence for runs, task results, and iteration history
+- a single-optimized-version Milestone 4 loop
 
-Milestone 4 is represented by a minimal LLM proposal history. The service does
-not automatically patch `agent/agent.py` in this MVP. Milestone 5 is represented
-by API-level `X-Org-Id` / `X-User-Id` / `X-Role` scoping and documented RBAC
-extensions.
+Milestone 4 runs a narrow closed loop: baseline task execution, compact failure
+summary, one structured LLM proposal, restricted `AGENT_INSTRUCTION` patch,
+same-task rerun, strict score comparison, and accept/revert. The only optimized
+version name is `proposal-1`. Milestone 5 is represented by API-level
+`X-Org-Id` / `X-User-Id` / `X-Role` scoping and documented RBAC extensions.
 
 Companion system design notes live in
 [docs/takehome_mvp_system_design.md](docs/takehome_mvp_system_design.md).
@@ -60,13 +62,16 @@ If that container already exists, start it instead:
 docker start autoharness-postgres
 ```
 
-For real Terminal-Bench mode, set:
+For real Terminal-Bench mode and Milestone 4 optimization, set:
 
 ```text
 OPENAI_API_KEY=...
 DAYTONA_API_KEY=...
 DATABASE_URL=postgresql://autoharness:autoharness@localhost:5432/autoharness
 ```
+
+The same shell that starts Uvicorn must have these variables available. Harbor
+CLI must also be installed for real `mode=real` reruns.
 
 Install Harbor:
 
@@ -112,7 +117,8 @@ python test_client.py \
   --timeout-sec 1800
 ```
 
-Real mode expects `OPENAI_API_KEY`, `DAYTONA_API_KEY`, and the `harbor` CLI.
+Real mode expects `OPENAI_API_KEY`, `DAYTONA_API_KEY`, `DATABASE_URL`, and the
+`harbor` CLI.
 
 ### Selected Terminal-Bench tasks
 
@@ -137,8 +143,11 @@ infrastructure outcomes without requiring a large benchmark sweep.
   real-run semaphore live in-process.
 - Local MVP uses polling. Daytona webhooks are reserved for production
   lifecycle reconciliation.
-- The optimizer records one proposal history entry and does not do multi-candidate
-  search, GateEngine regression suites, or suite promotion.
+- The optimizer creates exactly one structured proposal, applies it only through
+  `AgentPatchService`, and only replaces top-level `AGENT_INSTRUCTION` in
+  `agent/agent.py`.
+- Rejected or non-improving proposals restore both `agent/agent.py` and the
+  final visible baseline task rows.
 - `X-Org-Id`, `X-User-Id`, and `X-Role` are local demo headers. They demonstrate
   API-level scoping, not production authentication.
 - Real Harbor/Daytona runs are serialized in-process and use a per-run
@@ -152,7 +161,9 @@ infrastructure outcomes without requiring a large benchmark sweep.
 - Direct Daytona SDK support
 - JWT/OAuth auth and real RBAC
 - GateEngine, candidate graphs, beam search, and promotion logic
-- Automatic patching of `agent/agent.py`
+- Multi-round optimization
+- Multiple optimized versions
+- Merging optimized versions or optimized task results
 
 ### Production follow-ups
 

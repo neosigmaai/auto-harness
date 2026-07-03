@@ -5,7 +5,7 @@ This diagram shows how the MVP satisfies the take-home milestones:
 - Milestone 1: HTTP API with structured run, status, result, and iteration resources.
 - Milestone 2: asynchronous job lifecycle with polling.
 - Milestone 3: real sandbox execution through Harbor and Daytona.
-- Milestone 4-lite: persisted iteration history and optional LLM improvement proposal.
+- Milestone 4: single-optimized-version loop with restricted instruction patching.
 - Milestone 5-lite: API-level org/user/role scoping through demo headers.
 
 ```mermaid
@@ -65,15 +65,19 @@ flowchart TD
     NORMALIZER -->|"passed / failed / infra_failed / timed_out"| TASK_RESULTS
     NORMALIZER -->|"score + failure summary"| RUNS
 
-    subgraph OPT["Milestone 4-lite: Optimization History"]
+    subgraph OPT["Milestone 4: Single Optimized Version Loop"]
         NORMALIZER --> FAILURE_SUMMARY["Failure Summary"]
-        FAILURE_SUMMARY --> LLM["Optional LLM Proposal"]
-        LLM --> ITERATIONS
+        FAILURE_SUMMARY --> LLM["Structured LLM JSON Proposal"]
+        LLM --> PATCH["AgentPatchService"]
+        PATCH -->|"replace AGENT_INSTRUCTION only"| AGENT_FILE["agent/agent.py"]
+        PATCH -->|"reset same task IDs"| TASK_RESULTS
+        PATCH -->|"rerun proposal-1"| BG
+        PATCH -->|"accept if rerun score improves; otherwise revert"| ITERATIONS
     end
 
     STATUS -->|"poll progress"| PG
     RESULTS -->|"read terminal result"| PG
-    ITERS -->|"read baseline/proposal history"| PG
+    ITERS -->|"read baseline and proposal-1 history"| PG
 ```
 
 ## Request Flow
@@ -83,6 +87,26 @@ The API validates task IDs, mode, sandbox provider, org scope, and role. It writ
 a queued run to Postgres and returns `202 Accepted` with a `run_id` immediately.
 The user then polls `GET /runs/{run_id}` and reads terminal output through
 `GET /runs/{run_id}/results`.
+
+## Milestone 4 Optimization Loop
+
+When `max_iterations=1`, the service executes exactly one optimized version named
+`proposal-1`:
+
+```text
+baseline -> failure summary -> structured LLM proposal -> restricted patch -> rerun -> score compare -> accept/revert
+```
+
+The patch boundary is intentionally small. `AgentPatchService` can only replace
+the top-level `AGENT_INSTRUCTION` assignment in `agent/agent.py`, then validates
+the file with `py_compile`. The rerun uses the same task IDs, mode, sandbox
+provider, model, and requested concurrency. A patch is accepted only when
+`rerun_score > baseline_score`; otherwise the service restores the original
+agent file and restores the baseline task rows so final results match the final
+agent state.
+
+The MVP does not implement multi-round optimization, multiple optimized versions,
+candidate graphs, beam search, merging, GateEngine, or suite promotion.
 
 ## Async Harbor Flow
 

@@ -53,17 +53,6 @@ class RunProgress(BaseModel):
     completed: int
 
 
-class RunStatusResponse(BaseModel):
-    run_id: str
-    status: str
-    progress: RunProgress
-    score: float | None
-    error: str | None
-    created_at: datetime | None
-    started_at: datetime | None
-    completed_at: datetime | None
-
-
 class TaskResultResponse(BaseModel):
     task_id: str
     status: str
@@ -73,6 +62,18 @@ class TaskResultResponse(BaseModel):
     trace_path: str | None
     result_path: str | None
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class RunStatusResponse(BaseModel):
+    run_id: str
+    status: str
+    progress: RunProgress
+    score: float | None
+    error: str | None
+    created_at: datetime | None
+    started_at: datetime | None
+    completed_at: datetime | None
+    task_results: list[TaskResultResponse] = Field(default_factory=list)
 
 
 class FailureSummaryResponse(BaseModel):

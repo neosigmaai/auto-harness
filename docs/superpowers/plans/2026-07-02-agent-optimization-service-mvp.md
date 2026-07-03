@@ -4,7 +4,7 @@
 
 **Goal:** Build a small FastAPI backend service that accepts benchmark run requests, executes selected Terminal-Bench tasks asynchronously through simulated or Harbor/Daytona-backed runners, persists run/task/iteration state in PostgreSQL, and exposes a polling API plus `test_client.py`.
 
-**Architecture:** Keep the take-home MVP narrow: `FastAPI API -> RunService -> Store -> Runner -> Normalizer -> Store`. Real sandbox execution is Harbor-first (`TerminalBenchRunner -> harbor run --env daytona`), not direct Daytona SDK. Optimization is a minimal LLM proposal/history step, not multi-candidate search, GateEngine, or suite promotion.
+**Architecture:** Keep the take-home MVP narrow: `FastAPI API -> RunService -> Store -> Runner -> Normalizer -> Store`. Real sandbox execution is Harbor-first (`TerminalBenchRunner -> harbor run --env daytona`), not direct Daytona SDK. Optimization is a single structured proposal, restricted instruction patch, same-task rerun, and score-gated accept/revert step, not multi-candidate search, GateEngine, or suite promotion.
 
 **Tech Stack:** Python 3.12, FastAPI, Uvicorn, Pydantic, psycopg 3, PostgreSQL, pytest, FastAPI TestClient/httpx, existing `benchmark.py` TerminalBenchRunner, existing OpenAI dependency.
 
@@ -15,7 +15,7 @@
 - `AGENTS.md` must remain ignored and must never be staged or pushed.
 - Do not use `git push --force` or `git push --force-with-lease`.
 - Do not commit `.env`, `experiment_config.yaml`, `workspace/`, raw benchmark jobs, or API keys.
-- Assignment MVP scope is Milestones 1-3 plus minimal Milestone 4 history/proposal; Milestone 5 is header-based mock tenancy and README design.
+- Assignment MVP scope is Milestones 1-3 plus a single-version Milestone 4 optimization loop; Milestone 5 is header-based mock tenancy and README design.
 - Do not implement GateEngine, SuiteStore, CandidateGraphManager, Beam Search, MergeEngine, Kubernetes workers, Redis/Kafka, or direct Daytona SDK in this MVP.
 - Real execution path uses Harbor as Daytona adapter: `TerminalBenchRunner -> harbor run --env daytona -> local jobs_dir/artifacts`.
 - Local PostgreSQL is written only by the service process; Daytona sandboxes do not connect to local PostgreSQL.
@@ -2605,17 +2605,18 @@ Add a top-level section near the Quick Start area:
 ## Take-home: Agent Optimization Service MVP
 
 This branch adds a small FastAPI backend service for the take-home assignment.
-It intentionally focuses on Milestones 1-3:
+It focuses on the take-home MVP milestones:
 
 - API design with structured request/response shapes
 - asynchronous run lifecycle with polling
 - sandboxed Terminal-Bench execution through Harbor + Daytona in real mode
 - PostgreSQL persistence for runs, task results, and iteration history
+- a single-optimized-version Milestone 4 loop
 
-Milestone 4 is represented by a minimal LLM improvement proposal history. The
-service does not automatically patch `agent/agent.py` in this MVP. Milestone 5
-is represented by API-level `X-Org-Id` / `X-User-Id` scoping and documented
-RBAC extensions.
+Milestone 4 runs one structured LLM proposal named `proposal-1`, applies only a
+restricted `AGENT_INSTRUCTION` patch, reruns the same task IDs, and accepts the
+patch only when the rerun score improves. Milestone 5 is represented by API-level
+`X-Org-Id` / `X-User-Id` scoping and documented RBAC extensions.
 
 ### Setup
 
@@ -2848,12 +2849,11 @@ Covered:
 - Milestone 1 API design: `POST /runs`, `GET /runs/{id}`, `GET /runs/{id}/results`, `GET /tasks`, structured errors/status/results.
 - Milestone 2 async processing: submit returns run id, background thread executes, caller polls status.
 - Milestone 3 sandbox execution: real mode delegates to Harbor with `--env daytona`; simulated mode validates lifecycle without external services.
-- Milestone 4 minimal history: iteration 0 and optional LLM proposal iteration are persisted and exposed.
+- Milestone 4 single-version loop: iteration 0 baseline and iteration 1 `proposal-1` accept/reject history are persisted and exposed.
 - Milestone 5 design hook: mock `X-Org-Id`/`X-User-Id` API-level scoping and README production RBAC notes.
 
 Intentionally not covered:
 
-- automatic patch application
 - multi-candidate optimization
 - failure clustering
 - GateEngine regression suite

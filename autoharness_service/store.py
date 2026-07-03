@@ -15,6 +15,7 @@ from psycopg.types.json import Jsonb
 RUNS_TABLE = "aos_runs"
 TASK_RESULTS_TABLE = "aos_task_results"
 ITERATIONS_TABLE = "aos_iterations"
+PROPOSAL_CHAR_LIMIT = 20000
 
 
 class PostgresStore:
@@ -65,9 +66,17 @@ class PostgresStore:
                   result_path text,
                   metadata jsonb NOT NULL DEFAULT '{{}}'::jsonb,
                   created_at timestamptz NOT NULL DEFAULT now(),
+                  started_at timestamptz,
+                  completed_at timestamptz,
                   PRIMARY KEY (run_id, task_id)
                 )
                 """
+            )
+            conn.execute(
+                f"ALTER TABLE {TASK_RESULTS_TABLE} ADD COLUMN IF NOT EXISTS started_at timestamptz"
+            )
+            conn.execute(
+                f"ALTER TABLE {TASK_RESULTS_TABLE} ADD COLUMN IF NOT EXISTS completed_at timestamptz"
             )
             conn.execute(
                 f"""
@@ -116,6 +125,29 @@ class PostgresStore:
             ).fetchone()
         return _run_from_row(row)
 
+    def create_task_queue(
+        self, run_id: str, org_id: str, task_ids: Iterable[str]
+    ) -> None:
+        with self._connect() as conn:
+            for task_id in task_ids:
+                conn.execute(
+                    f"""
+                    INSERT INTO {TASK_RESULTS_TABLE} (
+                      run_id, task_id, status, reward, metadata
+                    )
+                    SELECT {RUNS_TABLE}.id, %s, 'queued', NULL, %s
+                    FROM {RUNS_TABLE}
+                    WHERE {RUNS_TABLE}.id = %s AND {RUNS_TABLE}.org_id = %s
+                    ON CONFLICT (run_id, task_id) DO NOTHING
+                    """,
+                    (
+                        task_id,
+                        Jsonb({"source": "queued"}),
+                        run_id,
+                        org_id,
+                    ),
+                )
+
     def get_run(self, run_id: str, org_id: str) -> RunRecord | None:
         with self._connect() as conn:
             row = conn.execute(
@@ -123,6 +155,19 @@ class PostgresStore:
                 (run_id, org_id),
             ).fetchone()
         return _run_from_row(row) if row else None
+
+    def list_incomplete_runs(self, limit: int = 10) -> list[RunRecord]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                f"""
+                SELECT * FROM {RUNS_TABLE}
+                WHERE status IN ('queued', 'running')
+                ORDER BY created_at
+                LIMIT %s
+                """,
+                (limit,),
+            ).fetchall()
+        return [_run_from_row(row) for row in rows]
 
     def mark_run_running(self, run_id: str, org_id: str) -> None:
         with self._connect() as conn:
@@ -163,6 +208,120 @@ class PostgresStore:
                 (status, error[:4000], run_id, org_id),
             )
 
+    def mark_task_running(self, run_id: str, org_id: str, task_id: str) -> bool:
+        with self._connect() as conn:
+            cursor = conn.execute(
+                """
+                UPDATE {task_results_table}
+                SET status = 'running',
+                    started_at = COALESCE({task_results_table}.started_at, now())
+                FROM {runs_table}
+                WHERE {task_results_table}.run_id = {runs_table}.id
+                  AND {task_results_table}.run_id = %s
+                  AND {runs_table}.org_id = %s
+                  AND {task_results_table}.task_id = %s
+                  AND {task_results_table}.status = 'queued'
+                """.format(
+                    task_results_table=TASK_RESULTS_TABLE,
+                    runs_table=RUNS_TABLE,
+                ),
+                (run_id, org_id, task_id),
+            )
+            return bool(cursor.rowcount)
+
+    def upsert_task_result(
+        self, run_id: str, org_id: str, result: TaskResultRecord
+    ) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                f"""
+                INSERT INTO {TASK_RESULTS_TABLE} (
+                  run_id, task_id, status, reward, failure_type, error_summary,
+                  trace_path, result_path, metadata, started_at, completed_at
+                )
+                SELECT {RUNS_TABLE}.id, %s, %s, %s, %s, %s, %s, %s, %s, now(), now()
+                FROM {RUNS_TABLE}
+                WHERE {RUNS_TABLE}.id = %s AND {RUNS_TABLE}.org_id = %s
+                ON CONFLICT (run_id, task_id) DO UPDATE SET
+                  status = EXCLUDED.status,
+                  reward = EXCLUDED.reward,
+                  failure_type = EXCLUDED.failure_type,
+                  error_summary = EXCLUDED.error_summary,
+                  trace_path = EXCLUDED.trace_path,
+                  result_path = EXCLUDED.result_path,
+                  metadata = EXCLUDED.metadata,
+                  started_at = COALESCE({TASK_RESULTS_TABLE}.started_at, now()),
+                  completed_at = now()
+                """,
+                (
+                    result.task_id,
+                    result.status,
+                    result.reward,
+                    result.failure_type,
+                    result.error_summary,
+                    result.trace_path,
+                    result.result_path,
+                    Jsonb(result.metadata),
+                    run_id,
+                    org_id,
+                ),
+            )
+
+    def requeue_running_tasks(self, run_id: str, org_id: str) -> int:
+        with self._connect() as conn:
+            cursor = conn.execute(
+                """
+                UPDATE {task_results_table}
+                SET status = 'queued'
+                FROM {runs_table}
+                WHERE {task_results_table}.run_id = {runs_table}.id
+                  AND {task_results_table}.run_id = %s
+                  AND {runs_table}.org_id = %s
+                  AND {task_results_table}.status = 'running'
+                """.format(
+                    task_results_table=TASK_RESULTS_TABLE,
+                    runs_table=RUNS_TABLE,
+                ),
+                (run_id, org_id),
+            )
+            return cursor.rowcount or 0
+
+    def reset_task_queue(
+        self,
+        run_id: str,
+        org_id: str,
+        task_ids: Iterable[str],
+        metadata: dict[str, Any],
+    ) -> None:
+        selected_task_ids = list(task_ids)
+        if not selected_task_ids:
+            return
+
+        with self._connect() as conn:
+            conn.execute(
+                """
+                UPDATE {task_results_table}
+                SET status = 'queued',
+                    reward = NULL,
+                    failure_type = NULL,
+                    error_summary = NULL,
+                    trace_path = NULL,
+                    result_path = NULL,
+                    metadata = %s,
+                    started_at = NULL,
+                    completed_at = NULL
+                FROM {runs_table}
+                WHERE {task_results_table}.run_id = {runs_table}.id
+                  AND {task_results_table}.run_id = %s
+                  AND {runs_table}.org_id = %s
+                  AND {task_results_table}.task_id = ANY(%s)
+                """.format(
+                    task_results_table=TASK_RESULTS_TABLE,
+                    runs_table=RUNS_TABLE,
+                ),
+                (Jsonb(metadata), run_id, org_id, selected_task_ids),
+            )
+
     def replace_task_results(
         self,
         run_id: str,
@@ -201,7 +360,8 @@ class PostgresStore:
                       error_summary = EXCLUDED.error_summary,
                       trace_path = EXCLUDED.trace_path,
                       result_path = EXCLUDED.result_path,
-                      metadata = EXCLUDED.metadata
+                      metadata = EXCLUDED.metadata,
+                      completed_at = now()
                     """,
                     (
                         result.task_id,
@@ -245,6 +405,7 @@ class PostgresStore:
         proposal: str | None = None,
         accepted: bool | None = None,
     ) -> IterationRecord:
+        proposal_text = _validate_proposal_text(proposal)
         with self._connect() as conn:
             row = conn.execute(
                 f"""
@@ -267,7 +428,7 @@ class PostgresStore:
                     status,
                     agent_version,
                     score,
-                    proposal[:4000] if proposal else None,
+                    proposal_text,
                     accepted,
                     run_id,
                     org_id,
@@ -347,3 +508,11 @@ def _iteration_from_row(row: dict[str, Any]) -> IterationRecord:
         proposal=row["proposal"],
         accepted=row["accepted"],
     )
+
+
+def _validate_proposal_text(proposal: str | None) -> str | None:
+    if proposal is None:
+        return None
+    if len(proposal) > PROPOSAL_CHAR_LIMIT:
+        raise ValueError(f"proposal exceeds {PROPOSAL_CHAR_LIMIT} character limit")
+    return proposal

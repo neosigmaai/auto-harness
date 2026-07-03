@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from autoharness_service.config import load_settings
 from autoharness_service.runner import SimulatedBenchmarkRunner
 from autoharness_service.schemas import (
@@ -17,11 +19,11 @@ from fastapi import FastAPI, Header, HTTPException, Response, status
 
 DEFAULT_TASKS = [
     "break-filter-js-from-html",
-    "task-pass",
-    "task-fail",
-    "task-infra",
+    "multi-source-data-merger",
 ]
 TERMINAL_RUN_STATUSES = {"succeeded", "failed", "timed_out", "cancelled"}
+READ_ROLES = {"viewer", "runner", "admin"}
+WRITE_ROLES = {"runner", "admin"}
 
 
 def create_app(
@@ -29,7 +31,20 @@ def create_app(
     *,
     start_background: bool = True,
 ) -> FastAPI:
-    app = FastAPI(title="Agent Optimization Service", version="0.1.0")
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        if start_background:
+            app.state.service.start_polling(interval_sec=2.0, limit=10)
+        try:
+            yield
+        finally:
+            app.state.service.stop_polling()
+
+    app = FastAPI(
+        title="Agent Optimization Service",
+        version="0.1.0",
+        lifespan=lifespan,
+    )
     app.state.service = service or _build_service()
 
     @app.get("/health")
@@ -52,7 +67,7 @@ def create_app(
         x_user_id: str = Header(default="local-user", alias="X-User-Id"),
         x_role: str = Header(alias="X-Role"),
     ) -> RunCreateResponse:
-        if x_role not in {"runner", "admin"}:
+        if x_role not in WRITE_ROLES:
             raise HTTPException(status_code=403, detail="viewer cannot create runs")
         run = app.state.service.submit_run(
             request,
@@ -73,7 +88,10 @@ def create_app(
     def get_run(
         run_id: str,
         x_org_id: str = Header(default="default-org", alias="X-Org-Id"),
+        x_user_id: str = Header(default="local-user", alias="X-User-Id"),
+        x_role: str = Header(alias="X-Role"),
     ) -> RunStatusResponse:
+        _authorize_run_read(app.state.service, run_id, x_org_id, x_user_id, x_role)
         run_status = app.state.service.get_run_status(run_id, org_id=x_org_id)
         if run_status is None:
             raise HTTPException(status_code=404, detail="run not found")
@@ -83,7 +101,10 @@ def create_app(
     def get_results(
         run_id: str,
         x_org_id: str = Header(default="default-org", alias="X-Org-Id"),
+        x_user_id: str = Header(default="local-user", alias="X-User-Id"),
+        x_role: str = Header(alias="X-Role"),
     ) -> RunResultsResponse:
+        _authorize_run_read(app.state.service, run_id, x_org_id, x_user_id, x_role)
         run_results = app.state.service.get_run_results(run_id, org_id=x_org_id)
         if run_results is None:
             raise HTTPException(status_code=404, detail="run not found")
@@ -95,7 +116,10 @@ def create_app(
     def get_iterations(
         run_id: str,
         x_org_id: str = Header(default="default-org", alias="X-Org-Id"),
+        x_user_id: str = Header(default="local-user", alias="X-User-Id"),
+        x_role: str = Header(alias="X-Role"),
     ) -> IterationsResponse:
+        _authorize_run_read(app.state.service, run_id, x_org_id, x_user_id, x_role)
         run_status = app.state.service.get_run_status(run_id, org_id=x_org_id)
         if run_status is None:
             raise HTTPException(status_code=404, detail="run not found")
@@ -126,6 +150,25 @@ def _build_service() -> RunService:
         simulated_runner=SimulatedBenchmarkRunner(),
         max_local_concurrency=settings.max_local_concurrency,
     )
+
+
+def _authorize_run_read(
+    service: RunService,
+    run_id: str,
+    org_id: str,
+    user_id: str,
+    role: str,
+) -> None:
+    if role not in READ_ROLES:
+        raise HTTPException(status_code=403, detail="invalid role")
+
+    run = service.store.get_run(run_id, org_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail="run not found")
+    if role == "admin":
+        return
+    if run.created_by != user_id:
+        raise HTTPException(status_code=403, detail="user cannot access this run")
 
 
 def _iteration_field(item: object, name: str):
