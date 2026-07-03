@@ -66,6 +66,8 @@ class RunService:
         self._poller_lock = threading.Lock()
         self._poller_stop = threading.Event()
         self._poller_thread: threading.Thread | None = None
+        self._active_run_lock = threading.Lock()
+        self._active_run_threads: dict[tuple[str, str], threading.Thread] = {}
 
     def submit_run(
         self,
@@ -85,12 +87,7 @@ class RunService:
             agent_version="initial",
         )
         if start_background:
-            thread = threading.Thread(
-                target=self.execute_run,
-                kwargs={"run_id": run.run_id, "org_id": org_id},
-                daemon=True,
-            )
-            thread.start()
+            self._start_run_thread(run.run_id, org_id)
         return run
 
     def start_polling(self, interval_sec: float = 2.0, limit: int = 10) -> None:
@@ -135,11 +132,50 @@ class RunService:
         self.store.init_schema()
         resumed = 0
         for run in self.store.list_incomplete_runs(limit=limit):
+            if self._is_run_active(run.run_id, run.org_id):
+                continue
             if requeue_running:
                 self.store.requeue_running_tasks(run.run_id, run.org_id)
-            self.execute_run(run.run_id, org_id=run.org_id)
-            resumed += 1
+            if self._start_run_thread(run.run_id, run.org_id):
+                resumed += 1
         return resumed
+
+    def _start_run_thread(self, run_id: str, org_id: str) -> bool:
+        key = (org_id, run_id)
+        with self._active_run_lock:
+            existing = self._active_run_threads.get(key)
+            if existing is not None and existing.is_alive():
+                return False
+            self._active_run_threads.pop(key, None)
+            thread = threading.Thread(
+                target=self._execute_run_thread,
+                kwargs={"run_id": run_id, "org_id": org_id},
+                daemon=True,
+            )
+            self._active_run_threads[key] = thread
+            thread.start()
+            return True
+
+    def _execute_run_thread(self, run_id: str, org_id: str) -> None:
+        try:
+            self.execute_run(run_id, org_id=org_id)
+        finally:
+            key = (org_id, run_id)
+            current = threading.current_thread()
+            with self._active_run_lock:
+                if self._active_run_threads.get(key) is current:
+                    self._active_run_threads.pop(key, None)
+
+    def _is_run_active(self, run_id: str, org_id: str) -> bool:
+        key = (org_id, run_id)
+        with self._active_run_lock:
+            thread = self._active_run_threads.get(key)
+            if thread is None:
+                return False
+            if thread.is_alive():
+                return True
+            self._active_run_threads.pop(key, None)
+            return False
 
     def execute_run(self, run_id: str, org_id: str) -> None:
         run = self.store.get_run(run_id, org_id)

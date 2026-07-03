@@ -415,6 +415,67 @@ def test_resume_incomplete_runs_requeues_running_tasks_and_finishes_work():
     assert results.task_results[0].reward == 1.0
 
 
+def test_resume_incomplete_runs_schedules_work_without_blocking_poller():
+    class BlockingSimulatedRunner:
+        def __init__(self):
+            self.started = threading.Event()
+            self.release = threading.Event()
+            self.calls = 0
+
+        def run(self, task_ids):
+            self.calls += 1
+            self.started.set()
+            assert self.release.wait(timeout=1)
+            return {task_id: 1.0 for task_id in task_ids}
+
+    store = FakeStore()
+    runner = BlockingSimulatedRunner()
+    service = RunService(store=store, simulated_runner=runner)
+    request = RunCreateRequest(
+        task_ids=["task-pass"],
+        mode="simulated",
+        sandbox_provider="simulated",
+        requested_concurrency=1,
+    )
+    run = service.submit_run(
+        request, org_id="org-1", created_by="user-1", start_background=False
+    )
+    store.mark_run_running(run.run_id, org_id="org-1")
+    store.mark_task_running(run.run_id, org_id="org-1", task_id="task-pass")
+
+    resume_done = threading.Event()
+    resume_result = []
+
+    def resume():
+        resume_result.append(service.resume_incomplete_runs(limit=10))
+        resume_done.set()
+
+    resume_thread = threading.Thread(target=resume)
+    resume_thread.start()
+    assert runner.started.wait(timeout=1)
+
+    assert resume_done.wait(timeout=0.1)
+    assert resume_result == [1]
+
+    duplicate_resumed = service.resume_incomplete_runs(
+        limit=10,
+        requeue_running=False,
+    )
+
+    runner.release.set()
+    resume_thread.join(timeout=1)
+    for _ in range(50):
+        status = service.get_run_status(run.run_id, org_id="org-1")
+        if status is not None and status.status == "succeeded":
+            break
+        threading.Event().wait(0.01)
+    else:
+        raise AssertionError("scheduled run did not finish")
+
+    assert duplicate_resumed == 0
+    assert runner.calls == 1
+
+
 def test_execute_run_does_not_double_execute_task_claimed_by_another_worker():
     class FailingRunner:
         def run(
