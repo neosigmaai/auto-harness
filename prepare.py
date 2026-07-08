@@ -56,9 +56,24 @@ def check_env_tau_bench(cfg: dict) -> bool:
     return True
 
 
+# Providers this script knows how to credential-check. env_provider is passed
+# straight through to `harbor run --env`, which supports more backends than
+# this — e.g. runloop, gke, apple-container, or a custom Harbor environment.
+# Those are valid; we just can't validate their credentials here, so warn
+# instead of failing and let harbor itself surface a clear error if needed.
+KNOWN_ENV_PROVIDERS = {"e2b", "daytona", "modal", "docker"}
+
+
 def check_env_terminal_bench(cfg: dict) -> bool:
     """Check environment for terminal-bench."""
     env_provider = cfg.get("env_provider", "e2b")
+    if env_provider not in KNOWN_ENV_PROVIDERS:
+        print(
+            f"[prepare] WARNING: env_provider '{env_provider}' is not one of "
+            f"{sorted(KNOWN_ENV_PROVIDERS)} that prepare.py knows how to "
+            "credential-check; skipping provider-specific validation and "
+            "deferring to `harbor run`."
+        )
     required = []
 
     # Need at least one LLM API key
@@ -76,11 +91,32 @@ def check_env_terminal_bench(cfg: dict) -> bool:
     elif env_provider == "daytona":
         required.append("DAYTONA_API_KEY")
     # docker needs no key
+    # modal is checked separately below — it accepts ~/.modal.toml in place of env vars
 
     missing = [k for k in required if not os.getenv(k)]
     if missing:
         print(f"[prepare] ERROR: missing env vars for terminal-bench: {', '.join(missing)}")
         return False
+
+    if env_provider == "modal":
+        has_token_id = bool(os.getenv("MODAL_TOKEN_ID"))
+        has_token_secret = bool(os.getenv("MODAL_TOKEN_SECRET"))
+        has_env_token = has_token_id and has_token_secret
+        has_modal_toml = os.path.isfile(os.path.expanduser("~/.modal.toml"))
+
+        if (has_token_id or has_token_secret) and not has_env_token:
+            print(
+                "[prepare] ERROR: Incomplete Modal environment variables. "
+                "Both MODAL_TOKEN_ID and MODAL_TOKEN_SECRET must be set."
+            )
+            return False
+
+        if not has_env_token and not has_modal_toml:
+            print(
+                "[prepare] ERROR: Modal requires authentication. Run 'modal token new', "
+                "or set MODAL_TOKEN_ID and MODAL_TOKEN_SECRET."
+            )
+            return False
 
     # Check harbor CLI
     if shutil.which("harbor") is None:

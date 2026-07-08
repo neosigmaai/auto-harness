@@ -37,7 +37,7 @@ run benchmark → analyze → improve agent/agent.py → gate → record → upd
 
 ## Quick start: Terminal-Bench 2.0
 
-**Requirements:** `harbor` CLI, an `OPENAI_API_KEY`, an `E2B_API_KEY` (or `DAYTONA_API_KEY`), and a coding agent (Claude Code, Codex CLI, or similar).
+**Requirements:** `harbor` CLI, an `OPENAI_API_KEY`, and a coding agent (Claude Code, Codex CLI, or similar). If using a sandboxed `env_provider` (the default), you'll also need its credential: `E2B_API_KEY`, `DAYTONA_API_KEY`, or a Modal token via `modal token new` / `MODAL_TOKEN_ID` + `MODAL_TOKEN_SECRET`. `env_provider: "docker"` needs none of these.
 
 ```bash
 # 1. Clone the repo
@@ -49,7 +49,9 @@ uv tool install harbor
 
 # 3. Set up environment variables
 cp .env.example .env
-# edit .env — set OPENAI_API_KEY and E2B_API_KEY
+# edit .env — set OPENAI_API_KEY, plus your sandbox provider's credential
+# (E2B_API_KEY, DAYTONA_API_KEY, or MODAL_TOKEN_ID + MODAL_TOKEN_SECRET) —
+# not needed if you're using env_provider: "docker"
 
 # 4. Configure the experiment
 cp experiment_config.yaml.template experiment_config.yaml
@@ -188,7 +190,7 @@ If your benchmark runs via `harbor run`, you only need four steps:
 benchmark: "terminal-bench"   # reuses TerminalBenchRunner
 dataset: "my-harbor-dataset@1.0"
 agent_model: "gpt-4o"
-env_provider: "e2b"           # or "daytona" / "docker"
+env_provider: "e2b"           # or "daytona" / "modal" / "docker"
 split: "train"
 gate_split: "test"
 ```
