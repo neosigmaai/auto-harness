@@ -49,7 +49,8 @@ uv tool install harbor
 
 # 3. Set up environment variables
 cp .env.example .env
-# edit .env — set OPENAI_API_KEY and E2B_API_KEY
+# edit .env — set OPENAI_API_KEY and your chosen sandbox provider's credential
+# (E2B_API_KEY, DAYTONA_API_KEY, or MODAL_TOKEN_ID + MODAL_TOKEN_SECRET)
 
 # 4. Configure the experiment
 cp experiment_config.yaml.template experiment_config.yaml

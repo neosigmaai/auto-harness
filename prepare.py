@@ -56,9 +56,18 @@ def check_env_tau_bench(cfg: dict) -> bool:
     return True
 
 
+KNOWN_ENV_PROVIDERS = {"e2b", "daytona", "modal", "docker"}
+
+
 def check_env_terminal_bench(cfg: dict) -> bool:
     """Check environment for terminal-bench."""
     env_provider = cfg.get("env_provider", "e2b")
+    if env_provider not in KNOWN_ENV_PROVIDERS:
+        print(
+            f"[prepare] ERROR: unknown env_provider '{env_provider}'. "
+            f"Expected one of: {', '.join(sorted(KNOWN_ENV_PROVIDERS))}"
+        )
+        return False
     required = []
 
     # Need at least one LLM API key
@@ -87,7 +96,7 @@ def check_env_terminal_bench(cfg: dict) -> bool:
         has_token_id = bool(os.getenv("MODAL_TOKEN_ID"))
         has_token_secret = bool(os.getenv("MODAL_TOKEN_SECRET"))
         has_env_token = has_token_id and has_token_secret
-        has_modal_toml = os.path.exists(os.path.expanduser("~/.modal.toml"))
+        has_modal_toml = os.path.isfile(os.path.expanduser("~/.modal.toml"))
 
         if (has_token_id or has_token_secret) and not has_env_token:
             print(
