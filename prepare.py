@@ -84,8 +84,18 @@ def check_env_terminal_bench(cfg: dict) -> bool:
         return False
 
     if env_provider == "modal":
-        has_env_token = os.getenv("MODAL_TOKEN_ID") and os.getenv("MODAL_TOKEN_SECRET")
+        has_token_id = bool(os.getenv("MODAL_TOKEN_ID"))
+        has_token_secret = bool(os.getenv("MODAL_TOKEN_SECRET"))
+        has_env_token = has_token_id and has_token_secret
         has_modal_toml = os.path.exists(os.path.expanduser("~/.modal.toml"))
+
+        if (has_token_id or has_token_secret) and not has_env_token:
+            print(
+                "[prepare] ERROR: Incomplete Modal environment variables. "
+                "Both MODAL_TOKEN_ID and MODAL_TOKEN_SECRET must be set."
+            )
+            return False
+
         if not has_env_token and not has_modal_toml:
             print(
                 "[prepare] ERROR: Modal requires authentication. Run 'modal token new', "
