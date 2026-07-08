@@ -56,6 +56,11 @@ def check_env_tau_bench(cfg: dict) -> bool:
     return True
 
 
+# Providers this script knows how to credential-check. env_provider is passed
+# straight through to `harbor run --env`, which supports more backends than
+# this — e.g. runloop, gke, apple-container, or a custom Harbor environment.
+# Those are valid; we just can't validate their credentials here, so warn
+# instead of failing and let harbor itself surface a clear error if needed.
 KNOWN_ENV_PROVIDERS = {"e2b", "daytona", "modal", "docker"}
 
 
@@ -64,10 +69,11 @@ def check_env_terminal_bench(cfg: dict) -> bool:
     env_provider = cfg.get("env_provider", "e2b")
     if env_provider not in KNOWN_ENV_PROVIDERS:
         print(
-            f"[prepare] ERROR: unknown env_provider '{env_provider}'. "
-            f"Expected one of: {', '.join(sorted(KNOWN_ENV_PROVIDERS))}"
+            f"[prepare] WARNING: env_provider '{env_provider}' is not one of "
+            f"{sorted(KNOWN_ENV_PROVIDERS)} that prepare.py knows how to "
+            "credential-check; skipping provider-specific validation and "
+            "deferring to `harbor run`."
         )
-        return False
     required = []
 
     # Need at least one LLM API key

@@ -20,9 +20,11 @@
 # reasoning_effort: "medium"      # optional
 # per_task_timeout: 1200         # seconds; tasks that exceed this score 0.0 in val_score.
 #
-# Required env vars: LLM API key for your model (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY),
-#                    E2B_API_KEY (or DAYTONA_API_KEY, or MODAL_TOKEN_ID + MODAL_TOKEN_SECRET —
-#                    the latter pair can be omitted if `modal token new` has already run locally)
+# Required env vars: LLM API key for your model (e.g. OPENAI_API_KEY or ANTHROPIC_API_KEY).
+#                    Sandbox provider credential depends on env_provider:
+#                    e2b -> E2B_API_KEY, daytona -> DAYTONA_API_KEY,
+#                    modal -> MODAL_TOKEN_ID + MODAL_TOKEN_SECRET (or `modal token new`
+#                    already run locally), docker -> none required.
 
 # ═══════════════════════════════════════════════════════════════
 # BIRD-INTERACT
