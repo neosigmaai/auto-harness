@@ -37,7 +37,7 @@ run benchmark → analyze → improve agent/agent.py → gate → record → upd
 
 ## Quick start: Terminal-Bench 2.0
 
-**Requirements:** `harbor` CLI, an `OPENAI_API_KEY`, an `E2B_API_KEY` (or `DAYTONA_API_KEY`), and a coding agent (Claude Code, Codex CLI, or similar).
+**Requirements:** `harbor` CLI, an `OPENAI_API_KEY`, a sandbox provider credential (`E2B_API_KEY`, `DAYTONA_API_KEY`, or a Modal token via `modal token new` / `MODAL_TOKEN_ID` + `MODAL_TOKEN_SECRET`), and a coding agent (Claude Code, Codex CLI, or similar).
 
 ```bash
 # 1. Clone the repo
@@ -188,7 +188,7 @@ If your benchmark runs via `harbor run`, you only need four steps:
 benchmark: "terminal-bench"   # reuses TerminalBenchRunner
 dataset: "my-harbor-dataset@1.0"
 agent_model: "gpt-4o"
-env_provider: "e2b"           # or "daytona" / "docker"
+env_provider: "e2b"           # or "daytona" / "modal" / "docker"
 split: "train"
 gate_split: "test"
 ```

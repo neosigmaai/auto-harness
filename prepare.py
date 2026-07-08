@@ -76,11 +76,22 @@ def check_env_terminal_bench(cfg: dict) -> bool:
     elif env_provider == "daytona":
         required.append("DAYTONA_API_KEY")
     # docker needs no key
+    # modal is checked separately below — it accepts ~/.modal.toml in place of env vars
 
     missing = [k for k in required if not os.getenv(k)]
     if missing:
         print(f"[prepare] ERROR: missing env vars for terminal-bench: {', '.join(missing)}")
         return False
+
+    if env_provider == "modal":
+        has_env_token = os.getenv("MODAL_TOKEN_ID") and os.getenv("MODAL_TOKEN_SECRET")
+        has_modal_toml = os.path.exists(os.path.expanduser("~/.modal.toml"))
+        if not has_env_token and not has_modal_toml:
+            print(
+                "[prepare] ERROR: Modal requires authentication. Run 'modal token new', "
+                "or set MODAL_TOKEN_ID and MODAL_TOKEN_SECRET."
+            )
+            return False
 
     # Check harbor CLI
     if shutil.which("harbor") is None:
