@@ -1,0 +1,16 @@
+# Take-home test environment for Terminal-Bench 2.0.
+# Copy to experiment_config.yaml (gitignored) before running prepare.py:
+#
+#   cp experiment_config.takehome.yaml experiment_config.yaml
+#
+# Task subset is pinned in tbench_data/task_split.json (12 tasks).
+# See TAKEHOME.md for selection rationale.
+
+benchmark: "terminal-bench"
+agent_model: "gpt-5.4"
+split: "train"
+gate_split: "test"
+env_provider: "daytona"       # E2B / modal / docker also work
+max_concurrency: 6
+threshold: 0.8
+per_task_timeout: 1200

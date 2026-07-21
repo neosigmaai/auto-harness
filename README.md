@@ -1,5 +1,10 @@
 # auto-harness
 
+> **Take-home test environment:** this branch pins a 12-task Terminal-Bench
+> subset for the Agent Optimization Service assignment. See **[TAKEHOME.md](TAKEHOME.md)**
+> for the task list, rationale, and how to promote an improved `agent/agent.py`
+> back into this repo.
+
 > Give a coding agent a benchmark and an agent file. Let it iterate overnight. It reads failures, improves the system prompt and tools, gates every change against a self-maintained eval suite, and repeats.
 
 This repo is a simplified version of our auto-harness agent setup. We demonstrate our system on Tau3 benchmark tasks where the agent's score improves from 0.56 to 0.78 (~40% jump) while mining failures and auto maintaining live evals. If you are curious to learn more, read the full blog here - https://www.neosigma.ai/blog/self-improving-agentic-systems.
