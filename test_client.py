@@ -2,8 +2,8 @@
 """End-to-end client for the Agent Optimization Service.
 
 Run this from the auto-harness checkout against a running optimization service.
-When a job completes with an improved agent, this script writes the best
-``agent/agent.py`` into this repo and pushes it to the current branch.
+When a job completes with an improved agent, this script overwrites local
+``agent/agent.py`` only (no git commit or push).
 
 Requires: ``pip install httpx`` (or ``uv pip install httpx``).
 
@@ -20,7 +20,6 @@ import atexit
 import json
 import os
 import signal
-import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -157,33 +156,21 @@ def _print_benchmark_done(it: dict[str, Any], *, best_val_score: float | None) -
         print(f"  [iter {iteration_no}] rejected — val_score={val_score:.3f} (best remains {best_note})")
 
 
-def _git(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["git", *args],
-        cwd=REPO_ROOT,
-        check=check,
-        capture_output=True,
-        text=True,
-    )
-
-
-def promote_and_push_agent(
+def write_best_agent_locally(
     client: httpx.Client,
     job: dict[str, Any],
     headers: dict[str, str],
-    *,
-    push: bool,
 ) -> None:
-    """Write the job's best agent.py into this repo and optionally push."""
+    """Overwrite local agent/agent.py with the job's best improved agent (no git)."""
     job_id = job["id"]
     version_no = job.get("best_agent_version_no")
     if version_no is None:
-        print("\nNo best_agent_version_no on job — skipping agent.py promote.")
+        print("\nNo best_agent_version_no on job — skipping agent.py update.")
         return
     if int(version_no) <= 0:
         print(
             f"\nBest agent is still baseline (agent_v={version_no}) — "
-            "no improved agent.py to push."
+            "leaving local agent/agent.py unchanged."
         )
         return
 
@@ -191,40 +178,22 @@ def promote_and_push_agent(
     resp.raise_for_status()
     content = resp.json()["content"]
     if not content or not str(content).strip():
-        print(f"\nAgent version {version_no} has empty content — skipping promote.")
+        print(f"\nAgent version {version_no} has empty content — skipping update.")
         return
 
     AGENT_PATH.parent.mkdir(parents=True, exist_ok=True)
     previous = AGENT_PATH.read_text() if AGENT_PATH.exists() else None
     if previous == content:
-        print(f"\nagent/agent.py already matches best agent_v={version_no} — nothing to commit.")
+        print(f"\nagent/agent.py already matches best agent_v={version_no}.")
         return
 
     AGENT_PATH.write_text(content)
-    print(f"\nWrote best agent_v={version_no} → {AGENT_PATH.relative_to(REPO_ROOT)}")
-
-    status = _git("status", "--porcelain", "--", "agent/agent.py")
-    if not status.stdout.strip():
-        print("No git change detected for agent/agent.py.")
-        return
-
     score = job.get("best_val_score")
     score_note = f"{score:.3f}" if isinstance(score, (int, float)) else "n/a"
-    message = (
-        f"Promote optimized agent.py from job {job_id} "
-        f"(agent_v={version_no}, best_val_score={score_note})"
+    print(
+        f"\nWrote best agent_v={version_no} (best_val_score={score_note}) → "
+        f"{AGENT_PATH.relative_to(REPO_ROOT)} (local only; not committed)"
     )
-    _git("add", "agent/agent.py")
-    _git("commit", "-m", message)
-    print(f"Committed: {message}")
-
-    if not push:
-        print("Skipping git push (--no-push).")
-        return
-
-    branch = _git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
-    _git("push", "-u", "origin", f"HEAD:{branch}")
-    print(f"Pushed improved agent/agent.py to origin/{branch}")
 
 
 def main() -> int:
@@ -241,12 +210,7 @@ def main() -> int:
     parser.add_argument(
         "--no-promote",
         action="store_true",
-        help="Do not write/commit the improved agent/agent.py after the job finishes",
-    )
-    parser.add_argument(
-        "--no-push",
-        action="store_true",
-        help="Commit improved agent/agent.py locally but do not git push",
+        help="Do not overwrite local agent/agent.py after the job finishes",
     )
     args = parser.parse_args()
 
@@ -371,11 +335,11 @@ def main() -> int:
                 print(f"       changes: {it['improvement_rationale'][:160]}")
 
         if job.get("status") == "completed" and not args.no_promote:
-            promote_and_push_agent(client, job, headers, push=not args.no_push)
+            write_best_agent_locally(client, job, headers)
         elif args.no_promote:
-            print("\nSkipping agent.py promote (--no-promote).")
+            print("\nSkipping agent.py update (--no-promote).")
         else:
-            print(f"\nJob status={job.get('status')} — skipping agent.py promote.")
+            print(f"\nJob status={job.get('status')} — skipping agent.py update.")
 
     return 0
 
