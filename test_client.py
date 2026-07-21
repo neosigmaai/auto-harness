@@ -10,7 +10,8 @@ Requires: ``pip install httpx`` (or ``uv pip install httpx``).
 Example::
 
     export AOS_BASE_URL=http://localhost:8000
-    python test_client.py --executor harbor --max-iterations 5 --task-ids regex-log extract-elf
+    python test_client.py --executor harbor --tasks-file tasks.txt --max-iterations 5
+    # or: python test_client.py --executor harbor --task-ids regex-log extract-elf
 """
 
 from __future__ import annotations
@@ -35,6 +36,41 @@ _TERMINAL_JOB_STATUSES = {"completed", "failed", "cancelled"}
 
 REPO_ROOT = Path(__file__).resolve().parent
 AGENT_PATH = REPO_ROOT / "agent" / "agent.py"
+
+
+def load_task_ids(path: Path) -> list[str]:
+    """Load task IDs from a text file (one per line) or a JSON string/array file.
+
+    Blank lines and ``#`` comments are ignored for the line-oriented format.
+    """
+    path = path.expanduser().resolve()
+    if not path.is_file():
+        raise FileNotFoundError(f"Tasks file not found: {path}")
+
+    raw = path.read_text().strip()
+    if not raw:
+        raise ValueError(f"Tasks file is empty: {path}")
+
+    if raw.startswith("[") or raw.startswith("{"):
+        data = json.loads(raw)
+        if isinstance(data, dict):
+            data = data.get("task_ids") or data.get("tasks") or data.get("train")
+        if not isinstance(data, list) or not all(isinstance(x, str) for x in data):
+            raise ValueError(
+                f"JSON tasks file must be a string array or an object with "
+                f"task_ids/tasks/train: {path}"
+            )
+        task_ids = [tid.strip() for tid in data if tid.strip()]
+    else:
+        task_ids = []
+        for line in raw.splitlines():
+            line = line.split("#", 1)[0].strip()
+            if line:
+                task_ids.append(line)
+
+    if not task_ids:
+        raise ValueError(f"No task IDs found in: {path}")
+    return task_ids
 
 
 @dataclass
@@ -217,13 +253,39 @@ def main() -> int:
     parser.add_argument("--max-iterations", type=int, default=3)
     parser.add_argument("--patience", type=int, default=2)
     parser.add_argument("--poll-interval", type=float, default=2.0)
-    parser.add_argument("--task-ids", nargs="*", default=None)
+    parser.add_argument(
+        "--tasks-file",
+        type=Path,
+        default=None,
+        help=(
+            "File of task IDs to submit (one per line, or a JSON string array). "
+            "Required unless --task-ids is provided."
+        ),
+    )
+    parser.add_argument(
+        "--task-ids",
+        nargs="+",
+        default=None,
+        help="Task IDs to submit (overrides --tasks-file when both are set)",
+    )
     parser.add_argument(
         "--no-promote",
         action="store_true",
         help="Do not overwrite local agent/agent.py after the job finishes",
     )
     args = parser.parse_args()
+
+    if args.task_ids:
+        task_ids = [tid.strip() for tid in args.task_ids if tid.strip()]
+        if not task_ids:
+            parser.error("--task-ids was provided but contained no task IDs")
+    elif args.tasks_file is not None:
+        try:
+            task_ids = load_task_ids(args.tasks_file)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            parser.error(str(exc))
+    else:
+        parser.error("Provide task IDs via --tasks-file PATH or --task-ids ID [ID ...]")
 
     with httpx.Client(base_url=args.base_url, timeout=60.0) as client:
         health = client.get("/health")
@@ -233,15 +295,15 @@ def main() -> int:
         access_token = login(client, args.org, args.email, args.password)
         headers = {"Authorization": f"Bearer {access_token}"}
         print(f"Logged in as {args.email} @ {args.org}")
+        print(f"Tasks ({len(task_ids)}): {', '.join(task_ids)}")
 
         payload: dict[str, Any] = {
             "max_iterations": args.max_iterations,
             "patience": args.patience,
             "executor": args.executor,
+            "task_ids": task_ids,
             "config": {},
         }
-        if args.task_ids:
-            payload["task_ids"] = args.task_ids
 
         created = client.post("/jobs", json=payload, headers=headers)
         created.raise_for_status()

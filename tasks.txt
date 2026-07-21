@@ -1,0 +1,32 @@
+# Terminal-Bench task IDs for test_client.py (--tasks-file).
+# One task ID per line. Blank lines and # comments are ignored.
+
+regex-log
+extract-elf
+log-summary-date-ranges
+openssl-selfsigned-cert
+sqlite-db-truncate
+cancel-async-tasks
+gcode-to-text
+break-filter-js-from-html
+fix-git
+git-leak-recovery
+build-cython-ext
+polyglot-c-py
+vulnerable-secret
+db-wal-recovery
+crack-7z-hash
+
+# Slower tasks (uncomment to include):
+# filter-js-from-html
+# query-optimize
+# fix-code-vulnerability
+# sqlite-with-gcov
+# cobol-modernization
+# path-tracing
+# git-multibranch
+# password-recovery
+# qemu-alpine
+# configure-git-webserver
+# extract-moves-from-video
+# hf-model-inference
