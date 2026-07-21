@@ -253,7 +253,9 @@ def main() -> int:
 
         seen_benchmarks: dict[int, tuple[Any, ...]] = {}
         seen_proposals: dict[int, tuple[Any, ...]] = {}
-        seen_progress: dict[int, tuple[int, int, int]] = {}
+        seen_progress: dict[
+            int, tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]
+        ] = {}
         seen_running: set[int] = set()
         last_status: str | None = None
 
