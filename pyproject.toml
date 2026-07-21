@@ -13,5 +13,8 @@ dependencies = [
     "tau2",
 ]
 
+[tool.setuptools.packages.find]
+include = ["agent*"]
+
 [tool.uv.sources]
 tau2 = { git = "https://github.com/sierra-research/tau2-bench.git", rev = "73dc24445d28762075e69465d966aee4a9dcbfcb" }
