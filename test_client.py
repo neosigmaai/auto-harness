@@ -2,8 +2,8 @@
 """End-to-end client for the Agent Optimization Service.
 
 Run this from the auto-harness checkout against a running optimization service.
-When a job completes with an improved agent, this script overwrites local
-``agent/agent.py`` only (no git commit or push).
+When a job completes, this script writes a structured summary and overwrites
+local ``agent/agent.py`` with the best improved agent (no git commit or push).
 
 Requires: ``pip install httpx`` (or ``uv pip install httpx``).
 
@@ -35,7 +35,6 @@ DEFAULT_USER_PASSWORD = os.environ.get("AOS_PASSWORD", "assignment-password")
 _TERMINAL_JOB_STATUSES = {"completed", "failed", "cancelled"}
 
 REPO_ROOT = Path(__file__).resolve().parent
-AGENT_PATH = REPO_ROOT / "agent" / "agent.py"
 
 
 def load_task_ids(path: Path) -> list[str]:
@@ -163,6 +162,10 @@ def _format_progress(pending: int, running: int, completed: int) -> str:
     return f"tasks: {pending} pending, {running} running, {completed} completed ({completed}/{total})"
 
 
+def _fmt_score(score: Any) -> str:
+    return f"{score:.3f}" if isinstance(score, (int, float)) else "n/a"
+
+
 def _print_benchmark_progress(it: dict[str, Any], *, first: bool) -> None:
     iteration_no = it["iteration_no"]
     agent_v = it.get("agent_version_no")
@@ -172,10 +175,6 @@ def _print_benchmark_progress(it: dict[str, Any], *, first: bool) -> None:
         print(f"  [iter {iteration_no}] running benchmark with agent_v={agent_v} | {progress}")
     else:
         print(f"  [iter {iteration_no}] {progress}")
-
-
-def _fmt_score(score: Any) -> str:
-    return f"{score:.3f}" if isinstance(score, (int, float)) else "n/a"
 
 
 def _print_benchmark_done(it: dict[str, Any], *, best_val_score: float | None) -> None:
@@ -202,12 +201,85 @@ def _print_benchmark_done(it: dict[str, Any], *, best_val_score: float | None) -
         )
 
 
+def build_structured_summary(job: dict[str, Any]) -> dict[str, Any]:
+    """Build the Milestone-4 deliverable: job outcome + full iteration history."""
+    iterations: list[dict[str, Any]] = []
+    for it in job.get("iterations") or []:
+        ts = _tasks_summary(it)
+        iterations.append(
+            {
+                "iteration_no": it.get("iteration_no"),
+                "phase": it.get("phase"),
+                "agent_version_no": it.get("agent_version_no"),
+                "val_score": it.get("val_score"),
+                "accepted": it.get("accepted"),
+                "tasks_summary": ts,
+                "proposed_agent_version_no": it.get("proposed_agent_version_no"),
+                "improvement_rationale": it.get("improvement_rationale"),
+                "learnings": it.get("learnings"),
+                "error": it.get("error"),
+                "bench_started_at": it.get("bench_started_at"),
+                "bench_finished_at": it.get("bench_finished_at"),
+                "optimizer_started_at": it.get("optimizer_started_at"),
+                "optimizer_finished_at": it.get("optimizer_finished_at"),
+            }
+        )
+
+    latest_task_results: list[dict[str, Any]] = []
+    for tr in job.get("latest_task_results") or []:
+        latest_task_results.append(
+            {
+                "task_id": tr.get("task_id"),
+                "status": tr.get("status"),
+                "reward": tr.get("reward"),
+                "failure_summary": tr.get("failure_summary"),
+            }
+        )
+
+    return {
+        "id": job.get("id"),
+        "status": job.get("status"),
+        "stop_reason": job.get("stop_reason"),
+        "executor": job.get("executor"),
+        "task_ids": list(job.get("task_ids") or []),
+        "max_iterations": job.get("max_iterations"),
+        "patience": job.get("patience"),
+        "best_val_score": job.get("best_val_score"),
+        "best_agent_version_no": job.get("best_agent_version_no"),
+        "learnings": job.get("learnings"),
+        "error": job.get("error"),
+        "created_at": job.get("created_at"),
+        "started_at": job.get("started_at"),
+        "finished_at": job.get("finished_at"),
+        "latest_task_results": latest_task_results,
+        "iterations": iterations,
+    }
+
+
+def write_structured_summary_locally(job: dict[str, Any], summary_path: Path) -> Path:
+    """Persist the structured job summary (including full iteration history)."""
+    summary_path = summary_path.expanduser()
+    if not summary_path.is_absolute():
+        summary_path = (REPO_ROOT / summary_path).resolve()
+    else:
+        summary_path = summary_path.resolve()
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = build_structured_summary(job)
+    summary_path.write_text(json.dumps(payload, indent=2, default=str) + "\n", encoding="utf-8")
+    print(
+        f"\nWrote structured summary ({len(payload['iterations'])} iterations) → "
+        f"{summary_path}"
+    )
+    return summary_path
+
+
 def write_best_agent_locally(
     client: httpx.Client,
     job: dict[str, Any],
     headers: dict[str, str],
+    agent_path: Path,
 ) -> None:
-    """Overwrite local agent/agent.py with the job's best improved agent (no git)."""
+    """Overwrite a local agent.py with the job's best improved agent (no git)."""
     job_id = job["id"]
     version_no = job.get("best_agent_version_no")
     if version_no is None:
@@ -216,7 +288,7 @@ def write_best_agent_locally(
     if int(version_no) <= 0:
         print(
             f"\nBest agent is still baseline (agent_v={version_no}) — "
-            "leaving local agent/agent.py unchanged."
+            f"leaving {agent_path} unchanged."
         )
         return
 
@@ -227,19 +299,24 @@ def write_best_agent_locally(
         print(f"\nAgent version {version_no} has empty/invalid content — skipping update.")
         return
 
-    AGENT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    previous = AGENT_PATH.read_text(encoding="utf-8") if AGENT_PATH.exists() else None
+    agent_path = agent_path.expanduser()
+    if not agent_path.is_absolute():
+        agent_path = (REPO_ROOT / agent_path).resolve()
+    else:
+        agent_path = agent_path.resolve()
+    agent_path.parent.mkdir(parents=True, exist_ok=True)
+    previous = agent_path.read_text(encoding="utf-8") if agent_path.exists() else None
     if previous == content:
-        print(f"\nagent/agent.py already matches best agent_v={version_no}.")
+        print(f"\n{agent_path} already matches best agent_v={version_no}.")
         return
 
-    tmp_path = AGENT_PATH.with_suffix(AGENT_PATH.suffix + ".tmp")
+    tmp_path = agent_path.with_suffix(agent_path.suffix + ".tmp")
     tmp_path.write_text(content, encoding="utf-8")
-    tmp_path.replace(AGENT_PATH)
+    tmp_path.replace(agent_path)
     print(
         f"\nWrote best agent_v={version_no} "
         f"(best_val_score={_fmt_score(job.get('best_val_score'))}) → "
-        f"{AGENT_PATH.relative_to(REPO_ROOT)} (local only; not committed)"
+        f"{agent_path} (local only; not committed)"
     )
 
 
@@ -269,9 +346,24 @@ def main() -> int:
         help="Task IDs to submit (overrides --tasks-file when both are set)",
     )
     parser.add_argument(
+        "--agent-path",
+        type=Path,
+        default=Path(os.environ.get("AOS_AGENT_PATH", "agent/agent.py")),
+        help="Where to write the best improved agent.py (default: agent/agent.py or AOS_AGENT_PATH)",
+    )
+    parser.add_argument(
+        "--summary-path",
+        type=Path,
+        default=Path(os.environ.get("AOS_SUMMARY_PATH", "agent/optimization_summary.json")),
+        help=(
+            "Where to write the structured job summary with full iteration history "
+            "(default: agent/optimization_summary.json or AOS_SUMMARY_PATH)"
+        ),
+    )
+    parser.add_argument(
         "--no-promote",
         action="store_true",
-        help="Do not overwrite local agent/agent.py after the job finishes",
+        help="Do not overwrite local agent.py or summary after the job finishes",
     )
     args = parser.parse_args()
 
@@ -330,7 +422,9 @@ def main() -> int:
 
             if status != last_status:
                 score_note = (
-                    f"best_val_score={best_val_score:.3f}" if best_val_score is not None else "best_val_score=None"
+                    f"best_val_score={_fmt_score(best_val_score)}"
+                    if best_val_score is not None
+                    else "best_val_score=None"
                 )
                 print(f"  job status={status} {score_note}")
                 last_status = status
@@ -373,26 +467,15 @@ def main() -> int:
                 break
             time.sleep(args.poll_interval)
 
-        print("\n=== Job summary ===")
-        print(
-            json.dumps(
-                {
-                    "id": job["id"],
-                    "status": job["status"],
-                    "stop_reason": job.get("stop_reason"),
-                    "best_val_score": job.get("best_val_score"),
-                    "best_agent_version_no": job.get("best_agent_version_no"),
-                    "task_ids": job.get("task_ids"),
-                },
-                indent=2,
-            )
-        )
+        structured = build_structured_summary(job)
+        print("\n=== Structured summary (full iteration history) ===")
+        print(json.dumps(structured, indent=2, default=str))
 
         print("\n=== Latest task results ===")
-        for tr in job.get("latest_task_results", []):
+        for tr in structured["latest_task_results"]:
             print(f"  {tr['task_id']}: {tr['status']} reward={tr.get('reward')}")
 
-        iterations = job.get("iterations", [])
+        iterations = structured["iterations"]
         print(f"\n=== Iteration history ({len(iterations)} iterations) ===")
         for it in iterations:
             accepted = it.get("accepted")
@@ -410,11 +493,15 @@ def main() -> int:
                 print(f"       changes: {it['improvement_rationale'][:160]}")
 
         if job.get("status") == "completed" and not args.no_promote:
-            write_best_agent_locally(client, job, headers)
+            write_structured_summary_locally(job, args.summary_path)
+            write_best_agent_locally(client, job, headers, args.agent_path)
         elif args.no_promote:
-            print("\nSkipping agent.py update (--no-promote).")
+            print("\nSkipping agent.py / summary write (--no-promote).")
         else:
-            print(f"\nJob status={job.get('status')} — skipping agent.py update.")
+            print(
+                f"\nJob status={job.get('status')} — "
+                "skipping agent.py / summary write."
+            )
 
     return 0
 

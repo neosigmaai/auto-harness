@@ -26,6 +26,9 @@ bird_data/
 # local experiment config (created by prepare.py from template)
 experiment_config.yaml
 
+# client promote artifacts (written by test_client.py)
+agent/optimization_summary.json
+
 # build/data artifacts
 auto_harness.egg-info/
 
