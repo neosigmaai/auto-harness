@@ -3,8 +3,8 @@
 #
 #   cp experiment_config.takehome.yaml experiment_config.yaml
 #
-# Task subset is pinned in tbench_data/task_split.json (12 tasks).
-# See TAKEHOME.md for selection rationale.
+# Note: prepare.py overwrites agent/agent.py from agent/templates/terminal_bench.py.
+# Re-apply an optimized agent afterward (e.g. via test_client.py) if needed.
 
 benchmark: "terminal-bench"
 agent_model: "gpt-5.4"

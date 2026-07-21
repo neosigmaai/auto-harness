@@ -138,6 +138,10 @@ def _print_benchmark_progress(it: dict[str, Any], *, first: bool) -> None:
         print(f"  [iter {iteration_no}] {progress}")
 
 
+def _fmt_score(score: Any) -> str:
+    return f"{score:.3f}" if isinstance(score, (int, float)) else "n/a"
+
+
 def _print_benchmark_done(it: dict[str, Any], *, best_val_score: float | None) -> None:
     iteration_no = it["iteration_no"]
     agent_v = it.get("agent_version_no")
@@ -146,14 +150,20 @@ def _print_benchmark_done(it: dict[str, Any], *, best_val_score: float | None) -
     failed_ids = _tasks_summary(it)["failed"] + _tasks_summary(it)["infra_error"]
     failed_note = f" ({', '.join(failed_ids)})" if failed_ids else ""
     print(
-        f"  [iter {iteration_no}] benchmark done: agent_v={agent_v} val_score={val_score:.3f} | {counts}{failed_note}"
+        f"  [iter {iteration_no}] benchmark done: agent_v={agent_v} "
+        f"val_score={_fmt_score(val_score)} | {counts}{failed_note}"
     )
 
     if it.get("accepted") is True and iteration_no > 0:
-        print(f"  [iter {iteration_no}] accepted — new best_val_score={best_val_score:.3f} (agent_v={agent_v})")
+        print(
+            f"  [iter {iteration_no}] accepted — "
+            f"new best_val_score={_fmt_score(best_val_score)} (agent_v={agent_v})"
+        )
     elif it.get("accepted") is False:
-        best_note = f"{best_val_score:.3f}" if best_val_score is not None else "n/a"
-        print(f"  [iter {iteration_no}] rejected — val_score={val_score:.3f} (best remains {best_note})")
+        print(
+            f"  [iter {iteration_no}] rejected — val_score={_fmt_score(val_score)} "
+            f"(best remains {_fmt_score(best_val_score)})"
+        )
 
 
 def write_best_agent_locally(
@@ -176,22 +186,23 @@ def write_best_agent_locally(
 
     resp = client.get(f"/jobs/{job_id}/agent-versions/{version_no}", headers=headers)
     resp.raise_for_status()
-    content = resp.json()["content"]
-    if not content or not str(content).strip():
-        print(f"\nAgent version {version_no} has empty content — skipping update.")
+    content = resp.json().get("content")
+    if not isinstance(content, str) or not content.strip():
+        print(f"\nAgent version {version_no} has empty/invalid content — skipping update.")
         return
 
     AGENT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    previous = AGENT_PATH.read_text() if AGENT_PATH.exists() else None
+    previous = AGENT_PATH.read_text(encoding="utf-8") if AGENT_PATH.exists() else None
     if previous == content:
         print(f"\nagent/agent.py already matches best agent_v={version_no}.")
         return
 
-    AGENT_PATH.write_text(content)
-    score = job.get("best_val_score")
-    score_note = f"{score:.3f}" if isinstance(score, (int, float)) else "n/a"
+    tmp_path = AGENT_PATH.with_suffix(AGENT_PATH.suffix + ".tmp")
+    tmp_path.write_text(content, encoding="utf-8")
+    tmp_path.replace(AGENT_PATH)
     print(
-        f"\nWrote best agent_v={version_no} (best_val_score={score_note}) → "
+        f"\nWrote best agent_v={version_no} "
+        f"(best_val_score={_fmt_score(job.get('best_val_score'))}) → "
         f"{AGENT_PATH.relative_to(REPO_ROOT)} (local only; not committed)"
     )
 

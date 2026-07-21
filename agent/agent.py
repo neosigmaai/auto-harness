@@ -1,6 +1,7 @@
 # HarnessAgent for Terminal-Bench 2.0 — starting template.
 import json
 import os
+import re
 
 import litellm
 from harbor.agents.base import BaseAgent
@@ -46,7 +47,6 @@ TOOLS = [
 
 
 def _truncate(text: str, limit: int = MAX_OUTPUT_CHARS) -> str:
-    """Truncate long output, keeping the beginning and end."""
     if not text or len(text) <= limit:
         return text or ""
     half = limit // 2
@@ -55,6 +55,51 @@ def _truncate(text: str, limit: int = MAX_OUTPUT_CHARS) -> str:
         + f"\n\n... [{len(text) - limit} chars truncated] ...\n\n"
         + text[-half:]
     )
+
+
+_WRITE_FILE_RE = re.compile(
+    r"""
+    (?:^|[;&|]\s*)
+    (?:
+        cat\s+>\s*\S+ |
+        cat\s+>>\s*\S+ |
+        tee\s+(?:-[a-zA-Z]+\s+)*\S+ |
+        printf\b[^\n;&|]*>\s*\S+ |
+        echo\b[^\n;&|]*>\s*\S+ |
+        install\s+[^\n;&|]*\s+\S+ |
+        cp\s+[^\n;&|]*\s+\S+ |
+        mv\s+[^\n;&|]*\s+\S+ |
+        chmod\s+[^\n;&|]*\s+\S+
+    )
+    """,
+    re.VERBOSE,
+)
+
+_PREVIEW_OUTPUT_RE = re.compile(
+    r"""
+    (?:
+        \|\s*head\b |
+        \|\s*tail\b |
+        ^\s*head\b |
+        ^\s*tail\b |
+        ;\s*head\b |
+        ;\s*tail\b |
+        &&\s*head\b |
+        &&\s*tail\b
+    )
+    """,
+    re.VERBOSE,
+)
+
+
+def _looks_like_file_write(command: str) -> bool:
+    """Best-effort detection of commands that likely changed a task deliverable."""
+    return bool(_WRITE_FILE_RE.search(command or ""))
+
+
+def _looks_like_truncated_preview(command: str) -> bool:
+    """Detect commands that intentionally show only a small prefix/suffix of output."""
+    return bool(_PREVIEW_OUTPUT_RE.search(command or ""))
 
 
 class HarnessAgent(BaseAgent):
@@ -79,6 +124,9 @@ class HarnessAgent(BaseAgent):
         model = self.model_name or MODEL
         total_input_tokens = 0
         total_output_tokens = 0
+        wrote_file = False
+        last_bash_command = ""
+        preview_final_guard_used = False
 
         messages = [
             {"role": "system", "content": AGENT_INSTRUCTION},
@@ -105,7 +153,6 @@ class HarnessAgent(BaseAgent):
             choice = response.choices[0]
             message = choice.message
 
-            # Build the assistant message for history
             assistant_msg = {"role": "assistant", "content": message.content}
             if message.tool_calls:
                 assistant_msg["tool_calls"] = [
@@ -121,12 +168,31 @@ class HarnessAgent(BaseAgent):
                 ]
             messages.append(assistant_msg)
 
-            # If the model returned text without tool calls → task complete
             if not message.tool_calls:
+                if (
+                    wrote_file
+                    and not preview_final_guard_used
+                    and _looks_like_truncated_preview(last_bash_command)
+                ):
+                    preview_final_guard_used = True
+                    messages.append({
+                        "role": "user",
+                        "content": (
+                            "Before finalizing: your most recent command only displayed a truncated "
+                            "preview using head/tail after you created or modified a file. Run one "
+                            "non-preview check that exercises the requested deliverable/output enough "
+                            "to catch format, count, range, or value errors, or briefly explain with "
+                            "evidence why no further check is applicable."
+                        ),
+                    })
+                    self.logger.info(
+                        "Agent attempted to finish after truncated preview; requesting one fuller check"
+                    )
+                    continue
+
                 self.logger.info(f"Agent declared complete at step {step}")
                 break
 
-            # Execute each tool call
             for tc in message.tool_calls:
                 if tc.function.name != "bash":
                     messages.append({
@@ -137,8 +203,13 @@ class HarnessAgent(BaseAgent):
                     continue
 
                 try:
-                    args = json.loads(tc.function.arguments)
-                except json.JSONDecodeError:
+                    args = json.loads(tc.function.arguments or "")
+                    if not isinstance(args, dict):
+                        raise TypeError("Arguments must be a dictionary")
+                    command = args.get("command", "")
+                    if not isinstance(command, str):
+                        raise TypeError("Command must be a string")
+                except (json.JSONDecodeError, TypeError):
                     messages.append({
                         "role": "tool",
                         "tool_call_id": tc.id,
@@ -146,7 +217,9 @@ class HarnessAgent(BaseAgent):
                     })
                     continue
 
-                command = args.get("command", "")
+                last_bash_command = command
+                if _looks_like_file_write(command):
+                    wrote_file = True
                 self.logger.info(f"Step {step} | bash: {command[:200]}")
 
                 result = await environment.exec(command, timeout_sec=120)
@@ -168,7 +241,6 @@ class HarnessAgent(BaseAgent):
                     "content": output,
                 })
 
-        # Save full conversation trace for failure analysis (disabled for test splits)
         if os.environ.get("HARNESS_SAVE_TRACE", "1") == "1":
             trace_path = self.logs_dir / "trace.json"
             try:
@@ -178,6 +250,5 @@ class HarnessAgent(BaseAgent):
             except Exception as e:
                 self.logger.warning(f"Failed to save trace: {e}")
 
-        # Populate context
         context.n_input_tokens = total_input_tokens
         context.n_output_tokens = total_output_tokens
