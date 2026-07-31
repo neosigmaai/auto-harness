@@ -5,7 +5,7 @@ Checks required environment variables, validates data/tools for the
 configured benchmark, initializes workspace/ files, copies the correct
 agent template into agent/agent.py, and runs a baseline benchmark.
 
-Supports tau-bench, terminal-bench, and BIRD-Interact.
+ Supports tau-bench, terminal-bench, BIRD-Interact, and AgentBench OS.
 """
 
 from __future__ import annotations
@@ -128,6 +128,38 @@ def check_env_terminal_bench(cfg: dict) -> bool:
     return True
 
 
+def check_env_agentbench(cfg: dict) -> bool:
+    """Check environment for AgentBench OS."""
+    model = cfg.get("agent_model", "gpt-4o")
+    required = ["ANTHROPIC_API_KEY"] if model.startswith("claude") else ["OPENAI_API_KEY"]
+    required.append("OPENAI_API_KEY")  # classifier.py uses OpenAI in Phase 2+
+    missing = [key for key in sorted(set(required)) if not os.getenv(key)]
+    if missing:
+        print(f"[prepare] ERROR: missing env vars for agentbench: {', '.join(missing)}")
+        return False
+
+    data_dir = cfg.get("agentbench_data_dir") or os.getenv(
+        "AGENTBENCH_DATA_DIR",
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "AgentBench", "data", "os_interaction")),
+    )
+    if not os.path.isdir(data_dir):
+        print(f"[prepare] ERROR: AgentBench OS data dir not found: {data_dir}")
+        return False
+
+    try:
+        subprocess.run(["docker", "ps"], check=True, capture_output=True, text=True)
+    except Exception:
+        print("[prepare] ERROR: Docker is not running or not reachable")
+        return False
+
+    for img in ["local-os/default", "local-os/packages", "local-os/ubuntu"]:
+        result = subprocess.run(["docker", "image", "inspect", img], capture_output=True)
+        if result.returncode != 0:
+            print(f"[prepare] ERROR: Docker image '{img}' not found. Build the AgentBench OS images first.")
+            return False
+    return True
+
+
 # ── Tau-bench data ────────────────────────────────────────────────────────────
 
 TAU2_DATA_REPO = "https://github.com/sierra-research/tau2-bench.git"
@@ -228,6 +260,22 @@ def init_workspace(cfg: dict) -> None:
     else:
         print(f"[prepare] {TRAIN_RESULTS_FILE} already exists — skipping")
 
+    taxonomy_path = os.path.join(WORKSPACE, "failure_taxonomy.json")
+    if not os.path.exists(taxonomy_path):
+        with open(taxonomy_path, "w") as f:
+            json.dump([], f)
+        print(f"[prepare] created {taxonomy_path}")
+    else:
+        print(f"[prepare] {taxonomy_path} already exists — skipping")
+
+    success_store_path = os.path.join(WORKSPACE, "success_store.json")
+    if not os.path.exists(success_store_path):
+        with open(success_store_path, "w") as f:
+            json.dump({}, f)
+        print(f"[prepare] created {success_store_path}")
+    else:
+        print(f"[prepare] {success_store_path} already exists — skipping")
+
     print("[prepare] workspace ready.")
 
 
@@ -240,6 +288,7 @@ def copy_agent_template(benchmark: str) -> None:
         "tau-bench": "agent/templates/tau_bench.py",
         "terminal-bench": "agent/templates/terminal_bench.py",
         "bird-interact": "agent/templates/bird_interact.py",
+        "agentbench": "agent/templates/agentbench.py",
     }
     template = templates.get(benchmark)
     if not template or not os.path.exists(template):
@@ -256,6 +305,7 @@ def copy_program_template(benchmark: str) -> None:
         "tau-bench": "program_templates/tau_bench.md",
         "terminal-bench": "program_templates/terminal_bench.md",
         "bird-interact": "program_templates/bird_interact.md",
+        "agentbench": "program_templates/agentbench.md",
     }
     template = templates.get(benchmark)
     if not template or not os.path.exists(template):
@@ -455,6 +505,17 @@ def run_baseline(cfg: dict) -> None:
             )
             test_results = runner.run()
             val = runner.val_score(test_results)
+    elif benchmark == "agentbench":
+        from benchmark import AgentBenchRunner
+
+        runner = AgentBenchRunner(
+            data_dir=cfg.get("agentbench_data_dir"),
+            split=cfg.get("gate_split", "test"),
+            agent_model=cfg.get("agent_model"),
+            max_workers=cfg.get("max_concurrency", 5),
+        )
+        test_results = runner.run()
+        val = runner.val_score(test_results)
     elif benchmark == "tau-bench":
         from benchmark import TauBenchRunner
         runner = TauBenchRunner(
@@ -493,6 +554,9 @@ if __name__ == "__main__":
             sys.exit(1)
     elif benchmark == "bird-interact":
         if not check_env_bird_interact(cfg):
+            sys.exit(1)
+    elif benchmark == "agentbench":
+        if not check_env_agentbench(cfg):
             sys.exit(1)
     elif benchmark == "tau-bench":
         if not check_env_tau_bench(cfg):

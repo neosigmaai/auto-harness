@@ -32,5 +32,8 @@ auto_harness.egg-info/
 # tau2 data (auto-cloned by prepare.py, not committed)
 tau2_data/
 
+# local AgentBench pseudo-splits generated from available dev data
+agentbench_local/
+
 # BIRD-Interact-ADK (auto-cloned by prepare.py, not committed)
 bird_interact_adk/
