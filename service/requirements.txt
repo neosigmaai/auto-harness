@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+psycopg[binary,pool]
+openai
+e2b
