@@ -188,3 +188,6 @@ Interactive docs at `http://localhost:8000/docs`.
 ```
 
 
+Correction:
+
+So part that I misunderstood was the harbor. As harbor was a CL I thought it is executing bash commands only with the subprocess but with the terminal bench runner creating that harbor for me runs that agent and sandbox task for the task, so yes harbor being ran in outer sandbox agent.py is running in outer sandbox and the sandbox it creates runs the bash command which it gives reposne back to harbor to go to agent.py for multiturn as well.
