@@ -207,6 +207,20 @@ Still open: Q3 cost/time envelope for the graded optimize run (proceeding with s
 + 12-task subset). Proposer model = `gpt-4o` (capable + cheaper; configurable via `OPENAI_MODEL`).
 
 ## 7. Progress log
+- _2026-08-17_: **README rewritten with full run instructions.** Prerequisites, install,
+  Postgres (+ no-Docker fallback note), `.env` config, `harbor[e2b]` install, start service,
+  and a copy-paste step-by-step section with expected `test_client.py` output for the real
+  graded run: `--executor harbor --subset core --mode optimize --max-iterations 3` (12-task
+  core subset, 8 train / 4 held-out test, 3 optimization rounds).
+- _2026-08-17_: **M4 built + fully validated** (see §4 checklist for detail). Loop: baseline
+  on train → OpenAI proposes a full `agent.py` rewrite → compile-gate → re-run on train →
+  accept only if it beats best-seen else revert → stop on patience/max_iterations → score
+  best agent on held-out test. 24/24 simulated e2e (score climbs 0.125→1.0 train, 0.75 test;
+  deterministic patience-stop; proposer-raises and non-compiling-candidate both degrade to a
+  recorded ERROR iteration without killing the job). Real `gpt-4o` proposer produces
+  compiling, failure-aware rewrites. **Combined real run** (gpt-5.4 agent + gpt-4o proposer +
+  E2B): candidate genuinely re-ran and regressed a task → gate correctly rejected + reverted.
+  `gpt-5.4` access on the grading key confirmed by preflight (resolves senior Q1).
 - _2026-08-17_: **M3 validated with a REAL E2B run.** Installed `harbor[e2b]` (smoke run caught the missing extra — the point of shaking out on 3 tasks first). Full `core` (12 real terminal-bench tasks) ran through the actual `test_client → service → worker → HarborExecutor → E2B` path: job SUCCEEDED, **gpt-4o baseline 0.333 (4/12)**. Lossless persistence confirmed via API (full agent source, 12 task_results, real trace excerpts as LLM context, `hf-model-inference` recorded as `None`/infra-error). Real agent trace tails captured (e.g. crack-7z-hash agent asked for the password) — strong failure signal for M4. Model note: agent runs on `gpt-4o` (not the repo default `gpt-5.4`, unverified on this key).
 - _2026-08-17_: **Clarifications from seniors.** (a) Delivery = fork + PR (upstream `origin` is read-only); gh not yet authed on this box — user runs `gh auth login`, then fork/push/PR. (b) test_client run = service per README + `python test_client.py` defaults (localhost:8000) — confirmed. (c) **Grading executes the REAL agent against 10–20 TerminalBench tasks + real LLM iterative improvement** → M3/M4 real paths are mandatory and must be validated with actual harbor+E2B+OpenAI (needs keys in `.env` + `uv tool install harbor` + a small budget). Plan updated: simulated is dev-only; test_client default mode → optimize at M4.
 - _2026-08-17_: Branch `mvp1` created. Repo reconnaissance done. Plan drafted. Decisions locked: depth M1–M4, OpenAI proposer, simulated-default/harbor-real executor.

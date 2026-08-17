@@ -7,25 +7,84 @@
 
 ## Optimization Service — quick start
 
+Two paths below: a **fast local check** (no external services, no cost — proves the API,
+async pipeline, and state model) and a **real run** (actual TerminalBench tasks in an E2B
+sandbox, actual LLM proposing improvements — the graded path).
+
+### Prerequisites
+
+- Python 3.12+
+- [Docker](https://docs.docker.com/get-docker/) (for Postgres) — or see the no-Docker
+  fallback note at the end of this section
+- For the **real** path only: an `OPENAI_API_KEY`, an `E2B_API_KEY`, and the `harbor` CLI
+
+### 1. Install
+
 ```bash
-# 1. Install service deps (Python 3.12+)
-python -m venv .venv-harness && source .venv-harness/bin/activate
+git clone https://github.com/neosigmaai/auto-harness
+cd auto-harness
+python3.12 -m venv .venv-harness && source .venv-harness/bin/activate
 pip install -e ".[service]"
-
-# 2. Start Postgres
-docker compose -f docker-compose.harness.yml up -d
-
-# 3. Configure (copy .env.example -> .env; defaults already point at the compose DB)
-cp .env.example .env    # set OPENAI_API_KEY for the M4 proposer; E2B_API_KEY for M3
-
-# 4. Run the service
-uvicorn harness_service.api.app:app --reload
-
-# 5. Exercise it end-to-end
-python test_client.py                          # simulated, single run, "core" subset
-python test_client.py --mode optimize --max-iterations 5   # (M4)
-python test_client.py --executor harbor --subset smoke     # real E2B sandbox (M3)
 ```
+
+### 2. Start Postgres
+
+```bash
+docker compose -f docker-compose.harness.yml up -d
+```
+
+### 3. Configure
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+- `DATABASE_URL` — already points at the compose Postgres above; leave as-is.
+- For the **real** path: set `OPENAI_API_KEY` (proposes agent improvements *and*, via
+  `AGENT_MODEL`, can run the agent itself) and `E2B_API_KEY` (sandbox provider).
+- `AGENT_MODEL` (default `gpt-5.4`) — the model the *agent under test* runs on.
+- `OPENAI_MODEL` (default `gpt-4o`) — the model that *proposes* improvements (M4).
+- `DEFAULT_EXECUTOR` — `simulated` (default, no keys needed) or `harbor` (real E2B; can
+  also be overridden per-run with `test_client.py --executor harbor`, no `.env` edit needed).
+
+### 4. Real path only — install the `harbor` CLI
+
+```bash
+uv tool install 'harbor[e2b]'   # the [e2b] extra is required for the E2B sandbox provider
+harbor --version                # sanity check
+```
+
+### 5. Start the service
+
+```bash
+uvicorn harness_service.api.app:app --reload
+```
+
+On startup the service creates its schema, seeds a dev API key (`dev-key`), and starts the
+background worker. Health check: `curl http://localhost:8000/health`.
+
+### 6. Run it
+
+```bash
+# Fast local check — simulated executor, no keys, no cost, seconds to finish.
+python test_client.py --executor simulated --mode single_run
+
+# The real, graded path — 12 real TerminalBench tasks in an E2B sandbox, OpenAI
+# proposing improvements, 3 optimization iterations. Takes ~15-40 min and calls
+# real LLM + sandbox APIs (needs the keys from step 3).
+python test_client.py --executor harbor --subset core --mode optimize --max-iterations 3
+```
+
+`test_client.py` submits the job, polls until it finishes, and prints a structured summary:
+pass/fail per task, the train→best (and held-out test) score, and the full iteration
+history — including every improvement the LLM proposed and whether it was accepted or
+reverted. See [step-by-step instructions](#step-by-step-instructions) below for the full
+walkthrough with expected output at each stage.
+
+**No Docker?** The service only needs *a* Postgres reachable at `DATABASE_URL` — any
+Postgres 14+ works (a cloud instance, a system-installed one, etc.); docker-compose is just
+the easiest way to get one. `DATABASE_URL` in `.env` controls where it connects.
 
 **Endpoints:** `POST /v1/jobs` (submit, returns immediately), `GET /v1/jobs/{id}` (status +
 structured summary), `GET /v1/jobs/{id}/iterations` (full history), `GET /v1/jobs` (list),
@@ -34,6 +93,94 @@ structured summary), `GET /v1/jobs/{id}/iterations` (full history), `GET /v1/job
 **Executors:** `simulated` (default — deterministic dummy runs, no external deps, for fast
 API/loop development) and `harbor` (M3 — runs the agent in a real **E2B** sandbox). Selecting
 one is a per-job choice; the async pipeline is identical for both.
+
+**Modes:** `single_run` (one benchmark pass, no optimization) and `optimize` (M4 — the
+iterative loop: baseline on a train split → LLM proposes an `agent.py` improvement →
+compile-gate → re-run on train → accept only if it beats the best score seen, else revert →
+repeat until `--patience` non-improving iterations or `--max-iterations` → score the best
+agent on a held-out test split). `test_client.py` defaults to `optimize`.
+
+### Step-by-step instructions
+
+Copy-paste, in order, from a fresh clone:
+
+```bash
+# 0. clone + venv + install
+git clone https://github.com/neosigmaai/auto-harness
+cd auto-harness
+python3.12 -m venv .venv-harness
+source .venv-harness/bin/activate
+pip install -e ".[service]"
+
+# 1. Postgres
+docker compose -f docker-compose.harness.yml up -d
+
+# 2. configure
+cp .env.example .env
+#   -> open .env, set OPENAI_API_KEY and E2B_API_KEY
+
+# 3. (real path) install harbor with the E2B extra
+uv tool install 'harbor[e2b]'
+
+# 4. start the service (leave this running in its own terminal)
+uvicorn harness_service.api.app:app --reload
+
+# 5. in a second terminal (same venv): sanity check
+curl http://localhost:8000/health
+python test_client.py --executor simulated --mode single_run
+
+# 6. the real, graded run: 12 real TerminalBench tasks, real E2B sandbox,
+#    real OpenAI proposer, 3 optimization iterations
+python test_client.py --executor harbor --subset core --mode optimize --max-iterations 3
+```
+
+What to expect from step 6 (~15–40 min — 8 train-set benchmark runs across up to 4 rounds,
+each spinning up real E2B sandboxes, plus 1 held-out test run and up to 3 LLM proposal
+calls):
+
+```
+service healthy: {'status': 'ok', ...}
+→ submitted job <uuid> (status=queued, mode=optimize, executor=harbor, tasks=12)
+  … status=queued  best_val=None
+  … status=running best_val=None
+  ...
+  … status=succeeded best_val=<train score>
+
+====================================================================
+JOB <uuid>  —  SUCCEEDED
+====================================================================
+mode=optimize  executor=harbor  iterations=<n>  best_val=<train score>
+
+OPTIMIZATION  train: baseline=<x> → best=<y>  (Δ=<delta>)
+  train tasks: 8   held-out test: 4  test_val_score=<z>
+
+Best iteration (train): val_score=...  passed=...  failed=...
+Remaining failures:
+  ✗ <task_id>: <failure reason>
+  ...
+
+Iteration history:
+  [0] baseline  val=<x>  pass=.../8  (baseline on train split)
+  [1] accepted|rejected  val=...  pass=.../8  (...)
+        └ proposal (openai): <what the LLM changed and why>
+  ...
+====================================================================
+```
+
+The full record — every proposed `agent.py`, every LLM rationale, every per-task reward and
+trace excerpt — is also queryable afterward:
+
+```bash
+JOB_ID=<paste the id printed above>
+curl -s -H "X-API-Key: dev-key" http://localhost:8000/v1/jobs/$JOB_ID | python -m json.tool
+curl -s -H "X-API-Key: dev-key" http://localhost:8000/v1/jobs/$JOB_ID/iterations | python -m json.tool
+```
+
+**Tuning the real run:** `--max-iterations 3` caps LLM proposal rounds (each round = 1 LLM
+call + 8 real sandbox runs on the train split); `--patience` (default 2) stops earlier if
+consecutive proposals don't improve on the best score seen; `--subset core` uses all 12
+curated tasks (`--subset smoke` uses 3, for a cheap shakedown). The 12-task `core` subset
+splits ~2:1 into 8 train / 4 held-out test tasks (seeded, deterministic).
 
 ### TerminalBench task subset & why
 
