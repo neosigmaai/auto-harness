@@ -33,12 +33,13 @@ lifecycle, execution isolation, state across iterations, and access control.
 | Web framework | **FastAPI** | Required/preferred by brief; async-native. |
 | Persistence | **Postgres** via SQLAlchemy 2.0 async + asyncpg | Required by brief. |
 | Migrations | Bootstrap DDL on startup (create_all) for MVP; note Alembic as next step | Fast to build; MVP-appropriate. |
+| Async pipeline built once | **Endpoint always enqueues + client always polls, from M1 onward.** "Simulated vs real" is an **executor** choice, NOT an API-shape choice. | Avoids throwaway inline-M1 code that M2 would rewrite. M1 and M2 collapse into one pipeline; M3 is a clean executor swap. Simulated executor resolves on the first poll. |
 | Async processing | DB-backed job queue + in-process asyncio worker claiming rows with `FOR UPDATE SKIP LOCKED` | Survives restart, no extra broker (Redis/Celery). API and worker communicate **through the DB** — clean lifecycle boundary. Note Celery/arq as scale-up path. |
 | **Execution isolation** | **Pluggable `Executor` interface**, chosen per-job | The core abstraction. Agent never runs in the API or worker process. |
-| — `SimulatedExecutor` | default | Deterministic rewards seeded by `hash(agent_source + task_id)` so improvements can move the score. No external deps → whole system + `test_client.py` run anywhere. |
-| — `HarborExecutor` | real M3 path | Writes candidate `agent.py`, runs `harbor` in a sandbox (`env_provider`), parses rewards + trace excerpts. Requires `harbor` + provider key. |
+| — `SimulatedExecutor` | M1 default | Deterministic rewards seeded by `hash(agent_source + task_id)` so improvements can move the score; returns dummy trace/failure text. No external deps → whole system + `test_client.py` run anywhere, instantly. |
+| — `HarborExecutor` | real M3 path | Runs a **candidate** agent in an **E2B sandbox** via `harbor`, parses per-task rewards + real trace/stdout for LLM context. **E2B_API_KEY available → this path is validatable, not just documented.** |
 | LLM proposer | **OpenAI** (`OPENAI_API_KEY`) | User choice. Structured output → new `agent.py` + rationale. Falls back to a deterministic mock proposer when no key, so M4 is always testable. |
-| Sandbox note | `harbor`/`docker` not installed in this dev box; system py 3.14 | Simulated executor is the dev/test default; Harbor path documented + wired, validated when creds available. |
+| Sandbox provider | **`env_provider: e2b`** (key on hand) | Dev box lacks `harbor`/`docker` + system py is 3.14; installing `harbor` (needs py 3.12) + E2B key makes M3 runnable for real. |
 
 ---
 
@@ -65,12 +66,39 @@ lifecycle, execution isolation, state across iterations, and access control.
                  └───────────┴──────────┘
 ```
 
-### Data model
+### 3a. State model — "no information is lost" (designed in M1, filled by M4)
+
+This is the part we invest in during M1. Two layers that mirror each other:
+
+**Domain layer** (pure Python, in `harness_service/domain/`) — the vocabulary of the loop,
+independent of ORM/HTTP:
+- `AgentState` — an immutable snapshot of the agent at one iteration: the full `agent.py`
+  **source**, plus surfaced params (`model`, `reasoning_effort`, `MAX_STEPS`,
+  `MAX_OUTPUT_CHARS`) and a `content_hash`. This is what makes an iteration reproducible.
+- `TaskOutcome` — one task's result: `task_id`, `reward`, `passed`, `duration`,
+  `trace_excerpt`, `failure_reason`.
+- `BenchmarkResult` — a set of `TaskOutcome`s + derived `val_score`, `n_passed`, `n_failed`.
+- `Improvement` — the LLM's proposal: `rationale`, `diff_summary`, `new_agent_source`,
+  `proposer` (openai/mock), raw request/response kept for audit.
+- `Iteration` — ties it together: `idx`, `AgentState`, `BenchmarkResult`,
+  optional `Improvement` (the one that *produced* this state), `accepted`, `decision_reason`.
+- `Trajectory` — ordered `Iteration`s + the **accumulated context** (running learnings blob
+  fed into each LLM call) + `best_val_score`/`best_iteration_idx`. The single object that
+  guarantees nothing is dropped between iterations.
+
+The domain layer is what `test_client.py` and the optimizer both reason over; the ORM is
+just its persistence.
+
+**Persistence layer** (SQLAlchemy, 1:1 with the domain objects):
 - `organizations(id, name, created_at)`
 - `users(id, org_id, email, role[admin|member], api_key, created_at)`
-- `jobs(id, org_id, user_id, mode[single_run|optimize], executor, status[queued|running|succeeded|failed|cancelled], config JSONB, subset JSONB, max_iterations, error, created_at, updated_at, finished_at)`
-- `iterations(id, job_id, idx, agent_source, proposed_improvement, rationale, val_score, accepted, results JSONB, created_at)`
-- `task_results(id, iteration_id, task_id, reward, passed, output_excerpt)`
+- `jobs(id, org_id, user_id, mode[single_run|optimize], executor, status[queued|running|succeeded|failed|cancelled], config JSONB, subset JSONB, max_iterations, patience, best_val_score, best_iteration_id, accumulated_context TEXT, error, created_at, updated_at, finished_at)`
+- `iterations(id, job_id, idx, agent_source TEXT, agent_params JSONB, agent_hash, proposal_rationale TEXT, proposal_diff_summary TEXT, proposer, llm_request JSONB, llm_response JSONB, val_score, n_passed, n_failed, accepted, decision_reason, created_at)`
+- `task_results(id, iteration_id, task_id, reward, passed, duration, trace_excerpt TEXT, failure_reason TEXT)`
+
+Nothing is lost: every candidate `agent.py` (accepted **or** rejected), every LLM
+request/response, every per-task trace excerpt, and the running context are all persisted
+and reachable via the API.
 
 Multi-tenancy columns (`org_id`, `user_id`, `role`, `api_key`) exist from day one;
 **enforcement** (M5) is a thin dependency layer added last.
@@ -92,12 +120,36 @@ seeded key, M5 enforces role/ownership.
 
 ## 4. Milestone plan & status
 
-- [ ] **M0 — Scaffold** `harness_service/` package, config, DB engine/session, models, app factory, `docker-compose` for Postgres, deps in `pyproject`.
-- [ ] **M1 — API design**: `POST /v1/jobs` (single_run) + `GET /v1/jobs/{id}` with clean schema, validation, error handling. Simulated executor. Structured result: passed / failed / failure summary.
-- [ ] **M2 — Async**: submit returns immediately (status `queued`); worker claims + runs; caller polls. Job lifecycle in DB.
-- [ ] **M3 — Sandbox execution**: `HarborExecutor` runs candidate agent in `harbor` sandbox, captures real task output → used as LLM context. Handle sandbox failure (→ job `failed` with error, `None` rewards). Executor selectable per job.
-- [ ] **M4 — Optimization loop**: baseline → observe failures → OpenAI proposes new `agent.py` + rationale → apply → re-run → accept if improved → repeat until no improvement (`patience`) or `max_iterations`. Persist every iteration (agent snapshot, proposal, results, outcome). History via API.
-- [ ] **M5 — Multi-tenancy (deferred)**: enforce roles — admins see all org activity, members submit + see only their own. API-level checks.
+- [ ] **M0 — Scaffold** `harness_service/` package (`domain/`, `db/`, `executors/`, `api/`, `worker.py`, `config.py`), async DB engine/session, `docker-compose` for Postgres, deps in `pyproject`.
+- [ ] **M1 — API + full state model, on dummy data.** The investment milestone.
+      - `Executor` protocol + `SimulatedExecutor` returning deterministic dummy rewards + fake trace/failure text.
+      - **Async pipeline already in place** (enqueue → worker → poll) — simulated executor just resolves fast.
+      - `POST /v1/jobs`, `GET /v1/jobs/{id}`, `GET /v1/jobs/{id}/iterations` with clean Pydantic schemas, validation, error handling.
+      - Domain layer (`Trajectory`/`Iteration`/`AgentState`/…) + ORM persisting it losslessly (§3a).
+      - Clean class-based `test_client.py` (§4a) exercising submit→poll→summary.
+- [ ] **M2 — Async processing, formalized.** Confirm submit returns immediately; worker claims via `SKIP LOCKED`; concurrency (multiple jobs), status transitions, restart-safety, timeouts. Mostly hardening what M1 already stood up.
+- [ ] **M3 — Real sandbox execution.** `HarborExecutor` runs a **candidate** agent in an **E2B** sandbox, captures real per-task trace/stdout → LLM context. Executor selectable per job. Handle sandbox failure → job `failed` + `None` rewards. Harness integration per §4b.
+- [ ] **M4 — Optimization loop.** baseline → observe failures → OpenAI proposes new `agent.py` + rationale → validate (`compile()`) → apply → re-run → accept if `val_score` improved → repeat until no improvement (`patience`) or `max_iterations`. Accumulated context threaded through each LLM call. Every iteration persisted; history via API.
+- [ ] **M5 — Multi-tenancy (deferred).** Enforce roles — admins see all org activity, members submit + see only their own. API-level checks on the columns already present.
+
+### 4a. `test_client.py` design (clean, class-based, stateful)
+- `HarnessClient` — thin HTTP wrapper (base_url, api_key, `requests.Session`); one method per endpoint.
+- `JobRun` — holds state for one submitted job: `job_id`, last polled `status`, cached
+  `iterations`, `best_val_score`. Methods: `submit()`, `poll_until_done(interval, timeout)`,
+  `summary()` (pretty structured print: per-task pass/fail, val_score per iteration, the
+  improvement + rationale at each step, final outcome — the full trajectory when M4 is on).
+- `__main__`: parse args (subset, mode, executor, max_iterations) → submit → poll → print.
+
+### 4b. Harness integration for M3 (expected *tiny* changes)
+1. **Candidate isolation (likely zero-change):** write each candidate to
+   `agent/_candidates/job_<id>.py` and run with
+   `agent_import_path="agent._candidates.job_<id>:HarnessAgent"` (already a ctor param;
+   importable from repo root). Avoids clobbering tracked `agent/agent.py`; concurrency-safe.
+2. **Expose per-task output (small change to `benchmark.py`):** today `run()` copies traces
+   to `workspace/traces/latest/` only when `split=="train"` and returns rewards only. Add an
+   opt-in to emit per-task trace/stdout into the caller-supplied `jobs_dir` (or return their
+   paths) so each job reads its own output in isolation. Exact minimal diff confirmed at M3;
+   fall back to reading the run's job_dir if we can avoid touching `benchmark.py` at all.
 
 ### Deliverables
 - [ ] `test_client.py` — submits a job, polls, prints structured summary incl. full iteration history.
@@ -116,9 +168,12 @@ available** — simulated mode is dataset-agnostic. Rationale written into READM
 ---
 
 ## 6. Open questions / risks
-- Real Harbor validation depends on installing `harbor` + a sandbox provider key (E2B). Dev box lacks both → validated in simulated mode, Harbor path documented.
-- OpenAI proposer must return a *runnable* `agent.py`; guard with syntax check (`compile()`) + fallback to previous good source on failure. Never accept a candidate that doesn't import.
-- Keep per-job executor choice explicit so graders can run fast (simulated) or real (harbor).
+- **E2B key available** → real Harbor/M3 path is validatable. Still needs `harbor` installed against Python 3.12 (system py here is 3.14, `harbor`/`docker` absent) — one-time setup, documented in README.
+- OpenAI proposer must return a *runnable* `agent.py`; guard with `compile()` + fallback to previous good source on failure. Never accept a candidate that doesn't import.
+- Candidate `agent.py` files under `agent/_candidates/` are generated artifacts → gitignore them; keep `agent/agent.py` (the tracked template copy) untouched by jobs.
+- Keep per-job executor choice explicit so graders can run fast (simulated) or real (harbor+e2b).
+- Concurrency: `SimulatedExecutor` is safe; `HarborExecutor` writing candidate modules must use unique per-job paths (covered by §4b.1).
 
 ## 7. Progress log
 - _2026-08-17_: Branch `mvp1` created. Repo reconnaissance done. Plan drafted. Decisions locked: depth M1–M4, OpenAI proposer, simulated-default/harbor-real executor.
+- _2026-08-17_: Plan refined after design discussion. **E2B key confirmed available** (default `env_provider: e2b`, M3 validatable). M1 reframed as the *investment* milestone: dummy-data executor + front-loaded lossless state model (domain layer §3a + ORM). Locked "simulated vs real = executor choice only; async pipeline built once" so M1≈M2 and M3 is a clean swap. Added `test_client.py` design (§4a) and M3 harness-integration touch-points (§4b).
