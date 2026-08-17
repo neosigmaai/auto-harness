@@ -182,6 +182,27 @@ the real IDs returns successes/failures (baseline 0.167, 2/12 — good optimizer
 - Keep per-job executor choice explicit so graders can run fast (simulated) or real (harbor+e2b).
 - Concurrency: `SimulatedExecutor` is safe; `HarborExecutor` writing candidate modules must use unique per-job paths (covered by §4b.1).
 
+## 6a. Open questions for seniors (pre-M4)
+1. **Agent model for grading.** Repo default is `gpt-5.4`; we ran the baseline on `gpt-4o`
+   (universally available — `gpt-5.4` may be internal/preview and the provided key's access is
+   unverified; a run where every step 404s would waste E2B budget). Which model should the
+   graded baseline + optimization use, and does the grading key have `gpt-5.4` access?
+2. **How to measure "improvement" (biggest M4 fork).** Re-run the *same* subset (brief's literal
+   wording), or split **train/test** — optimize against one set and score on a held-out set to
+   stop the proposer overfitting these exact 12 tasks? The repo's own CLI harness splits train/test
+   + gates; unclear if the service should mirror that.
+3. **Cost/time envelope for the graded optimize run.** Up to ~5 iterations × 12 E2B tasks ×
+   (agent + proposer LLM) ≈ several benchmark runs. Acceptable, or cap iterations / subset size?
+4. **Guardrails on the proposer.** Is a full `agent.py` rewrite acceptable (we compile-check and
+   reject non-importable candidates, keep the last good source), or should edits be constrained
+   (e.g. system prompt + tool descriptions only)?
+5. **Feedback wanted before we build on top:** any concerns with (a) the executor abstraction +
+   simulated-default dev path, or (b) the HTTP API shape / job+iteration schema?
+
+Working assumptions until we hear back: agent = `gpt-4o`; proposer = `gpt-4o`; M4 measures on the
+same subset but is structured so a train/test split is a small change; full-file rewrites allowed
+behind a compile-gate.
+
 ## 7. Progress log
 - _2026-08-17_: **M3 validated with a REAL E2B run.** Installed `harbor[e2b]` (smoke run caught the missing extra — the point of shaking out on 3 tasks first). Full `core` (12 real terminal-bench tasks) ran through the actual `test_client → service → worker → HarborExecutor → E2B` path: job SUCCEEDED, **gpt-4o baseline 0.333 (4/12)**. Lossless persistence confirmed via API (full agent source, 12 task_results, real trace excerpts as LLM context, `hf-model-inference` recorded as `None`/infra-error). Real agent trace tails captured (e.g. crack-7z-hash agent asked for the password) — strong failure signal for M4. Model note: agent runs on `gpt-4o` (not the repo default `gpt-5.4`, unverified on this key).
 - _2026-08-17_: **Clarifications from seniors.** (a) Delivery = fork + PR (upstream `origin` is read-only); gh not yet authed on this box — user runs `gh auth login`, then fork/push/PR. (b) test_client run = service per README + `python test_client.py` defaults (localhost:8000) — confirmed. (c) **Grading executes the REAL agent against 10–20 TerminalBench tasks + real LLM iterative improvement** → M3/M4 real paths are mandatory and must be validated with actual harbor+E2B+OpenAI (needs keys in `.env` + `uv tool install harbor` + a small budget). Plan updated: simulated is dev-only; test_client default mode → optimize at M4.
