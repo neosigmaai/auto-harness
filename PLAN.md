@@ -199,9 +199,12 @@ the real IDs returns successes/failures (baseline 0.167, 2/12 — good optimizer
 5. **Feedback wanted before we build on top:** any concerns with (a) the executor abstraction +
    simulated-default dev path, or (b) the HTTP API shape / job+iteration schema?
 
-Working assumptions until we hear back: agent = `gpt-4o`; proposer = `gpt-4o`; M4 measures on the
-same subset but is structured so a train/test split is a small change; full-file rewrites allowed
-behind a compile-gate.
+**Resolved by seniors (2026-08-17):** Q1 key has **all models** — `gpt-5.4` access **confirmed by
+preflight** → agent runs on `gpt-5.4` (repo default; `agent_model` default). Q2 **train/test split**,
+start with improvements on **train** → implemented (optimize/gate on train, held-out test score
+reported). Q4 **keep scope to one file** → proposer rewrites whole `agent.py` behind a compile-gate.
+Still open: Q3 cost/time envelope for the graded optimize run (proceeding with small `max_iterations`
++ 12-task subset). Proposer model = `gpt-4o` (capable + cheaper; configurable via `OPENAI_MODEL`).
 
 ## 7. Progress log
 - _2026-08-17_: **M3 validated with a REAL E2B run.** Installed `harbor[e2b]` (smoke run caught the missing extra — the point of shaking out on 3 tasks first). Full `core` (12 real terminal-bench tasks) ran through the actual `test_client → service → worker → HarborExecutor → E2B` path: job SUCCEEDED, **gpt-4o baseline 0.333 (4/12)**. Lossless persistence confirmed via API (full agent source, 12 task_results, real trace excerpts as LLM context, `hf-model-inference` recorded as `None`/infra-error). Real agent trace tails captured (e.g. crack-7z-hash agent asked for the password) — strong failure signal for M4. Model note: agent runs on `gpt-4o` (not the repo default `gpt-5.4`, unverified on this key).
