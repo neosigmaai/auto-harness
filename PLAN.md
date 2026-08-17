@@ -120,7 +120,7 @@ seeded key, M5 enforces role/ownership.
 
 ## 4. Milestone plan & status
 
-- [ ] **M0 — Scaffold** `harness_service/` package (`domain/`, `db/`, `executors/`, `api/`, `worker.py`, `config.py`), async DB engine/session, `docker-compose` for Postgres, deps in `pyproject`.
+- [x] **M0 — Scaffold** `harness_service/` package (`constants`, `config`, `domain/`, `db/`, `executors/`, `api/`, `worker.py`), async DB engine/session, `docker-compose.harness.yml` for Postgres, `[service]` extra in `pyproject`. Boots + imports verified; `/health` served; all 5 tables register; `SimulatedExecutor` works.
 - [ ] **M1 — API + full state model, on dummy data.** The investment milestone.
       - `Executor` protocol + `SimulatedExecutor` returning deterministic dummy rewards + fake trace/failure text.
       - **Async pipeline already in place** (enqueue → worker → poll) — simulated executor just resolves fast.
@@ -176,4 +176,5 @@ available** — simulated mode is dataset-agnostic. Rationale written into READM
 
 ## 7. Progress log
 - _2026-08-17_: Branch `mvp1` created. Repo reconnaissance done. Plan drafted. Decisions locked: depth M1–M4, OpenAI proposer, simulated-default/harbor-real executor.
+- _2026-08-17_: **M0 scaffold landed.** Package skeleton under `harness_service/`: constants (enums+defaults), pydantic-settings config, domain dataclasses (`AgentState`/`TaskOutcome`/`BenchmarkResult`/`Improvement`/`Iteration`/`Trajectory`, "produced" semantics), async SQLAlchemy engine + ORM (orgs/users/jobs/iterations/task_results, tenancy columns present), `Executor` protocol + working `SimulatedExecutor` + registry, heartbeat `Worker` (claim stub for M1), FastAPI app w/ lifespan (init_db + worker) and `/health`. Compose file for Postgres; `.env.example` + `pyproject[service]` updated. Verified via 3.12 venv: imports clean, app builds, `/health` served, all tables register.
 - _2026-08-17_: Plan refined after design discussion. **E2B key confirmed available** (default `env_provider: e2b`, M3 validatable). M1 reframed as the *investment* milestone: dummy-data executor + front-loaded lossless state model (domain layer §3a + ORM). Locked "simulated vs real = executor choice only; async pipeline built once" so M1≈M2 and M3 is a clean swap. Added `test_client.py` design (§4a) and M3 harness-integration touch-points (§4b).

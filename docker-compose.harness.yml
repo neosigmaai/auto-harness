@@ -1,0 +1,22 @@
+# Postgres for the auto-harness optimization service (separate from the
+# tau-bench docker-compose.yml). Start with:
+#     docker compose -f docker-compose.harness.yml up -d
+services:
+  harness-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: harness
+    ports:
+      - "5432:5432"
+    volumes:
+      - harness_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d harness"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  harness_pgdata:

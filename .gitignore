@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 *.pyo
 .venv/
+.venv-harness/
 .env
 .DS_Store
 *.log
@@ -28,6 +29,10 @@ experiment_config.yaml
 
 # build/data artifacts
 auto_harness.egg-info/
+*.egg-info/
+
+# harness_service: per-job candidate agent modules (runtime artifacts, M3)
+agent/_candidates/
 
 # tau2 data (auto-cloned by prepare.py, not committed)
 tau2_data/
