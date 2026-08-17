@@ -40,6 +40,7 @@ lifecycle, execution isolation, state across iterations, and access control.
 | — `HarborExecutor` | real M3 path | Runs a **candidate** agent in an **E2B sandbox** via `harbor`, parses per-task rewards + real trace/stdout for LLM context. **E2B_API_KEY available → this path is validatable, not just documented.** |
 | LLM proposer | **OpenAI** (`OPENAI_API_KEY`) | User choice. Structured output → new `agent.py` + rationale. Falls back to a deterministic mock proposer when no key, so M4 is always testable. |
 | Sandbox provider | **`env_provider: e2b`** (key on hand) | Dev box lacks `harbor`/`docker` + system py is 3.14; installing `harbor` (needs py 3.12) + E2B key makes M3 runnable for real. |
+| **Grading runs the REAL path** (confirmed w/ seniors) | M3 (E2B sandbox) + M4 (OpenAI loop) must genuinely run the agent against 10–20 real TerminalBench tasks and improve iteratively. Simulated stays **dev-only**. | Not "documented but simulated": the graded `python test_client.py` (localhost:8000, confirmed) must be able to drive a real optimize run. At M4, `test_client` default `--mode` → `optimize`; executor from server `DEFAULT_EXECUTOR` (harbor+keys for grading, simulated fallback keyless). |
 
 ---
 
@@ -167,6 +168,12 @@ available** — simulated mode is dataset-agnostic. Rationale written into READM
 
 ---
 
+## 5b. Delivery (confirmed with seniors)
+- `origin` is the **upstream** `neosigmaai/auto-harness` (no write access) → deliver via **fork + PR**.
+  Flow: `gh auth login` (user-run, credentialed) → `gh repo fork … --remote --remote-name fork`
+  → `git push -u fork mvp1` → `gh pr create --repo neosigmaai/auto-harness --head <user>:mvp1`.
+- Grader runs the service per README, then `python test_client.py` with **defaults (localhost:8000)** — confirmed.
+
 ## 6. Open questions / risks
 - **E2B key available** → real Harbor/M3 path is validatable. Still needs `harbor` installed against Python 3.12 (system py here is 3.14, `harbor`/`docker` absent) — one-time setup, documented in README.
 - OpenAI proposer must return a *runnable* `agent.py`; guard with `compile()` + fallback to previous good source on failure. Never accept a candidate that doesn't import.
@@ -175,6 +182,7 @@ available** — simulated mode is dataset-agnostic. Rationale written into READM
 - Concurrency: `SimulatedExecutor` is safe; `HarborExecutor` writing candidate modules must use unique per-job paths (covered by §4b.1).
 
 ## 7. Progress log
+- _2026-08-17_: **Clarifications from seniors.** (a) Delivery = fork + PR (upstream `origin` is read-only); gh not yet authed on this box — user runs `gh auth login`, then fork/push/PR. (b) test_client run = service per README + `python test_client.py` defaults (localhost:8000) — confirmed. (c) **Grading executes the REAL agent against 10–20 TerminalBench tasks + real LLM iterative improvement** → M3/M4 real paths are mandatory and must be validated with actual harbor+E2B+OpenAI (needs keys in `.env` + `uv tool install harbor` + a small budget). Plan updated: simulated is dev-only; test_client default mode → optimize at M4.
 - _2026-08-17_: Branch `mvp1` created. Repo reconnaissance done. Plan drafted. Decisions locked: depth M1–M4, OpenAI proposer, simulated-default/harbor-real executor.
 - _2026-08-17_: **M1 landed + validated.** Job pipeline live: `tasks.py` (core/smoke subsets), `agent_source.py` (baseline from the terminal_bench template), `services/jobs.py` (create/claim `FOR UPDATE SKIP LOCKED`/persist), `services/runner.py` (baseline Trajectory; M4 extends), real `Worker` (N concurrent claim loops, executor runs outside the DB txn), `api/deps.py` (X-API-Key principal + dev seed), job schemas + routes (`POST /v1/jobs`, `GET /v1/jobs`, `/{id}`, `/{id}/iterations`), and `test_client.py` (`HarnessClient` + stateful `JobRun`). Validated against a real embedded Postgres (`pgserver`) since docker isn't on this box — 21/21 e2e checks, plus `test_client.py` driven against a live uvicorn server. README gained a service quick-start + task-subset rationale.
 - _2026-08-17_: **M0 scaffold landed.** Package skeleton under `harness_service/`: constants (enums+defaults), pydantic-settings config, domain dataclasses (`AgentState`/`TaskOutcome`/`BenchmarkResult`/`Improvement`/`Iteration`/`Trajectory`, "produced" semantics), async SQLAlchemy engine + ORM (orgs/users/jobs/iterations/task_results, tenancy columns present), `Executor` protocol + working `SimulatedExecutor` + registry, heartbeat `Worker` (claim stub for M1), FastAPI app w/ lifespan (init_db + worker) and `/health`. Compose file for Postgres; `.env.example` + `pyproject[service]` updated. Verified via 3.12 venv: imports clean, app builds, `/health` served, all tables register.
