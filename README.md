@@ -13,7 +13,8 @@ sandbox, actual LLM proposing improvements — the graded path).
 
 ### Prerequisites
 
-- Python 3.12+
+- [`uv`](https://docs.astral.sh/uv/getting-started/installation/) — manages Python 3.12 and
+  the venv for you (see step 1); no system Python 3.12 install needed
 - [Docker](https://docs.docker.com/get-docker/) (for Postgres) — or see the no-Docker
   fallback note at the end of this section
 - For the **real** path only: an `OPENAI_API_KEY`, an `E2B_API_KEY`, and the `harbor` CLI
@@ -23,9 +24,15 @@ sandbox, actual LLM proposing improvements — the graded path).
 ```bash
 git clone https://github.com/neosigmaai/auto-harness
 cd auto-harness
-python3.12 -m venv .venv-harness && source .venv-harness/bin/activate
-pip install -e ".[service]"
+uv venv --python 3.12 .venv-harness && source .venv-harness/bin/activate
+uv pip install -e ".[service]"
 ```
+
+`uv venv --python 3.12` downloads and manages an isolated Python 3.12 for you — no system
+`python3.12` binary required, and no per-project duplication (uv caches the interpreter and
+packages once, system-wide). If you already have Python 3.12 available as `python3.12` and
+prefer plain `venv`/`pip`, that works too: `python3.12 -m venv .venv-harness && ... && pip
+install -e ".[service]"`.
 
 ### 2. Start Postgres
 
@@ -105,12 +112,12 @@ agent on a held-out test split). `test_client.py` defaults to `optimize`.
 Copy-paste, in order, from a fresh clone:
 
 ```bash
-# 0. clone + venv + install
+# 0. clone + venv + install (uv manages Python 3.12 for you — no system install needed)
 git clone https://github.com/neosigmaai/auto-harness
 cd auto-harness
-python3.12 -m venv .venv-harness
+uv venv --python 3.12 .venv-harness
 source .venv-harness/bin/activate
-pip install -e ".[service]"
+uv pip install -e ".[service]"
 
 # 1. Postgres
 docker compose -f docker-compose.harness.yml up -d
