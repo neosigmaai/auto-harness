@@ -109,26 +109,38 @@ class JobRun:
             print(f"error: {self.job.get('error')}")
             return
 
-        summary = self.job.get("summary") or {}
-        print(f"mode={self.job['mode']}  executor={self.job['executor']}  "
-              f"iterations={self.job['n_iterations']}  best_val={self.best_val_score}")
+        j = self.job
+        print(f"mode={j['mode']}  executor={j['executor']}  "
+              f"iterations={j['n_iterations']}  best_val={self.best_val_score}")
+
+        # Optimize headline: baseline → best (train) and held-out test.
+        if j["mode"] == "optimize":
+            base, best = j.get("baseline_val_score"), j.get("best_val_score")
+            imp = j.get("improvement")
+            print(f"\nOPTIMIZATION  train: baseline={base} → best={best}"
+                  + (f"  (Δ={imp:+.3f})" if imp is not None else ""))
+            print(f"  train tasks: {len(j.get('train_subset') or [])}   "
+                  f"held-out test: {len(j.get('test_subset') or [])}  "
+                  f"test_val_score={j.get('test_val_score')}")
+
+        summary = j.get("summary") or {}
         if summary:
-            print(f"\nBest iteration: val_score={summary['val_score']:.3f}  "
+            scope = "train" if j["mode"] == "optimize" else "subset"
+            print(f"\nBest iteration ({scope}): val_score={summary['val_score']:.3f}  "
                   f"passed={summary['n_passed']}  failed={summary['n_failed']}")
             if summary.get("failures"):
-                print("Failures:")
+                print("Remaining failures:")
                 for f in summary["failures"]:
-                    print(f"  ✗ {f['task_id']}: {f['failure_reason']}")
+                    print(f"  ✗ {f['task_id']}: {(f['failure_reason'] or '')[:120]}")
 
-        # Full iteration history (meaningful once M4 adds multiple iterations).
+        # Full iteration history.
         print("\nIteration history:")
         for it in self.iterations:
-            line = (f"  [{it['idx']}] {it['decision']:<9} "
-                    f"val={it['val_score']:.3f}  "
-                    f"pass={it['n_passed']}/{it['n_passed'] + it['n_failed']}")
-            print(line)
+            total = it["n_passed"] + it["n_failed"]
+            print(f"  [{it['idx']}] {it['decision']:<9} val={it['val_score']:.3f}  "
+                  f"pass={it['n_passed']}/{total}  ({it.get('decision_reason','')[:60]})")
             if it.get("proposal_rationale"):
-                print(f"        proposal: {it['proposal_rationale'][:160]}")
+                print(f"        └ proposal ({it.get('proposer')}): {it['proposal_rationale'][:150]}")
         print("=" * 68)
 
 
@@ -136,7 +148,7 @@ def main() -> int:
     p = argparse.ArgumentParser(description="Auto-Harness service test client")
     p.add_argument("--base-url", default=DEFAULT_BASE_URL)
     p.add_argument("--api-key", default=DEFAULT_API_KEY)
-    p.add_argument("--mode", choices=["single_run", "optimize"], default="single_run")
+    p.add_argument("--mode", choices=["single_run", "optimize"], default="optimize")
     p.add_argument("--executor", choices=["simulated", "harbor"], default=None)
     p.add_argument("--subset", default="core", help="subset name (core|smoke) or comma-separated task ids")
     p.add_argument("--max-iterations", type=int, default=None)

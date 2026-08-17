@@ -49,6 +49,11 @@ def _build_summary(job: Job) -> JobSummary | None:
 
 
 def _job_read(job: Job, *, with_summary: bool = True) -> JobRead:
+    improvement = (
+        job.best_val_score - job.baseline_val_score
+        if job.best_val_score is not None and job.baseline_val_score is not None
+        else None
+    )
     return JobRead(
         id=job.id,
         org_id=job.org_id,
@@ -66,6 +71,11 @@ def _job_read(job: Job, *, with_summary: bool = True) -> JobRead:
         updated_at=job.updated_at,
         finished_at=job.finished_at,
         summary=_build_summary(job) if with_summary else None,
+        baseline_val_score=job.baseline_val_score,
+        train_subset=job.train_subset,
+        test_subset=job.test_subset,
+        test_val_score=job.test_val_score,
+        improvement=improvement,
     )
 
 

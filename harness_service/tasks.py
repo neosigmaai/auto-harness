@@ -67,3 +67,22 @@ def resolve_subset(ref: str | list[str]) -> list[str]:
     if ref not in SUBSETS:
         raise ValueError(f"Unknown subset '{ref}'. Known: {sorted(SUBSETS)}")
     return list(SUBSETS[ref])
+
+
+def split_train_test(
+    tasks: list[str], train_ratio: float, seed: int
+) -> tuple[list[str], list[str]]:
+    """Deterministically split tasks into (train, test).
+
+    The optimizer improves + gates on `train`; the held-out `test` measures whether
+    the improvement generalizes (senior guidance: start with improvements on train).
+    Guarantees ≥1 train task; ≥1 test task when len>1 and ratio<1.
+    """
+    import random
+
+    if len(tasks) <= 1:
+        return list(tasks), []
+    shuffled = list(tasks)
+    random.Random(seed).shuffle(shuffled)
+    n_train = max(1, min(len(tasks) - 1, round(len(tasks) * train_ratio)))
+    return shuffled[:n_train], shuffled[n_train:]

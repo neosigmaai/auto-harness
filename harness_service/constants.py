@@ -52,8 +52,10 @@ class Role(str, Enum):
 DEFAULT_MAX_ITERATIONS = 5
 DEFAULT_PATIENCE = 2               # stop after N consecutive non-improving iters
 DEFAULT_SUBSET = "core"           # named task subset (see tasks.py)
+DEFAULT_TRAIN_RATIO = 0.67        # optimize/gate on this fraction; rest is held-out test
 TRACE_EXCERPT_CHARS = 4000        # per-task output retained as LLM context
 MIN_IMPROVEMENT = 1e-9            # val_score delta that counts as "better"
+SPLIT_SEED = 1234                 # deterministic train/test split
 
 # Client polling defaults (test_client.py)
 CLIENT_POLL_INTERVAL_S = 3.0

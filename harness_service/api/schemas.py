@@ -87,12 +87,18 @@ class JobRead(BaseModel):
     max_iterations: int
     patience: int
     n_iterations: int
-    best_val_score: float | None = None
+    best_val_score: float | None = None       # best TRAIN score (optimize) / only score (single_run)
     error: str | None = None
     created_at: datetime
     updated_at: datetime
     finished_at: datetime | None = None
     summary: JobSummary | None = None
+    # ── optimize (M4) ──
+    baseline_val_score: float | None = None    # iter 0 (train)
+    train_subset: list[str] | None = None
+    test_subset: list[str] | None = None
+    test_val_score: float | None = None        # best agent on held-out test
+    improvement: float | None = None           # best_train - baseline_train
 
 
 class JobListItem(BaseModel):

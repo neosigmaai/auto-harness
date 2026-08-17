@@ -14,7 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from harness_service.constants import ExecutorKind, JobMode, JobStatus
+from harness_service.constants import ExecutorKind, IterationDecision, JobMode, JobStatus
 from harness_service.domain import Iteration as DomainIteration
 from harness_service.domain import Trajectory
 from harness_service.db.models import Iteration, Job, TaskResult
@@ -157,27 +157,46 @@ def _to_orm_iteration(job_id: UUID, di: DomainIteration) -> Iteration:
     return orm
 
 
-async def persist_success(
-    session: AsyncSession, job_id: UUID, trajectory: Trajectory
-) -> None:
-    """Write every iteration + task result, set best-so-far, mark SUCCEEDED."""
+async def persist_success(session: AsyncSession, job_id: UUID, outcome) -> None:
+    """Write every iteration + task result, set best-so-far + optimize outcome, mark SUCCEEDED.
+
+    ``outcome`` is a services.runner.RunOutcome (trajectory + optional train/test split
+    and held-out test result).
+    """
     job = await session.get(Job, job_id)
     if job is None:
         raise RuntimeError(f"job {job_id} vanished before persistence")
 
+    trajectory = outcome.trajectory
     best_score = -1.0
     best_orm_id: UUID | None = None
+    # Only accepted/baseline iterations are eligible to be "best" (ERROR iters score 0).
     for di in trajectory.iterations:
         orm_it = _to_orm_iteration(job_id, di)
         session.add(orm_it)
         await session.flush()  # assigns orm_it.id
-        if di.result.val_score > best_score:
+        if di.decision != IterationDecision.ERROR and di.result.val_score > best_score:
             best_score = di.result.val_score
             best_orm_id = orm_it.id
 
-    job.best_val_score = trajectory.best_val_score
+    job.best_val_score = best_score if best_score >= 0 else None
     job.best_iteration_id = best_orm_id
     job.accumulated_context = trajectory.build_context()
+    job.baseline_val_score = outcome.baseline_val_score
+    job.train_subset = outcome.train_subset or None
+    job.test_subset = outcome.test_subset or None
+    if outcome.test_result is not None:
+        tr = outcome.test_result
+        job.test_val_score = tr.val_score
+        job.test_results = {
+            "val_score": tr.val_score,
+            "n_passed": tr.n_passed,
+            "n_failed": tr.n_failed,
+            "tasks": [
+                {"task_id": o.task_id, "reward": o.reward, "passed": o.passed}
+                for o in tr.outcomes
+            ],
+        }
     job.status = JobStatus.SUCCEEDED
     job.finished_at = _now()
 

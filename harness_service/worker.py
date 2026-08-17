@@ -76,7 +76,7 @@ class Worker:
         # 2. process (no DB transaction held while the agent runs)
         try:
             executor = get_executor(ctx.executor, self._settings)
-            trajectory = await execute_job(ctx, executor, self._settings)
+            outcome = await execute_job(ctx, executor, self._settings)
         except Exception as exc:
             logger.exception("job %s processing failed", ctx.id)
             async with session_scope() as s:
@@ -85,6 +85,8 @@ class Worker:
 
         # 3. persist result (separate transaction)
         async with session_scope() as s:
-            await jobs_svc.persist_success(s, ctx.id, trajectory)
-        logger.info("job %s SUCCEEDED (best_val=%.3f)", ctx.id, trajectory.best_val_score)
+            await jobs_svc.persist_success(s, ctx.id, outcome)
+        logger.info("job %s SUCCEEDED (train best=%.3f, test=%s)", ctx.id,
+                    outcome.trajectory.best_val_score,
+                    None if outcome.test_result is None else round(outcome.test_result.val_score, 3))
         return True

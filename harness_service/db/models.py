@@ -87,12 +87,19 @@ class Job(Base):
     max_iterations: Mapped[int] = mapped_column(Integer, default=1)
     patience: Mapped[int] = mapped_column(Integer, default=2)
 
-    best_val_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    best_val_score: Mapped[float | None] = mapped_column(Float, nullable=True)  # best TRAIN score
     best_iteration_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("iterations.id", use_alter=True), nullable=True
     )
     accumulated_context: Mapped[str | None] = mapped_column(Text, nullable=True)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # ── Optimize mode (M4): train/test split + held-out generalization ──
+    train_subset: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    test_subset: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    baseline_val_score: Mapped[float | None] = mapped_column(Float, nullable=True)  # iter0 TRAIN
+    test_val_score: Mapped[float | None] = mapped_column(Float, nullable=True)  # best agent on TEST
+    test_results: Mapped[dict | None] = mapped_column(JSONB, nullable=True)  # per-task on TEST
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
