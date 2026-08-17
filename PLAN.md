@@ -160,11 +160,12 @@ seeded key, M5 enforces role/ownership.
 
 ## 5. TerminalBench task subset (10–20, representative + fast)
 
-Selection criteria: spread across categories (coding / sysadmin / data / security),
-avoid the longest-running tasks, keep the full subset completing in a reasonable time.
-Stored in `harness_service/tasks.py`. **Exact IDs to be confirmed against the live
-`terminal-bench@2.0` dataset (`harbor tasks -d terminal-bench@2.0`) when harbor is
-available** — simulated mode is dataset-agnostic. Rationale written into README.
+✅ **Done.** Real IDs enumerated via `harbor download terminal-bench@2.0` (89 tasks). Parsed
+every `task.toml` (category/difficulty/timeouts/resources) and selected the **12-task `core`
+subset** in `harness_service/tasks.py` on evidence: fast bucket (agent ≤ 900s, 2G/1CPU),
+8-category spread, difficulty mix (3 easy / 8 medium / 1 hard). `smoke` = 3 cheapest (~5-min)
+tasks for a real-sandbox smoke test. Rationale table in README. Validated: simulated run over
+the real IDs returns successes/failures (baseline 0.167, 2/12 — good optimizer signal).
 
 ---
 

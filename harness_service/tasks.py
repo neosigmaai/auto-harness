@@ -1,35 +1,56 @@
-"""Named TerminalBench task subsets.
+"""Named TerminalBench 2.0 task subsets.
 
-For the SIMULATED executor these IDs are opaque labels (any string works). For the
-real HARBOR executor (M3) they must match the live ``terminal-bench@2.0`` dataset;
-the exact IDs are reconciled against ``harbor tasks -d terminal-bench@2.0`` then.
-The selection below is a representative, fast-to-run spread across the benchmark's
-categories (coding / sysadmin / data / security), per the brief.
+These are REAL ``terminal-bench@2.0`` task IDs (enumerated via
+``harbor download terminal-bench@2.0``), so the same subset drives both the
+SIMULATED executor (dev) and the HARBOR executor (real E2B sandbox, M3).
+
+Selection method (evidence-based, from each task's ``task.toml`` metadata):
+  * **Fast bucket** — agent timeout ≤ 900s, build 600s, 2G RAM / 1 CPU. These are
+    the cheapest tasks to run in parallel on E2B and keep the full subset finishing
+    in a reasonable time (the brief's requirement).
+  * **Category spread** — 8 of the benchmark's categories, so an improvement that
+    helps has to generalize rather than overfit one skill.
+  * **Difficulty mix** — mostly ``medium`` with a few ``easy`` and one ``hard``, so
+    the untuned baseline agent fails a meaningful fraction (real optimization signal)
+    without the subset being dominated by 40-minute monsters.
+
+Each entry: (category, difficulty, expert_time_min, why).
 """
 
 from __future__ import annotations
 
-# 12 tasks — representative + fast. Rationale documented in the README.
-CORE_SUBSET: list[str] = [
-    # coding
-    "fix-git-merge-conflict",
-    "implement-lru-cache",
-    "cobol-modernization",
-    # sysadmin
-    "configure-nginx-reverse-proxy",
-    "cron-log-rotation",
-    "recover-deleted-file",
-    # data
-    "csv-join-aggregate",
-    "sqlite-schema-migration",
-    "regex-log-parse",
-    # security
-    "crack-weak-hash",
-    "detect-sandbox-escape",
-    "tls-cert-setup",
-]
+CORE_TASKS: dict[str, tuple[str, str, float, str]] = {
+    "fix-git": ("software-engineering", "easy", 5,
+                "common git-state recovery; fast, exercises VCS reasoning"),
+    "cobol-modernization": ("software-engineering", "easy", 20,
+                "read + port legacy code; quick but needs careful comprehension"),
+    "cancel-async-tasks": ("software-engineering", "hard", 120,
+                "concurrency correctness; the deliberate 'hard' case for failure signal"),
+    "nginx-request-logging": ("system-administration", "medium", 20,
+                "service config + verification; classic sysadmin multi-step"),
+    "sqlite-with-gcov": ("system-administration", "medium", 30,
+                "build/instrument tooling; environment manipulation"),
+    "openssl-selfsigned-cert": ("security", "medium", 20,
+                "precise CLI incantation; correctness-sensitive"),
+    "crack-7z-hash": ("security", "medium", 5,
+                "short, well-defined security task; cheap to run"),
+    "regex-log": ("data-processing", "medium", 45,
+                "text transformation with exact-output verification"),
+    "hf-model-inference": ("data-science", "medium", 20,
+                "run a model + produce output; light data-science path"),
+    "largest-eigenval": ("mathematics", "medium", 60,
+                "numeric compute with a checkable answer"),
+    "extract-elf": ("file-operations", "medium", 30,
+                "binary/file inspection; different skill axis"),
+    "overfull-hbox": ("debugging", "easy", 60,
+                "the only 'easy' debugging task; fast (750s agent budget)"),
+}
 
-SMOKE_SUBSET: list[str] = ["implement-lru-cache", "regex-log-parse", "tls-cert-setup"]
+# Smallest, cheapest real runs (expert_time ≈ 5 min) — for a quick sandbox smoke test.
+SMOKE_TASKS = ["fix-git", "crack-7z-hash", "raman-fitting"]
+
+CORE_SUBSET: list[str] = list(CORE_TASKS)
+SMOKE_SUBSET: list[str] = SMOKE_TASKS
 
 SUBSETS: dict[str, list[str]] = {
     "core": CORE_SUBSET,

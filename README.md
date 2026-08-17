@@ -37,19 +37,38 @@ one is a per-job choice; the async pipeline is identical for both.
 
 ### TerminalBench task subset & why
 
-The `core` subset (`harness_service/tasks.py`) is **12 tasks chosen to be representative and
-fast**, spread across the benchmark's categories so improvements generalize rather than overfit:
+These are **real `terminal-bench@2.0` task IDs** (enumerated with
+`harbor download terminal-bench@2.0`), so the same `core` subset drives both the simulated
+executor and the real E2B sandbox. Selection is **evidence-based** from each task's
+`task.toml` metadata, on three axes:
 
-| Category | Tasks | Why |
-|---|---|---|
-| coding | fix-git-merge-conflict, implement-lru-cache, cobol-modernization | exercises edit/reason/legacy-code skills |
-| sysadmin | configure-nginx-reverse-proxy, cron-log-rotation, recover-deleted-file | multi-step environment manipulation |
-| data | csv-join-aggregate, sqlite-schema-migration, regex-log-parse | precise transformation + verification |
-| security | crack-weak-hash, detect-sandbox-escape, tls-cert-setup | careful, correctness-sensitive tasks |
+1. **Fast bucket** — every pick has agent timeout ≤ 900s, build 600s, 2G RAM / 1 CPU (the
+   cheapest of the 89 to run in parallel on E2B; the full subset finishes in a reasonable time).
+2. **Category spread** — 8 of the benchmark's categories, so a helpful improvement has to
+   generalize rather than overfit one skill.
+3. **Difficulty mix** — mostly `medium`, a few `easy`, one deliberate `hard`, so the untuned
+   baseline agent fails a meaningful fraction (real optimization signal) without the subset
+   being dominated by 40-minute tasks.
 
-A `smoke` subset (3 tasks) is provided for quick checks. For the simulated executor these IDs
-are opaque labels; for the real harbor executor they are reconciled against
-`harbor tasks -d terminal-bench@2.0` (M3).
+The `core` subset — 12 tasks:
+
+| Task | Category | Difficulty | Why |
+|---|---|---|---|
+| `fix-git` | software-engineering | easy | common git-state recovery; fast VCS reasoning |
+| `cobol-modernization` | software-engineering | easy | port legacy code; careful comprehension |
+| `cancel-async-tasks` | software-engineering | hard | concurrency correctness — the deliberate hard case |
+| `nginx-request-logging` | system-administration | medium | service config + verification |
+| `sqlite-with-gcov` | system-administration | medium | build/instrument tooling |
+| `openssl-selfsigned-cert` | security | medium | precise, correctness-sensitive CLI |
+| `crack-7z-hash` | security | medium | short, well-defined; cheap to run |
+| `regex-log` | data-processing | medium | text transform with exact-output check |
+| `hf-model-inference` | data-science | medium | run a model + produce output |
+| `largest-eigenval` | mathematics | medium | numeric compute, checkable answer |
+| `extract-elf` | file-operations | medium | binary/file inspection |
+| `overfull-hbox` | debugging | easy | the only easy debugging task; fast (750s budget) |
+
+A `smoke` subset (`fix-git`, `crack-7z-hash`, `raman-fitting` — all ~5-min expert tasks) is
+provided for a quick, cheap real-sandbox check before running the full `core` set.
 
 ---
 
