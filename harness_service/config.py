@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     # ── Sandbox (M3) ──
     e2b_api_key: str | None = None
     env_provider: str = "e2b"
+    harbor_bin: str = "harbor"
+    harbor_dataset: str = "terminal-bench@2.0"
+    harbor_per_task_timeout_s: int = 1200
+    harbor_concurrency: int = 12
 
     # ── Executor selection ──
     default_executor: ExecutorKind = ExecutorKind.SIMULATED
