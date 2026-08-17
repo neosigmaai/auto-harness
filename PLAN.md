@@ -207,6 +207,22 @@ Still open: Q3 cost/time envelope for the graded optimize run (proceeding with s
 + 12-task subset). Proposer model = `gpt-4o` (capable + cheaper; configurable via `OPENAI_MODEL`).
 
 ## 7. Progress log
+- _2026-08-17_: **Root-caused + fixed a real bug found live: `uvicorn --reload` orphans in-flight
+  jobs.** During the first real 3-iteration `core` optimize run, the client hit
+  `TimeoutError` after 30 min polling a job stuck at `status=running, n_iterations=0`.
+  Server log showed the cause directly: `HarborExecutor` writes each candidate to
+  `agent/_candidates/job_<id>.py`, which is inside the project tree uvicorn's `--reload`
+  watches. Writing that file mid-run made `WatchFiles` think the app's *code* changed →
+  uvicorn killed and restarted the whole server process → the asyncio task running the
+  job died mid-flight (its DB row had already flipped to `running` and is never re-claimed
+  by a fresh worker, since claiming only targets `queued` rows) → permanently orphaned.
+  The underlying `harbor` OS subprocess was unaffected (not tied to the Python process)
+  and finished all 8 real E2B trials in ~3 min on its own — explaining why disk state
+  looked "done" while the API stayed stuck. **Fix:** `--reload-exclude 'agent/_candidates/*'`
+  in both README `uvicorn` commands; verified with an isolated instance (same PID before/
+  after writing a candidate file, no reload triggered). **Residual known risk** (not yet
+  built): a job whose worker process dies for any other reason (crash, Ctrl+C, OOM) is
+  still permanently stuck at `running` — no staleness detection / auto-requeue exists yet.
 - _2026-08-17_: **No-Docker fallback added, found while onboarding a teammate.** Senior hit
   both `python3.12: command not found` and `docker: command not found` following the README
   fresh. Fixed venv instructions to use `uv venv --python 3.12` (no system Python needed).

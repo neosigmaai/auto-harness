@@ -68,7 +68,7 @@ harbor --version                # sanity check
 ### 5. Start the service
 
 ```bash
-uvicorn harness_service.api.app:app --reload
+uvicorn harness_service.api.app:app --reload --reload-exclude 'agent/_candidates/*'
 ```
 
 On startup the service creates its schema, seeds a dev API key (`dev-key`), and starts the
@@ -146,7 +146,7 @@ cp .env.example .env
 uv tool install 'harbor[e2b]'
 
 # 4. start the service (leave this running in its own terminal)
-uvicorn harness_service.api.app:app --reload
+uvicorn harness_service.api.app:app --reload --reload-exclude 'agent/_candidates/*'
 
 # 5. in a second terminal (same venv): sanity check
 curl http://localhost:8000/health
