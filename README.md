@@ -40,6 +40,9 @@ install -e ".[service]"`.
 docker compose -f docker-compose.harness.yml up -d
 ```
 
+No Docker? See the [no-Docker fallback](#no-docker-fallback) below for a lighter,
+Docker-free alternative (a couple commands, no system install).
+
 ### 3. Configure
 
 ```bash
@@ -89,9 +92,22 @@ history — including every improvement the LLM proposed and whether it was acce
 reverted. See [step-by-step instructions](#step-by-step-instructions) below for the full
 walkthrough with expected output at each stage.
 
-**No Docker?** The service only needs *a* Postgres reachable at `DATABASE_URL` — any
+#### No-Docker fallback
+
+The service only needs *a* Postgres reachable at `DATABASE_URL` — any
 Postgres 14+ works (a cloud instance, a system-installed one, etc.); docker-compose is just
-the easiest way to get one. `DATABASE_URL` in `.env` controls where it connects.
+the easiest way to get one. If Docker isn't installed and you'd rather not install it, use
+the embedded Postgres included for local dev — no system install, no daemon, runs entirely
+out of a local `.pgdata/` directory:
+
+```bash
+uv pip install -e ".[dev]"        # installs pgserver (bundled Postgres binaries)
+python scripts/dev_postgres.py    # leave running in its own terminal
+```
+
+It prints a `DATABASE_URL` — paste that into `.env` in place of the docker-compose one, then
+continue with step 4 (start the service) as normal. `Ctrl+C` stops it; delete `.pgdata/` to
+fully remove it.
 
 **Endpoints:** `POST /v1/jobs` (submit, returns immediately), `GET /v1/jobs/{id}` (status +
 structured summary), `GET /v1/jobs/{id}/iterations` (full history), `GET /v1/jobs` (list),

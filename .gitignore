@@ -34,6 +34,9 @@ auto_harness.egg-info/
 # harness_service: per-job candidate agent modules (runtime artifacts, M3)
 agent/_candidates/
 
+# harness_service: embedded dev Postgres data dir (scripts/dev_postgres.py)
+.pgdata/
+
 # tau2 data (auto-cloned by prepare.py, not committed)
 tau2_data/
 

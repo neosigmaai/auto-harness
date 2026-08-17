@@ -26,6 +26,11 @@ service = [
     "httpx>=0.27",
     "requests>=2.31",
 ]
+# No Docker on your machine? An embedded Postgres for local dev — no system
+# install, no daemon, lives entirely inside the venv. See scripts/dev_postgres.py.
+dev = [
+    "pgserver>=0.1.4",
+]
 
 [tool.uv.sources]
 tau2 = { git = "https://github.com/sierra-research/tau2-bench.git", rev = "73dc24445d28762075e69465d966aee4a9dcbfcb" }

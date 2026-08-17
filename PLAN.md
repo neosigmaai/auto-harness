@@ -207,6 +207,14 @@ Still open: Q3 cost/time envelope for the graded optimize run (proceeding with s
 + 12-task subset). Proposer model = `gpt-4o` (capable + cheaper; configurable via `OPENAI_MODEL`).
 
 ## 7. Progress log
+- _2026-08-17_: **No-Docker fallback added, found while onboarding a teammate.** Senior hit
+  both `python3.12: command not found` and `docker: command not found` following the README
+  fresh. Fixed venv instructions to use `uv venv --python 3.12` (no system Python needed).
+  For Postgres, added `scripts/dev_postgres.py` (embedded Postgres via `pgserver`, `[dev]`
+  extra in pyproject) — no system install/daemon, lives in a local `.pgdata/`. Verified for
+  real: script prints a working `DATABASE_URL`, a real `uvicorn` boot against it passes
+  `/health` (schema created, dev key seeded, worker started). README's "No-Docker fallback"
+  is now a linked, concrete recipe instead of a vague pointer.
 - _2026-08-17_: **README rewritten with full run instructions.** Prerequisites, install,
   Postgres (+ no-Docker fallback note), `.env` config, `harbor[e2b]` install, start service,
   and a copy-paste step-by-step section with expected `test_client.py` output for the real
