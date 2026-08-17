@@ -1,5 +1,58 @@
 # auto-harness
 
+> **Optimization Service (`harness_service/`)** — a FastAPI + Postgres backend that runs
+> the TerminalBench agent against a task subset, observes failures, and (M4) uses an LLM to
+> iteratively improve the agent. This is the take-home deliverable; it wraps the CLI harness
+> described below. See [PLAN.md](PLAN.md) for design, milestones, and tradeoffs.
+
+## Optimization Service — quick start
+
+```bash
+# 1. Install service deps (Python 3.12+)
+python -m venv .venv-harness && source .venv-harness/bin/activate
+pip install -e ".[service]"
+
+# 2. Start Postgres
+docker compose -f docker-compose.harness.yml up -d
+
+# 3. Configure (copy .env.example -> .env; defaults already point at the compose DB)
+cp .env.example .env    # set OPENAI_API_KEY for the M4 proposer; E2B_API_KEY for M3
+
+# 4. Run the service
+uvicorn harness_service.api.app:app --reload
+
+# 5. Exercise it end-to-end
+python test_client.py                          # simulated, single run, "core" subset
+python test_client.py --mode optimize --max-iterations 5   # (M4)
+python test_client.py --executor harbor --subset smoke     # real E2B sandbox (M3)
+```
+
+**Endpoints:** `POST /v1/jobs` (submit, returns immediately), `GET /v1/jobs/{id}` (status +
+structured summary), `GET /v1/jobs/{id}/iterations` (full history), `GET /v1/jobs` (list),
+`GET /health`. Auth via `X-API-Key` (seeded dev key: `dev-key`).
+
+**Executors:** `simulated` (default — deterministic dummy runs, no external deps, for fast
+API/loop development) and `harbor` (M3 — runs the agent in a real **E2B** sandbox). Selecting
+one is a per-job choice; the async pipeline is identical for both.
+
+### TerminalBench task subset & why
+
+The `core` subset (`harness_service/tasks.py`) is **12 tasks chosen to be representative and
+fast**, spread across the benchmark's categories so improvements generalize rather than overfit:
+
+| Category | Tasks | Why |
+|---|---|---|
+| coding | fix-git-merge-conflict, implement-lru-cache, cobol-modernization | exercises edit/reason/legacy-code skills |
+| sysadmin | configure-nginx-reverse-proxy, cron-log-rotation, recover-deleted-file | multi-step environment manipulation |
+| data | csv-join-aggregate, sqlite-schema-migration, regex-log-parse | precise transformation + verification |
+| security | crack-weak-hash, detect-sandbox-escape, tls-cert-setup | careful, correctness-sensitive tasks |
+
+A `smoke` subset (3 tasks) is provided for quick checks. For the simulated executor these IDs
+are opaque labels; for the real harbor executor they are reconciled against
+`harbor tasks -d terminal-bench@2.0` (M3).
+
+---
+
 > Give a coding agent a benchmark and an agent file. Let it iterate overnight. It reads failures, improves the system prompt and tools, gates every change against a self-maintained eval suite, and repeats.
 
 This repo is a simplified version of our auto-harness agent setup. We demonstrate our system on Tau3 benchmark tasks where the agent's score improves from 0.56 to 0.78 (~40% jump) while mining failures and auto maintaining live evals. If you are curious to learn more, read the full blog here - https://www.neosigma.ai/blog/self-improving-agentic-systems.
