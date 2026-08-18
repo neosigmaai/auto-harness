@@ -207,6 +207,24 @@ Still open: Q3 cost/time envelope for the graded optimize run (proceeding with s
 + 12-task subset). Proposer model = `gpt-4o` (capable + cheaper; configurable via `OPENAI_MODEL`).
 
 ## 7. Progress log
+- _2026-08-17_: **Closed the self-improvement feedback loop + hardened the proposer.** Diagnosed
+  why real optimize runs collapsed to 0/8: both LLM candidates injected bare `{"role":"tool"}`
+  messages (no `tool_call_id`) → OpenAI 400 `"Function call output requires call_id"` → agent
+  crashed at step 0 on every task. The real cause lived in harbor's `trial.log`, which our
+  executor never read, so the proposer saw "everything failed, no reason" and could not
+  self-correct. Fixes: (1) `HarborExecutor._extract_error` now surfaces the real crash
+  (`result.json:exception_info` for harness/sandbox crashes, else the agent's logged error in
+  `trial.log`) into `failure_reason`, error-detail FIRST; `_failure_digest` prioritizes it over
+  the raw trace; a loud `_crash_warning` fires on total-collapse-with-errors telling the LLM the
+  code is BROKEN, not the strategy. (2) Candidate files are no longer deleted after a run — kept
+  under `agent/_candidates/` (gitignored, named by agent_hash ↔ `iterations.agent_hash`) for
+  debugging. (3) The proposer `_SYSTEM` prompt is now ~5.6k chars: explicit message-protocol
+  rules with WRONG/RIGHT worked examples of the exact call_id bug, a diagnose-from-error-text
+  section, and a strict output contract. **Also fixed a pre-existing breakage**: the working-tree
+  `_SYSTEM` string had lost its closing `"""` and would not import — completed + closed it.
+  Verified: `_extract_error` surfaces the real `call_id` error from on-disk trial data; digest
+  orders error-before-trace; crash warning fires only on total collapse; M4 simulated suite
+  still 24/24.
 - _2026-08-17_: **Root-caused + fixed a real bug found live: `uvicorn --reload` orphans in-flight
   jobs.** During the first real 3-iteration `core` optimize run, the client hit
   `TimeoutError` after 30 min polling a job stuck at `status=running, n_iterations=0`.

@@ -21,6 +21,7 @@ import json
 import logging
 import math
 import os
+import re
 import subprocess
 import time
 from pathlib import Path
@@ -105,8 +106,12 @@ class HarborExecutor:
                                proc.returncode, (proc.stderr or "")[-500:])
         except subprocess.TimeoutExpired:
             logger.warning("harbor run timed out after %ds", subprocess_timeout)
-        finally:
-            cand_path.unlink(missing_ok=True)  # candidate module is transient
+
+        # NOTE: the candidate module is deliberately NOT deleted. Each file is named
+        # job_<agent_hash[:12]>_<ts>.py, and that same hash is stored on the iteration
+        # row (iterations.agent_hash) — so a rejected/failed candidate can be correlated
+        # with its DB record and re-read afterwards for debugging. They are gitignored.
+        logger.info("candidate kept for debugging: %s", cand_path)
 
         outcomes = self._parse_results(jobs_dir, task_ids, run_start)
         return BenchmarkResult(outcomes=tuple(outcomes))
@@ -114,9 +119,18 @@ class HarborExecutor:
     def _parse_results(
         self, jobs_dir: Path, task_ids: list[str], run_start: float
     ) -> list[TaskOutcome]:
-        """Parse per-task result.json + trace from the newest job dir under jobs_dir."""
+        """Parse per-task result.json + trace + REAL error detail from the job dir.
+
+        Capturing the error detail matters for the optimization loop: when a proposed
+        candidate agent is itself broken (e.g. it builds a malformed LLM request), every
+        task scores 0.0 and the raw conversation trace shows nothing useful — the actual
+        cause is only in ``trial.log`` (the agent's own logged exception) or in
+        ``result.json:exception_info`` (a harness/sandbox-level crash). Without this,
+        the proposer sees "everything failed" with no reason and cannot self-correct.
+        """
         rewards: dict[str, float | None] = {}
         traces: dict[str, str] = {}
+        errors: dict[str, str] = {}
 
         # result.json files created by this run (defensive against layout changes).
         for result_file in jobs_dir.rglob("result.json"):
@@ -134,9 +148,15 @@ class HarborExecutor:
             else:
                 reward = None  # verifier didn't run → infra error/timeout
             rewards[task_name] = reward
-            trace = self._find_trace(result_file.parent)
+
+            trial_dir = result_file.parent
+            trace = self._find_trace(trial_dir)
             if trace:
                 traces[task_name] = trace
+
+            detail = self._extract_error(trial_dir, data)
+            if detail:
+                errors[task_name] = detail
 
         outcomes: list[TaskOutcome] = []
         for tid in task_ids:
@@ -147,7 +167,9 @@ class HarborExecutor:
                 reward=reward,
                 passed=passed,
                 trace_excerpt=traces.get(tid),
-                failure_reason=None if passed else self._failure_reason(reward, traces.get(tid)),
+                failure_reason=None if passed else self._failure_reason(
+                    reward, errors.get(tid), traces.get(tid)
+                ),
             ))
         return outcomes
 
@@ -161,9 +183,51 @@ class HarborExecutor:
                     return None
         return None
 
+    # Lines in trial.log that indicate the agent itself broke (as opposed to merely
+    # failing the task). The agent template logs "LLM call failed at step N: ...".
+    _ERROR_PATTERNS = re.compile(
+        r"(LLM call failed|BadRequestError|Traceback|Exception|Error:|error:|"
+        r"invalid_request_error|timed out)",
+        re.IGNORECASE,
+    )
+
+    @classmethod
+    def _extract_error(cls, trial_dir: Path, result_data: dict) -> str | None:
+        """Pull the real crash cause: harness-level exception, else agent-level log error."""
+        # 1. Harness/sandbox-level crash (e.g. E2B TimeoutException) — most authoritative.
+        exc = result_data.get("exception_info")
+        if isinstance(exc, dict) and exc.get("exception_type"):
+            msg = " ".join(str(exc.get("exception_message", "")).split())
+            return f"{exc['exception_type']}: {msg}"[:800]
+
+        # 2. Agent-level error logged inside the trial (e.g. a malformed LLM request).
+        log = trial_dir / "trial.log"
+        if not log.exists():
+            return None
+        try:
+            lines = log.read_text(errors="replace").splitlines()
+        except OSError:
+            return None
+        for i, line in enumerate(lines):
+            if cls._ERROR_PATTERNS.search(line):
+                # Errors often span several lines (pretty-printed JSON from the API).
+                block = " ".join(" ".join(lines[i : i + 12]).split())
+                return block[:800]
+        return None
+
     @staticmethod
-    def _failure_reason(reward: float | None, trace: str | None) -> str:
+    def _failure_reason(
+        reward: float | None, error: str | None, trace: str | None
+    ) -> str:
+        """Human+LLM readable failure summary, error detail FIRST (it's the actionable part)."""
+        parts: list[str] = []
         if reward is None:
-            return "no verifier result (agent timed out or sandbox/infra error)"
+            parts.append("NO VERIFIER RESULT (agent crashed, timed out, or sandbox error)")
+        else:
+            parts.append(f"reward={reward:.2f}")
+        if error:
+            parts.append(f"ERROR: {error}")
         tail = (trace or "").strip()[-300:]
-        return f"reward={reward:.2f}; trace tail: {tail}" if tail else f"reward={reward:.2f}"
+        if tail:
+            parts.append(f"trace tail: {tail}")
+        return " | ".join(parts)

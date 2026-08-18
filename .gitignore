@@ -31,7 +31,8 @@ experiment_config.yaml
 auto_harness.egg-info/
 *.egg-info/
 
-# harness_service: per-job candidate agent modules (runtime artifacts, M3)
+# harness_service: per-job candidate agent modules (kept on disk for debugging;
+# named by agent_hash so they correlate with iterations.agent_hash in the DB)
 agent/_candidates/
 
 # harness_service: embedded dev Postgres data dir (scripts/dev_postgres.py)
