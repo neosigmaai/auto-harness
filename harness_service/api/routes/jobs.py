@@ -110,7 +110,8 @@ def _iteration_read(it: Iteration) -> IterationRead:
     )
 
 
-@router.post("", response_model=JobRead, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=JobRead, status_code=status.HTTP_201_CREATED,
+             summary="Submit a benchmark/optimize job (returns immediately)")
 async def submit_job(
     body: JobCreate,
     principal: Principal = Depends(get_principal),
@@ -144,7 +145,7 @@ async def submit_job(
     return _job_read(job)
 
 
-@router.get("", response_model=list[JobListItem])
+@router.get("", response_model=list[JobListItem], summary="List jobs in your org")
 async def list_jobs(
     principal: Principal = Depends(get_principal),
     session: AsyncSession = Depends(get_session),
@@ -164,7 +165,8 @@ async def list_jobs(
     ]
 
 
-@router.get("/{job_id}", response_model=JobRead)
+@router.get("/{job_id}", response_model=JobRead,
+            summary="Get job status + structured result summary")
 async def get_job(
     job_id: UUID,
     principal: Principal = Depends(get_principal),
@@ -176,7 +178,8 @@ async def get_job(
     return _job_read(job)
 
 
-@router.get("/{job_id}/iterations", response_model=list[IterationRead])
+@router.get("/{job_id}/iterations", response_model=list[IterationRead],
+            summary="Full lossless iteration history (incl. LLM proposal audit trail)")
 async def get_iterations(
     job_id: UUID,
     principal: Principal = Depends(get_principal),

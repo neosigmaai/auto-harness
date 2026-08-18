@@ -13,7 +13,8 @@ from harness_service.db import get_session
 router = APIRouter(tags=["health"])
 
 
-@router.get("/health", response_model=HealthResponse)
+@router.get("/health", response_model=HealthResponse,
+            summary="Liveness + DB/worker readiness")
 async def health(session: AsyncSession = Depends(get_session)) -> HealthResponse:
     try:
         await session.execute(text("SELECT 1"))
