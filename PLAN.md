@@ -207,6 +207,17 @@ Still open: Q3 cost/time envelope for the graded optimize run (proceeding with s
 + 12-task subset). Proposer model = `gpt-4o` (capable + cheaper; configurable via `OPENAI_MODEL`).
 
 ## 7. Progress log
+- _2026-08-17_: **Fixed the proposal-audit persistence gap + exposed the LLM I/O on the API.**
+  Faithfulness analysis surfaced that `iterations.llm_request` stored only `user[:2000]` — and
+  since the ~6KB agent source is prepended, the `OBSERVED FAILURES` block fell past the cutoff
+  and was never persisted, so the input the model reasoned over was unauditable. Now
+  `OpenAIProposer` persists a structured, UNtruncated record — `failures_shown`, `context_shown`,
+  `val_score_shown`/`n_passed_shown`/`n_tasks_shown`, `crash_warning_shown` — plus the raw
+  response (`raw_content`, 40k cap). Agent source is deliberately not duplicated (already on the
+  iteration row). `IterationRead` + `/v1/jobs/{id}/iterations` now expose `llm_request` and
+  `llm_response`, so faithfulness (failures-seen → proposal) is fully queryable. Verified with a
+  real OpenAI call on embedded Postgres: `failures_shown` persisted in full, both blobs returned
+  by the endpoint; M4 simulated suite still green.
 - _2026-08-17_: **Closed the self-improvement feedback loop + hardened the proposer.** Diagnosed
   why real optimize runs collapsed to 0/8: both LLM candidates injected bare `{"role":"tool"}`
   messages (no `tool_call_id`) → OpenAI 400 `"Function call output requires call_id"` → agent

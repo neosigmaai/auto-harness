@@ -207,13 +207,18 @@ class OpenAIProposer:
     ) -> Improvement:
         from openai import AsyncOpenAI
 
+        # Computed once so the PERSISTED record is exactly what the model was shown.
+        warning = _crash_warning(result)
+        failures = _failure_digest(result)
+        ctx = context or "(none yet)"
+
         user = (
-            f"{_crash_warning(result)}"
+            f"{warning}"
             f"CURRENT agent.py:\n```python\n{base.source}\n```\n\n"
             f"OBSERVED FAILURES (task: actionable error/reason first, then trace tail):\n"
-            f"{_failure_digest(result)}\n\n"
+            f"{failures}\n\n"
             f"PRIOR ATTEMPTS (accumulated context — what was already tried and its result):\n"
-            f"{context or '(none yet)'}\n\n"
+            f"{ctx}\n\n"
             f"Current train val_score: {result.val_score:.3f} "
             f"({result.n_passed}/{len(result.outcomes)} passed). Propose the next improvement."
         )
@@ -227,13 +232,26 @@ class OpenAIProposer:
         data = json.loads(content)
         new_source = data.get("new_source", "")
         rationale = data.get("rationale", "(no rationale)")
+        # Persist the audit trail in FULL (no truncation that would drop the failures the
+        # model reasoned over). The agent source is intentionally NOT duplicated here — it is
+        # already stored on the iteration row (iterations.agent_source); we store the parts
+        # that are otherwise unrecoverable: the exact failures + context the model was shown.
         return Improvement(
             proposer=ProposerKind.OPENAI,
             rationale=rationale,
             diff_summary=_diff_summary(base.source, new_source),
             new_agent_source=new_source,
-            llm_request={"model": self._s.openai_model, "system": _SYSTEM, "user_excerpt": user[:2000]},
-            llm_response={"content": content[:8000]},
+            llm_request={
+                "model": self._s.openai_model,
+                "failures_shown": failures,
+                "context_shown": ctx,
+                "val_score_shown": round(result.val_score, 4),
+                "n_passed_shown": result.n_passed,
+                "n_tasks_shown": len(result.outcomes),
+                "crash_warning_shown": warning.strip() or None,
+                "system_prompt_chars": len(_SYSTEM),
+            },
+            llm_response={"raw_content": content[:40000]},
         )
 
 

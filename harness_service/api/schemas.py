@@ -63,6 +63,9 @@ class IterationRead(BaseModel):
     task_results: list[TaskResultRead] = []
     # full source is available but bulky; included so history is truly lossless.
     agent_source: str | None = None
+    # Full audit trail of the proposal LLM call (what it was shown / what it returned).
+    llm_request: dict | None = None
+    llm_response: dict | None = None
 
 
 class JobSummary(BaseModel):

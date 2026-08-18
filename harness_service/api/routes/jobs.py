@@ -94,6 +94,8 @@ def _iteration_read(it: Iteration) -> IterationRead:
         proposal_diff=it.proposal_diff,
         created_at=it.created_at,
         agent_source=it.agent_source,
+        llm_request=it.llm_request,
+        llm_response=it.llm_response,
         task_results=[
             TaskResultRead(
                 task_id=t.task_id,
