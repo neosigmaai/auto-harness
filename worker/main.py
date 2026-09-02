@@ -10,9 +10,16 @@ import socket
 import time
 import uuid
 
+from api.config import clear_config_cache, load_config
 from api.db import init_db
-from api.services.runner import MockBenchmarkRunner
-from api.store import PostgresRunStore
+from api.schemas import RunError, RunStatus
+from api.services.runner import (
+    ExecutionUnavailableError,
+    HarborBenchmarkRunner,
+    MockBenchmarkRunner,
+    create_runner,
+)
+from api.store import PostgresRunStore, _utcnow
 
 logger = logging.getLogger("worker")
 
@@ -31,7 +38,7 @@ def default_worker_id() -> str:
 
 def process_one(
     store: PostgresRunStore,
-    runner: MockBenchmarkRunner,
+    runner: MockBenchmarkRunner | HarborBenchmarkRunner,
     *,
     worker_id: str,
     stale_after_sec: int,
@@ -41,7 +48,25 @@ def process_one(
     if run_id is None:
         return False
     logger.info("claimed run_id=%s", run_id)
-    runner.execute_sync(run_id)
+    try:
+        runner.execute_sync(run_id)
+    except ExecutionUnavailableError as exc:
+        store.update(
+            run_id,
+            status=RunStatus.failed,
+            finished_at=_utcnow(),
+            error=RunError(code="execution_unavailable", message=str(exc)),
+        )
+        logger.error("execution unavailable run_id=%s: %s", run_id, exc)
+    except Exception as exc:  # noqa: BLE001
+        store.update(
+            run_id,
+            status=RunStatus.failed,
+            finished_at=_utcnow(),
+            error=RunError(code="internal_error", message=str(exc)),
+        )
+        logger.exception("worker failed run_id=%s", run_id)
+
     record = store.get(run_id)
     logger.info(
         "finished run_id=%s status=%s",
@@ -58,11 +83,18 @@ def run_loop(
     step_delay_sec: float = 0.05,
     max_jobs: int | None = None,
 ) -> None:
+    clear_config_cache()
+    cfg = load_config()
     init_db()
     store = PostgresRunStore()
-    runner = MockBenchmarkRunner(store=store, step_delay_sec=step_delay_sec)
+    runner = create_runner(store, config=cfg, step_delay_sec=step_delay_sec)
     worker_id = default_worker_id()
-    logger.info("worker starting id=%s", worker_id)
+    logger.info(
+        "worker starting id=%s backend=%s env_provider=%s",
+        worker_id,
+        cfg.execution_backend,
+        cfg.env_provider,
+    )
 
     jobs_done = 0
     while not _shutdown:
@@ -89,6 +121,7 @@ def main() -> None:
         "--step-delay-sec",
         type=float,
         default=float(os.environ.get("MOCK_STEP_DELAY_SEC", "0.05")),
+        help="Delay between mock tasks (mock backend only)",
     )
     parser.add_argument(
         "--max-jobs",

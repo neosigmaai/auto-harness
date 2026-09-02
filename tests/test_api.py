@@ -45,6 +45,8 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture()
 def db_store() -> PostgresRunStore:
     os.environ["DATABASE_URL"] = DATABASE_URL
+    os.environ["EXECUTION_BACKEND"] = "mock"
+    clear_config_cache()
     reset_engine()
     init_db(url=DATABASE_URL)
     store = PostgresRunStore(session_factory=get_session_factory())
@@ -53,6 +55,7 @@ def db_store() -> PostgresRunStore:
     store.clear()
     reset_engine()
     clear_config_cache()
+    os.environ.pop("EXECUTION_BACKEND", None)
 
 
 @pytest.fixture()

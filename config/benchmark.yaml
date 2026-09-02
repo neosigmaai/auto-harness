@@ -1,7 +1,15 @@
-# Terminal-Bench subset used by the API (Milestone 1).
+# Terminal-Bench subset used by the API.
 # Exact IDs can be refined later; the API reads this file at startup.
 
 default_agent_model: gpt-4.1-mini
+
+# Harbor / sandbox settings (Milestone 3)
+env_provider: docker          # docker | e2b | daytona | modal
+dataset: terminal-bench@2.0
+max_concurrency: 2            # keep low for local Docker
+per_task_timeout: 1200
+execution_backend: harbor     # harbor | mock  (override with EXECUTION_BACKEND)
+jobs_dir: workspace/tbench_jobs
 
 # Default tasks when POST /v1/runs omits task_ids. Also the allowlist of known IDs.
 default_task_ids:
