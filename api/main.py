@@ -10,7 +10,8 @@ from fastapi.responses import JSONResponse
 
 from api.config import load_config
 from api.db import init_db, reset_engine
-from api.routes import runs, tasks
+from api.job_store import PostgresJobStore, job_store as default_job_store
+from api.routes import jobs, runs, tasks
 from api.schemas import ErrorDetail, ErrorResponse, HealthResponse
 from api.store import PostgresRunStore, store as default_store
 
@@ -18,6 +19,7 @@ from api.store import PostgresRunStore, store as default_store
 def create_app(
     *,
     store: PostgresRunStore | None = None,
+    job_store: PostgresJobStore | None = None,
     database_url: str | None = None,
     init_database: bool = True,
 ) -> FastAPI:
@@ -43,12 +45,14 @@ def create_app(
 
     run_store = store or default_store
     app.state.store = run_store
+    app.state.job_store = job_store or default_job_store
 
     # Eager-load config so misconfiguration fails at startup.
     load_config()
 
     app.include_router(tasks.router)
     app.include_router(runs.router)
+    app.include_router(jobs.router)
 
     @app.get("/health", response_model=HealthResponse)
     async def health() -> HealthResponse:
