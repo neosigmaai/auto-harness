@@ -1,0 +1,581 @@
+"""End-to-end job loop tests: Postgres + mock backend + FakeImprover."""
+
+from __future__ import annotations
+
+import json
+import os
+import shutil
+from uuid import UUID
+
+import pytest
+from sqlalchemy import select
+from sqlalchemy.exc import OperationalError
+
+from api.config import REPO_ROOT, clear_config_cache, load_config
+from api.db import get_engine, get_session_factory, init_db, reset_engine
+from api.job_store import EvaluateOutcome, PostgresJobStore
+from api.models import StepRow
+from api.schemas import RunStatus, TaskStatus
+from api.services.artifacts import LocalArtifactStore
+from api.services.improver import FakeImprover, ImproverError, Proposal, _RaisingImprover
+from api.services.runner import MockBenchmarkRunner
+from api.store import PostgresRunStore
+from worker import steps as steps_module
+from worker.main import process_one
+from worker.steps import StepExecutor
+
+DATABASE_URL = os.environ.get(
+    "DATABASE_URL",
+    "postgresql+psycopg://auto:auto@127.0.0.1:5432/auto_harness",
+)
+
+# MockBenchmarkRunner buckets task_id by sha256 % 5: "fix-git" -> passed (1.0),
+# "regex-log" -> failed (0.0). The mean reward is therefore exactly 0.5 on every
+# iteration, so a mock job can never improve and always plateaus.
+TASK_IDS = ["fix-git", "regex-log"]
+PLATEAU_SCORE = 0.5
+
+
+def _postgres_available() -> bool:
+    reset_engine()
+    try:
+        engine = get_engine(url=DATABASE_URL, force_new=True)
+        with engine.connect() as conn:
+            conn.exec_driver_sql("SELECT 1")
+        return True
+    except OperationalError:
+        return False
+    finally:
+        reset_engine()
+
+
+pytestmark = pytest.mark.skipif(
+    not _postgres_available(),
+    reason="Postgres not available (docker compose up -d postgres)",
+)
+
+
+@pytest.fixture()
+def stores(tmp_path):
+    os.environ["DATABASE_URL"] = DATABASE_URL
+    os.environ["EXECUTION_BACKEND"] = "mock"
+    clear_config_cache()
+    reset_engine()
+    init_db(url=DATABASE_URL)
+    factory = get_session_factory()
+    run_store = PostgresRunStore(session_factory=factory)
+    job_store = PostgresJobStore(session_factory=factory)
+    job_store.clear()
+    run_store.clear()
+
+    yield run_store, job_store, LocalArtifactStore(tmp_path)
+
+    job_store.clear()
+    run_store.clear()
+    reset_engine()
+    clear_config_cache()
+    os.environ.pop("EXECUTION_BACKEND", None)
+
+
+def _executor(run_store, job_store, artifacts, improver):  # noqa: ANN001, ANN201
+    return StepExecutor(
+        job_store,
+        run_store,
+        config=load_config(),
+        improver=improver,
+        artifacts=artifacts,
+        step_delay_sec=0.0,
+    )
+
+
+def _make_job(job_store, *, max_iterations: int, patience: int, min_iterations: int = 1):  # noqa: ANN001, ANN201
+    # min_iterations defaults to 1 (disabling the noise floor) so these tests can
+    # drive no_improvement / max_iterations stops directly off patience/max_iterations
+    # without also having to satisfy the min_iterations threshold covered elsewhere
+    # (tests/test_scoring.py, tests/test_job_store.py).
+    return job_store.create_job(
+        task_ids=list(TASK_IDS),
+        agent_model="gpt-4.1-mini",
+        improver_model="gpt-5.4",
+        max_iterations=max_iterations,
+        patience=patience,
+        min_iterations=min_iterations,
+        min_delta=0.01,
+        max_job_duration_sec=3600,
+        evaluate_stale_after_sec=1800,
+    )
+
+
+def _drain(run_store, job_store, executor, runner, *, limit: int = 20) -> int:
+    """Call process_one until it reports no work; returns the number of units done."""
+    done = 0
+    for _ in range(limit):
+        did_work = process_one(
+            run_store,
+            runner,
+            worker_id="worker-test",
+            stale_after_sec=1800,
+            job_store=job_store,
+            step_executor=executor,
+        )
+        if not did_work:
+            break
+        done += 1
+    return done
+
+
+def _cleanup_run_dirs(job) -> None:  # noqa: ANN001
+    for iteration in job.iterations:
+        if iteration.run_id:
+            shutil.rmtree(REPO_ROOT / "workspace" / "runs" / iteration.run_id, ignore_errors=True)
+
+
+def _latest_improve_step(job_id: str):  # noqa: ANN201
+    """Read the most recent improve StepRow directly, since a failed improve step
+    (unlike an evaluate step) leaves no IterationRecord for JobRecord to surface —
+    its status/error_code can only be observed via the steps table itself."""
+    session = get_session_factory()()
+    try:
+        return session.scalar(
+            select(StepRow)
+            .where(StepRow.job_id == UUID(job_id), StepRow.type == "improve")
+            .order_by(StepRow.iteration.desc(), StepRow.created_at.desc())
+        )
+    finally:
+        session.close()
+
+
+def test_mock_job_plateaus_and_stops_with_no_improvement(stores) -> None:
+    run_store, job_store, artifacts = stores
+    improver = FakeImprover()
+    executor = _executor(run_store, job_store, artifacts, improver)
+    runner = MockBenchmarkRunner(store=run_store, step_delay_sec=0.0)
+
+    job = _make_job(job_store, max_iterations=3, patience=1)
+
+    # evaluate(0) -> improve(0) -> evaluate(1) -> stop. Exactly three units.
+    assert _drain(run_store, job_store, executor, runner) == 3
+
+    final = job_store.get_job(job.job_id)
+    assert final.status == "completed"
+    assert final.stop_reason == "no_improvement"
+    assert final.best_agent_version_id is not None
+    assert final.best_version == 0
+    assert final.best_score == pytest.approx(PLATEAU_SCORE)
+
+    assert [it.iteration for it in final.iterations] == [0, 1]
+    assert final.iterations[0].score == pytest.approx(PLATEAU_SCORE)
+    assert final.iterations[0].improved is True
+    assert final.iterations[0].changed_fields == []
+    assert final.iterations[1].score == pytest.approx(PLATEAU_SCORE)
+    assert final.iterations[1].improved is False
+    assert final.iterations[1].changed_fields == ["system_prompt"]
+    assert final.iterations[1].rationale == "fake improver deterministic revision 1"
+
+    assert improver.calls == 1
+    _cleanup_run_dirs(final)
+
+
+def test_mock_job_improves_and_promotes_best_version(stores, monkeypatch) -> None:
+    """M15: iteration 1 must be able to beat iteration 0 and move best_* to v1."""
+    run_store, job_store, artifacts = stores
+    calls = {"n": 0}
+
+    def _improving_outcome(task_id: str) -> dict:
+        calls["n"] += 1
+        # Two tasks per evaluate; first wave all fail, later waves all pass.
+        wave = (calls["n"] - 1) // len(TASK_IDS)
+        if wave == 0:
+            return {
+                "status": TaskStatus.failed,
+                "reward": 0.0,
+                "remarks": "Verifier failed",
+            }
+        return {"status": TaskStatus.passed, "reward": 1.0, "remarks": None}
+
+    monkeypatch.setattr(
+        MockBenchmarkRunner, "_outcome_for", staticmethod(_improving_outcome)
+    )
+
+    improver = FakeImprover()
+    executor = _executor(run_store, job_store, artifacts, improver)
+    runner = MockBenchmarkRunner(store=run_store, step_delay_sec=0.0)
+    job = _make_job(job_store, max_iterations=2, patience=3)
+
+    # evaluate(0) -> improve(0) -> evaluate(1) -> stop(max_iterations)
+    assert _drain(run_store, job_store, executor, runner) == 3
+
+    final = job_store.get_job(job.job_id)
+    assert final.status == "completed"
+    assert final.stop_reason == "max_iterations"
+    assert final.iterations[0].score == pytest.approx(0.0)
+    assert final.iterations[0].improved is True
+    assert final.iterations[1].score == pytest.approx(1.0)
+    assert final.iterations[1].improved is True
+    assert final.best_version == 1
+    assert final.best_score == pytest.approx(1.0)
+    _cleanup_run_dirs(final)
+
+
+def test_evaluate_step_materializes_agent_spec(stores) -> None:
+    run_store, job_store, artifacts = stores
+    executor = _executor(run_store, job_store, artifacts, FakeImprover())
+    runner = MockBenchmarkRunner(store=run_store, step_delay_sec=0.0)
+
+    # max_iterations=1 stops right after the baseline evaluation.
+    job = _make_job(job_store, max_iterations=1, patience=2)
+    assert _drain(run_store, job_store, executor, runner) == 1
+
+    final = job_store.get_job(job.job_id)
+    assert final.status == "completed"
+    assert final.stop_reason == "max_iterations"
+
+    iteration = final.iterations[0]
+    assert iteration.run_id is not None
+    spec_path = REPO_ROOT / "workspace" / "runs" / iteration.run_id / "agent_spec.json"
+    assert spec_path.is_file()
+
+    written = json.loads(spec_path.read_text(encoding="utf-8"))
+    version = job_store.get_agent_version(iteration.agent_version_id)
+    assert written["system_prompt"] == version.spec.system_prompt
+    assert written["agent_model"] == "gpt-4.1-mini"
+    assert written["max_steps"] == version.spec.max_steps
+
+    _cleanup_run_dirs(final)
+
+
+def test_evaluate_run_is_not_stealable_by_legacy_run_queue(stores) -> None:
+    """C1 (final review): a job-owned evaluate run must never be claimable by
+    the legacy /v1/runs queue (run_store.claim_next).
+
+    Before the fix, StepExecutor._evaluate inserted the run `queued` and
+    unclaimed, so any second worker falling back to the legacy queue (as
+    process_one does when no step is claimable) could steal and re-execute
+    it - with the default agent, not the AgentSpec version under test. This
+    reproduces the theft directly at the exact call the reviewer used to
+    prove it live against Postgres: claim the step, then create its run
+    exactly as StepExecutor._evaluate does.
+    """
+    run_store, job_store, artifacts = stores
+    executor = _executor(run_store, job_store, artifacts, FakeImprover())
+    _make_job(job_store, max_iterations=1, patience=1)
+
+    step = job_store.claim_next_step("w1")
+    assert step is not None
+    assert step.type == "evaluate"
+
+    # Exactly what StepExecutor._evaluate does before running the benchmark.
+    record = executor.run_store.create(
+        task_ids=list(step.task_ids),
+        agent_model=step.spec.agent_model,
+        claimed_by=executor.worker_id,
+    )
+    assert record.status.value == "running"
+
+    # A second worker with no claimable step falls back to the legacy queue
+    # exactly as worker.main.process_one does - it must never see this run.
+    stolen = run_store.claim_next("w2", stale_after_sec=1800)
+    assert stolen is None
+    assert stolen != record.run_id
+
+    # Leave the job store in a clean state.
+    job_store.complete_step_and_advance(
+        step.step_id, EvaluateOutcome(run_id=record.run_id, score=0.5)
+    )
+    _cleanup_run_dirs(job_store.get_job(step.job_id))
+
+
+def test_process_one_falls_back_to_standalone_run(stores) -> None:
+    run_store, job_store, artifacts = stores
+    executor = _executor(run_store, job_store, artifacts, FakeImprover())
+    runner = MockBenchmarkRunner(store=run_store, step_delay_sec=0.0)
+
+    # No job exists, so no step is claimable: the plain /v1/runs path must run.
+    record = run_store.create(task_ids=["fix-git"], agent_model="gpt-4.1-mini")
+
+    assert process_one(
+        run_store,
+        runner,
+        worker_id="worker-test",
+        stale_after_sec=1800,
+        job_store=job_store,
+        step_executor=executor,
+    ) is True
+
+    final = run_store.get(record.run_id)
+    assert final.status == RunStatus.completed
+    assert final.tasks[0].task_id == "fix-git"
+    assert final.tasks[0].status == TaskStatus.passed
+    assert final.tasks[0].reward == pytest.approx(1.0)
+
+
+def test_store_traces_copies_harbor_trial_layout(stores) -> None:
+    """
+    The mock backend never produces traces (see PLATEAU_SCORE comment above), so
+    this drives StepExecutor._store_traces directly against a hand-built harbor
+    trial layout to prove the walk-and-copy logic works without harbor installed.
+    """
+    run_store, job_store, artifacts = stores
+    executor = _executor(run_store, job_store, artifacts, FakeImprover())
+    _make_job(job_store, max_iterations=1, patience=1)
+
+    run_id = "cccccccc-0000-0000-0000-000000000000"
+    run_dir = REPO_ROOT / "workspace" / "runs" / run_id
+    # harbor layout: <jobs_dir>/<harbor_job>/<task_id>__<trial>/agent/trace.json
+    fix_git_trace = run_dir / "harbor-job" / "fix-git__trial0" / "agent" / "trace.json"
+    regex_log_trace = run_dir / "harbor-job" / "regex-log__trial0" / "agent" / "trace.json"
+    unknown_task_trace = run_dir / "harbor-job" / "unknown-task__trial0" / "agent" / "trace.json"
+    for path, content in (
+        (fix_git_trace, '[{"role": "user", "content": "fix it"}]'),
+        (regex_log_trace, '[{"role": "user", "content": "regex it"}]'),
+        (unknown_task_trace, '[{"role": "user", "content": "not requested"}]'),
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
+    # Sibling result.json next to agent/ (Harbor layout) — F2/M6.
+    for trial in ("fix-git__trial0", "regex-log__trial0"):
+        result_path = run_dir / "harbor-job" / trial / "result.json"
+        result_path.write_text(
+            json.dumps(
+                {
+                    "task_name": trial.split("__", 1)[0],
+                    "verifier_result": {
+                        "rewards": {"reward": 0.0},
+                        "message": f"detail for {trial}",
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    step = job_store.claim_next_step("w")  # iteration-0 evaluate step for job_id/iteration
+
+    try:
+        copied = executor._store_traces(step, run_id, list(TASK_IDS))
+        assert copied == 2  # only the two requested task_ids, not "unknown-task"
+
+        assert artifacts.get(
+            "jobs/%s/iterations/0/tasks/fix-git/trace.json" % step.job_id
+        ).decode() == '[{"role": "user", "content": "fix it"}]'
+        assert artifacts.get(
+            "jobs/%s/iterations/0/tasks/regex-log/trace.json" % step.job_id
+        ).decode() == '[{"role": "user", "content": "regex it"}]'
+        assert not artifacts.exists(
+            "jobs/%s/iterations/0/tasks/unknown-task/trace.json" % step.job_id
+        )
+        assert b"detail for fix-git" in artifacts.get(
+            "jobs/%s/iterations/0/tasks/fix-git/result.json" % step.job_id
+        )
+        assert b"detail for regex-log" in artifacts.get(
+            "jobs/%s/iterations/0/tasks/regex-log/result.json" % step.job_id
+        )
+    finally:
+        # This test claims the step to get a real StepRecord to drive
+        # _store_traces() with, but never runs the rest of the evaluate path -
+        # complete it explicitly so it isn't left "running" past the test.
+        job_store.complete_step_and_advance(
+            step.step_id,
+            EvaluateOutcome(
+                run_id=run_id,
+                score=1.0,
+                task_rewards={"fix-git": 1.0, "regex-log": 1.0},
+            ),
+        )
+        shutil.rmtree(run_dir, ignore_errors=True)
+
+
+def test_improver_error_completes_job_with_failed_improve(stores) -> None:
+    run_store, job_store, artifacts = stores
+    executor = _executor(run_store, job_store, artifacts, _RaisingImprover())
+    runner = MockBenchmarkRunner(store=run_store, step_delay_sec=0.0)
+
+    # patience=2 keeps the loop alive past the baseline evaluation, so the
+    # improve step actually gets to run and fail.
+    job = _make_job(job_store, max_iterations=3, patience=2)
+
+    # evaluate(0) -> improve(0) fails -> job closes. Exactly two units.
+    assert _drain(run_store, job_store, executor, runner) == 2
+
+    final = job_store.get_job(job.job_id)
+    assert final.status == "completed"
+    assert final.stop_reason == "failed_improve"
+    # The best-so-far agent is still a valid answer.
+    assert final.best_agent_version_id is not None
+    assert final.best_score == pytest.approx(PLATEAU_SCORE)
+    assert [it.iteration for it in final.iterations] == [0]
+
+    # ImproverError keeps its own distinct error code (not "internal_error").
+    improve_step = _latest_improve_step(job.job_id)
+    assert improve_step is not None
+    assert improve_step.status == "failed"
+    assert improve_step.error_code == "improver_failed"
+
+    # The improver failure is recorded as an artifact for auditability.
+    response = json.loads(artifacts.get("jobs/%s/iterations/0/improver/response.json" % job.job_id))
+    assert response["error"] == "synthetic improver failure for tests"
+
+    _cleanup_run_dirs(final)
+
+
+def test_improve_step_run_store_error_ends_job_failed_improve_not_failed(stores, monkeypatch) -> None:
+    """A transient failure looking up the evaluation run (e.g. a DB blip) must not
+    escape _improve() and hit process_one()'s fail_step fallback - that fallback
+    fails the job unconditionally, discarding a good best_agent_version_id."""
+    run_store, job_store, artifacts = stores
+    executor = _executor(run_store, job_store, artifacts, FakeImprover())
+    runner = MockBenchmarkRunner(store=run_store, step_delay_sec=0.0)
+
+    job = _make_job(job_store, max_iterations=3, patience=2)
+
+    # Baseline evaluate(0) runs normally, establishing a best_agent_version_id.
+    assert process_one(
+        run_store,
+        runner,
+        worker_id="worker-test",
+        stale_after_sec=1800,
+        job_store=job_store,
+        step_executor=executor,
+    ) is True
+
+    def _boom(run_id):  # noqa: ANN001, ANN202
+        raise RuntimeError("db blip fetching evaluation run")
+
+    monkeypatch.setattr(run_store, "get", _boom)
+
+    # The queued improve(0) step now hits the broken run_store.get().
+    assert process_one(
+        run_store,
+        runner,
+        worker_id="worker-test",
+        stale_after_sec=1800,
+        job_store=job_store,
+        step_executor=executor,
+    ) is True
+
+    final = job_store.get_job(job.job_id)
+    assert final.status == "completed"
+    assert final.stop_reason == "failed_improve"
+    assert final.best_agent_version_id is not None
+    assert final.best_score == pytest.approx(PLATEAU_SCORE)
+
+    improve_step = _latest_improve_step(job.job_id)
+    assert improve_step is not None
+    assert improve_step.status == "failed"
+    assert improve_step.error_code == "internal_error"
+    assert "db blip" in (improve_step.error_message or "")
+
+    _cleanup_run_dirs(final)
+
+
+def test_improve_step_artifact_persist_error_after_success_ends_job_failed_improve(
+    stores, monkeypatch
+) -> None:
+    """A failure persisting improver artifacts *after* a successful proposal (the
+    part of _persist_improver_io() that build_context()/json.dumps() run before the
+    artifacts.put() calls, which are the only calls that function's own try/except
+    covers) must also route through complete_step_and_advance() rather than escape
+    and strand the step "running" or fail the job outright."""
+    run_store, job_store, artifacts = stores
+
+    class _NoPromptImprover:
+        """Has no last_prompt attribute, forcing _persist_improver_io() to call the
+        module-level build_context() we monkeypatch below."""
+
+        def propose(self, *, spec, evaluation, history):  # noqa: ANN001, ANN202
+            return Proposal(spec=spec, rationale="noop-improve")
+
+    executor = _executor(run_store, job_store, artifacts, _NoPromptImprover())
+    runner = MockBenchmarkRunner(store=run_store, step_delay_sec=0.0)
+
+    job = _make_job(job_store, max_iterations=3, patience=2)
+
+    # Baseline evaluate(0) runs normally, establishing a best_agent_version_id.
+    assert process_one(
+        run_store,
+        runner,
+        worker_id="worker-test",
+        stale_after_sec=1800,
+        job_store=job_store,
+        step_executor=executor,
+    ) is True
+
+    def _boom(**kwargs):  # noqa: ANN003, ANN202
+        raise RuntimeError("disk full while writing improver artifacts")
+
+    monkeypatch.setattr(steps_module, "build_context", _boom)
+
+    # The queued improve(0) step gets a successful proposal, then fails while
+    # persisting the prompt/response artifacts for it.
+    assert process_one(
+        run_store,
+        runner,
+        worker_id="worker-test",
+        stale_after_sec=1800,
+        job_store=job_store,
+        step_executor=executor,
+    ) is True
+
+    final = job_store.get_job(job.job_id)
+    assert final.status == "completed"
+    assert final.stop_reason == "failed_improve"
+    assert final.best_agent_version_id is not None
+    assert final.best_score == pytest.approx(PLATEAU_SCORE)
+    # No new agent version/iteration was recorded - the proposal was discarded.
+    assert [it.iteration for it in final.iterations] == [0]
+
+    improve_step = _latest_improve_step(job.job_id)
+    assert improve_step is not None
+    assert improve_step.status == "failed"  # not left "running"
+    assert improve_step.error_code == "internal_error"
+    assert "disk full" in (improve_step.error_message or "")
+
+    _cleanup_run_dirs(final)
+
+
+def test_supersede_orphaned_run_on_reevaluate(stores) -> None:
+    """F7: evaluate with an existing step.run_id marks that run superseded."""
+    from api.job_store import StepRecord
+
+    run_store, job_store, artifacts = stores
+    executor = _executor(run_store, job_store, artifacts, FakeImprover())
+    job = _make_job(job_store, max_iterations=1, patience=1)
+
+    orphan = run_store.create(
+        task_ids=list(TASK_IDS),
+        agent_model="gpt-4.1-mini",
+        claimed_by="dead-worker",
+        job_id=job.job_id,
+    )
+    assert orphan.status == RunStatus.running
+
+    step = job_store.claim_next_step("w")
+    assert step is not None
+    # Simulate a stale-requeue that left the prior run id on the step.
+    reconstructed = StepRecord(
+        step_id=step.step_id,
+        job_id=step.job_id,
+        type=step.type,
+        iteration=step.iteration,
+        agent_version_id=step.agent_version_id,
+        version=step.version,
+        spec=step.spec,
+        task_ids=list(step.task_ids),
+        agent_model=step.agent_model,
+        improver_model=step.improver_model,
+        run_id=orphan.run_id,
+        stale_after_sec=step.stale_after_sec,
+    )
+    executor._evaluate(reconstructed)
+
+    orphaned = run_store.get(orphan.run_id)
+    assert orphaned is not None
+    assert orphaned.status == RunStatus.failed
+    assert orphaned.error is not None
+    assert orphaned.error.code == "superseded"
+
+    final = job_store.get_job(job.job_id)
+    assert final is not None
+    assert final.iterations[0].run_id is not None
+    assert final.iterations[0].run_id != orphan.run_id
+    _cleanup_run_dirs(final)

@@ -1,4 +1,16 @@
-# HarnessAgent for Terminal-Bench 2.0 — starting template.
+# Spec-driven HarnessAgent for Terminal-Bench 2.0 — the service's agent runtime.
+#
+# Reads its system prompt and limits from the AgentSpec JSON named by
+# $HARNESS_AGENT_SPEC, falling back to the template defaults when that is unset or
+# unreadable (so it is runnable standalone). Fixed bash tool, same trace saving,
+# same token accounting as agent/templates/terminal_bench.py.
+#
+# This file is NOT agent/agent.py: that file is what the Layer A coding agent edits
+# and what prepare.py overwrites from templates. The service never touches it.
+# Dependencies are stdlib + litellm + harbor only — no api.* imports, because harbor
+# spawns the agent with just the repo root on PYTHONPATH.
+from __future__ import annotations
+
 import json
 import os
 
@@ -7,22 +19,7 @@ from harbor.agents.base import BaseAgent
 from harbor.environments.base import BaseEnvironment
 from harbor.models.agent.context import AgentContext
 
-MAX_STEPS = 80
-MAX_OUTPUT_CHARS = 8000
-MODEL = os.environ.get("AGENT_MODEL", "gpt-5.4")
-
-AGENT_INSTRUCTION = """\
-You are an autonomous terminal agent. You are given a task and a Linux container.
-You solve tasks by executing bash commands. Work step by step.
-
-Rules:
-- Read the task carefully before acting.
-- Explore the environment first to understand what you have.
-- Check command output for errors before proceeding.
-- Install missing dependencies as needed.
-- Verify your solution before finishing.
-- When you are done, send a final text message (no tool call) summarizing what you did.
-"""
+from agent.spec_loader import load_spec_from_env
 
 TOOLS = [
     {
@@ -45,7 +42,7 @@ TOOLS = [
 ]
 
 
-def _truncate(text: str, limit: int = MAX_OUTPUT_CHARS) -> str:
+def _truncate(text: str, limit: int) -> str:
     """Truncate long output, keeping the beginning and end."""
     if not text or len(text) <= limit:
         return text or ""
@@ -58,7 +55,7 @@ def _truncate(text: str, limit: int = MAX_OUTPUT_CHARS) -> str:
 
 
 class HarnessAgent(BaseAgent):
-    """Agent under optimization for Terminal-Bench 2.0."""
+    """Agent under optimization, configured entirely by its AgentSpec."""
 
     @staticmethod
     def name() -> str:
@@ -76,16 +73,28 @@ class HarnessAgent(BaseAgent):
         environment: BaseEnvironment,
         context: AgentContext,
     ) -> None:
-        model = self.model_name or MODEL
+        spec = load_spec_from_env()
+        system_prompt = spec["system_prompt"]
+        max_steps = spec["max_steps"]
+        max_output_chars = spec["max_output_chars"]
+        exec_timeout_sec = spec["exec_timeout_sec"]
+
+        model = self.model_name or spec["agent_model"]
+        self.logger.info(
+            f"spec: model={model} max_steps={max_steps} "
+            f"max_output_chars={max_output_chars} exec_timeout_sec={exec_timeout_sec} "
+            f"prompt_chars={len(system_prompt)}"
+        )
+
         total_input_tokens = 0
         total_output_tokens = 0
 
         messages = [
-            {"role": "system", "content": AGENT_INSTRUCTION},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Task:\n{instruction}"},
         ]
 
-        for step in range(MAX_STEPS):
+        for step in range(max_steps):
             try:
                 response = await litellm.acompletion(
                     model=model,
@@ -149,7 +158,7 @@ class HarnessAgent(BaseAgent):
                 command = args.get("command", "")
                 self.logger.info(f"Step {step} | bash: {command[:200]}")
 
-                result = await environment.exec(command, timeout_sec=120)
+                result = await environment.exec(command, timeout_sec=exec_timeout_sec)
 
                 output_parts = []
                 if result.stdout:
@@ -160,7 +169,7 @@ class HarnessAgent(BaseAgent):
                     output_parts.append(f"[exit code: {result.return_code}]")
 
                 output = "\n".join(output_parts) if output_parts else "(no output)"
-                output = _truncate(output)
+                output = _truncate(output, max_output_chars)
 
                 messages.append({
                     "role": "tool",
@@ -168,7 +177,7 @@ class HarnessAgent(BaseAgent):
                     "content": output,
                 })
 
-        # Save full conversation trace for failure analysis (disabled for test splits)
+        # Save full conversation trace for failure analysis (the improver reads these)
         if os.environ.get("HARNESS_SAVE_TRACE", "1") == "1":
             trace_path = self.logs_dir / "trace.json"
             try:

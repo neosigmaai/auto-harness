@@ -1,0 +1,29 @@
+sequenceDiagram
+  participant C as Client
+  participant API as FastAPI
+  participant DB as Postgres_jobs_steps
+  participant W as Worker
+  participant E as Evaluate
+  participant I as Improve
+  participant H as Harbor
+
+  C->>API: POST /v1/jobs
+  API->>DB: job plus AgentSpec_v0 plus step evaluate iter0
+  API-->>C: 202 job_id
+
+  loop until stop
+    W->>DB: claim_next_step
+    alt evaluate
+      W->>E: StepExecutor._evaluate
+      E->>H: create run inline execute_sync
+      H-->>E: rewards traces
+      E->>DB: complete_step_and_advance
+      Note over DB: enqueue improve OR close job
+    else improve
+      W->>I: StepExecutor._improve
+      I->>I: LLM propose AgentSpec
+      I->>DB: insert version plus enqueue evaluate
+    end
+    C->>API: GET /v1/jobs/id
+    API-->>C: iterations best stop_reason
+  end

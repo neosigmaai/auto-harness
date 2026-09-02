@@ -6,7 +6,229 @@ This repo is a simplified version of our auto-harness agent setup. We demonstrat
 
 The loop is defined in `PROGRAM.md`. The coding agent edits `agent/agent.py` to improve the agent and appends findings to `workspace/learnings.md` after each iteration.
 
+**Service architecture (HTTP API, workers, Harbor, iterative jobs):** see [`docs/architecture/README.md`](docs/architecture/README.md).
+
 ---
+
+---
+
+# The optimization service (Milestones 1-4)
+
+Alongside the CLI loop above, this repo exposes an HTTP service that runs the same
+idea as a job: submit a task set, and the service evaluates the agent, asks an LLM to
+improve its prompt and limits, re-evaluates, and repeats until the score stops
+improving or a cap is reached. Full iteration history is persisted and readable over
+HTTP.
+
+Architecture reference (diagrams): [`docs/architecture/README.md`](docs/architecture/README.md).
+Design spec: [`docs/superpowers/specs/2026-09-02-milestone-4-iterative-loop-design.md`](docs/superpowers/specs/2026-09-02-milestone-4-iterative-loop-design.md).
+Known gaps and follow-up work: [`docs/milestone-4-followups.md`](docs/milestone-4-followups.md).
+
+## Setup and run
+
+```bash
+# 1. Clone and install
+git clone <this-repo> && cd auto-harness
+uv sync                      # or: python -m venv .venv && .venv/bin/pip install -e .
+uv tool install harbor       # the Terminal-Bench runner (provides the `harbor` CLI)
+.venv/bin/pip install litellm  # used by the improver (and by the agent inside Harbor)
+
+# 2. Credentials
+cp .env.example .env
+# edit .env: set OPENAI_API_KEY (agent + improver) and E2B_API_KEY (default sandbox).
+# Optional: ENV_PROVIDER=docker|daytona|modal to override config/benchmark.yaml.
+# API and worker load .env automatically on startup.
+
+# 3. Postgres (the queue and the history live here — not the task sandboxes)
+docker compose up -d postgres
+
+# 4. Choose your execution backend
+#    config/benchmark.yaml -> execution_backend: harbor   (real Terminal-Bench via E2B)
+#                          -> execution_backend: mock     (no Harbor/E2B, instant, for tests)
+#    or override per-process:  export EXECUTION_BACKEND=mock
+
+# 5. Start the API and a worker (separate terminals)
+.venv/bin/uvicorn api.main:app --port 8000
+.venv/bin/python -m worker.main -v
+
+# 6. Submit an optimization job and watch it
+.venv/bin/python test_client.py --task-ids fix-git regex-log --max-iterations 3
+```
+
+One-shot Harbor smoke (no optimization loop):
+
+```bash
+.venv/bin/python test_client.py --mode run --task-ids fix-git --timeout 1800
+```
+
+Confirm rewards in Postgres / `GET /v1/runs/{id}` and Harbor trial output under `workspace/runs/<run_id>/`.
+
+`test_client.py` submits the job, polls it, and prints the structured summary
+including the full iteration history and the winning agent spec. Pass
+`--mode run` to exercise a single benchmark run without the optimization loop.
+
+Run the test suite with `python -m pytest tests/ -q` (Postgres must be up; the
+Postgres-dependent tests skip loudly if it is not).
+
+### API
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /v1/jobs` | Start an optimization job. Returns `202` + `job_id`. |
+| `GET /v1/jobs/{id}` | Status, stop reason, best pointer, and the full iteration history. |
+| `GET /v1/jobs/{id}/best` | The winning `AgentSpec` inline. `409` until iteration 0 finishes. |
+| `GET /v1/agent-versions/{id}` | Any single agent version: spec, parent, rationale. |
+| `POST /v1/runs`, `GET /v1/runs/{id}` | Single benchmark run, no optimization. |
+| `GET /tasks`, `GET /health` | Configured task allowlist; liveness. |
+
+### Choosing which tasks to run
+
+`config/benchmark.yaml`'s `default_task_ids` does double duty: it is the set used when a
+request omits `task_ids`, **and** the allowlist of IDs the API will accept. A task not in
+that list is rejected with `400 unknown_task_ids` — so adding a new Terminal-Bench task
+means editing that file (and restarting the API, since config is cached at startup).
+
+```bash
+# What will run by default, straight from the server:
+curl -s localhost:8000/tasks | python3 -m json.tool
+
+# All 16 configured tasks (omit --task-ids):
+python test_client.py
+
+# Specific tasks:
+python test_client.py --task-ids fix-git regex-log
+
+# One task, quick smoke test (note: a single task makes the mean reward binary,
+# so min_delta cannot filter noise — see docs/milestone-4-followups.md F5):
+python test_client.py --task-ids polyglot-c-py --max-iterations 2
+
+# Or straight over HTTP:
+curl -s -X POST localhost:8000/v1/jobs -H 'Content-Type: application/json' \
+  -d '{"task_ids":["fix-git","regex-log"],"max_iterations":3}'
+```
+
+The 16 configured tasks are: `cobol-modernization`, `fix-git`, `prove-plus-comm`,
+`overfull-hbox`, `regex-log`, `log-summary-date-ranges`, `openssl-selfsigned-cert`,
+`sanitize-git-repo`, `filter-js-from-html`, `sqlite-db-truncate`, `nginx-request-logging`,
+`largest-eigenval`, `extract-elf`, `gcode-to-text`, `polyglot-c-py`, `headless-terminal`.
+
+Cost note: every iteration runs **all** the job's tasks in a container. 16 tasks at
+`max_concurrency: 2` is roughly 2.7 hours per iteration, so a 3-iteration job on the full
+set is an overnight run. Use 2-3 tasks while developing.
+
+## Which Terminal-Bench tasks we selected, and why
+
+The 16 tasks in `config/benchmark.yaml` are both the default subset and the
+allowlist accepted by `POST /v1/jobs`:
+
+| Group | Tasks | Why it is in the set |
+|---|---|---|
+| Version control | `fix-git`, `sanitize-git-repo` | Multi-step stateful work where a wrong command is recoverable — rewards careful verification. `fix-git` is our known-passing control. |
+| Text / log processing | `regex-log`, `log-summary-date-ranges`, `filter-js-from-html`, `gcode-to-text` | The most common real terminal work, and the easiest place for a better prompt to pay off (precision about edge cases). |
+| Sysadmin and config | `openssl-selfsigned-cert`, `nginx-request-logging`, `headless-terminal` | Requires reading tool docs and getting flags exactly right; punishes guessing. |
+| Data | `sqlite-db-truncate` | Schema-aware edits where a plausible-looking command silently does the wrong thing. |
+| Numerical | `largest-eigenval` | Needs a library, so it exercises dependency installation. |
+| Binary / low-level | `extract-elf` | Forces genuine exploration rather than pattern-matching. |
+| Translation / legacy | `cobol-modernization`, `polyglot-c-py` | Hard, conceptual tasks. `polyglot-c-py` is our known-failing case — it is what gives the improver real failure traces to work from. |
+| Formal proof | `prove-plus-comm` | Deliberately near the ceiling for a small model, to check the loop degrades gracefully rather than thrashing. |
+| Typesetting | `overfull-hbox` | Narrow, verifiable, fiddly — a good regression detector. |
+
+The selection criteria, in order:
+
+1. **A spread of skills**, so an improvement to the prompt has to generalise rather
+   than special-case one task.
+2. **A known-passing and a known-failing anchor**, verified by real runs: `fix-git`
+   scores 1.0 at baseline, `polyglot-c-py` scores 0.0. Without a failure the improver
+   has no signal; without a pass you cannot detect a regression.
+3. **Deliberate difficulty spread** including one task near the ceiling, so the
+   stopping rules get exercised.
+4. **Runnable in one sitting** — 16 tasks at `max_concurrency: 2` and a 1200s
+   per-task timeout is roughly 2.7 hours per iteration, which sets the
+   `evaluate_stale_after_sec` the queue uses.
+
+For a quick smoke test use two or three tasks. Be aware that with a single task the
+mean reward is binary, so `min_delta` cannot filter noise — see
+[`docs/milestone-4-followups.md`](docs/milestone-4-followups.md) (F5).
+
+## Key design decisions
+
+**Postgres is the whole runtime.** The queue holds typed *steps* (`evaluate` |
+`improve`); stateless workers claim one with `SELECT ... FOR UPDATE SKIP LOCKED`, and
+the worker that completes a step enqueues its successor **in the same transaction**.
+There is no orchestrator process and no extra service. A job is therefore never alive
+with nothing queued, and a crash resumes from the last commit. The alternative —
+one worker running a whole job — fails badly here, because an evaluate step can take
+hours and would be reclaimed mid-flight by the stale sweeper.
+
+**The agent is data, not a file.** Each version is an `AgentSpec` (system prompt,
+model, `max_steps`, `max_output_chars`, `exec_timeout_sec`) stored as JSONB and
+materialised to JSON per run; a fixed runtime (`agent/spec_agent.py`) reads it. Those
+five fields are not invented — they are exactly the tunable constants the existing
+hand-written template already had, so version 0 is behaviourally identical to the old
+agent and comparisons are meaningful. Keeping the surface *pure data* is what makes
+`extra="forbid"` plus numeric bounds a complete validation gate: an unusable proposal
+is a failed step, never a crashed job, and there is no code to sandbox. The CLI loop's
+`agent/agent.py` is never touched by the service.
+
+**Mean reward decides, but per-task movement is recorded.** A proposal that fixes one
+task and breaks another lands on exactly the same mean as one that changed nothing, so
+each iteration also reports `fixed_tasks` / `regressed_tasks` against the best prior
+iteration — surfaced in the API and fed to the improver. A regression deliberately does
+not veto a proposal: on a stochastic agent a single-trial regression is usually noise.
+
+**Proposals always build on the best version, never a regression.** An improve step's
+base is always `best_agent_version_id`. Without this, one bad proposal poisons every
+later iteration. The rejected attempt stays in the history the improver reads, so it
+sees what already failed while editing the best-known spec.
+
+**Failure policy favours keeping work.** A failed *improve* step ends the job
+`completed` with `stop_reason="failed_improve"` when a best version exists — the
+best agent found so far is a valid answer. A failed *evaluate* step fails the job, so
+infrastructure errors never masquerade as "no improvement".
+
+**Traces live in an artifact store, not the repo or the database.** A single passing
+task produced ~31k tokens of trace. `ArtifactStore` has a local-disk implementation
+today; S3 is a factory change.
+
+## What we would do differently with more time
+
+The full list with reproduction details is in
+[`docs/milestone-4-followups.md`](docs/milestone-4-followups.md). The three that matter
+most:
+
+1. **Give the improver the task statement.** Traces are truncated from the *tail*, and
+   the task instruction is the *head* — so on a 101-message trace the improver diagnosed
+   the failure without knowing what the task asked for. It blamed a missing shell utility
+   because a shell error was the only concrete thing in its window. This is the single
+   biggest limitation on optimization quality today.
+2. **Plumb the verifier's actual output through.** The improver currently receives the
+   generic string `"Verifier failed"`; Harbor's `result.json` usually explains *why*.
+3. **Sample more than once per iteration.** One run per iteration cannot separate a
+   lucky pass from a real improvement. `trials_per_iteration` with a mean across trials
+   is the honest fix, at linear cost.
+
+Beyond those: cost pressure on the improver (nothing stops it raising `max_steps`
+toward 200), a length budget on the prompt (it grew 73% in one iteration), and a test
+covering an iteration that *actually improves* — the mock runner's score is a pure
+function of `task_id`, so no test currently exercises that path.
+
+## What we chose not to implement, and why
+
+- **Live log streaming.** Polling plus artifact download is sufficient; how humans watch
+  a run is presentation, not architecture, and can be added without touching the loop.
+- **An S3 artifact backend.** The interface is in place; only the implementation is
+  missing. Local disk is correct for a single-host deployment.
+- **A best-agent-per-task mapping.** The job optimises one agent across the whole
+  submitted task set, which is the intended reading. Per-task bests are derivable from
+  the stored history if ever wanted, and on single-trial runs they would mostly be noise.
+- **Job cancellation.** The status enum and the idempotency guard both already honour
+  `cancelled`; no endpoint exists yet. Note the claim query needs a job-status filter
+  before cancellation lands (follow-ups F8).
+- **Database migrations.** Tables are created by `init_db()` / `create_all`, consistent
+  with the existing codebase. A real deployment wants Alembic.
+- **Tool or code mutation by the improver.** Only the prompt and three numeric limits are
+  mutable. Letting an LLM author tool schemas or agent code means validating and executing
+  model-written code; that is a different project with a different risk profile.
 
 ## Supported Benchmarks
 

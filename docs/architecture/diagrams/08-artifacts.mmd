@@ -1,0 +1,26 @@
+flowchart TB
+  subgraph artifacts [workspace/artifacts]
+    J[jobs/job_id]
+    I[iterations/N]
+    T[tasks/task_id/trace.json]
+    P[improver/prompt.txt]
+    R[improver/response.json]
+    J --> I
+    I --> T
+    I --> P
+    I --> R
+  end
+
+  subgraph runs [workspace/runs/run_id]
+    Spec[agent_spec.json]
+    JobDir[Harbor job timestamp]
+    Trial[task_id__suffix]
+    Trace[agent/trace.json]
+    Res[result.json]
+    Spec --- JobDir
+    JobDir --> Trial
+    Trial --> Trace
+    Trial --> Res
+  end
+
+  Trace -.->|copied after evaluate| T
