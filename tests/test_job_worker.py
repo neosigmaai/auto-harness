@@ -210,6 +210,47 @@ def test_evaluate_step_materializes_agent_spec(stores) -> None:
     _cleanup_run_dirs(final)
 
 
+def test_evaluate_run_is_not_stealable_by_legacy_run_queue(stores) -> None:
+    """C1 (final review): a job-owned evaluate run must never be claimable by
+    the legacy /v1/runs queue (run_store.claim_next).
+
+    Before the fix, StepExecutor._evaluate inserted the run `queued` and
+    unclaimed, so any second worker falling back to the legacy queue (as
+    process_one does when no step is claimable) could steal and re-execute
+    it - with the default agent, not the AgentSpec version under test. This
+    reproduces the theft directly at the exact call the reviewer used to
+    prove it live against Postgres: claim the step, then create its run
+    exactly as StepExecutor._evaluate does.
+    """
+    run_store, job_store, artifacts = stores
+    executor = _executor(run_store, job_store, artifacts, FakeImprover())
+    _make_job(job_store, max_iterations=1, patience=1)
+
+    step = job_store.claim_next_step("w1")
+    assert step is not None
+    assert step.type == "evaluate"
+
+    # Exactly what StepExecutor._evaluate does before running the benchmark.
+    record = executor.run_store.create(
+        task_ids=list(step.task_ids),
+        agent_model=step.spec.agent_model,
+        claimed_by=executor.worker_id,
+    )
+    assert record.status.value == "running"
+
+    # A second worker with no claimable step falls back to the legacy queue
+    # exactly as worker.main.process_one does - it must never see this run.
+    stolen = run_store.claim_next("w2", stale_after_sec=1800)
+    assert stolen is None
+    assert stolen != record.run_id
+
+    # Leave the job store in a clean state.
+    job_store.complete_step_and_advance(
+        step.step_id, EvaluateOutcome(run_id=record.run_id, score=0.5)
+    )
+    _cleanup_run_dirs(job_store.get_job(step.job_id))
+
+
 def test_process_one_falls_back_to_standalone_run(stores) -> None:
     run_store, job_store, artifacts = stores
     executor = _executor(run_store, job_store, artifacts, FakeImprover())

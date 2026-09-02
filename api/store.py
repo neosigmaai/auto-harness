@@ -161,14 +161,59 @@ class PostgresRunStore:
     def _factory(self):
         return self._session_factory or get_session_factory()
 
-    def create(self, *, task_ids: list[str], agent_model: str) -> RunRecord:
+    def create(
+        self,
+        *,
+        task_ids: list[str],
+        agent_model: str,
+        claimed_by: str | None = None,
+    ) -> RunRecord:
+        """
+        Insert a new run row.
+
+        By default the row is inserted ``queued``/unclaimed, exactly as before -
+        this is what ``POST /v1/runs`` relies on. Pass ``claimed_by`` to insert
+        the row already owned (``status=running``, ``worker_id=claimed_by``,
+        ``started_at`` set) *in the same INSERT*, so the row can never be
+        visible to ``claim_next``'s ``status='queued'`` predicate. This is how
+        a job-driven evaluate run stays owned by the step that created it
+        instead of being claimable by the legacy standalone-run queue - see C1
+        in the Milestone 4 final review. A follow-up UPDATE after ``create()``
+        would leave exactly that window open, so the ownership must be set at
+        insert time.
+
+        Deliberately does NOT set ``claimed_at`` for a ``claimed_by`` row (this
+        is the one place this method departs from the final review's literal
+        suggested shape, which also set ``claimed_at=now()``). ``claim_next``'s
+        stale-running sweep below matches ANY row with
+        ``status=running AND claimed_at IS NOT NULL AND claimed_at < stale_before``,
+        with no notion of job ownership (see M16) - setting ``claimed_at`` here
+        would make a still-legitimately-running evaluate run (harbor runs can
+        take hours) eligible for that sweep once it merely runs longer than
+        ``stale_after_sec`` (default 1800s), which would silently flip it back
+        to ``queued`` and hand it straight to the legacy queue anyway - the
+        exact theft this fix exists to prevent, just delayed instead of
+        immediate. Leaving ``claimed_at`` unset keeps this row exactly as
+        invisible to that sweep as it was before this fix (a pre-existing gap
+        - see I3, deliberately out of scope here) while still being fully
+        invisible to claim_next's normal claim, which only checks ``status``.
+        """
         run_id = uuid.uuid4()
         now = _utcnow()
+        status = RunStatus.queued.value
+        started_at: datetime | None = None
+        worker_id: str | None = None
+        if claimed_by is not None:
+            status = RunStatus.running.value
+            started_at = now
+            worker_id = claimed_by
         row = RunRow(
             id=run_id,
-            status=RunStatus.queued.value,
+            status=status,
             agent_model=agent_model,
             created_at=now,
+            started_at=started_at,
+            worker_id=worker_id,
             tasks=[
                 RunTaskRow(
                     task_id=tid,

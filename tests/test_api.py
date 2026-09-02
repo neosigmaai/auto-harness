@@ -192,3 +192,40 @@ def test_two_workers_do_not_double_claim(db_store: PostgresRunStore) -> None:
         rec = db_store.get(run_id)
         assert rec is not None
         assert rec.status.value == "running"
+
+
+def test_default_create_is_still_queued_and_claimable(db_store: PostgresRunStore) -> None:
+    """POST /v1/runs's path (no claimed_by) must be unaffected by the C1 fix."""
+    run = db_store.create(task_ids=["fix-git"], agent_model="m")
+    assert run.status.value == "queued"
+
+    claimed = db_store.claim_next("w1", stale_after_sec=1800)
+    assert claimed == run.run_id
+
+    rec = db_store.get(run.run_id)
+    assert rec is not None
+    assert rec.status.value == "running"
+
+
+def test_job_owned_run_is_not_stealable_by_legacy_queue(db_store: PostgresRunStore) -> None:
+    """C1: a run created with claimed_by= must never be visible to claim_next.
+
+    This is the exact theft the final review reproduced live against
+    Postgres: worker W1 creates a job-owned evaluate run, and a second
+    worker's fallback to the legacy /v1/runs queue (claim_next) must not be
+    able to claim and re-execute it with the wrong agent.
+    """
+    owned = db_store.create(
+        task_ids=["fix-git"], agent_model="m", claimed_by="w1-evaluate-step"
+    )
+    assert owned.status.value == "running"
+
+    stolen = db_store.claim_next("w2", stale_after_sec=1800)
+    assert stolen is None
+    assert stolen != owned.run_id
+
+    # A legacy-queue run created alongside it is unaffected and still claimable.
+    legacy = db_store.create(task_ids=["regex-log"], agent_model="m")
+    stolen_legacy = db_store.claim_next("w2", stale_after_sec=1800)
+    assert stolen_legacy == legacy.run_id
+    assert stolen_legacy != owned.run_id

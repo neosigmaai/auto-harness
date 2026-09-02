@@ -123,6 +123,7 @@ def run_loop(
     job_store = PostgresJobStore()
     artifacts = create_artifact_store(cfg)
     improver = create_improver(cfg)
+    worker_id = default_worker_id()
     step_executor = StepExecutor(
         job_store,
         store,
@@ -130,8 +131,8 @@ def run_loop(
         improver=improver,
         artifacts=artifacts,
         step_delay_sec=step_delay_sec,
+        worker_id=worker_id,
     )
-    worker_id = default_worker_id()
     logger.info(
         "worker starting id=%s backend=%s env_provider=%s improver=%s",
         worker_id,

@@ -49,13 +49,26 @@ class StepExecutor:
         improver: Improver,
         artifacts: ArtifactStore,
         step_delay_sec: float = 0.05,
+        worker_id: str = "step-executor",
     ) -> None:
         self.job_store = job_store
         self.run_store = run_store
         self.config = config
+        # Default/fallback improver: used unconditionally on the mock backend
+        # (where tests inject FakeImprover/_RaisingImprover doubles that must
+        # keep being used regardless of any per-job improver_model override -
+        # a mock backend has no notion of "model" anyway), and as the LLM-path
+        # fallback when a step's improver_model matches the config default.
         self.improver = improver
         self.artifacts = artifacts
         self.step_delay_sec = step_delay_sec
+        # Every job-owned run this executor creates is inserted already
+        # claimed (see PostgresRunStore.create's `claimed_by`) so the legacy
+        # /v1/runs queue (`store.claim_next`) can never steal and re-execute
+        # it with the wrong agent. Defaults to a fixed id rather than None so
+        # this safety property holds even for callers that don't wire a real
+        # per-process worker id (e.g. tests).
+        self.worker_id = worker_id
 
     # ----------------------------------------------------------------- #
     # Dispatch
@@ -81,6 +94,7 @@ class StepExecutor:
         record = self.run_store.create(
             task_ids=list(step.task_ids),
             agent_model=step.spec.agent_model,
+            claimed_by=self.worker_id,
         )
         run_id = record.run_id
         logger.info(
