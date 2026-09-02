@@ -226,7 +226,14 @@ def test_context_reports_regressions_prominently() -> None:
     )
     assert "PER-TASK MOVEMENT VS BEST" in ctx
     assert "REGRESSED" in ctx
-    assert "zzz-task" in ctx.split("REGRESSED")[1]
+    # Assert on the REGRESSED line itself, not "everything after the word
+    # REGRESSED" - zzz-task also recurs in the sections that follow the
+    # movement section (## LATEST EVALUATION, ## FAILURE DETAILS), so
+    # `"zzz-task" in ctx.split("REGRESSED")[1]` would still pass even if the
+    # movement section named no task at all. See tests/test_improver_context.py
+    # I4 in the Milestone 4 final review.
+    regressed_line = next(line for line in ctx.splitlines() if line.startswith("REGRESSED"))
+    assert "zzz-task" in regressed_line
 
 
 def test_context_movement_section_present_when_no_movement() -> None:
