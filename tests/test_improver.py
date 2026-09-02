@@ -326,7 +326,8 @@ def test_llm_improver_rejects_oversized_system_prompt(monkeypatch: pytest.Monkey
     proposal = llm.propose(spec=_spec(), evaluation=_evaluation(), history=_history())
 
     assert proposal.spec.system_prompt == "short enough"
-    assert "soft cap" in stub.calls[1]["messages"][-1]["content"]
+    retry = stub.calls[1]["messages"][-1]["content"]
+    assert "budget" in retry and "concisely" in retry
 
 
 class _StubImprover:
@@ -455,3 +456,56 @@ def test_improve_step_always_uses_default_improver_on_mock_backend(
 
     resolved = executor._improver_for_step(step)
     assert resolved is default_improver
+
+
+# ── prompt-length budget: nudge once, never lose the iteration ─────────────
+
+
+def _payload_with_prompt(prompt: str) -> str:
+    return json.dumps(
+        {"system_prompt": prompt, "config_changes": {}, "rationale": "tightened rules"}
+    )
+
+
+def test_prompt_just_over_baseline_is_accepted(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A 729-char rewrite must not be rejected: that killed a real job at 11 chars over."""
+    prompt = "A" * 729
+    assert len(prompt) <= improver_mod._MAX_SYSTEM_PROMPT_CHARS, (
+        "the budget must leave room for a genuine rewrite of the baseline prompt"
+    )
+    stub = _StubLitellm([_payload_with_prompt(prompt)])
+    monkeypatch.setattr(improver_mod, "litellm", stub)
+
+    llm = LLMImprover(model="gpt-5.4", budget=20_000)
+    proposal = llm.propose(spec=_spec(), evaluation=_evaluation(), history=_history())
+
+    assert proposal.spec.system_prompt == prompt
+    assert len(stub.calls) == 1, "no retry should be needed for an in-budget prompt"
+
+
+def test_over_budget_prompt_is_nudged_once_then_accepted(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Over budget twice => accept with a warning, never raise.
+
+    Length is a style preference; failing the step ends the job via failed_improve,
+    which is strictly worse than a slightly long prompt.
+    """
+    long_prompt = "B" * (improver_mod._MAX_SYSTEM_PROMPT_CHARS + 500)
+    stub = _StubLitellm([_payload_with_prompt(long_prompt)] * 2)
+    monkeypatch.setattr(improver_mod, "litellm", stub)
+
+    llm = LLMImprover(model="gpt-5.4", budget=20_000)
+    proposal = llm.propose(spec=_spec(), evaluation=_evaluation(), history=_history())
+
+    assert proposal.spec.system_prompt == long_prompt
+    assert len(stub.calls) == 2, "the first over-budget response should be sent back once"
+    retry = stub.calls[1]["messages"][-1]["content"]
+    assert "budget" in retry and "concisely" in retry
+
+
+def test_improver_system_prompt_states_the_real_budget() -> None:
+    """M7 drift guard: the prompt must not hardcode a stale multiple."""
+    text = improver_mod.IMPROVER_SYSTEM_PROMPT
+    assert str(improver_mod._MAX_SYSTEM_PROMPT_CHARS) in text
+    assert "1.5x" not in text, "budget text must be derived, not a hardcoded multiple"

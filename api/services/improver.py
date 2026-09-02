@@ -400,9 +400,7 @@ def _allowed_config_prompt_text() -> str:
     return ", ".join(parts)
 
 
-_MAX_SYSTEM_PROMPT_CHARS = max(
-    1, int(len(BASELINE_SYSTEM_PROMPT) * _MAX_PROMPT_LEN_MULT)
-)
+_MAX_SYSTEM_PROMPT_CHARS = max(4000, int(len(BASELINE_SYSTEM_PROMPT) * _MAX_PROMPT_LEN_MULT))
 
 IMPROVER_SYSTEM_PROMPT = (
     "You are an optimization engine for an autonomous terminal-using coding agent.\n"
@@ -420,8 +418,9 @@ IMPROVER_SYSTEM_PROMPT = (
     "Rules:\n"
     "- system_prompt must be the complete new prompt, never a diff or a patch.\n"
     "- Prefer rewriting or replacing an existing rule over appending new ones. "
-    f"Keep system_prompt concise; soft cap is about {_MAX_SYSTEM_PROMPT_CHARS} "
-    "characters (1.5x the baseline). Longer proposals may be rejected.\n"
+    f"Keep system_prompt within {_MAX_SYSTEM_PROMPT_CHARS} characters "
+    f"(the current prompt is {len(BASELINE_SYSTEM_PROMPT)}); a longer proposal will be "
+    "sent back to you once to shorten.\n"
     f"- config_changes may only contain: {_allowed_config_prompt_text()}. "
     "Omit any key you do not change; use {} to change nothing.\n"
     "- Raising max_steps or exec_timeout_sec has real cost (every iteration "
@@ -625,14 +624,14 @@ class LLMImprover:
             try:
                 text = _extract_content(response)
                 self.last_response = text
-                return self._parse(text, spec)
+                return self._parse(text, spec, final_attempt=attempt == 1)
             except _ProposalRejected as exc:
                 last_error = str(exc)
                 logger.warning("improver proposal rejected (attempt %s): %s", attempt, last_error)
 
         raise ImproverError(f"improver returned an invalid proposal twice: {last_error}")
 
-    def _parse(self, text: str, spec: AgentSpec) -> Proposal:
+    def _parse(self, text: str, spec: AgentSpec, *, final_attempt: bool = False) -> Proposal:
         try:
             data = json.loads(text)
         except (TypeError, ValueError) as exc:
@@ -654,10 +653,22 @@ class LLMImprover:
         prompt = data.get("system_prompt")
         if isinstance(prompt, str) and prompt.strip():
             if len(prompt) > _MAX_SYSTEM_PROMPT_CHARS:
-                raise _ProposalRejected(
-                    f"system_prompt length {len(prompt)} exceeds soft cap "
-                    f"{_MAX_SYSTEM_PROMPT_CHARS} (1.5x baseline); rewrite more "
-                    "concisely rather than appending rules"
+                # The cap is a style preference; losing the iteration is a real cost.
+                # Reject once so the retry can nudge the model shorter, but ACCEPT on
+                # the final attempt rather than raising — otherwise a prompt a few
+                # characters over budget ends the whole job via failed_improve, which
+                # is strictly worse than a slightly long prompt.
+                if not final_attempt:
+                    raise _ProposalRejected(
+                        f"system_prompt length {len(prompt)} exceeds the "
+                        f"{_MAX_SYSTEM_PROMPT_CHARS}-character budget; rewrite more "
+                        "concisely rather than appending rules"
+                    )
+                logger.warning(
+                    "accepting over-budget system_prompt on final attempt: "
+                    "%d chars > budget %d",
+                    len(prompt),
+                    _MAX_SYSTEM_PROMPT_CHARS,
                 )
             merged["system_prompt"] = prompt
         merged.update(changes)
