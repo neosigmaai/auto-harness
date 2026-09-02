@@ -16,7 +16,7 @@ Diagram sources live in [`diagrams/`](diagrams/) (`.mmd` + rendered `.svg` / `.p
 | **PostgreSQL** | Job/run queue (`FOR UPDATE SKIP LOCKED`) + results. |
 | **Worker** | Claims **steps** first (M4), then legacy **runs** (M1–M3). |
 | **Harbor** | Host CLI: load agent, create sandboxes, collect rewards. |
-| **Docker** | Isolated task environments + deterministic verifier. |
+| **Docker / E2B** | Isolated task environments + deterministic verifier (default: **E2B** via Harbor `--env`). |
 | **Artifacts** | Traces and improver I/O on local disk. |
 
 ---
@@ -92,10 +92,22 @@ The service **never** edits `agent/agent.py`. Specs live in Postgres JSONB.
 | Concern | Location |
 |---------|----------|
 | API + worker + Harbor CLI + agent LLM loop | **Host** |
-| Bash tools + verifier | **Docker** (or E2B/Daytona/Modal via Harbor `--env`) |
+| Bash tools + verifier | **E2B** by default (or Docker/Daytona/Modal via Harbor `--env` / `ENV_PROVIDER`) |
 | Improver LLM | **Host** (between Harbor runs) |
 
 Scoring is the Terminal-Bench **verifier**, not an LLM judge.
+
+### Harbor + E2B smoke
+
+Default `env_provider` is `e2b`. Task sandboxes do not need local Docker/Colima; Postgres still does.
+
+1. Put `E2B_API_KEY` and `OPENAI_API_KEY` in repo `.env` (API/worker load it on startup).
+2. `docker compose up -d postgres`
+3. `uvicorn api.main:app --port 8000`
+4. `EXECUTION_BACKEND=harbor python -m worker.main -v`
+5. `python test_client.py --mode run --task-ids fix-git --timeout 1800`
+
+Expect: Harbor trial dirs under `workspace/runs/<run_id>/`, rewards on `GET /v1/runs/{id}`. Override provider with `ENV_PROVIDER=docker` if you need local Docker instead.
 
 ---
 

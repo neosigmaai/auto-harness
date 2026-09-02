@@ -35,26 +35,33 @@ uv tool install harbor       # the Terminal-Bench runner (provides the `harbor` 
 
 # 2. Credentials
 cp .env.example .env
-# edit .env: set OPENAI_API_KEY (the agent and the improver both use it).
-# For a non-Docker sandbox also set E2B_API_KEY / DAYTONA_API_KEY /
-# MODAL_TOKEN_ID + MODAL_TOKEN_SECRET and change env_provider in config/benchmark.yaml.
+# edit .env: set OPENAI_API_KEY (agent + improver) and E2B_API_KEY (default sandbox).
+# Optional: ENV_PROVIDER=docker|daytona|modal to override config/benchmark.yaml.
+# API and worker load .env automatically on startup.
 
-# 3. Postgres (the queue and the history live here)
+# 3. Postgres (the queue and the history live here — not the task sandboxes)
 docker compose up -d postgres
 
 # 4. Choose your execution backend
-#    config/benchmark.yaml -> execution_backend: harbor   (real containers)
-#                          -> execution_backend: mock     (no Docker, instant, for tests)
+#    config/benchmark.yaml -> execution_backend: harbor   (real Terminal-Bench via E2B)
+#                          -> execution_backend: mock     (no Harbor/E2B, instant, for tests)
 #    or override per-process:  export EXECUTION_BACKEND=mock
 
 # 5. Start the API and a worker (separate terminals)
-set -a; . ./.env; set +a
 .venv/bin/uvicorn api.main:app --port 8000
 .venv/bin/python -m worker.main -v
 
 # 6. Submit an optimization job and watch it
 .venv/bin/python test_client.py --task-ids fix-git regex-log --max-iterations 3
 ```
+
+One-shot Harbor smoke (no optimization loop):
+
+```bash
+.venv/bin/python test_client.py --mode run --task-ids fix-git --timeout 1800
+```
+
+Confirm rewards in Postgres / `GET /v1/runs/{id}` and Harbor trial output under `workspace/runs/<run_id>/`.
 
 `test_client.py` submits the job, polls it, and prints the structured summary
 including the full iteration history and the winning agent spec. Pass

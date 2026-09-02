@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 
 from api.config import load_config
 from api.db import init_db, reset_engine
+from api.env import load_repo_dotenv
 from api.job_store import PostgresJobStore, job_store as default_job_store
 from api.routes import agent_versions, jobs, runs, tasks
 from api.schemas import ErrorDetail, ErrorResponse, HealthResponse
@@ -23,6 +24,9 @@ def create_app(
     database_url: str | None = None,
     init_database: bool = True,
 ) -> FastAPI:
+    # Load .env before config / DB URL resolution so E2B_API_KEY etc. are visible.
+    load_repo_dotenv()
+
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         if init_database:

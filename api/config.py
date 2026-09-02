@@ -43,9 +43,9 @@ def _unit_fraction(raw: dict[str, Any], key: str, default: float) -> float:
 class BenchmarkConfig:
     default_task_ids: list[str]
     default_agent_model: str
-    env_provider: str = "docker"
+    env_provider: str = "e2b"
     dataset: str = "terminal-bench@2.0"
-    max_concurrency: int = 2
+    max_concurrency: int = 8
     per_task_timeout: int = 1200
     execution_backend: str = "harbor"
     jobs_dir: str = "workspace/tbench_jobs"
@@ -76,7 +76,13 @@ def load_config(path: str | None = None) -> BenchmarkConfig:
         raise ValueError(f"{config_path} must define a non-empty default_task_ids list")
 
     model = raw.get("default_agent_model") or "gpt-4.1-mini"
-    env_provider = str(raw.get("env_provider") or "docker").lower()
+    # ENV_PROVIDER wins over YAML (same pattern as EXECUTION_BACKEND).
+    env_provider = str(
+        os.environ.get("ENV_PROVIDER")
+        or os.environ.get("HARBOR_ENV_PROVIDER")
+        or raw.get("env_provider")
+        or "e2b"
+    ).lower()
     if env_provider not in KNOWN_ENV_PROVIDERS:
         raise ValueError(
             f"Unknown env_provider {env_provider!r}; expected one of {sorted(KNOWN_ENV_PROVIDERS)}"
@@ -98,7 +104,7 @@ def load_config(path: str | None = None) -> BenchmarkConfig:
         default_agent_model=str(model),
         env_provider=env_provider,
         dataset=str(raw.get("dataset") or "terminal-bench@2.0"),
-        max_concurrency=int(raw.get("max_concurrency") or 2),
+        max_concurrency=int(raw.get("max_concurrency") or 8),
         per_task_timeout=int(raw.get("per_task_timeout") or 1200),
         execution_backend=backend,
         jobs_dir=str(raw.get("jobs_dir") or "workspace/tbench_jobs"),

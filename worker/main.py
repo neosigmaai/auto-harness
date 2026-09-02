@@ -12,6 +12,7 @@ import uuid
 
 from api.config import clear_config_cache, load_config
 from api.db import init_db
+from api.env import load_repo_dotenv
 from api.job_store import DEFAULT_STEP_STALE_AFTER_SEC, PostgresJobStore
 from api.schemas import RunError, RunStatus
 from api.services.artifacts import create_artifact_store
@@ -161,6 +162,9 @@ def run_loop(
 
 
 def main() -> None:
+    # Credentials (E2B_API_KEY, etc.) must be in os.environ before Harbor checks.
+    load_repo_dotenv()
+
     parser = argparse.ArgumentParser(description="auto-harness benchmark worker")
     parser.add_argument("--poll-interval", type=float, default=1.0)
     parser.add_argument("--stale-after-sec", type=int, default=DEFAULT_STEP_STALE_AFTER_SEC)
