@@ -39,11 +39,16 @@ _INT_FIELDS = {
 }
 
 
+def _default_model() -> str:
+    """The model to fall back to when a spec has none: $AGENT_MODEL, else DEFAULT_MODEL."""
+    return os.environ.get("AGENT_MODEL", DEFAULT_MODEL)
+
+
 def default_spec() -> dict:
     """The terminal-bench template's behaviour, as a spec dict."""
     return {
         "system_prompt": DEFAULT_SYSTEM_PROMPT,
-        "agent_model": os.environ.get("AGENT_MODEL", DEFAULT_MODEL),
+        "agent_model": _default_model(),
         "max_steps": DEFAULT_MAX_STEPS,
         "max_output_chars": DEFAULT_MAX_OUTPUT_CHARS,
         "exec_timeout_sec": DEFAULT_EXEC_TIMEOUT_SEC,
@@ -82,7 +87,7 @@ def load_spec(path: str | None) -> dict:
 
     model = spec["agent_model"]
     if not isinstance(model, str) or not model.strip():
-        spec["agent_model"] = os.environ.get("AGENT_MODEL", DEFAULT_MODEL)
+        spec["agent_model"] = _default_model()
 
     for key, fallback in _INT_FIELDS.items():
         try:

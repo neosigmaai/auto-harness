@@ -171,7 +171,7 @@ class HarborBenchmarkRunner:
         self._check_env_provider()
 
     def _agent_module_relpath(self) -> str:
-        """"agent.spec_agent:HarnessAgent" -> "agent/spec_agent.py"."""
+        """Turn e.g. 'agent.spec_agent:HarnessAgent' into 'agent/spec_agent.py'."""
         module = self.agent_import_path.split(":", 1)[0]
         return "/".join(module.split(".")) + ".py"
 

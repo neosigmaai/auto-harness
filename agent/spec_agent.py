@@ -9,6 +9,8 @@
 # and what prepare.py overwrites from templates. The service never touches it.
 # Dependencies are stdlib + litellm + harbor only — no api.* imports, because harbor
 # spawns the agent with just the repo root on PYTHONPATH.
+from __future__ import annotations
+
 import json
 import os
 
@@ -18,8 +20,6 @@ from harbor.environments.base import BaseEnvironment
 from harbor.models.agent.context import AgentContext
 
 from agent.spec_loader import load_spec_from_env
-
-MODEL = os.environ.get("AGENT_MODEL", "gpt-5.4")
 
 TOOLS = [
     {
@@ -79,7 +79,7 @@ class HarnessAgent(BaseAgent):
         max_output_chars = spec["max_output_chars"]
         exec_timeout_sec = spec["exec_timeout_sec"]
 
-        model = self.model_name or spec["agent_model"] or MODEL
+        model = self.model_name or spec["agent_model"]
         self.logger.info(
             f"spec: model={model} max_steps={max_steps} "
             f"max_output_chars={max_output_chars} exec_timeout_sec={exec_timeout_sec} "
