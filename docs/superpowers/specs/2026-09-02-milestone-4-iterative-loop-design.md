@@ -18,7 +18,10 @@ accessible via the API.
 | Decision | Choice |
 |---|---|
 | Mutable surface | **Prompt + config only.** The improver edits an `AgentSpec` (system prompt, model params, step limits) — pure data, no code generation. Tools stay fixed (bash). |
-| Best output | **One best overall agent per job**, chosen by aggregate score. Per-task data remains visible in iteration history. |
+| Best output | **One best overall agent per job**, chosen by aggregate score — *not* a per-task agent. Per-task data remains visible in iteration history. Confirmed by the assignment designers. |
+| Improvement metric | **Mean reward is the accept/reject scalar**, plus per-task movement (`fixed_tasks` / `regressed_tasks`) recorded per iteration and fed to the improver. Mean alone cannot distinguish "fixed A, broke B" from "changed nothing" — the designers flagged exactly this. |
+| Backtracking | **Every proposal is based on the best-scoring version so far**, never on a version that regressed. Hill-climbing with restart-from-best, per the designers' suggestion to "keep the best snapshot and start from it if a suggestion regressed". |
+| Noise floor | **`min_iterations` (default 3)** suppresses `no_improvement` early stopping, so a single unlucky non-improving run cannot end the loop. |
 | Loop execution | **Typed step queue.** The queue holds `evaluate` and `improve` steps; workers are stateless and claim steps exactly like they claim runs today. No orchestrator process. The worker that completes a step enqueues its successor in the same DB transaction. |
 | Agent storage | **Agent versions live in Postgres (JSONB), not in the repo.** `agent/agent.py` is never mutated by the service. |
 | Traces | **Artifact store** (local-disk implementation behind an interface), not the repo and not the DB. |
@@ -39,12 +42,13 @@ steps table  (Postgres queue, FOR UPDATE SKIP LOCKED — same pattern as runs)
 │   materialize spec JSON → workspace/runs/<run_id>/            │
 │   create run row → HarborBenchmarkRunner.execute_sync(run_id) │
 │   collect traces → ArtifactStore                              │
-│   score = mean reward                                         │
+│   score = mean reward; snapshot per-task rewards               │
 │   [txn] complete step + update job best + stopping check      │
-│         → enqueue improve  OR  close job                      │
+│         → enqueue improve (based on BEST version)  OR  close  │
 ├───────────────────────────────────────────────────────────────┤
-│ improve step                                                  │
-│   build context: latest failure traces + iteration history    │
+│ improve step  (edits the best-so-far spec, §8.3)              │
+│   build context: best spec + history + per-task movement      │
+│                 + latest failure traces                       │
 │   LLM call → proposed AgentSpec + rationale                   │
 │   validate against schema                                     │
 │   [txn] insert agent_version N+1 + complete step              │
@@ -127,6 +131,7 @@ for job-driven runs (plain `/v1/runs` keeps the existing check).
 | improver_model | str | |
 | max_iterations | int | |
 | patience | int | consecutive non-improving evaluations before stop |
+| min_iterations | int | floor below which `no_improvement` cannot fire (noise guard) |
 | min_delta | float | required score improvement |
 | current_iteration | int | |
 | best_agent_version_id | UUID fk → agent_versions, nullable | |
@@ -163,6 +168,7 @@ Full snapshot per version, not diffs — specs are a few KB and snapshots make
 | agent_version_id | UUID fk → agent_versions | version being evaluated / improved upon |
 | run_id | UUID fk → runs, nullable | set by evaluate steps |
 | score | float, nullable | evaluate: mean reward for this iteration |
+| task_rewards | JSONB, nullable | evaluate: `{task_id: reward|null}` snapshot — the source for per-task movement, so no join back to `run_tasks` is needed |
 | stale_after_sec | int | staleness threshold, computed per step type at enqueue time (see §6) |
 | worker_id / claimed_at | str / timestamptz | claim bookkeeping, same as runs |
 | created_at / started_at / finished_at | timestamptz | |
@@ -204,8 +210,10 @@ def complete_step_and_advance(step_id, *, outcome) -> None
 ```
 
 In a single transaction it: marks the step completed/failed, applies job
-updates (score, best pointer, `current_iteration`), and either inserts the
-successor step or closes the job with a `stop_reason`. A crash before commit
+updates (score, `task_rewards` snapshot, best pointer, `non_improving_streak`,
+`current_iteration`), and either inserts the successor step — an `improve` step
+always pointing at `best_agent_version_id` (§8.3) — or closes the job with a
+`stop_reason`. A crash before commit
 leaves the step `running` until stale-requeue re-runs it; a crash after
 commit leaves the successor queued. There is no window where a job is alive
 with nothing queued.
@@ -246,34 +254,100 @@ class Improver(Protocol):
 Each call receives, in order, within a hard character budget (default
 ~60k chars, config `improver_context_budget`):
 
-1. The current `AgentSpec` (always, full).
+1. The current `AgentSpec` (always, full) — this is the **best-so-far** spec,
+   per §8.3, not necessarily the most recently evaluated one.
 2. **Iteration history table** (always, compact): per prior iteration —
-   version, one-line change summary, rationale, score, improved-or-not.
-   This is what prevents re-proposing failed ideas.
-3. **Latest evaluation**: per-task status/reward table, then failure details
+   version, one-line change summary, rationale, score, improved-or-not, and
+   `fixed_tasks` / `regressed_tasks`. This is what prevents re-proposing failed
+   ideas, and it is where a rejected attempt remains visible even though the
+   spec being edited has backtracked past it.
+3. **Per-task movement of the last attempt** (when there was one): which tasks
+   improved and which regressed relative to the best version. Stated
+   explicitly, because this is the signal the mean score cannot carry.
+4. **Latest evaluation**: per-task status/reward table, then failure details
    for failed/error tasks — the tail of each `trace.json` (last N messages,
    command outputs truncated), worst tasks first, until the budget is spent.
 
 Only the latest run's traces enter the prompt; older traces stay in the
 artifact store. History carries forward as the compact table, not raw text.
 
-## 8. Scoring and stopping
+## 8. Scoring, per-task movement, and stopping
 
-- **Score** = mean reward across the job's tasks, with `None` (error/timeout)
-  counted as 0.0. Mean reward beats pass-rate on small task sets because
-  partial rewards carry signal (`reward_to_task_status` already preserves
-  them).
-- **Improved** ⇔ `score > best_score + min_delta`.
-- **Stop after an evaluate step when any of:**
-  1. `iteration + 1 >= max_iterations` → `stop_reason=max_iterations`
-  2. consecutive non-improving evaluations `>= patience` →
-     `stop_reason=no_improvement`
-  3. wall-clock since job start `> max_job_duration_sec` →
-     `stop_reason=budget_exceeded`
-- Defaults (config, overridable per job): `max_iterations=5`, `patience=2`,
-  `min_delta=0.01`, `max_job_duration_sec=6 h`.
-- The baseline evaluation (iteration 0) sets the initial `best_*`; the loop
-  therefore always reports a best agent, even if no proposal ever improved.
+### 8.1 The scalar: mean reward
+
+**Score** = mean reward across the job's tasks, with `None` (error/timeout)
+counted as 0.0. Mean reward beats pass-rate on small task sets because partial
+rewards carry signal (`reward_to_task_status` already preserves them).
+
+**Improved** ⇔ `score > best_score + min_delta`. A score exactly equal to
+`best_score + min_delta` is not an improvement.
+
+### 8.2 Why the scalar is not enough (and what we add)
+
+A mean hides distribution: a proposal that breaks `fix-git` while fixing
+`regex-log` scores identically to one that changed nothing. Two consequences
+are handled explicitly rather than left to the mean:
+
+1. **Per-task movement is recorded.** Each evaluate step stores a
+   `task_rewards` snapshot (`{task_id: reward}`). Comparing an iteration's
+   snapshot against the **best-so-far** iteration's yields:
+   - `fixed_tasks` — reward increased
+   - `regressed_tasks` — reward decreased
+
+   Both are exposed per iteration in the API and, more importantly, fed to the
+   improver: "your last change fixed A but broke B" is the single most useful
+   signal for the next proposal, and it is invisible in a mean.
+
+2. **A same-mean iteration is never promoted.** Since `improved` requires
+   strictly exceeding `best_score + min_delta`, a redistribution that keeps the
+   mean flat leaves `best_*` untouched — so the loop cannot drift sideways into
+   a version that trades one task for another with no net gain.
+
+We deliberately do **not** make `regressed_tasks` a veto (i.e. "reject any
+proposal that regresses any task"). On a 16-task set with a stochastic agent, a
+single-trial regression is often noise, and a veto would block genuine net
+improvements. The information is surfaced and fed back instead of enforced.
+
+### 8.3 Backtracking: proposals build on the best, not the latest
+
+When an iteration fails to improve, the next `improve` step is based on the
+**best-scoring version so far**, not on the version that just regressed. Since
+the latest version *is* the best whenever it improved, the rule collapses to a
+single invariant:
+
+> An `improve` step's `agent_version_id` is always the job's
+> `best_agent_version_id`.
+
+The rejected attempt is not forgotten — it stays in the iteration history that
+the improver reads, so it can see "revision 3 scored worse, don't go there
+again" while still editing the best-known spec. This is greedy hill-climbing
+with restart-from-best; without it, a single bad proposal would poison every
+subsequent iteration, which matters precisely because the agent is stochastic.
+
+### 8.4 Stopping
+
+Stop after an evaluate step when any of the following holds, **first match
+wins**:
+
+1. `iteration + 1 >= max_iterations` → `stop_reason=max_iterations`
+2. `non_improving_streak >= patience` **and** `iteration + 1 >= min_iterations`
+   → `stop_reason=no_improvement`
+3. wall-clock since job start `> max_job_duration_sec` →
+   `stop_reason=budget_exceeded`
+
+`min_iterations` is the noise guard: because the agent is non-deterministic, an
+early non-improving run may be variance rather than a real plateau, so the loop
+is not allowed to give up on `no_improvement` before completing
+`min_iterations` iterations. It does **not** override `max_iterations` or the
+wall-clock budget — a cost ceiling always wins over a "keep trying" floor. If
+`min_iterations > max_iterations`, `max_iterations` wins (the floor is
+unreachable and the job simply runs to its cap).
+
+Defaults (config, overridable per job): `max_iterations=5`, `patience=2`,
+`min_iterations=3`, `min_delta=0.01`, `max_job_duration_sec=6 h`.
+
+The baseline evaluation (iteration 0) sets the initial `best_*`, so the loop
+always reports a best agent even if no proposal ever improved.
 
 ## 9. Artifact store (`api/services/artifacts.py`)
 
@@ -305,6 +379,7 @@ Existing `/v1/runs`, `/tasks`, `/health` are unchanged.
   "improver_model": "gpt-5.4",               // optional
   "max_iterations": 5,                        // optional
   "patience": 2,                              // optional
+  "min_iterations": 3,                        // optional (noise guard, see 8.4)
   "min_delta": 0.01                           // optional
 }
 → { "job_id": "...", "status": "queued", "created_at": "..." }
@@ -321,7 +396,8 @@ Same validation/error envelope as runs (`unknown_task_ids` 400,
   "status": "running",
   "created_at": "...", "started_at": "...", "finished_at": null,
   "config": { "task_ids": [...], "agent_model": "...", "improver_model": "...",
-              "max_iterations": 5, "patience": 2, "min_delta": 0.01 },
+              "max_iterations": 5, "patience": 2, "min_iterations": 3,
+              "min_delta": 0.01 },
   "current_iteration": 2,
   "best": { "agent_version_id": "...", "version": 1, "score": 0.75 },
   "stop_reason": null,
@@ -333,6 +409,8 @@ Same validation/error envelope as runs (`unknown_task_ids` 400,
       "score": 0.62,
       "improved": true,
       "summary": { "total": 16, "passed": 10, "failed": 4, "error": 2, "...": "..." },
+      "fixed_tasks": [],
+      "regressed_tasks": [],
       "proposal": null
     },
     {
@@ -342,8 +420,11 @@ Same validation/error envelope as runs (`unknown_task_ids` 400,
       "score": 0.75,
       "improved": true,
       "summary": { "...": "..." },
+      "fixed_tasks": ["regex-log", "extract-elf"],
+      "regressed_tasks": ["fix-git"],
       "proposal": { "rationale": "Added explicit verification step to prompt...",
-                    "changed_fields": ["system_prompt", "max_steps"] }
+                    "changed_fields": ["system_prompt", "max_steps"],
+                    "based_on_version": 0 }
     }
   ],
   "error": null
@@ -370,6 +451,7 @@ created_by, created_at).
 improver_model: gpt-5.4
 max_iterations: 5
 patience: 2
+min_iterations: 3
 min_delta: 0.01
 max_job_duration_sec: 21600
 improver_context_budget: 60000
@@ -388,17 +470,27 @@ Milestone 3's additions. Per-job request fields override config defaults.
 - Alembic migrations — `init_db()` `create_all` covers new tables, consistent
   with current practice.
 
-## 13. Open questions for the assignment designers
+## 13. Designer answers (resolved 2026-09-02)
 
-1. Improvement metric: pass rate or mean reward? Is single-run comparison
-   acceptable given run-to-run variance?
-2. Mutable surface: is prompt+config sufficient, or are tool/code changes
-   expected?
-3. "State of the agent at each step accessible via the API" — inline
-   snapshots or referenced versions? (We do references + a fetch endpoint.)
-4. Expected iteration counts / cost caps?
-5. Should concurrent jobs be supported? (This design supports them; per-run
-   spec materialization means no shared mutable files.)
+The open questions were put to the assignment designers. Their answers, and what
+each one changed:
+
+| Question | Answer | Effect on this design |
+|---|---|---|
+| Improvement metric — pass rate or mean reward? | "Mean is good to start with, but if the next iteration regresses one task and improves another you'll end up on the same mean score." | Mean stays the accept/reject scalar; per-task `fixed_tasks`/`regressed_tasks` are now recorded per iteration and fed to the improver (§8.2). |
+| Early stopping on a min-delta plateau? | "Early stopping idea looks good." | Kept as specified (patience + `min_delta`), plus `min_iterations` as a noise floor (§8.4). |
+| The agent is non-deterministic — should some iterations be mandatory? | "Agreed. Keep the best snapshot, and when you're iterating start from it if the suggestion regressed." | Two changes: proposals are always based on the best version, never a regressed one (§8.3); and `min_iterations` prevents an unlucky run from ending the loop early (§8.4). |
+| One agent for all submitted tasks, or one per task? | "Optimising the agent on all submitted tasks would be the way, instead of per-task based." | Confirms the existing choice (§2). No change. |
+
+The designers added: "You can take design choices, if you think that's best for
+the scope." Two judgment calls follow from that, both recorded in §8.2: per-task
+regressions are surfaced and fed back but do **not** veto a proposal (a
+single-trial regression on a stochastic agent is usually noise), and a flat-mean
+redistribution never becomes the new best.
+
+Still unanswered, and deliberately not blocking: expected iteration counts and
+any hard cost cap. `max_iterations=5` plus a 6-hour `max_job_duration_sec` are
+the defaults until told otherwise.
 
 ## 14. Testing strategy
 
@@ -406,13 +498,19 @@ All loop logic is testable without Harbor or a real LLM:
 
 - **Unit (no DB):** AgentSpec validation (bounds, extra fields, truncation);
   scoring (mean with `None`→0); stopping rule (table-driven: improves,
-  plateaus, regresses, hits max, hits budget); improver context assembly
-  (budget trimming, history table shape).
+  plateaus, regresses, hits max, hits budget, **and `min_iterations`
+  suppressing `no_improvement` while never overriding `max_iterations`**);
+  per-task movement (`fixed_tasks`/`regressed_tasks` from two reward
+  snapshots, including appearing/disappearing task ids); improver context
+  assembly (budget trimming, history table shape, movement section present).
 - **Store (Postgres, same skipif guard as `test_api.py`):**
   `claim_next_step` no-double-claim (mirror the existing
   `ThreadPoolExecutor` test); stale evaluate step requeue with per-step
   threshold; `complete_step_and_advance` transitions — evaluate→improve,
-  improve→evaluate, each stop reason, orphaned-run supersede.
+  improve→evaluate, each stop reason, orphaned-run supersede; **an improve step
+  enqueued after a regression points at `best_agent_version_id`, not the
+  regressed version** (the §8.3 invariant), and the resulting version's
+  `parent_version_id` is that best version.
 - **End-to-end (Postgres + `MockBenchmarkRunner` + `FakeImprover`):** a job
   that improves twice then plateaus → stops with `no_improvement`, best
   pointer correct, history complete; a job hitting `max_iterations`; improver
