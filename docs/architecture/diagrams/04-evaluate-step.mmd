@@ -1,0 +1,22 @@
+flowchart LR
+  subgraph evaluate [Evaluate step]
+    A1[Load AgentSpec version]
+    A2[Write agent_spec.json]
+    A3[Create run row preclaimed]
+    A4[harbor run spec_agent]
+    A5[Map rewards to run_tasks]
+    A6[Copy traces to artifacts]
+    A7[Score mean reward]
+    A8[complete_step_and_advance]
+    A1 --> A2 --> A3 --> A4 --> A5 --> A6 --> A7 --> A8
+  end
+
+  subgraph afterEval [After evaluate]
+    B1{Stop?}
+    B2[Enqueue improve from best]
+    B3[Close job stop_reason]
+    B1 -->|no| B2
+    B1 -->|yes| B3
+  end
+
+  A8 --> B1

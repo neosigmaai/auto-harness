@@ -13,9 +13,12 @@ from api.job_store import (
     ImproveOutcome,
     IterationRecord,
     PostgresJobStore,
+    STEP_EVALUATE,
+    STEP_IMPROVE,
     StepRecord,
 )
-from api.services.artifacts import ArtifactStore, improver_key, trace_key
+from api.schemas import RunError, RunStatus
+from api.services.artifacts import ArtifactStore, improver_key, result_key, trace_key
 from api.services.improver import (
     EvaluationSummary,
     Improver,
@@ -24,14 +27,14 @@ from api.services.improver import (
     TaskOutcome,
     build_context,
     create_improver,
+    extract_verifier_message,
 )
 from api.services.runner import (
-    ExecutionUnavailableError,
     HarborBenchmarkRunner,
     MockBenchmarkRunner,
 )
 from api.services.scoring import mean_reward
-from api.store import PostgresRunStore
+from api.store import PostgresRunStore, _utcnow
 
 logger = logging.getLogger("worker")
 
@@ -76,9 +79,9 @@ class StepExecutor:
     # ----------------------------------------------------------------- #
 
     def execute(self, step: StepRecord) -> None:
-        if step.type == "evaluate":
+        if step.type == STEP_EVALUATE:
             self._evaluate(step)
-        elif step.type == "improve":
+        elif step.type == STEP_IMPROVE:
             self._improve(step)
         else:
             self.job_store.fail_step(
@@ -92,12 +95,19 @@ class StepExecutor:
     # ----------------------------------------------------------------- #
 
     def _evaluate(self, step: StepRecord) -> None:
+        # F7: a stale-requeued evaluate may still point at an orphaned run that
+        # was left `running` with claimed_at=NULL (immune to the legacy sweep).
+        if step.run_id:
+            self._supersede_run(step.run_id)
+
         record = self.run_store.create(
             task_ids=list(step.task_ids),
             agent_model=step.spec.agent_model,
             claimed_by=self.worker_id,
+            job_id=step.job_id,
         )
         run_id = record.run_id
+        self.job_store.set_step_run_id(step.step_id, run_id)
         logger.info(
             "evaluate step_id=%s job_id=%s iteration=%s version=%s run_id=%s tasks=%s",
             step.step_id,
@@ -125,11 +135,17 @@ class StepExecutor:
                     error_message=finished.error.message,
                 )
             else:
-                copied = self._store_traces(step, run_id, [t.task_id for t in finished.tasks])
+                copied = self._store_trial_artifacts(
+                    step, run_id, [t.task_id for t in finished.tasks]
+                )
+                self._enrich_remarks_from_results(
+                    run_id, step.job_id, step.iteration, [t.task_id for t in finished.tasks]
+                )
+                finished = self.run_store.get(run_id) or finished
                 task_rewards = {t.task_id: t.reward for t in finished.tasks}
                 score = mean_reward(task_rewards.values())
                 logger.info(
-                    "evaluate done run_id=%s score=%.4f traces=%s",
+                    "evaluate done run_id=%s score=%.4f artifacts=%s",
                     run_id,
                     score,
                     copied,
@@ -137,15 +153,9 @@ class StepExecutor:
                 outcome = EvaluateOutcome(
                     run_id=run_id, score=score, task_rewards=task_rewards
                 )
-        except ExecutionUnavailableError as exc:
-            logger.error("evaluate unavailable step_id=%s: %s", step.step_id, exc)
-            outcome = EvaluateOutcome(
-                run_id=run_id,
-                score=None,
-                error_code="execution_unavailable",
-                error_message=str(exc),
-            )
         except Exception as exc:  # noqa: BLE001
+            # ExecutionUnavailableError is recorded on the run row by runners;
+            # any unexpected crash here is an internal_error on the step.
             logger.exception("evaluate failed step_id=%s", step.step_id)
             outcome = EvaluateOutcome(
                 run_id=run_id,
@@ -155,6 +165,22 @@ class StepExecutor:
             )
 
         self.job_store.complete_step_and_advance(step.step_id, outcome)
+
+    def _supersede_run(self, run_id: str) -> None:
+        existing = self.run_store.get(run_id)
+        if existing is None:
+            return
+        if existing.status in (RunStatus.completed, RunStatus.failed):
+            return
+        self.run_store.update(
+            run_id,
+            status=RunStatus.failed,
+            finished_at=_utcnow(),
+            error=RunError(
+                code="superseded",
+                message="Evaluate step was requeued; this run was abandoned",
+            ),
+        )
 
     def _run_dir(self, run_id: str) -> Path:
         return REPO_ROOT / "workspace" / "runs" / run_id
@@ -179,12 +205,13 @@ class StepExecutor:
             },
         )
 
-    def _store_traces(self, step: StepRecord, run_id: str, task_ids: list[str]) -> int:
+    def _store_trial_artifacts(self, step: StepRecord, run_id: str, task_ids: list[str]) -> int:
         """
-        Copy harbor trial traces into the artifact store.
+        Copy harbor trial traces and result.json into the artifact store.
 
-        Harbor writes <jobs_dir>/<job>/<task_id>__<trial>/agent/trace.json; the
-        mock backend writes nothing, in which case this is a no-op.
+        Harbor writes <jobs_dir>/<job>/<task_id>__<trial>/agent/trace.json and
+        <jobs_dir>/<job>/<task_id>__<trial>/result.json; the mock backend writes
+        nothing, in which case this is a no-op.
         """
         run_dir = self._run_dir(run_id)
         if not run_dir.is_dir():
@@ -194,7 +221,8 @@ class StepExecutor:
         for trace_path in sorted(run_dir.rglob("trace.json")):
             if trace_path.parent.name != "agent":
                 continue
-            task_id = trace_path.parent.parent.name.rsplit("__", 1)[0]
+            trial_dir = trace_path.parent.parent
+            task_id = trial_dir.name.rsplit("__", 1)[0]
             if task_id not in known:
                 continue
             try:
@@ -202,7 +230,60 @@ class StepExecutor:
                 copied += 1
             except Exception:  # noqa: BLE001
                 logger.warning("failed to store trace for task_id=%s run_id=%s", task_id, run_id)
+            result_path = trial_dir / "result.json"
+            if result_path.is_file():
+                try:
+                    self.artifacts.put(
+                        result_key(step.job_id, step.iteration, task_id), result_path
+                    )
+                except Exception:  # noqa: BLE001
+                    logger.warning(
+                        "failed to store result.json for task_id=%s run_id=%s", task_id, run_id
+                    )
         return copied
+
+    # Back-compat alias used by older tests.
+    def _store_traces(self, step: StepRecord, run_id: str, task_ids: list[str]) -> int:
+        return self._store_trial_artifacts(step, run_id, task_ids)
+
+    def _enrich_remarks_from_results(
+        self,
+        run_id: str,
+        job_id: str,
+        iteration: int,
+        task_ids: list[str],
+    ) -> None:
+        """Replace generic verifier remarks with Harbor result.json diagnostics."""
+        record = self.run_store.get(run_id)
+        if record is None:
+            return
+        by_id = {t.task_id: t for t in record.tasks}
+        for task_id in task_ids:
+            task = by_id.get(task_id)
+            if task is None:
+                continue
+            key = result_key(job_id, iteration, task_id)
+            try:
+                if not self.artifacts.exists(key):
+                    continue
+                data = json.loads(self.artifacts.get(key).decode("utf-8"))
+            except Exception:  # noqa: BLE001
+                logger.warning("could not read result artifact %s", key)
+                continue
+            message = extract_verifier_message(data)
+            if not message:
+                continue
+            # Prefer Harbor diagnostics over the generic reward_to_task_status string.
+            if task.remarks in (None, "Verifier failed") or task.remarks.startswith(
+                "Partial reward "
+            ):
+                self.run_store.set_task(
+                    run_id,
+                    task_id,
+                    status=task.status,
+                    reward=task.reward,
+                    remarks=message,
+                )
 
     # ----------------------------------------------------------------- #
     # Improve
@@ -345,7 +426,9 @@ class StepExecutor:
         completed = [
             it
             for it in iterations
-            if it.status == "completed" and it.run_id is not None and it.score is not None
+            if it.status == RunStatus.completed.value
+            and it.run_id is not None
+            and it.score is not None
         ]
         return completed[-1] if completed else None
 

@@ -190,6 +190,7 @@ class CreateJobResponse(BaseModel):
     job_id: str
     status: RunStatus
     created_at: datetime
+    warnings: list[str] = Field(default_factory=list)
 
 
 class JobConfigEcho(BaseModel):

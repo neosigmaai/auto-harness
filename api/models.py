@@ -40,6 +40,10 @@ class RunRow(Base):
     error_message: Mapped[str | None] = mapped_column(Text)
     claimed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     worker_id: Mapped[str | None] = mapped_column(String(128))
+    # When set, this run was created by a job evaluate step (not POST /v1/runs).
+    job_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), nullable=True, index=True
+    )
 
     tasks: Mapped[list[RunTaskRow]] = relationship(
         "RunTaskRow",
@@ -130,6 +134,13 @@ class StepRow(Base):
     """A unit of queued work for a job: an evaluate step or an improve step."""
 
     __tablename__ = "steps"
+    __table_args__ = (
+        # One evaluate and one improve per (job, iteration). Stale requeue flips
+        # status on the same row rather than inserting a duplicate.
+        UniqueConstraint(
+            "job_id", "type", "iteration", name="uq_steps_job_type_iteration"
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4

@@ -12,7 +12,7 @@ import uuid
 
 from api.config import clear_config_cache, load_config
 from api.db import init_db
-from api.job_store import PostgresJobStore
+from api.job_store import DEFAULT_STEP_STALE_AFTER_SEC, PostgresJobStore
 from api.schemas import RunError, RunStatus
 from api.services.artifacts import create_artifact_store
 from api.services.improver import create_improver
@@ -163,7 +163,7 @@ def run_loop(
 def main() -> None:
     parser = argparse.ArgumentParser(description="auto-harness benchmark worker")
     parser.add_argument("--poll-interval", type=float, default=1.0)
-    parser.add_argument("--stale-after-sec", type=int, default=1800)
+    parser.add_argument("--stale-after-sec", type=int, default=DEFAULT_STEP_STALE_AFTER_SEC)
     parser.add_argument(
         "--step-delay-sec",
         type=float,

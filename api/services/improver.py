@@ -10,7 +10,7 @@ from typing import Any, Callable, Protocol
 
 from pydantic import ValidationError
 
-from api.agent_spec import AgentSpec
+from api.agent_spec import BASELINE_SYSTEM_PROMPT, AgentSpec
 from api.config import BenchmarkConfig, load_config
 from api.job_store import IterationRecord
 
@@ -71,13 +71,20 @@ class Improver(Protocol):
 
 SPEC_HEADER = "## CURRENT AGENT SPEC (JSON)"
 HISTORY_HEADER = "## ITERATION HISTORY (oldest first)"
-HISTORY_COLUMNS = "iteration | version | score | improved | changed_fields | rationale"
+HISTORY_COLUMNS = (
+    "iteration | version | score | improved | prompt_len | changed_fields | rationale"
+)
+TASK_STATEMENTS_HEADER = "## TASK STATEMENTS (failing tasks)"
 TASKS_COLUMNS = "task_id | status | reward | remarks"
 FAILURES_HEADER = "## FAILURE DETAILS (worst tasks first)"
+MOVEMENT_HEADER = "## PER-TASK MOVEMENT VS BEST"
 
 _TRACE_TAIL_CHARS = 4_000
 _TRACE_TAIL_MESSAGES = 12
 _MESSAGE_CHARS = 600
+_TASK_STATEMENT_PREFIX = "Task:\n"
+# Soft ceiling on proposed system_prompt length relative to the baseline prompt.
+_MAX_PROMPT_LEN_MULT = 1.5
 
 
 def _flat(text: str | None, limit: int = 200) -> str:
@@ -138,6 +145,80 @@ def _render_trace(text: str) -> str:
     return rendered
 
 
+def extract_task_statement(trace_text: str) -> str | None:
+    """Pull the task instruction from the head of an agent trace.
+
+    HarnessAgent writes the instruction as the first user message with a
+    ``Task:\\n`` prefix. We prefer that form; otherwise we fall back to the
+    first non-empty user message. Returns ``None`` when nothing usable is found.
+    """
+    if not trace_text or not trace_text.strip():
+        return None
+    try:
+        data = json.loads(trace_text)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(data, list):
+        return None
+    for message in data:
+        if not isinstance(message, dict):
+            continue
+        if message.get("role") != "user":
+            continue
+        content = message.get("content")
+        if not isinstance(content, str) or not content.strip():
+            continue
+        if content.startswith(_TASK_STATEMENT_PREFIX):
+            statement = content[len(_TASK_STATEMENT_PREFIX) :].strip()
+            return statement or None
+        return content.strip()
+    return None
+
+
+def extract_verifier_message(result: dict[str, Any] | None) -> str | None:
+    """Best-effort diagnostic string from a Harbor trial ``result.json``."""
+    if not isinstance(result, dict):
+        return None
+
+    def _as_text(value: Any) -> str | None:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            text = value.strip()
+            return text or None
+        if isinstance(value, (int, float, bool)):
+            return str(value)
+        if isinstance(value, dict):
+            for key in ("message", "error", "stderr", "stdout", "detail", "reason"):
+                nested = _as_text(value.get(key))
+                if nested:
+                    return nested
+        return None
+
+    candidates: list[Any] = [
+        result.get("exception_info"),
+        result.get("failure_message"),
+        result.get("error"),
+        result.get("message"),
+    ]
+    vr = result.get("verifier_result")
+    if isinstance(vr, dict):
+        candidates.extend(
+            [
+                vr.get("message"),
+                vr.get("error"),
+                vr.get("stderr"),
+                vr.get("stdout"),
+                vr.get("exception"),
+            ]
+        )
+    for candidate in candidates:
+        text = _as_text(candidate)
+        if text:
+            return text
+    return None
+
+
 def _spec_section(spec: AgentSpec) -> str:
     # No sort_keys: AgentSpec declares system_prompt first, so the prompt is the
     # first thing in the section and the last thing lost to truncation.
@@ -149,6 +230,7 @@ def _history_section(history: list[IterationRecord]) -> str:
     if not history:
         lines.append("(no prior iterations - this is the first proposal)")
     for record in history:
+        prompt_len = getattr(record, "prompt_length", None)
         lines.append(
             " | ".join(
                 [
@@ -156,6 +238,7 @@ def _history_section(history: list[IterationRecord]) -> str:
                     str(record.version),
                     _fmt_score(record.score),
                     _fmt_flag(record.improved),
+                    "n/a" if prompt_len is None else str(prompt_len),
                     ",".join(record.changed_fields) if record.changed_fields else "-",
                     _flat(record.rationale),
                 ]
@@ -166,8 +249,8 @@ def _history_section(history: list[IterationRecord]) -> str:
 
 def _movement_section(evaluation: EvaluationSummary) -> str:
     if not evaluation.fixed_tasks and not evaluation.regressed_tasks:
-        return "PER-TASK MOVEMENT VS BEST\nNo per-task movement vs the best version."
-    lines = ["PER-TASK MOVEMENT VS BEST"]
+        return f"{MOVEMENT_HEADER}\nNo per-task movement vs the best version."
+    lines = [MOVEMENT_HEADER]
     if evaluation.fixed_tasks:
         lines.append(f"Improved: {', '.join(evaluation.fixed_tasks)}")
     if evaluation.regressed_tasks:
@@ -179,6 +262,22 @@ def _movement_section(evaluation: EvaluationSummary) -> str:
             "Keep what fixed the improved tasks, but do not repeat whatever caused "
             "these regressions."
         )
+    return "\n".join(lines)
+
+
+def _task_statements_section(evaluation: EvaluationSummary) -> str:
+    """Mandatory: task instructions for every failing task (never budget-gated)."""
+    failing = [t for t in evaluation.tasks if t.status in ("failed", "error")]
+    lines = [TASK_STATEMENTS_HEADER]
+    if not failing:
+        lines.append("(no failing tasks)")
+        return "\n".join(lines)
+    for task in failing:
+        statement = extract_task_statement(evaluation.traces.get(task.task_id, ""))
+        if statement:
+            lines.append(f"### {task.task_id}\n{statement}")
+        else:
+            lines.append(f"### {task.task_id}\n(task statement not available)")
     return "\n".join(lines)
 
 
@@ -230,16 +329,18 @@ def build_context(
     Assemble the improver prompt body within a hard character budget.
 
     Order: current spec (always) -> iteration history table (always) -> per-task
-    movement vs the best version (always) -> per-task result table (always) ->
-    failure details, worst task first, appended only while the running total
-    stays inside ``budget``. The result is finally truncated to ``budget``
-    characters, so the returned length is never larger than the budget even
-    when the mandatory prefix alone overflows it.
+    movement vs the best version (always) -> task statements for failing tasks
+    (always) -> per-task result table (always) -> failure details (trace tails),
+    worst task first, appended only while the running total stays inside
+    ``budget``. The result is finally truncated to ``budget`` characters, so the
+    returned length is never larger than the budget even when the mandatory
+    prefix alone overflows it.
     """
     parts = [
         _spec_section(spec),
         _history_section(list(history)),
         _movement_section(evaluation),
+        _task_statements_section(evaluation),
         _tasks_section(evaluation),
     ]
     # +2 per part accounts for the "\n\n" separators (a 2-char overestimate).
@@ -267,7 +368,41 @@ def build_context(
 
 FAKE_CONTEXT_BUDGET = 8_000
 
-_ALLOWED_CONFIG_KEYS = frozenset({"max_steps", "max_output_chars", "exec_timeout_sec"})
+# Mutable knobs the improver may change. Derived from AgentSpec so bounds in the
+# system prompt cannot drift from the Pydantic model (see follow-up M7).
+_IMMUTABLE_SPEC_KEYS = frozenset({"system_prompt", "agent_model"})
+_ALLOWED_CONFIG_KEYS = frozenset(
+    name for name in AgentSpec.model_fields if name not in _IMMUTABLE_SPEC_KEYS
+)
+
+
+def _field_ge_le(name: str) -> tuple[Any, Any]:
+    info = AgentSpec.model_fields[name]
+    ge = le = None
+    for meta in info.metadata:
+        meta_ge = getattr(meta, "ge", None)
+        meta_le = getattr(meta, "le", None)
+        if meta_ge is not None:
+            ge = meta_ge
+        if meta_le is not None:
+            le = meta_le
+    return ge, le
+
+
+def _allowed_config_prompt_text() -> str:
+    parts: list[str] = []
+    for name in sorted(_ALLOWED_CONFIG_KEYS):
+        ge, le = _field_ge_le(name)
+        if ge is not None and le is not None:
+            parts.append(f"{name} ({ge}-{le})")
+        else:
+            parts.append(name)
+    return ", ".join(parts)
+
+
+_MAX_SYSTEM_PROMPT_CHARS = max(
+    1, int(len(BASELINE_SYSTEM_PROMPT) * _MAX_PROMPT_LEN_MULT)
+)
 
 IMPROVER_SYSTEM_PROMPT = (
     "You are an optimization engine for an autonomous terminal-using coding agent.\n"
@@ -284,13 +419,20 @@ IMPROVER_SYSTEM_PROMPT = (
     "\n"
     "Rules:\n"
     "- system_prompt must be the complete new prompt, never a diff or a patch.\n"
-    "- config_changes may only contain: max_steps (1-200), max_output_chars "
-    "(500-100000), exec_timeout_sec (10-1200). Omit any key you do not change; "
-    "use {} to change nothing.\n"
+    "- Prefer rewriting or replacing an existing rule over appending new ones. "
+    f"Keep system_prompt concise; soft cap is about {_MAX_SYSTEM_PROMPT_CHARS} "
+    "characters (1.5x the baseline). Longer proposals may be rejected.\n"
+    f"- config_changes may only contain: {_allowed_config_prompt_text()}. "
+    "Omit any key you do not change; use {} to change nothing.\n"
+    "- Raising max_steps or exec_timeout_sec has real cost (every iteration "
+    "re-runs the full benchmark). Treat those as a last resort after prompt "
+    "changes; prefer a tighter prompt over 'try harder'.\n"
     "- Never propose a different model and never invent other keys.\n"
     "- Do not repeat a change the iteration history shows already failed to "
     "improve the score.\n"
-    "- The agent has exactly one tool (bash). Do not ask for other tools."
+    "- The agent has exactly one tool (bash). Do not ask for other tools.\n"
+    "- Read TASK STATEMENTS carefully before diagnosing failures; shell noise "
+    "in the trace tail is secondary to whether the agent understood the task."
 )
 
 
@@ -460,10 +602,15 @@ class LLMImprover:
                     + "\nReturn a corrected JSON object with the same three keys "
                     "(system_prompt, config_changes, rationale) and nothing else."
                 )
-                messages = messages + [
-                    {"role": "assistant", "content": self.last_response},
-                    {"role": "user", "content": retry_text},
-                ]
+                # Never append an empty assistant turn (M13): some providers reject it
+                # and turn a recoverable proposal rejection into a hard transport error.
+                if self.last_response.strip():
+                    messages = messages + [
+                        {"role": "assistant", "content": self.last_response},
+                        {"role": "user", "content": retry_text},
+                    ]
+                else:
+                    messages = messages + [{"role": "user", "content": retry_text}]
                 self.last_prompt = context + "\n\n## RETRY\n" + retry_text
 
             try:
@@ -506,6 +653,12 @@ class LLMImprover:
         merged = spec.model_dump()
         prompt = data.get("system_prompt")
         if isinstance(prompt, str) and prompt.strip():
+            if len(prompt) > _MAX_SYSTEM_PROMPT_CHARS:
+                raise _ProposalRejected(
+                    f"system_prompt length {len(prompt)} exceeds soft cap "
+                    f"{_MAX_SYSTEM_PROMPT_CHARS} (1.5x baseline); rewrite more "
+                    "concisely rather than appending rules"
+                )
             merged["system_prompt"] = prompt
         merged.update(changes)
 

@@ -1,0 +1,27 @@
+flowchart TB
+  subgraph host [Host machine]
+    API[FastAPI]
+    Worker[Worker]
+    Harbor[Harbor CLI]
+    SpecAgent[spec_agent LLM loop]
+    Improver[Improver LLM]
+  end
+
+  subgraph docker [Docker]
+    Bash[bash tool via environment.exec]
+    Verifier[Terminal-Bench verifier]
+  end
+
+  subgraph external [External]
+    ModelAPI[OpenAI / Anthropic / etc]
+  end
+
+  Worker --> Harbor
+  Harbor --> SpecAgent
+  SpecAgent -->|chat completions| ModelAPI
+  SpecAgent -->|tool calls| Bash
+  Harbor --> Verifier
+  Worker --> Improver
+  Improver -->|propose AgentSpec| ModelAPI
+
+  API -.->|no Harbor| Worker

@@ -15,11 +15,15 @@ from api.agent_spec import baseline_spec
 from api.config import clear_config_cache
 from api.db import get_engine, get_session_factory, init_db, reset_engine
 from api.job_store import (
+    DEFAULT_STEP_STALE_AFTER_SEC,
     EvaluateOutcome,
     ImproveOutcome,
+    IMPROVE_STALE_AFTER_SEC,
     PostgresJobStore,
+    STEP_EVALUATE,
 )
 from api.models import AgentVersionRow, JobRow, StepRow
+from api.schemas import RunStatus
 
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
@@ -886,3 +890,31 @@ def test_fail_step_malformed_step_id_is_noop(job_store: PostgresJobStore) -> Non
     refreshed = job_store.get_job(job.job_id)
     assert refreshed is not None
     assert refreshed.status == "queued"
+
+
+def test_claim_next_step_skips_steps_for_terminal_jobs(
+    job_store: PostgresJobStore,
+) -> None:
+    """F8: a queued step under a cancelled/completed job must not starve others."""
+    stuck = _create_job(job_store)
+    healthy = _create_job(job_store)
+
+    session = get_session_factory()()
+    try:
+        stuck_row = session.get(JobRow, uuid.UUID(stuck.job_id))
+        assert stuck_row is not None
+        stuck_row.status = RunStatus.cancelled.value
+        # Leave the iteration-0 evaluate step queued under the cancelled job.
+        session.commit()
+    finally:
+        session.close()
+
+    claimed = job_store.claim_next_step("w1")
+    assert claimed is not None
+    assert claimed.job_id == healthy.job_id
+    assert claimed.type == STEP_EVALUATE
+
+
+def test_improve_stale_constant_matches_default() -> None:
+    """M11: improve stale timeout stays coupled to the shared default."""
+    assert IMPROVE_STALE_AFTER_SEC == DEFAULT_STEP_STALE_AFTER_SEC == 1800

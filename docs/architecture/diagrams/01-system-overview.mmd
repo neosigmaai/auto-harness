@@ -1,0 +1,50 @@
+flowchart TB
+  subgraph clients [Clients]
+    TC[test_client / HTTP]
+  end
+
+  subgraph apiLayer [API host]
+    API[FastAPI]
+  end
+
+  subgraph dataLayer [PostgreSQL]
+    Runs[(runs / run_tasks)]
+    Jobs[(jobs / steps / agent_versions)]
+  end
+
+  subgraph workerHost [Worker host]
+    W[worker.main]
+    SE[StepExecutor]
+    HR[HarborBenchmarkRunner]
+  end
+
+  subgraph harborHost [Harbor on host]
+    HB[harbor CLI]
+    SA[spec_agent / agent.py]
+  end
+
+  subgraph sandbox [Docker sandboxes]
+    CT[per-task containers]
+    VF[verifier]
+  end
+
+  subgraph disk [Local disk]
+    ART[workspace/artifacts]
+    RJ[workspace/runs]
+  end
+
+  TC -->|POST GET /v1/runs| API
+  TC -->|POST GET /v1/jobs| API
+  API --> Runs
+  API --> Jobs
+  W -->|claim step then run| Jobs
+  W -->|claim run fallback| Runs
+  W --> SE
+  SE --> HR
+  HR --> HB
+  HB --> SA
+  HB --> CT
+  CT --> VF
+  SE --> ART
+  HR --> RJ
+  SA -->|LLM API| LLM[Model provider]

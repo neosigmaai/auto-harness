@@ -1,0 +1,49 @@
+erDiagram
+  JOBS ||--o{ AGENT_VERSIONS : has
+  JOBS ||--o{ STEPS : has
+  RUNS ||--o{ RUN_TASKS : has
+  STEPS }o--o| RUNS : evaluate_produces
+  STEPS }o--|| AGENT_VERSIONS : uses
+  JOBS }o--o| AGENT_VERSIONS : best
+
+  JOBS {
+    uuid id PK
+    string status
+    json task_ids
+    int max_iterations
+    int patience
+    float best_score
+    string stop_reason
+  }
+
+  AGENT_VERSIONS {
+    uuid id PK
+    uuid job_id FK
+    int version
+    json spec
+    string rationale
+  }
+
+  STEPS {
+    uuid id PK
+    uuid job_id FK
+    string type
+    string status
+    int iteration
+    uuid run_id
+    float score
+  }
+
+  RUNS {
+    uuid id PK
+    string status
+    string agent_model
+  }
+
+  RUN_TASKS {
+    int id PK
+    uuid run_id FK
+    string task_id
+    string status
+    float reward
+  }

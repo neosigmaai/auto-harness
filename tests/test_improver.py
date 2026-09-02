@@ -17,9 +17,10 @@ from api.services.improver import (
     LLMImprover,
     Proposal,
     TaskOutcome,
+    _ALLOWED_CONFIG_KEYS,
+    _RaisingImprover,
     create_improver,
 )
-from api.services.improver import _RaisingImprover
 
 
 def _spec(system_prompt: str = "BASE PROMPT") -> AgentSpec:
@@ -203,6 +204,12 @@ def test_llm_improver_retries_once_on_empty_first_response(monkeypatch: pytest.M
 
     assert proposal.spec.system_prompt == "IMPROVED PROMPT"
     assert len(stub.calls) == 2
+    # M13: empty first response must not inject an empty assistant turn on retry.
+    assert all(
+        m.get("content")
+        for m in stub.calls[1]["messages"]
+        if m["role"] == "assistant"
+    )
 
 
 def test_llm_improver_raises_after_two_invalid_responses(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -292,6 +299,34 @@ def test_raising_improver_always_raises_improver_error() -> None:
 
     with pytest.raises(ImproverError):
         raiser.propose(spec=_spec(), evaluation=_evaluation(), history=_history())
+
+
+def test_allowed_config_keys_match_agent_spec_mutable_fields() -> None:
+    """M7: improver allowlist must track AgentSpec (minus prompt/model)."""
+    expected = set(AgentSpec.model_fields) - {"system_prompt", "agent_model"}
+    assert _ALLOWED_CONFIG_KEYS == expected
+    from api.services.improver import IMPROVER_SYSTEM_PROMPT, _allowed_config_prompt_text
+
+    assert _allowed_config_prompt_text() in IMPROVER_SYSTEM_PROMPT
+
+
+def test_llm_improver_rejects_oversized_system_prompt(monkeypatch: pytest.MonkeyPatch) -> None:
+    from api.services.improver import _MAX_SYSTEM_PROMPT_CHARS
+
+    too_long = "X" * (_MAX_SYSTEM_PROMPT_CHARS + 10)
+    stub = _StubLitellm(
+        [
+            _payload(system_prompt=too_long),
+            _payload(system_prompt="short enough"),
+        ]
+    )
+    monkeypatch.setattr(improver_mod, "litellm", stub)
+
+    llm = LLMImprover(model="gpt-5.4", budget=20_000)
+    proposal = llm.propose(spec=_spec(), evaluation=_evaluation(), history=_history())
+
+    assert proposal.spec.system_prompt == "short enough"
+    assert "soft cap" in stub.calls[1]["messages"][-1]["content"]
 
 
 class _StubImprover:

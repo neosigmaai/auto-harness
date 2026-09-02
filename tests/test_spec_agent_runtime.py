@@ -26,13 +26,9 @@ from agent.spec_loader import (
     load_spec_from_env,
 )
 
-SPEC_KEYS = {
-    "system_prompt",
-    "agent_model",
-    "max_steps",
-    "max_output_chars",
-    "exec_timeout_sec",
-}
+from api.agent_spec import AgentSpec
+
+SPEC_KEYS = set(AgentSpec.model_fields)
 
 
 # --------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import math
 
 from fastapi import APIRouter, Request
@@ -28,7 +29,13 @@ from api.schemas import (
 )
 from api.store import PostgresRunStore, compute_summary
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/v1/jobs", tags=["jobs"])
+
+# Jobs with fewer tasks than this are fine as smoke tests but not trustworthy
+# optimization experiments (single-trial binary scores make min_delta inert).
+MIN_TRUSTWORTHY_TASK_COUNT = 8
 
 
 def _error(status_code: int, code: str, message: str, details: dict | None = None) -> JSONResponse:
@@ -75,9 +82,15 @@ def _job_to_response(
                 summary = compute_summary(run.tasks)
 
         proposal = None
-        if it.rationale is not None:
+        # Proposal metadata (changed_fields / based_on_version) must not depend on
+        # rationale text being non-empty (M12).
+        if (
+            it.rationale is not None
+            or it.changed_fields
+            or it.based_on_version is not None
+        ):
             proposal = ProposalView(
-                rationale=it.rationale,
+                rationale=it.rationale or "",
                 changed_fields=list(it.changed_fields),
                 based_on_version=it.based_on_version,
             )
@@ -194,10 +207,21 @@ async def create_job(
     except Exception as exc:  # noqa: BLE001
         return _error(503, "execution_unavailable", f"Failed to enqueue job: {exc}")
 
+    warnings: list[str] = []
+    if len(task_ids) < MIN_TRUSTWORTHY_TASK_COUNT:
+        warning = (
+            f"Only {len(task_ids)} task(s); scores are not trustworthy for "
+            f"optimization (recommend >= {MIN_TRUSTWORTHY_TASK_COUNT}). "
+            "1–2 tasks are fine as a smoke test."
+        )
+        warnings.append(warning)
+        logger.warning("job %s: %s", record.job_id, warning)
+
     return CreateJobResponse(
         job_id=record.job_id,
         status=RunStatus.queued,
         created_at=record.created_at,
+        warnings=warnings,
     )
 
 

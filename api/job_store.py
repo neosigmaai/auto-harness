@@ -24,8 +24,10 @@ from api.store import _utcnow
 STEP_EVALUATE = "evaluate"
 STEP_IMPROVE = "improve"
 
-#: Improve steps are a single LLM call; the run default is plenty.
-IMPROVE_STALE_AFTER_SEC = 1800
+#: Improve steps are a single LLM call. Keep in sync with
+#: ``worker/main.py``'s ``--stale-after-sec`` default (asserted in tests).
+DEFAULT_STEP_STALE_AFTER_SEC = 1800
+IMPROVE_STALE_AFTER_SEC = DEFAULT_STEP_STALE_AFTER_SEC
 
 CREATED_BY_BASELINE = "baseline"
 CREATED_BY_IMPROVER = "improver"
@@ -93,6 +95,8 @@ class IterationRecord:
     regressed_tasks: list[str] = field(default_factory=list)
     # Version this iteration's spec was derived from (None for the baseline).
     based_on_version: int | None = None
+    # Length of this iteration's system_prompt (for improver length pressure).
+    prompt_length: int | None = None
 
 
 @dataclass(frozen=True)
@@ -197,6 +201,12 @@ def _build_iterations(
         rationale: str | None = None
         changed: list[str] = []
         based_on_version: int | None = None
+        prompt_length: int | None = None
+        if version is not None:
+            try:
+                prompt_length = len(AgentSpec.model_validate(version.spec).system_prompt)
+            except Exception:  # noqa: BLE001
+                prompt_length = None
         if version is not None and version.parent_version_id is not None:
             rationale = version.rationale or None
             parent = versions.get(version.parent_version_id)
@@ -230,6 +240,7 @@ def _build_iterations(
                 fixed_tasks=movement.fixed,
                 regressed_tasks=movement.regressed,
                 based_on_version=based_on_version,
+                prompt_length=prompt_length,
             )
         )
 
@@ -576,10 +587,16 @@ class PostgresJobStore:
 
             step = session.scalar(
                 select(StepRow)
-                .where(StepRow.status == RunStatus.queued.value)
+                .join(JobRow, StepRow.job_id == JobRow.id)
+                .where(
+                    StepRow.status == RunStatus.queued.value,
+                    JobRow.status.in_(
+                        (RunStatus.queued.value, RunStatus.running.value)
+                    ),
+                )
                 .order_by(StepRow.created_at, StepRow.iteration)
                 .limit(1)
-                .with_for_update(skip_locked=True)
+                .with_for_update(skip_locked=True, of=StepRow)
             )
             if step is None:
                 session.commit()
@@ -715,6 +732,26 @@ class PostgresJobStore:
                 job.error_message = error_message
                 job.finished_at = now
 
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def set_step_run_id(self, step_id: str, run_id: str) -> None:
+        """Attach a run to a running evaluate step (enables superseded on requeue)."""
+        uid = _uuid_or_none(step_id)
+        run_uid = _uuid_or_none(run_id)
+        if uid is None or run_uid is None:
+            return
+        session = self._factory()()
+        try:
+            step = session.get(StepRow, uid, with_for_update=True)
+            if step is None or step.status != RunStatus.running.value:
+                session.commit()
+                return
+            step.run_id = run_uid
             session.commit()
         except Exception:
             session.rollback()

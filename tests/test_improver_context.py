@@ -81,10 +81,12 @@ def test_history_table_has_one_row_per_iteration_and_rationales() -> None:
     block = ctx.split("## ITERATION HISTORY (oldest first)\n", 1)[1].split("\n\n", 1)[0]
     lines = block.strip().splitlines()
 
-    assert lines[0] == "iteration | version | score | improved | changed_fields | rationale"
+    assert lines[0] == (
+        "iteration | version | score | improved | prompt_len | changed_fields | rationale"
+    )
     assert len(lines) == 3, lines
-    assert lines[1].startswith("0 | 0 | 0.5000 | yes | - | baseline")
-    assert lines[2].startswith("1 | 1 | 0.5000 | no | max_steps,system_prompt | ")
+    assert lines[1].startswith("0 | 0 | 0.5000 | yes | n/a | - | baseline")
+    assert lines[2].startswith("1 | 1 | 0.5000 | no | n/a | max_steps,system_prompt | ")
     # Multi-line rationales are flattened onto their single row.
     assert "Told the agent to verify its work before finishing" in lines[2]
 
@@ -109,14 +111,15 @@ def test_failure_details_are_worst_first() -> None:
     )
 
     assert "## FAILURE DETAILS (worst tasks first)" in ctx
-    i_err = ctx.index("### t-err")
-    i_zero = ctx.index("### t-zero")
-    i_partial = ctx.index("### t-partial")
+    failures = ctx.split("## FAILURE DETAILS (worst tasks first)\n", 1)[1]
+    i_err = failures.index("### t-err")
+    i_zero = failures.index("### t-zero")
+    i_partial = failures.index("### t-partial")
     assert i_err < i_zero < i_partial
     # Passing tasks appear in the result table but get no failure block.
-    assert "### t-pass" not in ctx
+    assert "### t-pass" not in failures
     # JSON message traces are rendered as role-tagged lines.
-    assert "[tool] error trace body" in ctx
+    assert "[tool] error trace body" in failures
 
 
 def test_output_never_exceeds_budget_with_huge_trace() -> None:
@@ -224,7 +227,7 @@ def test_context_reports_regressions_prominently() -> None:
         history=[],
         budget=60_000,
     )
-    assert "PER-TASK MOVEMENT VS BEST" in ctx
+    assert "## PER-TASK MOVEMENT VS BEST" in ctx
     assert "REGRESSED" in ctx
     # Assert on the REGRESSED line itself, not "everything after the word
     # REGRESSED" - zzz-task also recurs in the sections that follow the
@@ -246,3 +249,65 @@ def test_context_movement_section_present_when_no_movement() -> None:
         budget=60_000,
     )
     assert "No per-task movement vs the best version." in ctx
+
+
+def test_task_statement_from_trace_head_is_mandatory() -> None:
+    """F1: long traces must still expose the task instruction in the mandatory prefix."""
+    statement = "Write a polyglot that is valid C and Python."
+    messages = [{"role": "system", "content": "you are an agent"}]
+    messages.append({"role": "user", "content": f"Task:\n{statement}"})
+    messages.extend(
+        {"role": "assistant", "content": f"step {i} noise " + ("x" * 200)}
+        for i in range(100)
+    )
+    tasks = [
+        TaskOutcome(task_id="polyglot-c-py", status="failed", reward=0.0, remarks="Verifier failed")
+    ]
+    traces = {"polyglot-c-py": json.dumps(messages)}
+
+    ctx = build_context(
+        spec=_spec(),
+        evaluation=EvaluationSummary(score=0.0, tasks=tasks, traces=traces),
+        history=[],
+        budget=60_000,
+    )
+    assert "## TASK STATEMENTS (failing tasks)" in ctx
+    assert statement in ctx
+
+    # Budget small enough that failure-detail trace tails are dropped, but the
+    # mandatory task-statement section still fits after the spec/history prefix.
+    tight = build_context(
+        spec=_spec(),
+        evaluation=EvaluationSummary(score=0.0, tasks=tasks, traces=traces),
+        history=[],
+        budget=4_000,
+    )
+    assert statement in tight
+    assert "## FAILURE DETAILS" not in tight or "trace tail" not in tight.split(
+        "## TASK STATEMENTS", 1
+    )[0]
+
+
+def test_extract_task_statement_prefers_task_prefix() -> None:
+    from api.services.improver import extract_task_statement
+
+    trace = json.dumps(
+        [
+            {"role": "system", "content": "sys"},
+            {"role": "user", "content": "Task:\nDo the thing"},
+            {"role": "user", "content": "later note"},
+        ]
+    )
+    assert extract_task_statement(trace) == "Do the thing"
+
+
+def test_extract_verifier_message_from_result_json() -> None:
+    from api.services.improver import extract_verifier_message
+
+    assert (
+        extract_verifier_message(
+            {"verifier_result": {"rewards": {"reward": 0.0}, "message": "expected exit 0"}}
+        )
+        == "expected exit 0"
+    )
+    assert extract_verifier_message({"exception_info": "timeout in sandbox"}) == "timeout in sandbox"

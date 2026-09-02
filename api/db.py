@@ -44,9 +44,30 @@ def get_session_factory(*, url: str | None = None) -> sessionmaker[Session]:
 
 
 def init_db(*, url: str | None = None) -> None:
-    """Create tables if they do not exist."""
+    """Create tables if they do not exist, then apply lightweight additive patches."""
     engine = get_engine(url=url)
     Base.metadata.create_all(bind=engine)
+    # create_all does not ALTER existing tables; keep local/dev DBs forward-
+    # compatible for Milestone 4 follow-ups without a full migration tool.
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE runs ADD COLUMN IF NOT EXISTS job_id UUID"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_runs_job_id ON runs (job_id)"))
+        conn.execute(
+            text(
+                """
+                DO $$ BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM pg_constraint
+                        WHERE conname = 'uq_steps_job_type_iteration'
+                    ) THEN
+                        ALTER TABLE steps
+                        ADD CONSTRAINT uq_steps_job_type_iteration
+                        UNIQUE (job_id, type, iteration);
+                    END IF;
+                END $$;
+                """
+            )
+        )
 
 
 def reset_engine() -> None:

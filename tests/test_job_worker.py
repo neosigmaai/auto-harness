@@ -17,7 +17,7 @@ from api.job_store import EvaluateOutcome, PostgresJobStore
 from api.models import StepRow
 from api.schemas import RunStatus, TaskStatus
 from api.services.artifacts import LocalArtifactStore
-from api.services.improver import FakeImprover, ImproverError, Proposal
+from api.services.improver import FakeImprover, ImproverError, Proposal, _RaisingImprover
 from api.services.runner import MockBenchmarkRunner
 from api.store import PostgresRunStore
 from worker import steps as steps_module
@@ -75,13 +75,6 @@ def stores(tmp_path):
     reset_engine()
     clear_config_cache()
     os.environ.pop("EXECUTION_BACKEND", None)
-
-
-class _RaisingImprover:
-    """Improver that always fails, to exercise the failed_improve path."""
-
-    def propose(self, *, spec, evaluation, history):  # noqa: ANN001, ANN201
-        raise ImproverError("no proposal today")
 
 
 def _executor(run_store, job_store, artifacts, improver):  # noqa: ANN001, ANN201
@@ -180,6 +173,47 @@ def test_mock_job_plateaus_and_stops_with_no_improvement(stores) -> None:
     assert final.iterations[1].rationale == "fake improver deterministic revision 1"
 
     assert improver.calls == 1
+    _cleanup_run_dirs(final)
+
+
+def test_mock_job_improves_and_promotes_best_version(stores, monkeypatch) -> None:
+    """M15: iteration 1 must be able to beat iteration 0 and move best_* to v1."""
+    run_store, job_store, artifacts = stores
+    calls = {"n": 0}
+
+    def _improving_outcome(task_id: str) -> dict:
+        calls["n"] += 1
+        # Two tasks per evaluate; first wave all fail, later waves all pass.
+        wave = (calls["n"] - 1) // len(TASK_IDS)
+        if wave == 0:
+            return {
+                "status": TaskStatus.failed,
+                "reward": 0.0,
+                "remarks": "Verifier failed",
+            }
+        return {"status": TaskStatus.passed, "reward": 1.0, "remarks": None}
+
+    monkeypatch.setattr(
+        MockBenchmarkRunner, "_outcome_for", staticmethod(_improving_outcome)
+    )
+
+    improver = FakeImprover()
+    executor = _executor(run_store, job_store, artifacts, improver)
+    runner = MockBenchmarkRunner(store=run_store, step_delay_sec=0.0)
+    job = _make_job(job_store, max_iterations=2, patience=3)
+
+    # evaluate(0) -> improve(0) -> evaluate(1) -> stop(max_iterations)
+    assert _drain(run_store, job_store, executor, runner) == 3
+
+    final = job_store.get_job(job.job_id)
+    assert final.status == "completed"
+    assert final.stop_reason == "max_iterations"
+    assert final.iterations[0].score == pytest.approx(0.0)
+    assert final.iterations[0].improved is True
+    assert final.iterations[1].score == pytest.approx(1.0)
+    assert final.iterations[1].improved is True
+    assert final.best_version == 1
+    assert final.best_score == pytest.approx(1.0)
     _cleanup_run_dirs(final)
 
 
@@ -299,6 +333,22 @@ def test_store_traces_copies_harbor_trial_layout(stores) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
 
+    # Sibling result.json next to agent/ (Harbor layout) — F2/M6.
+    for trial in ("fix-git__trial0", "regex-log__trial0"):
+        result_path = run_dir / "harbor-job" / trial / "result.json"
+        result_path.write_text(
+            json.dumps(
+                {
+                    "task_name": trial.split("__", 1)[0],
+                    "verifier_result": {
+                        "rewards": {"reward": 0.0},
+                        "message": f"detail for {trial}",
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+
     step = job_store.claim_next_step("w")  # iteration-0 evaluate step for job_id/iteration
 
     try:
@@ -313,6 +363,12 @@ def test_store_traces_copies_harbor_trial_layout(stores) -> None:
         ).decode() == '[{"role": "user", "content": "regex it"}]'
         assert not artifacts.exists(
             "jobs/%s/iterations/0/tasks/unknown-task/trace.json" % step.job_id
+        )
+        assert b"detail for fix-git" in artifacts.get(
+            "jobs/%s/iterations/0/tasks/fix-git/result.json" % step.job_id
+        )
+        assert b"detail for regex-log" in artifacts.get(
+            "jobs/%s/iterations/0/tasks/regex-log/result.json" % step.job_id
         )
     finally:
         # This test claims the step to get a real StepRecord to drive
@@ -357,7 +413,7 @@ def test_improver_error_completes_job_with_failed_improve(stores) -> None:
 
     # The improver failure is recorded as an artifact for auditability.
     response = json.loads(artifacts.get("jobs/%s/iterations/0/improver/response.json" % job.job_id))
-    assert response["error"] == "no proposal today"
+    assert response["error"] == "synthetic improver failure for tests"
 
     _cleanup_run_dirs(final)
 
@@ -474,4 +530,52 @@ def test_improve_step_artifact_persist_error_after_success_ends_job_failed_impro
     assert improve_step.error_code == "internal_error"
     assert "disk full" in (improve_step.error_message or "")
 
+    _cleanup_run_dirs(final)
+
+
+def test_supersede_orphaned_run_on_reevaluate(stores) -> None:
+    """F7: evaluate with an existing step.run_id marks that run superseded."""
+    from api.job_store import StepRecord
+
+    run_store, job_store, artifacts = stores
+    executor = _executor(run_store, job_store, artifacts, FakeImprover())
+    job = _make_job(job_store, max_iterations=1, patience=1)
+
+    orphan = run_store.create(
+        task_ids=list(TASK_IDS),
+        agent_model="gpt-4.1-mini",
+        claimed_by="dead-worker",
+        job_id=job.job_id,
+    )
+    assert orphan.status == RunStatus.running
+
+    step = job_store.claim_next_step("w")
+    assert step is not None
+    # Simulate a stale-requeue that left the prior run id on the step.
+    reconstructed = StepRecord(
+        step_id=step.step_id,
+        job_id=step.job_id,
+        type=step.type,
+        iteration=step.iteration,
+        agent_version_id=step.agent_version_id,
+        version=step.version,
+        spec=step.spec,
+        task_ids=list(step.task_ids),
+        agent_model=step.agent_model,
+        improver_model=step.improver_model,
+        run_id=orphan.run_id,
+        stale_after_sec=step.stale_after_sec,
+    )
+    executor._evaluate(reconstructed)
+
+    orphaned = run_store.get(orphan.run_id)
+    assert orphaned is not None
+    assert orphaned.status == RunStatus.failed
+    assert orphaned.error is not None
+    assert orphaned.error.code == "superseded"
+
+    final = job_store.get_job(job.job_id)
+    assert final is not None
+    assert final.iterations[0].run_id is not None
+    assert final.iterations[0].run_id != orphan.run_id
     _cleanup_run_dirs(final)

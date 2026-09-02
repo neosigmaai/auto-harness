@@ -1,0 +1,13 @@
+flowchart LR
+  subgraph improve [Improve step]
+    C1[Load best AgentSpec]
+    C2[Load latest evaluation]
+    C3[Read failure traces]
+    C4[build_context budget]
+    C5[LLMImprover.propose]
+    C6[Validate AgentSpec]
+    C7[Persist prompt response]
+    C8[Insert agent_version N+1]
+    C9[Enqueue evaluate iter+1]
+    C1 --> C2 --> C3 --> C4 --> C5 --> C6 --> C7 --> C8 --> C9
+  end

@@ -1,0 +1,18 @@
+sequenceDiagram
+  participant C as Client
+  participant API as FastAPI
+  participant DB as Postgres_runs
+  participant W as Worker
+  participant H as Harbor_Docker
+
+  C->>API: POST /v1/runs
+  API->>DB: INSERT run queued plus tasks
+  API-->>C: 202 run_id
+  W->>DB: claim_next FOR UPDATE SKIP LOCKED
+  DB-->>W: run_id
+  W->>H: execute_sync HarborBenchmarkRunner
+  H-->>W: rewards per task
+  W->>DB: update tasks completed
+  C->>API: GET /v1/runs/id
+  API->>DB: SELECT
+  API-->>C: status summary tasks

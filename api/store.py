@@ -167,6 +167,7 @@ class PostgresRunStore:
         task_ids: list[str],
         agent_model: str,
         claimed_by: str | None = None,
+        job_id: str | None = None,
     ) -> RunRecord:
         """
         Insert a new run row.
@@ -181,6 +182,9 @@ class PostgresRunStore:
         in the Milestone 4 final review. A follow-up UPDATE after ``create()``
         would leave exactly that window open, so the ownership must be set at
         insert time.
+
+        ``job_id`` marks job-owned evaluate runs (M16) so ops queries can
+        distinguish them from ``POST /v1/runs`` rows.
 
         Deliberately does NOT set ``claimed_at`` for a ``claimed_by`` row (this
         is the one place this method departs from the final review's literal
@@ -207,6 +211,12 @@ class PostgresRunStore:
             status = RunStatus.running.value
             started_at = now
             worker_id = claimed_by
+        job_uid = None
+        if job_id:
+            try:
+                job_uid = UUID(job_id)
+            except ValueError:
+                job_uid = None
         row = RunRow(
             id=run_id,
             status=status,
@@ -214,6 +224,7 @@ class PostgresRunStore:
             created_at=now,
             started_at=started_at,
             worker_id=worker_id,
+            job_id=job_uid,
             tasks=[
                 RunTaskRow(
                     task_id=tid,

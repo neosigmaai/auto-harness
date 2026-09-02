@@ -6,6 +6,8 @@ This repo is a simplified version of our auto-harness agent setup. We demonstrat
 
 The loop is defined in `PROGRAM.md`. The coding agent edits `agent/agent.py` to improve the agent and appends findings to `workspace/learnings.md` after each iteration.
 
+**Service architecture (HTTP API, workers, Harbor, iterative jobs):** see [`docs/architecture/README.md`](docs/architecture/README.md).
+
 ---
 
 ## Supported Benchmarks
