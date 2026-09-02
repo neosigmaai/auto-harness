@@ -74,6 +74,41 @@ Postgres-dependent tests skip loudly if it is not).
 | `POST /v1/runs`, `GET /v1/runs/{id}` | Single benchmark run, no optimization. |
 | `GET /tasks`, `GET /health` | Configured task allowlist; liveness. |
 
+### Choosing which tasks to run
+
+`config/benchmark.yaml`'s `default_task_ids` does double duty: it is the set used when a
+request omits `task_ids`, **and** the allowlist of IDs the API will accept. A task not in
+that list is rejected with `400 unknown_task_ids` — so adding a new Terminal-Bench task
+means editing that file (and restarting the API, since config is cached at startup).
+
+```bash
+# What will run by default, straight from the server:
+curl -s localhost:8000/tasks | python3 -m json.tool
+
+# All 16 configured tasks (omit --task-ids):
+python test_client.py
+
+# Specific tasks:
+python test_client.py --task-ids fix-git regex-log
+
+# One task, quick smoke test (note: a single task makes the mean reward binary,
+# so min_delta cannot filter noise — see docs/milestone-4-followups.md F5):
+python test_client.py --task-ids polyglot-c-py --max-iterations 2
+
+# Or straight over HTTP:
+curl -s -X POST localhost:8000/v1/jobs -H 'Content-Type: application/json' \
+  -d '{"task_ids":["fix-git","regex-log"],"max_iterations":3}'
+```
+
+The 16 configured tasks are: `cobol-modernization`, `fix-git`, `prove-plus-comm`,
+`overfull-hbox`, `regex-log`, `log-summary-date-ranges`, `openssl-selfsigned-cert`,
+`sanitize-git-repo`, `filter-js-from-html`, `sqlite-db-truncate`, `nginx-request-logging`,
+`largest-eigenval`, `extract-elf`, `gcode-to-text`, `polyglot-c-py`, `headless-terminal`.
+
+Cost note: every iteration runs **all** the job's tasks in a container. 16 tasks at
+`max_concurrency: 2` is roughly 2.7 hours per iteration, so a 3-iteration job on the full
+set is an overnight run. Use 2-3 tasks while developing.
+
 ## Which Terminal-Bench tasks we selected, and why
 
 The 16 tasks in `config/benchmark.yaml` are both the default subset and the
