@@ -99,7 +99,7 @@ def task_movement(
     Compare two ``{task_id: reward}`` snapshots.
 
     A ``None`` reward (timeout / infra error) counts as 0.0, matching
-    :func:`mean_reward`, so an task that stopped producing a verifier result reads
+    :func:`mean_reward`, so a task that stopped producing a verifier result reads
     as a regression rather than as missing data. Tasks absent from either snapshot
     are ignored: they carry no comparable signal.
     """

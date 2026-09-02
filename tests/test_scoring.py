@@ -169,12 +169,40 @@ BASE = {
         ),
         (
             "min_iterations_never_overrides_budget",
+            # patience=1 so streak(1) >= patience is True; min_iterations=99 blocks
+            # no_improvement anyway (iteration + 1 = 1, not >= 99), so the only
+            # thing left standing is budget_exceeded — that's the actual proof that
+            # min_iterations does not suppress it.
             {"iteration": 0, "score": 0.5, "best_score": 0.5,
-             "prior_non_improving_streak": 0, "patience": 9,
+             "prior_non_improving_streak": 0, "patience": 1,
              "min_iterations": 99, "max_iterations": 9,
              "elapsed_sec": 10_000.0, "max_job_duration_sec": 100},
             StopDecision(improved=False, should_stop=True,
                          stop_reason=STOP_BUDGET_EXCEEDED, non_improving_streak=1),
+        ),
+        (
+            "no_improvement_wins_over_budget_exceeded",
+            # Both conditions are genuinely true here: streak(1) >= patience(1) with
+            # min_iterations satisfied, AND elapsed_sec far exceeds the budget.
+            # no_improvement is earlier in the precedence chain, so it must win.
+            {"iteration": 1, "score": 0.5, "best_score": 0.5,
+             "prior_non_improving_streak": 0, "patience": 1,
+             "min_iterations": 1, "max_iterations": 9,
+             "elapsed_sec": 10_000.0, "max_job_duration_sec": 100},
+            StopDecision(improved=False, should_stop=True,
+                         stop_reason=STOP_NO_IMPROVEMENT, non_improving_streak=1),
+        ),
+        (
+            "max_iterations_wins_over_budget_exceeded",
+            # Both conditions are genuinely true here: iteration + 1 (9) >=
+            # max_iterations (9), AND elapsed_sec far exceeds the budget.
+            # max_iterations is earlier in the precedence chain, so it must win.
+            {"iteration": 8, "score": 0.7, "best_score": 0.5,
+             "prior_non_improving_streak": 0, "patience": 2,
+             "min_iterations": 1, "max_iterations": 9,
+             "elapsed_sec": 10_000.0, "max_job_duration_sec": 100},
+            StopDecision(improved=True, should_stop=True,
+                         stop_reason=STOP_MAX_ITERATIONS, non_improving_streak=0),
         ),
     ],
 )
