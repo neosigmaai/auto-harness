@@ -32,7 +32,7 @@ from api.services.runner import (
 from api.services.scoring import mean_reward
 from api.store import PostgresRunStore
 
-logger = logging.getLogger("worker.steps")
+logger = logging.getLogger("worker")
 
 SPEC_AGENT_IMPORT_PATH = "agent.spec_agent:HarnessAgent"
 
@@ -194,76 +194,93 @@ class StepExecutor:
     # ----------------------------------------------------------------- #
 
     def _improve(self, step: StepRecord) -> None:
-        job = self.job_store.get_job(step.job_id)
-        if job is None:
-            self.job_store.fail_step(
-                step.step_id,
-                error_code="internal_error",
-                error_message=f"job {step.job_id} disappeared",
-            )
-            return
-
-        latest = self._latest_evaluation(job.iterations)
-        if latest is None:
-            self.job_store.complete_step_and_advance(
-                step.step_id,
-                ImproveOutcome(
-                    spec=None,
-                    error_code="improver_failed",
-                    error_message="no completed evaluation to improve on",
-                ),
-            )
-            return
-
-        record = self.run_store.get(latest.run_id or "")
-        if record is None:
-            self.job_store.complete_step_and_advance(
-                step.step_id,
-                ImproveOutcome(
-                    spec=None,
-                    error_code="improver_failed",
-                    error_message=f"evaluation run {latest.run_id} not found",
-                ),
-            )
-            return
-
-        evaluation = EvaluationSummary(
-            score=float(latest.score or 0.0),
-            tasks=[
-                TaskOutcome(
-                    task_id=t.task_id,
-                    status=t.status.value,
-                    reward=t.reward,
-                    remarks=t.remarks,
-                )
-                for t in record.tasks
-            ],
-            traces=self._read_traces(step.job_id, latest.iteration, [t.task_id for t in record.tasks]),
-            # Movement is already derived by get_job() from the stored task_rewards
-            # snapshots; recomputing it here would duplicate that logic.
-            fixed_tasks=latest.fixed_tasks,
-            regressed_tasks=latest.regressed_tasks,
-        )
-        history = list(job.iterations)
-
-        logger.info(
-            "improve step_id=%s job_id=%s iteration=%s from_score=%.4f traces=%s",
-            step.step_id,
-            step.job_id,
-            step.iteration,
-            evaluation.score,
-            len(evaluation.traces),
-        )
-
+        # Everything below is guarded the same way _evaluate() is guarded: any
+        # unexpected failure — before propose() (looking up the job or the
+        # evaluation run), after it (persisting improver artifacts, advancing
+        # the step) — must be reported through complete_step_and_advance()
+        # rather than escape to process_one()'s fail_step fallback, which
+        # fails the job unconditionally and would discard a good
+        # best_agent_version_id. ImproverError keeps its own error code;
+        # everything else maps to "internal_error", matching _evaluate().
+        evaluation: EvaluationSummary | None = None
+        history: list[IterationRecord] = []
         try:
+            job = self.job_store.get_job(step.job_id)
+            if job is None:
+                self.job_store.fail_step(
+                    step.step_id,
+                    error_code="internal_error",
+                    error_message=f"job {step.job_id} disappeared",
+                )
+                return
+
+            latest = self._latest_evaluation(job.iterations)
+            if latest is None:
+                self.job_store.complete_step_and_advance(
+                    step.step_id,
+                    ImproveOutcome(
+                        spec=None,
+                        error_code="improver_failed",
+                        error_message="no completed evaluation to improve on",
+                    ),
+                )
+                return
+
+            record = self.run_store.get(latest.run_id or "")
+            if record is None:
+                self.job_store.complete_step_and_advance(
+                    step.step_id,
+                    ImproveOutcome(
+                        spec=None,
+                        error_code="improver_failed",
+                        error_message=f"evaluation run {latest.run_id} not found",
+                    ),
+                )
+                return
+
+            evaluation = EvaluationSummary(
+                score=float(latest.score or 0.0),
+                tasks=[
+                    TaskOutcome(
+                        task_id=t.task_id,
+                        status=t.status.value,
+                        reward=t.reward,
+                        remarks=t.remarks,
+                    )
+                    for t in record.tasks
+                ],
+                traces=self._read_traces(step.job_id, latest.iteration, [t.task_id for t in record.tasks]),
+                # Movement is already derived by get_job() from the stored task_rewards
+                # snapshots; recomputing it here would duplicate that logic.
+                fixed_tasks=latest.fixed_tasks,
+                regressed_tasks=latest.regressed_tasks,
+            )
+            history = list(job.iterations)
+
+            logger.info(
+                "improve step_id=%s job_id=%s iteration=%s from_score=%.4f traces=%s",
+                step.step_id,
+                step.job_id,
+                step.iteration,
+                evaluation.score,
+                len(evaluation.traces),
+            )
+
             proposal = self.improver.propose(
                 spec=step.spec,
                 evaluation=evaluation,
                 history=history,
             )
+
+            self._persist_improver_io(step, evaluation, history, proposal=proposal)
+            self.job_store.complete_step_and_advance(
+                step.step_id,
+                ImproveOutcome(spec=proposal.spec, rationale=proposal.rationale),
+            )
         except ImproverError as exc:
             logger.error("improver failed step_id=%s: %s", step.step_id, exc)
-            self._persist_improver_io(step, evaluation, history, error=str(exc))
+            if evaluation is not None:
+                self._safe_persist_improver_io(step, evaluation, history, error=str(exc))
             self.job_store.complete_step_and_advance(
                 step.step_id,
                 ImproveOutcome(
@@ -272,10 +289,10 @@ class StepExecutor:
                     error_message=str(exc),
                 ),
             )
-            return
         except Exception as exc:  # noqa: BLE001
             logger.exception("improve step crashed step_id=%s", step.step_id)
-            self._persist_improver_io(step, evaluation, history, error=str(exc))
+            if evaluation is not None:
+                self._safe_persist_improver_io(step, evaluation, history, error=str(exc))
             self.job_store.complete_step_and_advance(
                 step.step_id,
                 ImproveOutcome(
@@ -284,13 +301,6 @@ class StepExecutor:
                     error_message=str(exc),
                 ),
             )
-            return
-
-        self._persist_improver_io(step, evaluation, history, proposal=proposal)
-        self.job_store.complete_step_and_advance(
-            step.step_id,
-            ImproveOutcome(spec=proposal.spec, rationale=proposal.rationale),
-        )
 
     @staticmethod
     def _latest_evaluation(iterations: list[IterationRecord]) -> IterationRecord | None:
@@ -311,6 +321,31 @@ class StepExecutor:
             except Exception:  # noqa: BLE001
                 logger.warning("could not read trace artifact %s", key)
         return traces
+
+    def _safe_persist_improver_io(
+        self,
+        step: StepRecord,
+        evaluation: EvaluationSummary,
+        history: list[IterationRecord],
+        *,
+        error: str,
+    ) -> None:
+        """Best-effort audit logging for an already-failed improve step.
+
+        Used only from _improve()'s except blocks, where the job outcome has
+        already been decided (failure) - a problem persisting the prompt/error
+        artifact here (e.g. build_context() or json.dumps() raising, which
+        _persist_improver_io()'s own try/except does not cover) must never
+        prevent complete_step_and_advance() from reporting that outcome.
+        """
+        try:
+            self._persist_improver_io(step, evaluation, history, error=error)
+        except Exception:  # noqa: BLE001
+            logger.warning(
+                "failed to persist improver failure artifacts job_id=%s iteration=%s",
+                step.job_id,
+                step.iteration,
+            )
 
     def _persist_improver_io(
         self,

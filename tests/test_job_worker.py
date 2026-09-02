@@ -5,18 +5,22 @@ from __future__ import annotations
 import json
 import os
 import shutil
+from uuid import UUID
 
 import pytest
+from sqlalchemy import select
 from sqlalchemy.exc import OperationalError
 
 from api.config import REPO_ROOT, clear_config_cache, load_config
 from api.db import get_engine, get_session_factory, init_db, reset_engine
-from api.job_store import PostgresJobStore
+from api.job_store import EvaluateOutcome, PostgresJobStore
+from api.models import StepRow
 from api.schemas import RunStatus, TaskStatus
 from api.services.artifacts import LocalArtifactStore
-from api.services.improver import FakeImprover, ImproverError
+from api.services.improver import FakeImprover, ImproverError, Proposal
 from api.services.runner import MockBenchmarkRunner
 from api.store import PostgresRunStore
+from worker import steps as steps_module
 from worker.main import process_one
 from worker.steps import StepExecutor
 
@@ -131,6 +135,21 @@ def _cleanup_run_dirs(job) -> None:  # noqa: ANN001
     for iteration in job.iterations:
         if iteration.run_id:
             shutil.rmtree(REPO_ROOT / "workspace" / "runs" / iteration.run_id, ignore_errors=True)
+
+
+def _latest_improve_step(job_id: str):  # noqa: ANN201
+    """Read the most recent improve StepRow directly, since a failed improve step
+    (unlike an evaluate step) leaves no IterationRecord for JobRecord to surface —
+    its status/error_code can only be observed via the steps table itself."""
+    session = get_session_factory()()
+    try:
+        return session.scalar(
+            select(StepRow)
+            .where(StepRow.job_id == UUID(job_id), StepRow.type == "improve")
+            .order_by(StepRow.iteration.desc(), StepRow.created_at.desc())
+        )
+    finally:
+        session.close()
 
 
 def test_mock_job_plateaus_and_stops_with_no_improvement(stores) -> None:
@@ -255,6 +274,17 @@ def test_store_traces_copies_harbor_trial_layout(stores) -> None:
             "jobs/%s/iterations/0/tasks/unknown-task/trace.json" % step.job_id
         )
     finally:
+        # This test claims the step to get a real StepRecord to drive
+        # _store_traces() with, but never runs the rest of the evaluate path -
+        # complete it explicitly so it isn't left "running" past the test.
+        job_store.complete_step_and_advance(
+            step.step_id,
+            EvaluateOutcome(
+                run_id=run_id,
+                score=1.0,
+                task_rewards={"fix-git": 1.0, "regex-log": 1.0},
+            ),
+        )
         shutil.rmtree(run_dir, ignore_errors=True)
 
 
@@ -278,8 +308,129 @@ def test_improver_error_completes_job_with_failed_improve(stores) -> None:
     assert final.best_score == pytest.approx(PLATEAU_SCORE)
     assert [it.iteration for it in final.iterations] == [0]
 
+    # ImproverError keeps its own distinct error code (not "internal_error").
+    improve_step = _latest_improve_step(job.job_id)
+    assert improve_step is not None
+    assert improve_step.status == "failed"
+    assert improve_step.error_code == "improver_failed"
+
     # The improver failure is recorded as an artifact for auditability.
     response = json.loads(artifacts.get("jobs/%s/iterations/0/improver/response.json" % job.job_id))
     assert response["error"] == "no proposal today"
+
+    _cleanup_run_dirs(final)
+
+
+def test_improve_step_run_store_error_ends_job_failed_improve_not_failed(stores, monkeypatch) -> None:
+    """A transient failure looking up the evaluation run (e.g. a DB blip) must not
+    escape _improve() and hit process_one()'s fail_step fallback - that fallback
+    fails the job unconditionally, discarding a good best_agent_version_id."""
+    run_store, job_store, artifacts = stores
+    executor = _executor(run_store, job_store, artifacts, FakeImprover())
+    runner = MockBenchmarkRunner(store=run_store, step_delay_sec=0.0)
+
+    job = _make_job(job_store, max_iterations=3, patience=2)
+
+    # Baseline evaluate(0) runs normally, establishing a best_agent_version_id.
+    assert process_one(
+        run_store,
+        runner,
+        worker_id="worker-test",
+        stale_after_sec=1800,
+        job_store=job_store,
+        step_executor=executor,
+    ) is True
+
+    def _boom(run_id):  # noqa: ANN001, ANN202
+        raise RuntimeError("db blip fetching evaluation run")
+
+    monkeypatch.setattr(run_store, "get", _boom)
+
+    # The queued improve(0) step now hits the broken run_store.get().
+    assert process_one(
+        run_store,
+        runner,
+        worker_id="worker-test",
+        stale_after_sec=1800,
+        job_store=job_store,
+        step_executor=executor,
+    ) is True
+
+    final = job_store.get_job(job.job_id)
+    assert final.status == "completed"
+    assert final.stop_reason == "failed_improve"
+    assert final.best_agent_version_id is not None
+    assert final.best_score == pytest.approx(PLATEAU_SCORE)
+
+    improve_step = _latest_improve_step(job.job_id)
+    assert improve_step is not None
+    assert improve_step.status == "failed"
+    assert improve_step.error_code == "internal_error"
+    assert "db blip" in (improve_step.error_message or "")
+
+    _cleanup_run_dirs(final)
+
+
+def test_improve_step_artifact_persist_error_after_success_ends_job_failed_improve(
+    stores, monkeypatch
+) -> None:
+    """A failure persisting improver artifacts *after* a successful proposal (the
+    part of _persist_improver_io() that build_context()/json.dumps() run before the
+    artifacts.put() calls, which are the only calls that function's own try/except
+    covers) must also route through complete_step_and_advance() rather than escape
+    and strand the step "running" or fail the job outright."""
+    run_store, job_store, artifacts = stores
+
+    class _NoPromptImprover:
+        """Has no last_prompt attribute, forcing _persist_improver_io() to call the
+        module-level build_context() we monkeypatch below."""
+
+        def propose(self, *, spec, evaluation, history):  # noqa: ANN001, ANN202
+            return Proposal(spec=spec, rationale="noop-improve")
+
+    executor = _executor(run_store, job_store, artifacts, _NoPromptImprover())
+    runner = MockBenchmarkRunner(store=run_store, step_delay_sec=0.0)
+
+    job = _make_job(job_store, max_iterations=3, patience=2)
+
+    # Baseline evaluate(0) runs normally, establishing a best_agent_version_id.
+    assert process_one(
+        run_store,
+        runner,
+        worker_id="worker-test",
+        stale_after_sec=1800,
+        job_store=job_store,
+        step_executor=executor,
+    ) is True
+
+    def _boom(**kwargs):  # noqa: ANN003, ANN202
+        raise RuntimeError("disk full while writing improver artifacts")
+
+    monkeypatch.setattr(steps_module, "build_context", _boom)
+
+    # The queued improve(0) step gets a successful proposal, then fails while
+    # persisting the prompt/response artifacts for it.
+    assert process_one(
+        run_store,
+        runner,
+        worker_id="worker-test",
+        stale_after_sec=1800,
+        job_store=job_store,
+        step_executor=executor,
+    ) is True
+
+    final = job_store.get_job(job.job_id)
+    assert final.status == "completed"
+    assert final.stop_reason == "failed_improve"
+    assert final.best_agent_version_id is not None
+    assert final.best_score == pytest.approx(PLATEAU_SCORE)
+    # No new agent version/iteration was recorded - the proposal was discarded.
+    assert [it.iteration for it in final.iterations] == [0]
+
+    improve_step = _latest_improve_step(job.job_id)
+    assert improve_step is not None
+    assert improve_step.status == "failed"  # not left "running"
+    assert improve_step.error_code == "internal_error"
+    assert "disk full" in (improve_step.error_message or "")
 
     _cleanup_run_dirs(final)
