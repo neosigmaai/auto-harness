@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass, field
-from typing import Protocol
+from typing import Any, Callable, Protocol
+
+from pydantic import ValidationError
 
 from api.agent_spec import AgentSpec
+from api.config import BenchmarkConfig, load_config
 from api.job_store import IterationRecord
+
+logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------- #
 # Data types
@@ -252,3 +258,271 @@ def build_context(
             parts.extend(kept)
 
     return "\n\n".join(parts)[: max(budget, 0)]
+
+
+# --------------------------------------------------------------------------- #
+# Improver implementations
+# --------------------------------------------------------------------------- #
+
+FAKE_CONTEXT_BUDGET = 8_000
+
+_ALLOWED_CONFIG_KEYS = frozenset({"max_steps", "max_output_chars", "exec_timeout_sec"})
+
+IMPROVER_SYSTEM_PROMPT = (
+    "You are an optimization engine for an autonomous terminal-using coding agent.\n"
+    "You are given the agent's current specification, the history of previous "
+    "attempts with their scores, and the failures from the most recent benchmark "
+    "evaluation. Propose ONE focused change most likely to raise the mean reward.\n"
+    "You are editing the best-scoring agent so far. Some earlier attempts scored "
+    "worse and were discarded - the history shows them so you do not repeat them.\n"
+    "\n"
+    "Reply with a single JSON object and nothing else:\n"
+    '{"system_prompt": "<the FULL replacement system prompt>", '
+    '"config_changes": {"max_steps": 100}, '
+    '"rationale": "<why this change addresses the observed failures>"}\n'
+    "\n"
+    "Rules:\n"
+    "- system_prompt must be the complete new prompt, never a diff or a patch.\n"
+    "- config_changes may only contain: max_steps (1-200), max_output_chars "
+    "(500-100000), exec_timeout_sec (10-1200). Omit any key you do not change; "
+    "use {} to change nothing.\n"
+    "- Never propose a different model and never invent other keys.\n"
+    "- Do not repeat a change the iteration history shows already failed to "
+    "improve the score.\n"
+    "- The agent has exactly one tool (bash). Do not ask for other tools."
+)
+
+
+class _ProposalRejected(Exception):
+    """Internal: the model's reply was unusable; triggers the single retry."""
+
+
+# litellm is imported lazily into this global by _litellm(). Keeping it a module
+# attribute (rather than a local import) is what lets tests swap it out with
+# monkeypatch.setattr(improver_mod, "litellm", stub) without the real package
+# ever being imported. Lazy so that importing api.services (FastAPI app, every
+# Postgres test) never requires litellm to be installed.
+litellm: Any = None
+
+
+def _litellm() -> Any:
+    global litellm
+    if litellm is None:
+        import litellm as _litellm_mod
+
+        litellm = _litellm_mod
+    return litellm
+
+
+def _extract_content(response: Any) -> str:
+    """Pull the assistant text out of a litellm completion response."""
+    choices = getattr(response, "choices", None)
+    if choices is None and isinstance(response, dict):
+        choices = response.get("choices")
+    if not choices:
+        raise ImproverError("improver LLM returned no choices")
+
+    first = choices[0]
+    message = getattr(first, "message", None)
+    if message is None and isinstance(first, dict):
+        message = first.get("message")
+
+    content = getattr(message, "content", None)
+    if content is None and isinstance(message, dict):
+        content = message.get("content")
+    if not isinstance(content, str) or not content.strip():
+        raise ImproverError("improver LLM returned no text content")
+    return content
+
+
+class FakeImprover:
+    """
+    Deterministic improver for tests (mirrors MockBenchmarkRunner's role).
+
+    Per call, in precedence order:
+      1. ``mutate`` is applied to the incoming spec when supplied;
+      2. otherwise the next scripted proposal is returned;
+      3. otherwise (list exhausted) a deterministic derived proposal is returned:
+         the incoming spec with ``[fake-improver revision N]`` appended to the
+         system prompt. It never raises and never runs out.
+    """
+
+    def __init__(
+        self,
+        proposals: list[Proposal] | None = None,
+        *,
+        mutate: Callable[[AgentSpec], AgentSpec] | None = None,
+    ) -> None:
+        self._proposals = list(proposals or [])
+        self._mutate = mutate
+        self.calls = 0
+        self.last_prompt = ""
+        self.last_response = ""
+
+    def propose(
+        self,
+        *,
+        spec: AgentSpec,
+        evaluation: EvaluationSummary,
+        history: list[IterationRecord],
+    ) -> Proposal:
+        self.calls += 1
+        n = self.calls
+
+        if self._mutate is not None:
+            proposal = Proposal(spec=self._mutate(spec), rationale=f"fake improver mutation {n}")
+        elif n <= len(self._proposals):
+            proposal = self._proposals[n - 1]
+        else:
+            merged = spec.model_dump()
+            merged["system_prompt"] = f"{spec.system_prompt}\n\n[fake-improver revision {n}]"
+            proposal = Proposal(
+                spec=AgentSpec.model_validate(merged),
+                rationale=f"fake improver deterministic revision {n}",
+            )
+
+        self.last_prompt = build_context(
+            spec=spec,
+            evaluation=evaluation,
+            history=history,
+            budget=FAKE_CONTEXT_BUDGET,
+        )
+        self.last_response = json.dumps(
+            {
+                "system_prompt": proposal.spec.system_prompt,
+                "config_changes": {},
+                "rationale": proposal.rationale,
+            },
+            indent=2,
+        )
+        return proposal
+
+
+class LLMImprover:
+    """Proposes the next AgentSpec with one litellm JSON-mode call (+1 retry)."""
+
+    def __init__(self, *, model: str, budget: int) -> None:
+        self.model = model
+        self.budget = budget
+        self.last_prompt = ""
+        self.last_response = ""
+
+    def propose(
+        self,
+        *,
+        spec: AgentSpec,
+        evaluation: EvaluationSummary,
+        history: list[IterationRecord],
+    ) -> Proposal:
+        client = _litellm()
+        context = build_context(
+            spec=spec,
+            evaluation=evaluation,
+            history=history,
+            budget=self.budget,
+        )
+        self.last_prompt = context
+        messages: list[dict[str, str]] = [
+            {"role": "system", "content": IMPROVER_SYSTEM_PROMPT},
+            {"role": "user", "content": context},
+        ]
+
+        last_error = ""
+        for attempt in (0, 1):
+            if attempt == 1:
+                retry_text = (
+                    "Your previous response was rejected: "
+                    + last_error
+                    + "\nReturn a corrected JSON object with the same three keys "
+                    "(system_prompt, config_changes, rationale) and nothing else."
+                )
+                messages = messages + [
+                    {"role": "assistant", "content": self.last_response},
+                    {"role": "user", "content": retry_text},
+                ]
+                self.last_prompt = context + "\n\n## RETRY\n" + retry_text
+
+            try:
+                response = client.completion(
+                    model=self.model,
+                    messages=messages,
+                    response_format={"type": "json_object"},
+                )
+            except Exception as exc:  # noqa: BLE001 - transport failure, no retry
+                raise ImproverError(f"improver LLM call failed: {exc}") from exc
+
+            text = _extract_content(response)
+            self.last_response = text
+            try:
+                return self._parse(text, spec)
+            except _ProposalRejected as exc:
+                last_error = str(exc)
+                logger.warning("improver proposal rejected (attempt %s): %s", attempt, last_error)
+
+        raise ImproverError(f"improver returned an invalid proposal twice: {last_error}")
+
+    def _parse(self, text: str, spec: AgentSpec) -> Proposal:
+        try:
+            data = json.loads(text)
+        except (TypeError, ValueError) as exc:
+            raise _ProposalRejected(f"response was not valid JSON: {exc}") from exc
+        if not isinstance(data, dict):
+            raise _ProposalRejected("response was not valid JSON: expected a JSON object")
+
+        changes = data.get("config_changes") or {}
+        if not isinstance(changes, dict):
+            raise _ProposalRejected("config_changes must be a JSON object")
+        unknown = sorted(set(changes) - _ALLOWED_CONFIG_KEYS)
+        if unknown:
+            raise _ProposalRejected(
+                f"config_changes contains unsupported keys: {unknown}; "
+                f"allowed keys are {sorted(_ALLOWED_CONFIG_KEYS)}"
+            )
+
+        merged = spec.model_dump()
+        prompt = data.get("system_prompt")
+        if isinstance(prompt, str) and prompt.strip():
+            merged["system_prompt"] = prompt
+        merged.update(changes)
+
+        try:
+            new_spec = AgentSpec.model_validate(merged)
+        except ValidationError as exc:
+            raise _ProposalRejected(f"proposal failed AgentSpec validation: {exc}") from exc
+
+        rationale = str(data.get("rationale") or "").strip() or "(no rationale provided)"
+        return Proposal(spec=new_spec, rationale=rationale)
+
+
+class _RaisingImprover:
+    """Test double that always fails a propose() call.
+
+    Used wherever a test needs a failing improve step (e.g. the failed_improve
+    stop path). FakeImprover deliberately never raises even when its scripted
+    list is exhausted, so exercising that failure path requires this separate
+    stub instead.
+    """
+
+    def propose(
+        self,
+        *,
+        spec: AgentSpec,
+        evaluation: EvaluationSummary,
+        history: list[IterationRecord],
+    ) -> Proposal:
+        raise ImproverError("synthetic improver failure for tests")
+
+
+def create_improver(
+    config: BenchmarkConfig | None = None,
+    *,
+    improver_model: str | None = None,
+) -> Improver:
+    """Factory: FakeImprover for the mock backend, LLMImprover otherwise."""
+    cfg = config or load_config()
+    if cfg.execution_backend == "mock":
+        return FakeImprover()
+    return LLMImprover(
+        model=improver_model or cfg.improver_model,
+        budget=cfg.improver_context_budget,
+    )
