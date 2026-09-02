@@ -6,6 +6,7 @@ import os
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -16,7 +17,7 @@ KNOWN_ENV_PROVIDERS = frozenset({"e2b", "daytona", "modal", "docker"})
 KNOWN_EXECUTION_BACKENDS = frozenset({"harbor", "mock"})
 
 
-def _positive_int(raw: dict, key: str, default: int) -> int:
+def _positive_int(raw: dict[str, Any], key: str, default: int) -> int:
     """Read a strictly-positive int.
 
     Deliberately not `raw.get(key) or default`: that idiom turns an explicit 0 into
@@ -29,7 +30,7 @@ def _positive_int(raw: dict, key: str, default: int) -> int:
     return value
 
 
-def _unit_fraction(raw: dict, key: str, default: float) -> float:
+def _unit_fraction(raw: dict[str, Any], key: str, default: float) -> float:
     """Read a float in [0, 1). 0.0 is legal, so `or default` cannot be used."""
     value = raw.get(key)
     value = default if value is None else float(value)
@@ -52,6 +53,7 @@ class BenchmarkConfig:
     improver_model: str = "gpt-5.4"
     max_iterations: int = 5
     patience: int = 2
+    min_iterations: int = 3
     min_delta: float = 0.01
     max_job_duration_sec: int = 21600
     improver_context_budget: int = 60000
@@ -103,6 +105,7 @@ def load_config(path: str | None = None) -> BenchmarkConfig:
         improver_model=str(raw.get("improver_model") or "gpt-5.4"),
         max_iterations=_positive_int(raw, "max_iterations", 5),
         patience=_positive_int(raw, "patience", 2),
+        min_iterations=_positive_int(raw, "min_iterations", 3),
         min_delta=_unit_fraction(raw, "min_delta", 0.01),
         max_job_duration_sec=_positive_int(raw, "max_job_duration_sec", 21600),
         improver_context_budget=_positive_int(raw, "improver_context_budget", 60000),

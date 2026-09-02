@@ -36,6 +36,7 @@ def test_repo_config_provides_m4_defaults() -> None:
     assert cfg.improver_model == "gpt-5.4"
     assert cfg.max_iterations == 5
     assert cfg.patience == 2
+    assert cfg.min_iterations == 3
     assert cfg.min_delta == pytest.approx(0.01)
     assert cfg.max_job_duration_sec == 21600
     assert cfg.improver_context_budget == 60000
@@ -48,6 +49,7 @@ def test_dataclass_defaults_match_contract() -> None:
     assert cfg.improver_model == "gpt-5.4"
     assert cfg.max_iterations == 5
     assert cfg.patience == 2
+    assert cfg.min_iterations == 3
     assert cfg.min_delta == pytest.approx(0.01)
     assert cfg.max_job_duration_sec == 21600
     assert cfg.improver_context_budget == 60000
@@ -61,6 +63,7 @@ def test_yaml_values_override_defaults(tmp_path: Path) -> None:
             "improver_model: claude-opus-4\n"
             "max_iterations: 9\n"
             "patience: 3\n"
+            "min_iterations: 5\n"
             "min_delta: 0.25\n"
             "max_job_duration_sec: 600\n"
             "improver_context_budget: 1234\n"
@@ -70,6 +73,7 @@ def test_yaml_values_override_defaults(tmp_path: Path) -> None:
     assert cfg.improver_model == "claude-opus-4"
     assert cfg.max_iterations == 9
     assert cfg.patience == 3
+    assert cfg.min_iterations == 5
     assert cfg.min_delta == pytest.approx(0.25)
     assert cfg.max_job_duration_sec == 600
     assert cfg.improver_context_budget == 1234
@@ -89,6 +93,8 @@ def test_min_delta_zero_is_accepted(tmp_path: Path) -> None:
         ("max_iterations: -3\n", "max_iterations"),
         ("patience: 0\n", "patience"),
         ("patience: -1\n", "patience"),
+        ("min_iterations: 0\n", "min_iterations"),
+        ("min_iterations: -2\n", "min_iterations"),
         ("max_job_duration_sec: 0\n", "max_job_duration_sec"),
         ("improver_context_budget: 0\n", "improver_context_budget"),
         ("min_delta: 1.0\n", "min_delta"),

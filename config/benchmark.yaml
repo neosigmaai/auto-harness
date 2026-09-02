@@ -15,6 +15,7 @@ jobs_dir: workspace/tbench_jobs
 improver_model: gpt-5.4          # model that proposes AgentSpec changes
 max_iterations: 5                # hard cap on evaluate steps per job
 patience: 2                      # consecutive non-improving evaluations before stopping
+min_iterations: 3                # noise floor: no_improvement cannot fire before this
 min_delta: 0.01                  # score gain required to count as an improvement
 max_job_duration_sec: 21600      # 6 h wall-clock budget per job
 improver_context_budget: 60000   # max characters in one improver prompt
