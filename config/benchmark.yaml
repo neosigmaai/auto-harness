@@ -1,0 +1,23 @@
+# Terminal-Bench subset used by the API (Milestone 1).
+# Exact IDs can be refined later; the API reads this file at startup.
+
+default_agent_model: gpt-4.1-mini
+
+# Default tasks when POST /v1/runs omits task_ids. Also the allowlist of known IDs.
+default_task_ids:
+  - cobol-modernization
+  - fix-git
+  - prove-plus-comm
+  - overfull-hbox
+  - regex-log
+  - log-summary-date-ranges
+  - openssl-selfsigned-cert
+  - sanitize-git-repo
+  - filter-js-from-html
+  - sqlite-db-truncate
+  - nginx-request-logging
+  - largest-eigenval
+  - extract-elf
+  - gcode-to-text
+  - polyglot-c-py
+  - headless-terminal

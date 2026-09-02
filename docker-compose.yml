@@ -1,4 +1,21 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: auto
+      POSTGRES_PASSWORD: auto
+      POSTGRES_DB: auto_harness
+    ports:
+      - "5432:5432"
+    volumes:
+      - auto_harness_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auto -d auto_harness"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  # Existing tau-bench container (unchanged)
   autoeval:
     build: .
     env_file: .env
@@ -20,3 +37,8 @@ services:
       - ${TAU2_DATA_DIR:-./tau2_data}:/tau2_data
     stdin_open: true
     tty: true
+    profiles:
+      - tau
+
+volumes:
+  auto_harness_pg:

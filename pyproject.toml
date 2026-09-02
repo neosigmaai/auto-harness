@@ -11,7 +11,22 @@ dependencies = [
     "openai",
     "pyyaml",
     "tau2",
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx",
+    "pytest",
 ]
 
 [tool.uv.sources]
 tau2 = { git = "https://github.com/sierra-research/tau2-bench.git", rev = "73dc24445d28762075e69465d966aee4a9dcbfcb" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
