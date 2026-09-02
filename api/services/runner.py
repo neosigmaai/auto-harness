@@ -16,6 +16,8 @@ from api.store import PostgresRunStore, _utcnow, store as default_store
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_AGENT_IMPORT_PATH = "agent.agent:HarnessAgent"
+
 
 class ExecutionUnavailableError(Exception):
     """Raised when the execution environment cannot start a run."""
@@ -150,9 +152,14 @@ class HarborBenchmarkRunner:
         store: PostgresRunStore,
         *,
         config: BenchmarkConfig | None = None,
+        agent_import_path: str | None = None,
+        extra_env: dict[str, str] | None = None,
     ) -> None:
         self.store = store
         self.config = config or load_config()
+        # Layer B (jobs) passes "agent.spec_agent:HarnessAgent"; /v1/runs keeps agent/agent.py.
+        self.agent_import_path = agent_import_path or DEFAULT_AGENT_IMPORT_PATH
+        self.extra_env = dict(extra_env or {})
 
     def check_available(self) -> None:
         if shutil.which("harbor") is None:
@@ -163,24 +170,26 @@ class HarborBenchmarkRunner:
         self._check_agent_import()
         self._check_env_provider()
 
+    def _agent_module_relpath(self) -> str:
+        """"agent.spec_agent:HarnessAgent" -> "agent/spec_agent.py"."""
+        module = self.agent_import_path.split(":", 1)[0]
+        return "/".join(module.split(".")) + ".py"
+
     def _check_agent_import(self) -> None:
-        agent_path = REPO_ROOT / "agent" / "agent.py"
+        rel = self._agent_module_relpath()
+        agent_path = REPO_ROOT / rel
+        if rel == "agent/agent.py":
+            hint = "Copy agent/templates/terminal_bench.py to agent/agent.py."
+        else:
+            hint = f"{rel} ships with the repo — restore it from git."
+
         if not agent_path.is_file():
-            raise ExecutionUnavailableError(
-                "agent/agent.py is missing. "
-                "Copy agent/templates/terminal_bench.py to agent/agent.py."
-            )
+            raise ExecutionUnavailableError(f"{rel} is missing. {hint}")
         source = agent_path.read_text(encoding="utf-8")
         if "Placeholder — do not edit" in source:
-            raise ExecutionUnavailableError(
-                "agent/agent.py is still the placeholder. "
-                "Copy agent/templates/terminal_bench.py to agent/agent.py."
-            )
+            raise ExecutionUnavailableError(f"{rel} is still the placeholder. {hint}")
         if "class HarnessAgent" not in source:
-            raise ExecutionUnavailableError(
-                "agent/agent.py has no HarnessAgent class. "
-                "Copy agent/templates/terminal_bench.py to agent/agent.py."
-            )
+            raise ExecutionUnavailableError(f"{rel} has no HarnessAgent class. {hint}")
 
     def _check_env_provider(self) -> None:
         provider = self.config.env_provider
@@ -250,6 +259,8 @@ class HarborBenchmarkRunner:
                 dataset=self.config.dataset,
                 per_task_timeout=self.config.per_task_timeout,
                 jobs_dir=jobs_dir,
+                agent_import_path=self.agent_import_path,
+                extra_env=self.extra_env,
             )
             logger.info(
                 "starting harbor run run_id=%s tasks=%s env=%s model=%s",

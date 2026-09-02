@@ -152,6 +152,7 @@ class TerminalBenchRunner(BenchmarkRunner):
         per_task_timeout: int = 1200,
         jobs_dir: str = "workspace/tbench_jobs",
         reasoning_effort: str | None = None,
+        extra_env: dict[str, str] | None = None,
     ):
         self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-5.4")
         self.split = split
@@ -162,6 +163,9 @@ class TerminalBenchRunner(BenchmarkRunner):
         self.per_task_timeout = per_task_timeout
         self.jobs_dir = jobs_dir
         self.reasoning_effort = reasoning_effort
+        # Extra env vars for the `harbor run` subprocess, applied LAST in run() so a
+        # caller can override anything we set (notably HARNESS_SAVE_TRACE).
+        self.extra_env = dict(extra_env or {})
 
     def _load_split_tasks(self) -> list[str] | None:
         """Load task names for the configured split. Returns None to run all tasks."""
@@ -228,6 +232,10 @@ class TerminalBenchRunner(BenchmarkRunner):
         # we can't know which tasks are test tasks — safest to save nothing.
         if self.split != "train":
             env["HARNESS_SAVE_TRACE"] = "0"
+
+        # Applied last, deliberately: split=None (the API/job path) forces
+        # HARNESS_SAVE_TRACE="0" above, and the iterative loop needs traces back on.
+        env.update(self.extra_env)
 
         # Subprocess timeout: generous for full dataset, computed for splits
         import math
