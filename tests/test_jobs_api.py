@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import os
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -13,7 +14,11 @@ from api.config import clear_config_cache, load_config
 from api.db import get_engine, get_session_factory, init_db, reset_engine
 from api.job_store import EvaluateOutcome, PostgresJobStore
 from api.main import create_app
+from api.services.improver import FakeImprover, create_improver
+from api.services.runner import MockBenchmarkRunner
 from api.store import PostgresRunStore
+from worker.main import process_one
+from worker.steps import StepExecutor
 
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
@@ -241,3 +246,148 @@ def test_best_returns_winning_spec_inline(
     assert iteration["proposal"] is None
     assert iteration["summary"]["total"] == 2
     assert iteration["summary"]["pending"] == 2
+
+
+def test_agent_version_not_found_for_random_uuid(client: TestClient) -> None:
+    resp = client.get("/v1/agent-versions/00000000-0000-0000-0000-000000000000")
+    assert resp.status_code == 404
+    assert resp.json()["error"]["code"] == "agent_version_not_found"
+
+
+def test_agent_version_not_found_for_malformed_id(client: TestClient) -> None:
+    resp = client.get("/v1/agent-versions/not-a-uuid")
+    assert resp.status_code == 404
+    assert resp.json()["error"]["code"] == "agent_version_not_found"
+
+
+def test_agent_version_returns_baseline_v0(
+    client: TestClient, job_store: PostgresJobStore
+) -> None:
+    created = client.post(
+        "/v1/jobs",
+        json={"task_ids": ["fix-git"], "agent_model": "baseline-model"},
+    ).json()
+
+    step = job_store.claim_next_step("manual-worker")
+    assert step is not None
+    version_id = step.agent_version_id
+
+    resp = client.get(f"/v1/agent-versions/{version_id}")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["agent_version_id"] == version_id
+    assert body["job_id"] == created["job_id"]
+    assert body["version"] == 0
+    assert body["parent_version_id"] is None
+    assert body["created_by"] == "baseline"
+    assert body["rationale"] == "baseline"
+    assert body["created_at"]
+    assert body["spec"]["agent_model"] == "baseline-model"
+    assert body["spec"]["system_prompt"]
+    assert body["spec"]["max_steps"] >= 1
+    assert body["spec"]["max_output_chars"] >= 500
+    assert body["spec"]["exec_timeout_sec"] >= 10
+
+
+def _drive_job_to_completion(
+    job_store: PostgresJobStore,
+    run_store: PostgresRunStore,
+    artifacts_root: Path,
+    *,
+    max_steps: int = 24,
+) -> None:
+    """Run the worker step loop synchronously until nothing is claimable."""
+    cfg = load_config()
+    assert cfg.execution_backend == "mock"
+
+    improver = create_improver(cfg)
+    assert isinstance(improver, FakeImprover)
+
+    from api.services.artifacts import LocalArtifactStore
+
+    executor = StepExecutor(
+        job_store,
+        run_store,
+        config=cfg,
+        improver=improver,
+        artifacts=LocalArtifactStore(artifacts_root),
+        step_delay_sec=0.0,
+    )
+    runner = MockBenchmarkRunner(store=run_store, step_delay_sec=0.0)
+
+    for _ in range(max_steps):
+        did_work = process_one(
+            run_store,
+            runner,
+            worker_id="e2e-worker",
+            stale_after_sec=1800,
+            job_store=job_store,
+            step_executor=executor,
+        )
+        if not did_work:
+            return
+    raise AssertionError(f"job did not settle within {max_steps} worker steps")
+
+
+def test_job_end_to_end_through_worker(
+    client: TestClient,
+    db_store: PostgresRunStore,
+    job_store: PostgresJobStore,
+    tmp_path,
+) -> None:
+    created = client.post(
+        "/v1/jobs",
+        json={
+            "task_ids": ["fix-git", "regex-log"],
+            "agent_model": "e2e-model",
+            "max_iterations": 3,
+            "patience": 2,
+            "min_delta": 0.0,
+        },
+    )
+    assert created.status_code == 202
+    job_id = created.json()["job_id"]
+
+    _drive_job_to_completion(job_store, db_store, tmp_path / "artifacts")
+
+    body = client.get(f"/v1/jobs/{job_id}").json()
+    assert body["status"] == "completed"
+    # Fully determined: MockBenchmarkRunner scores fix-git 1.0 and regex-log 0.0 every
+    # time, so score is 0.5 at every iteration. With min_delta=0.0 iteration 0 improves
+    # (best is None) and 1-2 do not; iteration 2 satisfies BOTH max_iterations and
+    # patience, and stop precedence puts max_iterations first.
+    assert body["stop_reason"] == "max_iterations"
+    assert body["current_iteration"] == 2
+    assert len(body["iterations"]) == 3
+    assert [it["improved"] for it in body["iterations"]] == [True, False, False]
+    assert body["best"]["version"] == 0
+    assert body["best"]["score"] == pytest.approx(0.5)
+    assert body["finished_at"] is not None
+    assert body["error"] is None
+    assert body["iterations"], "expected at least the baseline iteration"
+    assert body["config"]["min_iterations"] == 3
+
+    for index, iteration in enumerate(body["iterations"]):
+        assert iteration["iteration"] == index
+        assert iteration["run_id"]
+        assert iteration["score"] is not None
+        assert iteration["summary"] is not None
+        assert iteration["summary"]["total"] == 2
+        assert iteration["summary"]["pending"] == 0
+        # The mock runner's rewards are a pure function of task_id, so no task ever
+        # moves between iterations.
+        assert iteration["fixed_tasks"] == []
+        assert iteration["regressed_tasks"] == []
+    assert body["iterations"][0]["proposal"] is None
+    assert body["iterations"][0]["improved"] is True
+
+    best = client.get(f"/v1/jobs/{job_id}/best")
+    assert best.status_code == 200
+    best_body = best.json()
+    assert best_body["spec"]["agent_model"] == "e2e-model"
+    assert best_body["score"] == pytest.approx(body["best"]["score"])
+    assert best_body["version"] == body["best"]["version"]
+
+    version = client.get(f"/v1/agent-versions/{best_body['agent_version_id']}")
+    assert version.status_code == 200
+    assert version.json()["spec"] == best_body["spec"]

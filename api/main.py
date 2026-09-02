@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from api.config import load_config
 from api.db import init_db, reset_engine
 from api.job_store import PostgresJobStore, job_store as default_job_store
-from api.routes import jobs, runs, tasks
+from api.routes import agent_versions, jobs, runs, tasks
 from api.schemas import ErrorDetail, ErrorResponse, HealthResponse
 from api.store import PostgresRunStore, store as default_store
 
@@ -53,6 +53,7 @@ def create_app(
     app.include_router(tasks.router)
     app.include_router(runs.router)
     app.include_router(jobs.router)
+    app.include_router(agent_versions.router)
 
     @app.get("/health", response_model=HealthResponse)
     async def health() -> HealthResponse:
