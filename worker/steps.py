@@ -1,0 +1,351 @@
+"""Worker-side execution of job steps (evaluate / improve)."""
+
+from __future__ import annotations
+
+import json
+import logging
+from pathlib import Path
+
+from api.agent_spec import AgentSpec
+from api.config import REPO_ROOT, BenchmarkConfig
+from api.job_store import (
+    EvaluateOutcome,
+    ImproveOutcome,
+    IterationRecord,
+    PostgresJobStore,
+    StepRecord,
+)
+from api.services.artifacts import ArtifactStore, improver_key, trace_key
+from api.services.improver import (
+    EvaluationSummary,
+    Improver,
+    ImproverError,
+    Proposal,
+    TaskOutcome,
+    build_context,
+)
+from api.services.runner import (
+    ExecutionUnavailableError,
+    HarborBenchmarkRunner,
+    MockBenchmarkRunner,
+)
+from api.services.scoring import mean_reward
+from api.store import PostgresRunStore
+
+logger = logging.getLogger("worker.steps")
+
+SPEC_AGENT_IMPORT_PATH = "agent.spec_agent:HarnessAgent"
+
+
+class StepExecutor:
+    """Executes one claimed step and advances the job in the same call."""
+
+    def __init__(
+        self,
+        job_store: PostgresJobStore,
+        run_store: PostgresRunStore,
+        *,
+        config: BenchmarkConfig,
+        improver: Improver,
+        artifacts: ArtifactStore,
+        step_delay_sec: float = 0.05,
+    ) -> None:
+        self.job_store = job_store
+        self.run_store = run_store
+        self.config = config
+        self.improver = improver
+        self.artifacts = artifacts
+        self.step_delay_sec = step_delay_sec
+
+    # ----------------------------------------------------------------- #
+    # Dispatch
+    # ----------------------------------------------------------------- #
+
+    def execute(self, step: StepRecord) -> None:
+        if step.type == "evaluate":
+            self._evaluate(step)
+        elif step.type == "improve":
+            self._improve(step)
+        else:
+            self.job_store.fail_step(
+                step.step_id,
+                error_code="internal_error",
+                error_message=f"unknown step type {step.type!r}",
+            )
+
+    # ----------------------------------------------------------------- #
+    # Evaluate
+    # ----------------------------------------------------------------- #
+
+    def _evaluate(self, step: StepRecord) -> None:
+        record = self.run_store.create(
+            task_ids=list(step.task_ids),
+            agent_model=step.spec.agent_model,
+        )
+        run_id = record.run_id
+        logger.info(
+            "evaluate step_id=%s job_id=%s iteration=%s version=%s run_id=%s tasks=%s",
+            step.step_id,
+            step.job_id,
+            step.iteration,
+            step.version,
+            run_id,
+            step.task_ids,
+        )
+
+        try:
+            spec_path = self._materialize_spec(run_id, step.spec)
+            runner = self._build_runner(spec_path)
+            runner.execute_sync(run_id)
+
+            finished = self.run_store.get(run_id)
+            if finished is None:
+                raise RuntimeError(f"run {run_id} disappeared during evaluation")
+
+            if finished.error is not None:
+                outcome = EvaluateOutcome(
+                    run_id=run_id,
+                    score=None,
+                    error_code=finished.error.code,
+                    error_message=finished.error.message,
+                )
+            else:
+                copied = self._store_traces(step, run_id, [t.task_id for t in finished.tasks])
+                task_rewards = {t.task_id: t.reward for t in finished.tasks}
+                score = mean_reward(task_rewards.values())
+                logger.info(
+                    "evaluate done run_id=%s score=%.4f traces=%s",
+                    run_id,
+                    score,
+                    copied,
+                )
+                outcome = EvaluateOutcome(
+                    run_id=run_id, score=score, task_rewards=task_rewards
+                )
+        except ExecutionUnavailableError as exc:
+            logger.error("evaluate unavailable step_id=%s: %s", step.step_id, exc)
+            outcome = EvaluateOutcome(
+                run_id=run_id,
+                score=None,
+                error_code="execution_unavailable",
+                error_message=str(exc),
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("evaluate failed step_id=%s", step.step_id)
+            outcome = EvaluateOutcome(
+                run_id=run_id,
+                score=None,
+                error_code="internal_error",
+                error_message=str(exc),
+            )
+
+        self.job_store.complete_step_and_advance(step.step_id, outcome)
+
+    def _run_dir(self, run_id: str) -> Path:
+        return REPO_ROOT / "workspace" / "runs" / run_id
+
+    def _materialize_spec(self, run_id: str, spec: AgentSpec) -> Path:
+        run_dir = self._run_dir(run_id)
+        run_dir.mkdir(parents=True, exist_ok=True)
+        path = run_dir / "agent_spec.json"
+        path.write_text(json.dumps(spec.model_dump(), indent=2), encoding="utf-8")
+        return path
+
+    def _build_runner(self, spec_path: Path) -> MockBenchmarkRunner | HarborBenchmarkRunner:
+        if self.config.execution_backend == "mock":
+            return MockBenchmarkRunner(store=self.run_store, step_delay_sec=self.step_delay_sec)
+        return HarborBenchmarkRunner(
+            self.run_store,
+            config=self.config,
+            agent_import_path=SPEC_AGENT_IMPORT_PATH,
+            extra_env={
+                "HARNESS_AGENT_SPEC": str(spec_path),
+                "HARNESS_SAVE_TRACE": "1",
+            },
+        )
+
+    def _store_traces(self, step: StepRecord, run_id: str, task_ids: list[str]) -> int:
+        """
+        Copy harbor trial traces into the artifact store.
+
+        Harbor writes <jobs_dir>/<job>/<task_id>__<trial>/agent/trace.json; the
+        mock backend writes nothing, in which case this is a no-op.
+        """
+        run_dir = self._run_dir(run_id)
+        if not run_dir.is_dir():
+            return 0
+        known = set(task_ids)
+        copied = 0
+        for trace_path in sorted(run_dir.rglob("trace.json")):
+            if trace_path.parent.name != "agent":
+                continue
+            task_id = trace_path.parent.parent.name.rsplit("__", 1)[0]
+            if task_id not in known:
+                continue
+            try:
+                self.artifacts.put(trace_key(step.job_id, step.iteration, task_id), trace_path)
+                copied += 1
+            except Exception:  # noqa: BLE001
+                logger.warning("failed to store trace for task_id=%s run_id=%s", task_id, run_id)
+        return copied
+
+    # ----------------------------------------------------------------- #
+    # Improve
+    # ----------------------------------------------------------------- #
+
+    def _improve(self, step: StepRecord) -> None:
+        job = self.job_store.get_job(step.job_id)
+        if job is None:
+            self.job_store.fail_step(
+                step.step_id,
+                error_code="internal_error",
+                error_message=f"job {step.job_id} disappeared",
+            )
+            return
+
+        latest = self._latest_evaluation(job.iterations)
+        if latest is None:
+            self.job_store.complete_step_and_advance(
+                step.step_id,
+                ImproveOutcome(
+                    spec=None,
+                    error_code="improver_failed",
+                    error_message="no completed evaluation to improve on",
+                ),
+            )
+            return
+
+        record = self.run_store.get(latest.run_id or "")
+        if record is None:
+            self.job_store.complete_step_and_advance(
+                step.step_id,
+                ImproveOutcome(
+                    spec=None,
+                    error_code="improver_failed",
+                    error_message=f"evaluation run {latest.run_id} not found",
+                ),
+            )
+            return
+
+        evaluation = EvaluationSummary(
+            score=float(latest.score or 0.0),
+            tasks=[
+                TaskOutcome(
+                    task_id=t.task_id,
+                    status=t.status.value,
+                    reward=t.reward,
+                    remarks=t.remarks,
+                )
+                for t in record.tasks
+            ],
+            traces=self._read_traces(step.job_id, latest.iteration, [t.task_id for t in record.tasks]),
+            # Movement is already derived by get_job() from the stored task_rewards
+            # snapshots; recomputing it here would duplicate that logic.
+            fixed_tasks=latest.fixed_tasks,
+            regressed_tasks=latest.regressed_tasks,
+        )
+        history = list(job.iterations)
+
+        logger.info(
+            "improve step_id=%s job_id=%s iteration=%s from_score=%.4f traces=%s",
+            step.step_id,
+            step.job_id,
+            step.iteration,
+            evaluation.score,
+            len(evaluation.traces),
+        )
+
+        try:
+            proposal = self.improver.propose(
+                spec=step.spec,
+                evaluation=evaluation,
+                history=history,
+            )
+        except ImproverError as exc:
+            logger.error("improver failed step_id=%s: %s", step.step_id, exc)
+            self._persist_improver_io(step, evaluation, history, error=str(exc))
+            self.job_store.complete_step_and_advance(
+                step.step_id,
+                ImproveOutcome(
+                    spec=None,
+                    error_code="improver_failed",
+                    error_message=str(exc),
+                ),
+            )
+            return
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("improve step crashed step_id=%s", step.step_id)
+            self._persist_improver_io(step, evaluation, history, error=str(exc))
+            self.job_store.complete_step_and_advance(
+                step.step_id,
+                ImproveOutcome(
+                    spec=None,
+                    error_code="internal_error",
+                    error_message=str(exc),
+                ),
+            )
+            return
+
+        self._persist_improver_io(step, evaluation, history, proposal=proposal)
+        self.job_store.complete_step_and_advance(
+            step.step_id,
+            ImproveOutcome(spec=proposal.spec, rationale=proposal.rationale),
+        )
+
+    @staticmethod
+    def _latest_evaluation(iterations: list[IterationRecord]) -> IterationRecord | None:
+        completed = [
+            it
+            for it in iterations
+            if it.status == "completed" and it.run_id is not None and it.score is not None
+        ]
+        return completed[-1] if completed else None
+
+    def _read_traces(self, job_id: str, iteration: int, task_ids: list[str]) -> dict[str, str]:
+        traces: dict[str, str] = {}
+        for task_id in task_ids:
+            key = trace_key(job_id, iteration, task_id)
+            try:
+                if self.artifacts.exists(key):
+                    traces[task_id] = self.artifacts.get(key).decode("utf-8", errors="replace")
+            except Exception:  # noqa: BLE001
+                logger.warning("could not read trace artifact %s", key)
+        return traces
+
+    def _persist_improver_io(
+        self,
+        step: StepRecord,
+        evaluation: EvaluationSummary,
+        history: list[IterationRecord],
+        *,
+        proposal: Proposal | None = None,
+        error: str | None = None,
+    ) -> None:
+        prompt = getattr(self.improver, "last_prompt", "") or build_context(
+            spec=step.spec,
+            evaluation=evaluation,
+            history=history,
+            budget=self.config.improver_context_budget,
+        )
+        if proposal is not None:
+            body = json.dumps(
+                {"rationale": proposal.rationale, "spec": proposal.spec.model_dump()},
+                indent=2,
+            )
+        else:
+            body = json.dumps(
+                {
+                    "error": error or "unknown improver error",
+                    "raw_response": getattr(self.improver, "last_response", ""),
+                },
+                indent=2,
+            )
+        try:
+            self.artifacts.put(improver_key(step.job_id, step.iteration, "prompt.txt"), prompt)
+            self.artifacts.put(improver_key(step.job_id, step.iteration, "response.json"), body)
+        except Exception:  # noqa: BLE001
+            logger.warning(
+                "failed to persist improver artifacts job_id=%s iteration=%s",
+                step.job_id,
+                step.iteration,
+            )

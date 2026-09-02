@@ -12,7 +12,10 @@ import uuid
 
 from api.config import clear_config_cache, load_config
 from api.db import init_db
+from api.job_store import PostgresJobStore
 from api.schemas import RunError, RunStatus
+from api.services.artifacts import create_artifact_store
+from api.services.improver import create_improver
 from api.services.runner import (
     ExecutionUnavailableError,
     HarborBenchmarkRunner,
@@ -20,6 +23,7 @@ from api.services.runner import (
     create_runner,
 )
 from api.store import PostgresRunStore, _utcnow
+from worker.steps import StepExecutor
 
 logger = logging.getLogger("worker")
 
@@ -42,8 +46,36 @@ def process_one(
     *,
     worker_id: str,
     stale_after_sec: int,
+    job_store: PostgresJobStore | None = None,
+    step_executor: StepExecutor | None = None,
 ) -> bool:
-    """Claim and execute one run. Returns True if work was done."""
+    """
+    Claim and execute one unit of work. Returns True if work was done.
+
+    Job steps take priority; when no step is queued (or the worker was built
+    without a job store) this falls back to the legacy standalone-run queue.
+    """
+    if job_store is not None and step_executor is not None:
+        step = job_store.claim_next_step(worker_id)
+        if step is not None:
+            logger.info(
+                "claimed step_id=%s type=%s job_id=%s iteration=%s",
+                step.step_id,
+                step.type,
+                step.job_id,
+                step.iteration,
+            )
+            try:
+                step_executor.execute(step)
+            except Exception as exc:  # noqa: BLE001
+                logger.exception("step executor crashed step_id=%s", step.step_id)
+                job_store.fail_step(
+                    step.step_id,
+                    error_code="internal_error",
+                    error_message=str(exc),
+                )
+            return True
+
     run_id = store.claim_next(worker_id, stale_after_sec=stale_after_sec)
     if run_id is None:
         return False
@@ -88,12 +120,24 @@ def run_loop(
     init_db()
     store = PostgresRunStore()
     runner = create_runner(store, config=cfg, step_delay_sec=step_delay_sec)
+    job_store = PostgresJobStore()
+    artifacts = create_artifact_store(cfg)
+    improver = create_improver(cfg)
+    step_executor = StepExecutor(
+        job_store,
+        store,
+        config=cfg,
+        improver=improver,
+        artifacts=artifacts,
+        step_delay_sec=step_delay_sec,
+    )
     worker_id = default_worker_id()
     logger.info(
-        "worker starting id=%s backend=%s env_provider=%s",
+        "worker starting id=%s backend=%s env_provider=%s improver=%s",
         worker_id,
         cfg.execution_backend,
         cfg.env_provider,
+        type(improver).__name__,
     )
 
     jobs_done = 0
@@ -103,6 +147,8 @@ def run_loop(
             runner,
             worker_id=worker_id,
             stale_after_sec=stale_after_sec,
+            job_store=job_store,
+            step_executor=step_executor,
         )
         if did_work:
             jobs_done += 1
