@@ -183,9 +183,63 @@ def test_claim_next_step_marks_step_running_and_job_running(
         session.close()
 
 
-def test_two_workers_do_not_double_claim_steps(job_store: PostgresJobStore) -> None:
-    j1 = _create_job(job_store, task_ids=["fix-git"])
-    j2 = _create_job(job_store, task_ids=["regex-log"])
+def test_two_workers_contend_for_one_step(job_store: PostgresJobStore) -> None:
+    """Genuine contention: ONE job, ONE queued step, TWO threads race for it.
+
+    This is the real test of FOR UPDATE SKIP LOCKED: with two separate jobs (one
+    step each) two threads would each get a distinct row even under materially
+    weaker locking (or none at all), so that shape proves nothing about mutual
+    exclusion. Here both threads target the same row; exactly one must win it.
+    """
+    job = _create_job(job_store, task_ids=["fix-git"])
+
+    def claim(worker_id: str):
+        return job_store.claim_next_step(worker_id)
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        f1 = pool.submit(claim, "w1")
+        f2 = pool.submit(claim, "w2")
+        claimed = [f1.result(), f2.result()]
+
+    winners = [c for c in claimed if c is not None]
+    losers = [c for c in claimed if c is None]
+    assert len(winners) == 1, "exactly one worker must claim the single queued step"
+    assert len(losers) == 1
+    assert winners[0].job_id == job.job_id
+
+    # Third claim finds nothing queued.
+    assert job_store.claim_next_step("w3") is None
+
+    refreshed = job_store.get_job(job.job_id)
+    assert refreshed is not None
+    assert refreshed.status == "running"
+
+
+def test_two_workers_claim_two_distinct_steps_in_same_job(
+    job_store: PostgresJobStore,
+) -> None:
+    """Two genuinely queued steps in the SAME job: two threads must not collide."""
+    job = _create_job(job_store, task_ids=["fix-git"])
+    v0 = job.iterations[0].agent_version_id
+
+    # A second, independently queued step in the same job (as if an earlier
+    # evaluate step had already completed and enqueued an improve step).
+    session = get_session_factory()()
+    try:
+        session.add(
+            StepRow(
+                id=uuid.uuid4(),
+                job_id=uuid.UUID(job.job_id),
+                type="improve",
+                status="queued",
+                iteration=1,
+                agent_version_id=uuid.UUID(v0),
+                stale_after_sec=1800,
+            )
+        )
+        session.commit()
+    finally:
+        session.close()
 
     def claim(worker_id: str):
         return job_store.claim_next_step(worker_id)
@@ -196,16 +250,11 @@ def test_two_workers_do_not_double_claim_steps(job_store: PostgresJobStore) -> N
         claimed = [f1.result(), f2.result()]
 
     assert None not in claimed
-    assert {c.job_id for c in claimed} == {j1.job_id, j2.job_id}
     assert len({c.step_id for c in claimed}) == 2
+    assert {c.job_id for c in claimed} == {job.job_id}
 
-    # Third claim finds nothing queued.
+    # Nothing left queued in this job.
     assert job_store.claim_next_step("w3") is None
-
-    for record in claimed:
-        job = job_store.get_job(record.job_id)
-        assert job is not None
-        assert job.status == "running"
 
 
 def test_stale_running_step_is_requeued_and_reclaimable(
@@ -667,3 +716,173 @@ def test_iteration_history_reports_per_task_movement(job_store) -> None:
     assert history[1].improved is False                  # so it is not promoted
     assert history[1].fixed_tasks == ["b"]               # but the movement is visible
     assert history[1].regressed_tasks == ["a"]
+
+
+def test_complete_step_and_advance_is_idempotent_on_double_call(
+    job_store: PostgresJobStore,
+) -> None:
+    """A stale-requeued step can legitimately be completed twice (by two workers).
+
+    The second call must be a silent no-op: no second successor step, no second
+    advance of current_iteration, no change to best_score.
+    """
+    job = _create_job(job_store, max_iterations=5)
+    step = job_store.claim_next_step("w1")
+    assert step is not None
+
+    job_store.complete_step_and_advance(
+        step.step_id, EvaluateOutcome(run_id=str(uuid.uuid4()), score=0.5)
+    )
+    after_first = job_store.get_job(job.job_id)
+    assert after_first is not None
+    session = get_session_factory()()
+    try:
+        step_count_after_first = len(list(session.scalars(select(StepRow))))
+    finally:
+        session.close()
+    assert step_count_after_first == 2  # original evaluate + enqueued improve
+
+    # Second call, same step_id, DIFFERENT outcome: must be a no-op.
+    job_store.complete_step_and_advance(
+        step.step_id, EvaluateOutcome(run_id=str(uuid.uuid4()), score=0.9)
+    )
+
+    after_second = job_store.get_job(job.job_id)
+    assert after_second is not None
+    assert after_second.best_score == after_first.best_score == pytest.approx(0.5)
+    assert after_second.current_iteration == after_first.current_iteration
+    session = get_session_factory()()
+    try:
+        step_count_after_second = len(list(session.scalars(select(StepRow))))
+    finally:
+        session.close()
+    assert step_count_after_second == step_count_after_first
+
+
+def test_fail_step_is_idempotent_on_double_call(job_store: PostgresJobStore) -> None:
+    job = _create_job(job_store)
+    step = job_store.claim_next_step("w1")
+    assert step is not None
+
+    job_store.fail_step(step.step_id, error_code="internal_error", error_message="boom")
+    after_first = job_store.get_job(job.job_id)
+    assert after_first is not None
+    assert after_first.status == "failed"
+
+    # Second call with a different error must not overwrite the first.
+    job_store.fail_step(step.step_id, error_code="other_error", error_message="different")
+
+    after_second = job_store.get_job(job.job_id)
+    assert after_second is not None
+    assert after_second.error_code == "internal_error"
+    assert after_second.error_message == "boom"
+
+
+def test_complete_step_and_advance_on_already_completed_job_is_noop(
+    job_store: PostgresJobStore,
+) -> None:
+    """Simulates the exact race: a second worker's late completion call against a
+    job/step that a first, faster worker already carried to a terminal state."""
+    job = _create_job(job_store, max_iterations=1)
+    step = job_store.claim_next_step("w1")
+    assert step is not None
+
+    job_store.complete_step_and_advance(
+        step.step_id, EvaluateOutcome(run_id=str(uuid.uuid4()), score=0.25)
+    )
+    completed = job_store.get_job(job.job_id)
+    assert completed is not None
+    assert completed.status == "completed"
+    assert completed.stop_reason == "max_iterations"
+
+    # A late duplicate call for the same (already-terminal) step/job must not
+    # mutate anything.
+    job_store.complete_step_and_advance(
+        step.step_id, EvaluateOutcome(run_id=str(uuid.uuid4()), score=0.99)
+    )
+
+    refreshed = job_store.get_job(job.job_id)
+    assert refreshed is not None
+    assert refreshed.status == "completed"
+    assert refreshed.best_score == pytest.approx(0.25)
+    assert refreshed.finished_at == completed.finished_at
+
+
+def test_fail_step_on_already_terminal_job_leaves_it_untouched(
+    job_store: PostgresJobStore,
+) -> None:
+    job = _create_job(job_store, max_iterations=1)
+    step = job_store.claim_next_step("w1")
+    assert step is not None
+    job_store.complete_step_and_advance(
+        step.step_id, EvaluateOutcome(run_id=str(uuid.uuid4()), score=0.25)
+    )
+    completed = job_store.get_job(job.job_id)
+    assert completed is not None
+    assert completed.status == "completed"
+
+    # fail_step against the now-completed step/job must not flip it to failed.
+    job_store.fail_step(step.step_id, error_code="internal_error", error_message="boom")
+
+    refreshed = job_store.get_job(job.job_id)
+    assert refreshed is not None
+    assert refreshed.status == "completed"
+    assert refreshed.error_code is None
+    assert refreshed.error_message is None
+
+
+def test_improve_outcome_missing_spec_normalizes_to_invalid_proposal(
+    job_store: PostgresJobStore,
+) -> None:
+    """Appendix A4: ImproveOutcome(spec=None) with no error_code is normalized."""
+    job = _create_job(job_store, max_iterations=5)
+    _complete_evaluate(job_store, score=0.5)
+
+    improve = job_store.claim_next_step("w1")
+    assert improve is not None
+
+    job_store.complete_step_and_advance(improve.step_id, ImproveOutcome(spec=None))
+
+    refreshed = job_store.get_job(job.job_id)
+    assert refreshed is not None
+    assert refreshed.status == "completed"
+    assert refreshed.stop_reason == "failed_improve"
+
+    session = get_session_factory()()
+    try:
+        improve_row = session.scalars(
+            select(StepRow).where(StepRow.type == "improve")
+        ).one()
+        assert improve_row.status == "failed"
+        assert improve_row.error_code == "invalid_proposal"
+        assert improve_row.error_message
+    finally:
+        session.close()
+
+
+def test_complete_step_and_advance_malformed_step_id_is_noop(
+    job_store: PostgresJobStore,
+) -> None:
+    job = _create_job(job_store)
+    # Must not raise, must not touch anything.
+    job_store.complete_step_and_advance(
+        "not-a-uuid", EvaluateOutcome(run_id=str(uuid.uuid4()), score=0.5)
+    )
+    job_store.complete_step_and_advance(
+        str(uuid.uuid4()), EvaluateOutcome(run_id=str(uuid.uuid4()), score=0.5)
+    )
+
+    refreshed = job_store.get_job(job.job_id)
+    assert refreshed is not None
+    assert refreshed.status == "queued"
+    assert refreshed.iterations[0].status == "queued"
+
+
+def test_fail_step_malformed_step_id_is_noop(job_store: PostgresJobStore) -> None:
+    job = _create_job(job_store)
+    job_store.fail_step("not-a-uuid", error_code="x", error_message="y")
+    job_store.fail_step(str(uuid.uuid4()), error_code="x", error_message="y")
+
+    refreshed = job_store.get_job(job.job_id)
+    assert refreshed is not None
+    assert refreshed.status == "queued"

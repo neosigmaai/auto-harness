@@ -651,6 +651,19 @@ class PostgresJobStore:
                 session.commit()
                 return
 
+            # Idempotency guard: a worker that stalled past its step's
+            # stale_after_sec can have that step requeued and re-claimed (and
+            # completed) by a second worker before the first worker's stale call
+            # to this method finally lands. Once the step is no longer `running`
+            # (already completed/failed by the second worker, or requeued back to
+            # `queued` and not yet reclaimed) — or the job has already reached a
+            # terminal state — re-applying the outcome would double the loop
+            # (two successor steps, a second best_agent_version_id race, two
+            # divergent iteration histories). Silently no-op instead.
+            if step.status != RunStatus.running.value or job.status not in _ACTIVE_JOB_STATUSES:
+                session.commit()
+                return
+
             now = _utcnow()
             if isinstance(outcome, EvaluateOutcome):
                 _apply_evaluate_outcome(session, step, job, outcome, now)
@@ -676,13 +689,26 @@ class PostgresJobStore:
             if step is None:
                 session.commit()
                 return
+
+            job = session.get(JobRow, step.job_id, with_for_update=True)
+
+            # Idempotency guard: same rationale as complete_step_and_advance — a
+            # stale-requeued step may already have been completed or failed by
+            # another worker (or the job already reached a terminal state) by the
+            # time this call lands. Re-failing it would stomp a later, correct
+            # outcome. Silently no-op instead.
+            if step.status != RunStatus.running.value or (
+                job is not None and job.status not in _ACTIVE_JOB_STATUSES
+            ):
+                session.commit()
+                return
+
             now = _utcnow()
             step.status = RunStatus.failed.value
             step.error_code = error_code
             step.error_message = error_message
             step.finished_at = now
 
-            job = session.get(JobRow, step.job_id, with_for_update=True)
             if job is not None and job.status in _ACTIVE_JOB_STATUSES:
                 job.status = RunStatus.failed.value
                 job.error_code = error_code
