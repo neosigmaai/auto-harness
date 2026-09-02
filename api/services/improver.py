@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from dataclasses import dataclass, field
 from typing import Any, Callable, Protocol
 
@@ -297,6 +298,20 @@ class _ProposalRejected(Exception):
     """Internal: the model's reply was unusable; triggers the single retry."""
 
 
+# Matches the suffix FakeImprover's exhausted branch appends, so it can be
+# stripped before appending the next one. Without this, feeding a proposal's
+# spec back into propose() repeatedly (as the mock end-to-end loop does) would
+# grow system_prompt by one suffix per call forever, eventually overflowing
+# AgentSpec's 20_000-char cap and raising - breaking FakeImprover's "never
+# raises" invariant. Stripping keeps the prompt length bounded regardless of
+# how many times it is fed back in.
+_REVISION_SUFFIX_RE = re.compile(r"\n\n\[fake-improver revision \d+\]\Z")
+
+
+def _strip_revision_suffix(system_prompt: str) -> str:
+    return _REVISION_SUFFIX_RE.sub("", system_prompt)
+
+
 # litellm is imported lazily into this global by _litellm(). Keeping it a module
 # attribute (rather than a local import) is what lets tests swap it out with
 # monkeypatch.setattr(improver_mod, "litellm", stub) without the real package
@@ -315,12 +330,18 @@ def _litellm() -> Any:
 
 
 def _extract_content(response: Any) -> str:
-    """Pull the assistant text out of a litellm completion response."""
+    """Pull the assistant text out of a litellm completion response.
+
+    Raises ``_ProposalRejected``, not ``ImproverError``: an empty or malformed
+    *response body* is a rejected proposal like any other and gets the same
+    single retry, distinct from a transport-level exception from
+    ``litellm.completion`` itself (which is never retried).
+    """
     choices = getattr(response, "choices", None)
     if choices is None and isinstance(response, dict):
         choices = response.get("choices")
     if not choices:
-        raise ImproverError("improver LLM returned no choices")
+        raise _ProposalRejected("improver LLM returned no choices")
 
     first = choices[0]
     message = getattr(first, "message", None)
@@ -331,7 +352,7 @@ def _extract_content(response: Any) -> str:
     if content is None and isinstance(message, dict):
         content = message.get("content")
     if not isinstance(content, str) or not content.strip():
-        raise ImproverError("improver LLM returned no text content")
+        raise _ProposalRejected("improver LLM returned no text content")
     return content
 
 
@@ -344,7 +365,9 @@ class FakeImprover:
       2. otherwise the next scripted proposal is returned;
       3. otherwise (list exhausted) a deterministic derived proposal is returned:
          the incoming spec with ``[fake-improver revision N]`` appended to the
-         system prompt. It never raises and never runs out.
+         system prompt (replacing any previous revision suffix, so the prompt
+         length stays bounded no matter how many times a proposal is fed back
+         in). It never raises and never runs out, for any N.
     """
 
     def __init__(
@@ -375,7 +398,8 @@ class FakeImprover:
             proposal = self._proposals[n - 1]
         else:
             merged = spec.model_dump()
-            merged["system_prompt"] = f"{spec.system_prompt}\n\n[fake-improver revision {n}]"
+            base_prompt = _strip_revision_suffix(spec.system_prompt)
+            merged["system_prompt"] = f"{base_prompt}\n\n[fake-improver revision {n}]"
             proposal = Proposal(
                 spec=AgentSpec.model_validate(merged),
                 rationale=f"fake improver deterministic revision {n}",
@@ -451,9 +475,9 @@ class LLMImprover:
             except Exception as exc:  # noqa: BLE001 - transport failure, no retry
                 raise ImproverError(f"improver LLM call failed: {exc}") from exc
 
-            text = _extract_content(response)
-            self.last_response = text
             try:
+                text = _extract_content(response)
+                self.last_response = text
                 return self._parse(text, spec)
             except _ProposalRejected as exc:
                 last_error = str(exc)

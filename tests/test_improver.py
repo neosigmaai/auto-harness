@@ -117,6 +117,23 @@ def test_fake_improver_cycles_deterministic_revision_when_exhausted() -> None:
     assert first.spec.max_steps == 80
 
 
+def test_fake_improver_never_raises_when_fed_its_own_output_many_times() -> None:
+    """Task 13 depends on FakeImprover never raising. Feeding a proposal's own
+    spec back in is exactly what the mock end-to-end loop does every
+    iteration; prove the invariant holds for far more than a couple of calls,
+    not just the first two (system_prompt must not grow toward AgentSpec's
+    20_000-char cap)."""
+    fake = FakeImprover()
+    spec = _spec()
+
+    for _ in range(1_000):
+        proposal = fake.propose(spec=spec, evaluation=_evaluation(), history=_history())
+        spec = proposal.spec
+
+    assert spec.system_prompt.endswith("[fake-improver revision 1000]")
+    assert len(spec.system_prompt) < 200
+
+
 def test_fake_improver_applies_mutate_callable() -> None:
     fake = FakeImprover(mutate=lambda spec: spec.model_copy(update={"max_steps": 150}))
 
@@ -157,6 +174,35 @@ def test_llm_improver_retries_once_on_invalid_json(monkeypatch: pytest.MonkeyPat
     assert len(stub.calls) == 2
     retry_text = stub.calls[1]["messages"][-1]["content"]
     assert "not valid JSON" in retry_text
+
+
+def test_llm_improver_retries_once_on_empty_first_response(monkeypatch: pytest.MonkeyPatch) -> None:
+    """An empty/malformed response body gets the same single retry as an
+    invalid-JSON or validation failure - _extract_content must route through
+    _ProposalRejected rather than raising ImproverError directly, or this
+    retry would never happen."""
+
+    class _EmptyResponse:
+        choices: list = []
+
+    class _StubSequence:
+        def __init__(self) -> None:
+            self.calls: list[dict] = []
+
+        def completion(self, **kwargs):  # noqa: ANN003, ANN201
+            self.calls.append(kwargs)
+            if len(self.calls) == 1:
+                return _EmptyResponse()
+            return _Response(_payload())
+
+    stub = _StubSequence()
+    monkeypatch.setattr(improver_mod, "litellm", stub)
+
+    llm = LLMImprover(model="gpt-5.4", budget=20_000)
+    proposal = llm.propose(spec=_spec(), evaluation=_evaluation(), history=_history())
+
+    assert proposal.spec.system_prompt == "IMPROVED PROMPT"
+    assert len(stub.calls) == 2
 
 
 def test_llm_improver_raises_after_two_invalid_responses(monkeypatch: pytest.MonkeyPatch) -> None:
