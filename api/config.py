@@ -16,6 +16,28 @@ KNOWN_ENV_PROVIDERS = frozenset({"e2b", "daytona", "modal", "docker"})
 KNOWN_EXECUTION_BACKENDS = frozenset({"harbor", "mock"})
 
 
+def _positive_int(raw: dict, key: str, default: int) -> int:
+    """Read a strictly-positive int.
+
+    Deliberately not `raw.get(key) or default`: that idiom turns an explicit 0 into
+    the default instead of rejecting it.
+    """
+    value = raw.get(key)
+    value = default if value is None else int(value)
+    if value <= 0:
+        raise ValueError(f"{key} must be a positive integer, got {value}")
+    return value
+
+
+def _unit_fraction(raw: dict, key: str, default: float) -> float:
+    """Read a float in [0, 1). 0.0 is legal, so `or default` cannot be used."""
+    value = raw.get(key)
+    value = default if value is None else float(value)
+    if not 0.0 <= value < 1.0:
+        raise ValueError(f"{key} must be in [0, 1), got {value}")
+    return value
+
+
 @dataclass(frozen=True)
 class BenchmarkConfig:
     default_task_ids: list[str]
@@ -26,6 +48,14 @@ class BenchmarkConfig:
     per_task_timeout: int = 1200
     execution_backend: str = "harbor"
     jobs_dir: str = "workspace/tbench_jobs"
+    # --- Milestone 4: iterative optimization loop ---
+    improver_model: str = "gpt-5.4"
+    max_iterations: int = 5
+    patience: int = 2
+    min_delta: float = 0.01
+    max_job_duration_sec: int = 21600
+    improver_context_budget: int = 60000
+    artifacts_dir: str = "workspace/artifacts"
 
     @property
     def known_task_ids(self) -> frozenset[str]:
@@ -70,6 +100,13 @@ def load_config(path: str | None = None) -> BenchmarkConfig:
         per_task_timeout=int(raw.get("per_task_timeout") or 1200),
         execution_backend=backend,
         jobs_dir=str(raw.get("jobs_dir") or "workspace/tbench_jobs"),
+        improver_model=str(raw.get("improver_model") or "gpt-5.4"),
+        max_iterations=_positive_int(raw, "max_iterations", 5),
+        patience=_positive_int(raw, "patience", 2),
+        min_delta=_unit_fraction(raw, "min_delta", 0.01),
+        max_job_duration_sec=_positive_int(raw, "max_job_duration_sec", 21600),
+        improver_context_budget=_positive_int(raw, "improver_context_budget", 60000),
+        artifacts_dir=str(raw.get("artifacts_dir") or "workspace/artifacts"),
     )
 
 

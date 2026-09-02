@@ -11,6 +11,15 @@ per_task_timeout: 1200
 execution_backend: harbor     # harbor | mock  (override with EXECUTION_BACKEND)
 jobs_dir: workspace/tbench_jobs
 
+# Iterative optimization loop (Milestone 4). Per-job request fields override these.
+improver_model: gpt-5.4          # model that proposes AgentSpec changes
+max_iterations: 5                # hard cap on evaluate steps per job
+patience: 2                      # consecutive non-improving evaluations before stopping
+min_delta: 0.01                  # score gain required to count as an improvement
+max_job_duration_sec: 21600      # 6 h wall-clock budget per job
+improver_context_budget: 60000   # max characters in one improver prompt
+artifacts_dir: workspace/artifacts
+
 # Default tasks when POST /v1/runs omits task_ids. Also the allowlist of known IDs.
 default_task_ids:
   - cobol-modernization
