@@ -292,3 +292,131 @@ def test_raising_improver_always_raises_improver_error() -> None:
 
     with pytest.raises(ImproverError):
         raiser.propose(spec=_spec(), evaluation=_evaluation(), history=_history())
+
+
+class _StubImprover:
+    """Records nothing; only exists so identity/attribute checks are cheap."""
+
+    def __init__(self, model: str) -> None:
+        self.model = model
+
+    def propose(self, **kwargs):  # noqa: ANN003, ANN201
+        raise AssertionError("propose() should not be called by this test")
+
+
+def _step_record(*, improver_model: str):
+    """A minimal StepRecord for an improve step (no DB - a plain dataclass)."""
+    from api.job_store import StepRecord
+
+    return StepRecord(
+        step_id="s1",
+        job_id="j1",
+        type="improve",
+        iteration=0,
+        agent_version_id="v1",
+        version=0,
+        spec=_spec(),
+        task_ids=["fix-git"],
+        agent_model="gpt-4.1-mini",
+        improver_model=improver_model,
+        run_id=None,
+        stale_after_sec=1800,
+    )
+
+
+def test_improve_step_honors_per_job_improver_model_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    """I2 (final review): CreateJobRequest.improver_model is validated, stored
+    and echoed by the API, but was never actually used to build the improver
+    that runs the improve step - every LLM call used the config default
+    regardless of what the client asked for. StepExecutor._improver_for_step
+    is the fix: it must call the existing create_improver(..., improver_model=)
+    seam with the step's model whenever that step's job requested a
+    non-default one, and use the improver that seam returns (not the
+    executor's default).
+    """
+    from worker.steps import StepExecutor
+
+    captured: dict[str, object] = {}
+
+    def _fake_create_improver(config, *, improver_model=None):  # noqa: ANN001, ANN201
+        captured["config"] = config
+        captured["improver_model"] = improver_model
+        return _StubImprover(improver_model)
+
+    monkeypatch.setattr("worker.steps.create_improver", _fake_create_improver)
+
+    cfg = _config("harbor")  # non-mock: the override must take effect here
+    default_improver = FakeImprover()
+    executor = StepExecutor(
+        job_store=None,
+        run_store=None,
+        config=cfg,
+        improver=default_improver,
+        artifacts=None,
+    )
+    step = _step_record(improver_model="gpt-5.4-mini")
+    assert step.improver_model != cfg.improver_model  # sanity: a real override
+
+    resolved = executor._improver_for_step(step)
+
+    assert captured["improver_model"] == "gpt-5.4-mini"
+    assert captured["config"] is cfg
+    assert isinstance(resolved, _StubImprover)
+    assert resolved.model == "gpt-5.4-mini"
+    assert resolved is not default_improver
+
+
+def test_improve_step_keeps_default_improver_when_no_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    """No per-job override (improver_model == the config default) must reuse
+    the executor's default improver rather than building a fresh one on every
+    step."""
+    from worker.steps import StepExecutor
+
+    def _boom(*args, **kwargs):  # noqa: ANN002, ANN003, ANN201
+        raise AssertionError("create_improver must not be called with no override")
+
+    monkeypatch.setattr("worker.steps.create_improver", _boom)
+
+    cfg = _config("harbor")
+    default_improver = FakeImprover()
+    executor = StepExecutor(
+        job_store=None,
+        run_store=None,
+        config=cfg,
+        improver=default_improver,
+        artifacts=None,
+    )
+    step = _step_record(improver_model=cfg.improver_model)
+
+    resolved = executor._improver_for_step(step)
+    assert resolved is default_improver
+
+
+def test_improve_step_always_uses_default_improver_on_mock_backend(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The mock backend has no real notion of "model", so it must keep using
+    whatever improver double the executor/test injected - even when the
+    step's job set an improver_model override - rather than silently
+    replacing a test's injected _RaisingImprover/FakeImprover with a fresh
+    FakeImprover() from create_improver()."""
+    from worker.steps import StepExecutor
+
+    def _boom(*args, **kwargs):  # noqa: ANN002, ANN003, ANN201
+        raise AssertionError("create_improver must not be called on the mock backend")
+
+    monkeypatch.setattr("worker.steps.create_improver", _boom)
+
+    cfg = _config("mock")
+    default_improver = _RaisingImprover()
+    executor = StepExecutor(
+        job_store=None,
+        run_store=None,
+        config=cfg,
+        improver=default_improver,
+        artifacts=None,
+    )
+    step = _step_record(improver_model="gpt-5.4-mini")  # differs from cfg default
+
+    resolved = executor._improver_for_step(step)
+    assert resolved is default_improver

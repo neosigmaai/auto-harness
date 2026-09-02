@@ -23,6 +23,7 @@ from api.services.improver import (
     Proposal,
     TaskOutcome,
     build_context,
+    create_improver,
 )
 from api.services.runner import (
     ExecutionUnavailableError,
@@ -218,6 +219,7 @@ class StepExecutor:
         # everything else maps to "internal_error", matching _evaluate().
         evaluation: EvaluationSummary | None = None
         history: list[IterationRecord] = []
+        improver: Improver = self.improver
         try:
             job = self.job_store.get_job(step.job_id)
             if job is None:
@@ -280,13 +282,14 @@ class StepExecutor:
                 len(evaluation.traces),
             )
 
-            proposal = self.improver.propose(
+            improver = self._improver_for_step(step)
+            proposal = improver.propose(
                 spec=step.spec,
                 evaluation=evaluation,
                 history=history,
             )
 
-            self._persist_improver_io(step, evaluation, history, proposal=proposal)
+            self._persist_improver_io(step, evaluation, history, improver=improver, proposal=proposal)
             self.job_store.complete_step_and_advance(
                 step.step_id,
                 ImproveOutcome(spec=proposal.spec, rationale=proposal.rationale),
@@ -294,7 +297,7 @@ class StepExecutor:
         except ImproverError as exc:
             logger.error("improver failed step_id=%s: %s", step.step_id, exc)
             if evaluation is not None:
-                self._safe_persist_improver_io(step, evaluation, history, error=str(exc))
+                self._safe_persist_improver_io(step, evaluation, history, improver=improver, error=str(exc))
             self.job_store.complete_step_and_advance(
                 step.step_id,
                 ImproveOutcome(
@@ -306,7 +309,7 @@ class StepExecutor:
         except Exception as exc:  # noqa: BLE001
             logger.exception("improve step crashed step_id=%s", step.step_id)
             if evaluation is not None:
-                self._safe_persist_improver_io(step, evaluation, history, error=str(exc))
+                self._safe_persist_improver_io(step, evaluation, history, improver=improver, error=str(exc))
             self.job_store.complete_step_and_advance(
                 step.step_id,
                 ImproveOutcome(
@@ -315,6 +318,27 @@ class StepExecutor:
                     error_message=str(exc),
                 ),
             )
+
+    def _improver_for_step(self, step: StepRecord) -> Improver:
+        """
+        Resolve the improver to use for one improve step.
+
+        ``self.improver`` is the executor-wide default: on the mock backend
+        it (and only it) is used, unconditionally, so tests can inject
+        FakeImprover/_RaisingImprover doubles that keep being used regardless
+        of any per-job improver_model — a mock backend has no real notion of
+        "model" to honour. On a real backend, a step whose job set a
+        non-default ``improver_model`` (see CreateJobRequest.improver_model /
+        spec §10-11) must actually use that model, so build a fresh improver
+        for it via the same seam create_improver already exposes for this
+        purpose; a step with no override (or one that matches the config
+        default) keeps using the executor-wide default improver.
+        """
+        if self.config.execution_backend == "mock":
+            return self.improver
+        if step.improver_model and step.improver_model != self.config.improver_model:
+            return create_improver(self.config, improver_model=step.improver_model)
+        return self.improver
 
     @staticmethod
     def _latest_evaluation(iterations: list[IterationRecord]) -> IterationRecord | None:
@@ -342,6 +366,7 @@ class StepExecutor:
         evaluation: EvaluationSummary,
         history: list[IterationRecord],
         *,
+        improver: Improver,
         error: str,
     ) -> None:
         """Best-effort audit logging for an already-failed improve step.
@@ -353,7 +378,7 @@ class StepExecutor:
         prevent complete_step_and_advance() from reporting that outcome.
         """
         try:
-            self._persist_improver_io(step, evaluation, history, error=error)
+            self._persist_improver_io(step, evaluation, history, improver=improver, error=error)
         except Exception:  # noqa: BLE001
             logger.warning(
                 "failed to persist improver failure artifacts job_id=%s iteration=%s",
@@ -367,10 +392,11 @@ class StepExecutor:
         evaluation: EvaluationSummary,
         history: list[IterationRecord],
         *,
+        improver: Improver,
         proposal: Proposal | None = None,
         error: str | None = None,
     ) -> None:
-        prompt = getattr(self.improver, "last_prompt", "") or build_context(
+        prompt = getattr(improver, "last_prompt", "") or build_context(
             spec=step.spec,
             evaluation=evaluation,
             history=history,
@@ -385,7 +411,7 @@ class StepExecutor:
             body = json.dumps(
                 {
                     "error": error or "unknown improver error",
-                    "raw_response": getattr(self.improver, "last_response", ""),
+                    "raw_response": getattr(improver, "last_response", ""),
                 },
                 indent=2,
             )
