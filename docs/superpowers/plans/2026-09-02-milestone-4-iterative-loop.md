@@ -10,6 +10,12 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-02-milestone-4-iterative-loop-design.md`
 
+> **Read "Update A — Designer Answers" (below, before Section A) first.** The
+> assignment designers answered the spec's open questions after this plan's task
+> bodies were written. The structural consequences are already applied inline in
+> Tasks 1, 5, 6, 7, 11 and 12; Update A carries the remaining new logic and tests,
+> and overrides any task text it conflicts with.
+
 ## Global Constraints
 
 Every task's requirements implicitly include this section.
@@ -20,9 +26,10 @@ Every task's requirements implicitly include this section.
 - **Queue pattern is fixed:** `SELECT ... FOR UPDATE SKIP LOCKED`, mirroring `PostgresRunStore.claim_next` (`api/store.py:291-345`). Never poll-and-then-update without the row lock.
 - **Naming:** queue units are **steps**. Never call them "tasks" — `task_id` already means a benchmark task throughout this codebase.
 - **Mutable agent surface is prompt + config only** (`AgentSpec`). No code generation, no tool invention. Unknown fields from the LLM are rejected (`extra="forbid"`).
-- **Score = mean reward**, with a `None` reward (timeout / infra error) counting as `0.0`.
+- **Score = mean reward**, with a `None` reward (timeout / infra error) counting as `0.0`. Mean is the accept/reject scalar; **per-task movement (`fixed_tasks` / `regressed_tasks`) is tracked alongside it** because a mean cannot tell "fixed A, broke B" from "changed nothing" (see Update A).
 - **Improvement threshold:** `improved ⇔ score > best_score + min_delta`. A score exactly equal to `best_score + min_delta` is *not* an improvement.
-- **Stop-reason precedence** (first match wins): `max_iterations` → `no_improvement` → `budget_exceeded`.
+- **Every proposal is based on the best version so far**, never on one that regressed: an improve step's `agent_version_id` is always `job.best_agent_version_id`.
+- **Stop-reason precedence** (first match wins): `max_iterations` → `no_improvement` (only once `iteration + 1 >= min_iterations`) → `budget_exceeded`. `min_iterations` is a noise floor and never overrides the two cost ceilings.
 - **Failure policy:** a failed *improve* step ends the job `completed` with `stop_reason="failed_improve"` when a best version exists (the best-so-far agent is a valid answer); with no best version the job is `failed`. A failed *evaluate* step always fails the job, so infra errors never masquerade as "no improvement".
 - **Error envelope:** all route errors return `ErrorResponse(error=ErrorDetail(code, message, details))` via the `_error(...)` helper pattern from `api/routes/runs.py:23-25`. Error codes used here: `unknown_task_ids` (400), `empty_task_ids` (422), `job_not_found` (404), `agent_version_not_found` (404), `no_evaluation_yet` (409), `execution_unavailable` (503).
 - **Config values are defaults, request fields are overrides.** `load_config()` is `lru_cache`d — any test that changes config or `EXECUTION_BACKEND` must call `clear_config_cache()`.
@@ -39,7 +46,7 @@ Every task's requirements implicitly include this section.
 | 3 | Artifact store | `ArtifactStore` interface + local-disk impl + key helpers |
 | 4 | Spec-driven runtime | `agent/spec_agent.py` + `extra_env` plumbing through Harbor |
 | 5 | ORM models | `jobs`, `agent_versions`, `steps` tables |
-| 6 | Scoring & stopping | `mean_reward`, `compute_stop` (pure functions) |
+| 6 | Scoring & stopping | `mean_reward`, `compute_stop`, `task_movement` (pure functions) |
 | 7 | `PostgresJobStore` | Typed step queue + transactional step→successor advance |
 | 8 | Improver context | Budgeted prompt assembly from history + failure traces |
 | 9 | Improvers | `FakeImprover` (tests) + `LLMImprover` (litellm, validated) |
@@ -49,6 +56,503 @@ Every task's requirements implicitly include this section.
 | 13 | Version route + E2E | `GET /v1/agent-versions/{id}` + full mock-loop API test |
 
 **Dependency order:** 1 → 2 → 3 → 4 are foundations (2 must precede 5-7); 5 → 6 → 7 build the queue; 8 → 9 → 10 the execution; 11 → 12 → 13 the API. Tasks 8-9 depend only on Task 2 and Task 7's `IterationRecord`, so they can proceed in parallel with 10 once 7 lands.
+
+---
+
+## Update A — Designer Answers (2026-09-02)
+
+The assignment designers answered the spec's open questions (spec §13). Three
+answers changed the design. The structural parts (`min_iterations` threading,
+`task_rewards` column, `IterationRecord` fields, the backtracking rule in
+`_apply_evaluate_outcome`) are already applied inline in Tasks 5-7. **This section
+supplies the remaining new logic and its tests, and overrides any task text it
+conflicts with.**
+
+What changed and why:
+
+1. **Mean reward stays the accept/reject scalar, but per-task movement is now
+   tracked.** Verbatim: *"Mean is good to start with, but if next iteration
+   regresses one and improves another task you'll end up on same mean score."* A
+   mean cannot distinguish "fixed A, broke B" from "changed nothing", so each
+   evaluate step snapshots `{task_id: reward}` and each iteration reports
+   `fixed_tasks` / `regressed_tasks` against the best iteration before it. That
+   comparison is fed to the improver, which is where it does the most good.
+2. **Proposals always build on the best version, never a regressed one.**
+   Verbatim: *"You can keep maybe best snapshot when it was and when you're
+   iterating you can start of from their [if] suggestion regressed."* Implemented
+   in Tasks 5-7 as the invariant: an improve step's `agent_version_id` is always
+   `job.best_agent_version_id`. Greedy hill-climbing with restart-from-best.
+3. **`min_iterations` (default 3) is a noise floor.** The agent is stochastic, so
+   an early non-improving run can be variance rather than a plateau.
+   `min_iterations` blocks `no_improvement` from firing too early; it never
+   overrides `max_iterations` or the wall-clock budget.
+
+Deliberate non-change: a regression does **not** veto a proposal. On a 16-task set
+with single-trial stochastic runs, a lone regression is usually noise, and a veto
+would block genuine net gains. The signal is surfaced and fed back, not enforced.
+
+### A-1. `task_movement()` in `api/services/scoring.py` (extends Task 6)
+
+Add to `api/services/scoring.py`:
+
+```python
+@dataclass(frozen=True)
+class TaskMovement:
+    """Per-task deltas between two reward snapshots."""
+
+    fixed: list[str]
+    regressed: list[str]
+
+
+def task_movement(
+    baseline: dict[str, float | None] | None,
+    current: dict[str, float | None] | None,
+) -> TaskMovement:
+    """
+    Compare two ``{task_id: reward}`` snapshots.
+
+    A ``None`` reward (timeout / infra error) counts as 0.0, matching
+    :func:`mean_reward`, so an task that stopped producing a verifier result reads
+    as a regression rather than as missing data. Tasks absent from either snapshot
+    are ignored: they carry no comparable signal.
+    """
+    if not baseline or not current:
+        return TaskMovement(fixed=[], regressed=[])
+
+    fixed: list[str] = []
+    regressed: list[str] = []
+    for task_id in sorted(set(baseline) & set(current)):
+        before = baseline[task_id] or 0.0
+        after = current[task_id] or 0.0
+        if after > before:
+            fixed.append(task_id)
+        elif after < before:
+            regressed.append(task_id)
+    return TaskMovement(fixed=fixed, regressed=regressed)
+```
+
+Add to `tests/test_scoring.py`:
+
+```python
+from api.services.scoring import TaskMovement, task_movement
+
+
+def test_task_movement_detects_fixed_and_regressed() -> None:
+    move = task_movement(
+        {"a": 0.0, "b": 1.0, "c": 0.5},
+        {"a": 1.0, "b": 0.0, "c": 0.5},
+    )
+    assert move == TaskMovement(fixed=["a"], regressed=["b"])
+
+
+def test_task_movement_treats_none_as_zero() -> None:
+    # a passing task that stopped producing a verifier result is a regression
+    assert task_movement({"a": 1.0}, {"a": None}) == TaskMovement(
+        fixed=[], regressed=["a"]
+    )
+    assert task_movement({"a": None}, {"a": 1.0}) == TaskMovement(
+        fixed=["a"], regressed=[]
+    )
+
+
+def test_task_movement_ignores_non_overlapping_tasks() -> None:
+    assert task_movement({"a": 0.0}, {"b": 1.0}) == TaskMovement(
+        fixed=[], regressed=[]
+    )
+
+
+def test_task_movement_empty_or_missing_snapshots() -> None:
+    assert task_movement(None, {"a": 1.0}) == TaskMovement(fixed=[], regressed=[])
+    assert task_movement({"a": 1.0}, None) == TaskMovement(fixed=[], regressed=[])
+    assert task_movement({}, {}) == TaskMovement(fixed=[], regressed=[])
+
+
+def test_flat_mean_redistribution_is_visible_in_movement() -> None:
+    """The exact case the designers flagged: same mean, different distribution."""
+    before = {"a": 1.0, "b": 0.0}
+    after = {"a": 0.0, "b": 1.0}
+    assert mean_reward(before.values()) == mean_reward(after.values())  # 0.5 both
+    move = task_movement(before, after)
+    assert move.fixed == ["b"] and move.regressed == ["a"]
+```
+
+### A-2. `compute_stop` — `min_iterations` test cases (extends Task 6)
+
+The signature and rule are already patched into Task 6. Add these rows to the
+parametrized `compute_stop` table (`BASE` supplies the other keys; `min_iterations`
+defaults to `3` in `BASE`):
+
+```python
+        (
+            "patience_reached_but_below_min_iterations_keeps_going",
+            {"iteration": 0, "score": 0.5, "best_score": 0.5,
+             "prior_non_improving_streak": 0, "patience": 1,
+             "min_iterations": 3, "max_iterations": 9},
+            StopDecision(improved=False, should_stop=False,
+                         stop_reason=None, non_improving_streak=1),
+        ),
+        (
+            "patience_reached_at_min_iterations_stops",
+            {"iteration": 2, "score": 0.5, "best_score": 0.5,
+             "prior_non_improving_streak": 0, "patience": 1,
+             "min_iterations": 3, "max_iterations": 9},
+            StopDecision(improved=False, should_stop=True,
+                         stop_reason=STOP_NO_IMPROVEMENT, non_improving_streak=1),
+        ),
+        (
+            "min_iterations_never_overrides_max_iterations",
+            {"iteration": 1, "score": 0.5, "best_score": 0.5,
+             "prior_non_improving_streak": 5, "patience": 1,
+             "min_iterations": 99, "max_iterations": 2},
+            StopDecision(improved=False, should_stop=True,
+                         stop_reason=STOP_MAX_ITERATIONS, non_improving_streak=6),
+        ),
+        (
+            "min_iterations_never_overrides_budget",
+            {"iteration": 0, "score": 0.5, "best_score": 0.5,
+             "prior_non_improving_streak": 0, "patience": 9,
+             "min_iterations": 99, "max_iterations": 9,
+             "elapsed_sec": 10_000.0, "max_job_duration_sec": 100},
+            StopDecision(improved=False, should_stop=True,
+                         stop_reason=STOP_BUDGET_EXCEEDED, non_improving_streak=1),
+        ),
+```
+
+Add `"min_iterations": 3` to the `BASE` dict, and update the expected test count in
+Task 6 Step 4 from 15 to 24.
+
+### A-3. `_apply_evaluate_outcome` stores the snapshot (extends Task 7)
+
+In `api/job_store.py`, where the evaluate step's `score` is written, also persist the
+snapshot:
+
+```python
+    step.score = outcome.score
+    step.task_rewards = dict(outcome.task_rewards or {})
+```
+
+### A-4. `get_job` derives movement (extends Task 7)
+
+`get_job` already walks evaluate steps in iteration order to compute `improved`.
+While walking, carry the best-so-far snapshot alongside the best-so-far score and
+build each `IterationRecord` with:
+
+```python
+        movement = task_movement(best_rewards_so_far, step.task_rewards)
+        records.append(
+            IterationRecord(
+                # ... existing fields ...
+                task_rewards=dict(step.task_rewards or {}),
+                fixed_tasks=movement.fixed,
+                regressed_tasks=movement.regressed,
+                based_on_version=parent_version_number,  # None for version 0
+            )
+        )
+        if step.score is not None and (
+            best_score_so_far is None or step.score > best_score_so_far + job.min_delta
+        ):
+            best_score_so_far = step.score
+            best_rewards_so_far = step.task_rewards
+```
+
+`best_rewards_so_far` starts as `None`, so iteration 0 reports empty movement lists —
+there is nothing to compare a baseline against. `parent_version_number` is the
+`version` of the row identified by `agent_versions.parent_version_id`, which after the
+backtracking change is the version the proposal was actually based on.
+
+Add to `tests/test_job_store.py`:
+
+```python
+def test_improve_step_after_regression_is_based_on_best_version(job_store) -> None:
+    """The §8.3 invariant: a regressed iteration must not become the next parent."""
+    job = _create_job(job_store, max_iterations=9, patience=9, min_iterations=9)
+
+    # iteration 0 scores 0.8 and becomes best
+    step0 = job_store.claim_next_step("w")
+    run0 = "aaaaaaaa-0000-0000-0000-000000000000"
+    job_store.complete_step_and_advance(
+        step0.step_id,
+        EvaluateOutcome(run_id=run0, score=0.8, task_rewards={"a": 0.8}),
+    )
+    best_after_0 = job_store.get_job(job.job_id).best_agent_version_id
+
+    # improve -> version 1
+    improve0 = job_store.claim_next_step("w")
+    assert improve0.type == "improve"
+    assert improve0.agent_version_id == best_after_0
+    worse = improve0.spec.model_copy(update={"max_steps": 11})
+    job_store.complete_step_and_advance(
+        improve0.step_id, ImproveOutcome(spec=worse, rationale="try more steps")
+    )
+
+    # iteration 1 REGRESSES to 0.2 — best must stay at version 0
+    step1 = job_store.claim_next_step("w")
+    job_store.complete_step_and_advance(
+        step1.step_id,
+        EvaluateOutcome(
+            run_id="aaaaaaaa-1111-0000-0000-000000000000",
+            score=0.2,
+            task_rewards={"a": 0.2},
+        ),
+    )
+    refreshed = job_store.get_job(job.job_id)
+    assert refreshed.best_score == 0.8
+    assert refreshed.best_agent_version_id == best_after_0
+
+    # the NEXT improve step must be based on version 0, not the regressed version 1
+    improve1 = job_store.claim_next_step("w")
+    assert improve1.type == "improve"
+    assert improve1.agent_version_id == best_after_0, (
+        "improve step must backtrack to the best version, not build on the regression"
+    )
+    assert improve1.version == 0
+    assert improve1.spec.max_steps != 11, "must be editing the best spec, not the worse one"
+
+    # and the resulting version records version 0 as its parent
+    job_store.complete_step_and_advance(
+        improve1.step_id,
+        ImproveOutcome(
+            spec=improve1.spec.model_copy(update={"max_steps": 42}),
+            rationale="retry from best",
+        ),
+    )
+    history = job_store.get_job(job.job_id).iterations
+    assert history[-1].based_on_version == 0
+
+
+def test_iteration_history_reports_per_task_movement(job_store) -> None:
+    """Same mean, different distribution — the case a mean score cannot express."""
+    job = _create_job(
+        job_store, task_ids=["a", "b"], max_iterations=9, patience=9, min_iterations=9
+    )
+
+    step0 = job_store.claim_next_step("w")
+    job_store.complete_step_and_advance(
+        step0.step_id,
+        EvaluateOutcome(
+            run_id="bbbbbbbb-0000-0000-0000-000000000000",
+            score=0.5,
+            task_rewards={"a": 1.0, "b": 0.0},
+        ),
+    )
+    improve0 = job_store.claim_next_step("w")
+    job_store.complete_step_and_advance(
+        improve0.step_id,
+        ImproveOutcome(spec=improve0.spec, rationale="swap emphasis"),
+    )
+    step1 = job_store.claim_next_step("w")
+    job_store.complete_step_and_advance(
+        step1.step_id,
+        EvaluateOutcome(
+            run_id="bbbbbbbb-1111-0000-0000-000000000000",
+            score=0.5,
+            task_rewards={"a": 0.0, "b": 1.0},
+        ),
+    )
+
+    history = job_store.get_job(job.job_id).iterations
+    assert history[0].fixed_tasks == [] and history[0].regressed_tasks == []
+    assert history[1].score == history[0].score          # identical mean
+    assert history[1].improved is False                  # so it is not promoted
+    assert history[1].fixed_tasks == ["b"]               # but the movement is visible
+    assert history[1].regressed_tasks == ["a"]
+```
+
+### A-5. Improver context gains a movement section (extends Task 8)
+
+`build_context` gains one mandatory section, inserted between the iteration-history
+table and the per-task result table. `EvaluationSummary` gains two fields:
+
+```python
+@dataclass(frozen=True)
+class EvaluationSummary:
+    score: float
+    tasks: list[TaskOutcome]
+    traces: dict[str, str]
+    fixed_tasks: list[str] = field(default_factory=list)
+    regressed_tasks: list[str] = field(default_factory=list)
+```
+
+The new section, rendered only when either list is non-empty (otherwise a single
+`"No per-task movement vs the best version."` line, so the section count stays fixed):
+
+```python
+def _movement_section(evaluation: EvaluationSummary) -> str:
+    if not evaluation.fixed_tasks and not evaluation.regressed_tasks:
+        return "PER-TASK MOVEMENT VS BEST\nNo per-task movement vs the best version."
+    lines = ["PER-TASK MOVEMENT VS BEST"]
+    if evaluation.fixed_tasks:
+        lines.append(f"Improved: {', '.join(evaluation.fixed_tasks)}")
+    if evaluation.regressed_tasks:
+        lines.append(
+            f"REGRESSED (your last change broke these): "
+            f"{', '.join(evaluation.regressed_tasks)}"
+        )
+        lines.append(
+            "Keep what fixed the improved tasks, but do not repeat whatever caused "
+            "these regressions."
+        )
+    return "\n".join(lines)
+```
+
+Also extend `IMPROVER_SYSTEM_PROMPT` with one sentence: *"You are editing the
+best-scoring agent so far. Some earlier attempts scored worse and were discarded —
+the history shows them so you do not repeat them."*
+
+Add to `tests/test_improver_context.py`:
+
+```python
+def test_context_reports_regressions_prominently() -> None:
+    ctx = build_context(
+        spec=_spec(),
+        evaluation=EvaluationSummary(
+            score=0.5,
+            tasks=[TaskOutcome("a", "failed", 0.0, None)],
+            traces={},
+            fixed_tasks=["b"],
+            regressed_tasks=["a"],
+        ),
+        history=[],
+        budget=60_000,
+    )
+    assert "PER-TASK MOVEMENT VS BEST" in ctx
+    assert "REGRESSED" in ctx
+    assert "a" in ctx.split("REGRESSED")[1]
+
+
+def test_context_movement_section_present_when_no_movement() -> None:
+    ctx = build_context(
+        spec=_spec(),
+        evaluation=EvaluationSummary(
+            score=0.5, tasks=[TaskOutcome("a", "passed", 1.0, None)], traces={}
+        ),
+        history=[],
+        budget=60_000,
+    )
+    assert "No per-task movement vs the best version." in ctx
+```
+
+### A-6. `StepExecutor` supplies the snapshot and the movement (extends Task 10)
+
+Evaluate path — build the snapshot from the run's task rows and pass it on:
+
+```python
+            task_rewards = {t.task_id: t.reward for t in record.tasks}
+            score = mean_reward(task_rewards.values())
+            outcome = EvaluateOutcome(
+                run_id=run_id, score=score, task_rewards=task_rewards
+            )
+```
+
+Improve path — populate the movement fields from the job's own history, which
+`get_job` has already derived, so no recomputation:
+
+```python
+        history = self.job_store.get_job(step.job_id).iterations
+        latest = [it for it in history if it.run_id][-1]
+        evaluation = EvaluationSummary(
+            score=latest.score or 0.0,
+            tasks=tasks,
+            traces=traces,
+            fixed_tasks=latest.fixed_tasks,
+            regressed_tasks=latest.regressed_tasks,
+        )
+```
+
+### A-7. Config, schemas and route (extends Tasks 1, 11, 12)
+
+`api/config.py` — add alongside `patience`, validated with `_positive_int`:
+
+```python
+min_iterations: int = 3
+```
+
+`config/benchmark.yaml` — add under `patience`:
+
+```yaml
+min_iterations: 3             # noise floor: no_improvement cannot fire before this
+```
+
+`api/schemas.py`:
+
+```python
+# CreateJobRequest — alongside patience
+    min_iterations: int | None = Field(default=None, ge=1, le=50)
+
+# JobConfigEcho — alongside patience
+    min_iterations: int
+
+# ProposalView — alongside changed_fields
+    based_on_version: int | None = None
+
+# IterationView — alongside summary
+    fixed_tasks: list[str] = Field(default_factory=list)
+    regressed_tasks: list[str] = Field(default_factory=list)
+```
+
+`api/routes/jobs.py` — resolve with `is None` (never `or`, so an explicit value
+survives) and pass through; map the new fields in `_job_to_response`:
+
+```python
+    # Resolve with `is None`, never `or`: an explicit min_iterations=1 must survive.
+    min_iterations = (
+        cfg.min_iterations if body.min_iterations is None else body.min_iterations
+    )
+```
+
+then add the one keyword argument to the existing `create_job(...)` call in
+`create_job` (the route handler), keeping every other argument as Task 12 has it:
+
+```python
+        min_iterations=min_iterations,
+```
+
+```python
+        IterationView(
+            # ... existing fields ...
+            fixed_tasks=list(iteration.fixed_tasks),
+            regressed_tasks=list(iteration.regressed_tasks),
+            proposal=(
+                None
+                if iteration.rationale is None
+                else ProposalView(
+                    rationale=iteration.rationale,
+                    changed_fields=list(iteration.changed_fields),
+                    based_on_version=iteration.based_on_version,
+                )
+            ),
+        )
+```
+
+Add to `tests/test_job_schemas.py`:
+
+```python
+def test_create_job_request_min_iterations_bounds() -> None:
+    assert CreateJobRequest(min_iterations=1).min_iterations == 1
+    with pytest.raises(ValidationError):
+        CreateJobRequest(min_iterations=0)
+
+
+def test_iteration_view_movement_defaults_empty() -> None:
+    view = IterationView(
+        iteration=0, agent_version_id="v", version=0, run_id=None,
+        score=None, improved=None, summary=None, proposal=None,
+    )
+    assert view.fixed_tasks == [] and view.regressed_tasks == []
+```
+
+And to the Task 13 end-to-end test, assert the new surface is wired through:
+
+```python
+    assert body["config"]["min_iterations"] == 3
+    for iteration in body["iterations"]:
+        assert iteration["fixed_tasks"] == []      # mock scores never move
+        assert iteration["regressed_tasks"] == []
+```
+
+The mock runner's rewards are a pure function of `task_id`, so no task ever moves
+between iterations — which is exactly why the movement lists are empty there and why
+the store-level tests in A-4 drive the snapshots explicitly instead.
 
 ---
 
@@ -2177,6 +2681,7 @@ class JobRow(Base):
     improver_model: Mapped[str] = mapped_column(String(256), nullable=False)
     max_iterations: Mapped[int] = mapped_column(Integer, nullable=False)
     patience: Mapped[int] = mapped_column(Integer, nullable=False)
+    min_iterations: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
     min_delta: Mapped[float] = mapped_column(Float, nullable=False)
     max_job_duration_sec: Mapped[int] = mapped_column(Integer, nullable=False)
     evaluate_stale_after_sec: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -2243,6 +2748,10 @@ class StepRow(Base):
     agent_version_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     run_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
     score: Mapped[float | None] = mapped_column(Float)
+    # Per-task reward snapshot for an evaluate step: {task_id: reward | None}.
+    # Stored here so per-task movement (fixed / regressed) is derivable without
+    # joining back to run_tasks, and survives even if a run row is later pruned.
+    task_rewards: Mapped[dict | None] = mapped_column(JSONB)
     stale_after_sec: Mapped[int] = mapped_column(Integer, nullable=False)
     worker_id: Mapped[str | None] = mapped_column(String(128))
     claimed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -2294,6 +2803,7 @@ git commit -m "feat: add jobs, agent_versions and steps ORM models"
         prior_non_improving_streak: int,
         max_iterations: int,
         patience: int,
+        min_iterations: int,
         min_delta: float,
         elapsed_sec: float,
         max_job_duration_sec: int,
@@ -2522,6 +3032,7 @@ def compute_stop(
     prior_non_improving_streak: int,
     max_iterations: int,
     patience: int,
+    min_iterations: int,
     min_delta: float,
     elapsed_sec: float,
     max_job_duration_sec: int,
@@ -2533,7 +3044,12 @@ def compute_stop(
 
     Stop precedence, first match wins:
       1. ``max_iterations``  — this was the last allowed iteration.
-      2. ``no_improvement``  — the non-improving streak reached ``patience``.
+      2. ``no_improvement``  — the non-improving streak reached ``patience``,
+         AND at least ``min_iterations`` iterations have completed. The agent is
+         stochastic, so an early non-improving run may be variance rather than a
+         real plateau; ``min_iterations`` is the noise floor that stops the loop
+         from giving up on it. It never overrides ``max_iterations`` or the
+         wall-clock budget — a cost ceiling always beats a "keep trying" floor.
       3. ``budget_exceeded`` — wall-clock since job start passed the budget.
     """
     improved = best_score is None or score > best_score + min_delta
@@ -2542,7 +3058,7 @@ def compute_stop(
     stop_reason: str | None = None
     if iteration + 1 >= max_iterations:
         stop_reason = STOP_MAX_ITERATIONS
-    elif streak >= patience:
+    elif streak >= patience and iteration + 1 >= min_iterations:
         stop_reason = STOP_NO_IMPROVEMENT
     elif elapsed_sec > max_job_duration_sec:
         stop_reason = STOP_BUDGET_EXCEEDED
@@ -2602,7 +3118,7 @@ git commit -m "feat: add mean_reward and compute_stop scoring rules"
   - ```python
     class PostgresJobStore:
         def __init__(self, session_factory=None) -> None
-        def create_job(self, *, task_ids: list[str], agent_model: str,
+        def create_job(self, *, task_ids: list[str], agent_model: str, min_iterations: int,
                        improver_model: str, max_iterations: int, patience: int,
                        min_delta: float, max_job_duration_sec: int,
                        evaluate_stale_after_sec: int) -> JobRecord
@@ -2738,6 +3254,7 @@ def _create_job(
     task_ids: list[str] | None = None,
     max_iterations: int = 5,
     patience: int = 2,
+    min_iterations: int = 3,
     min_delta: float = 0.01,
     max_job_duration_sec: int = 21600,
     evaluate_stale_after_sec: int = 3600,
@@ -2748,6 +3265,7 @@ def _create_job(
         improver_model="gpt-5.4",
         max_iterations=max_iterations,
         patience=patience,
+        min_iterations=min_iterations,
         min_delta=min_delta,
         max_job_duration_sec=max_job_duration_sec,
         evaluate_stale_after_sec=evaluate_stale_after_sec,
@@ -2897,6 +3415,14 @@ class IterationRecord:
     rationale: str | None
     changed_fields: list[str]
     status: str
+    # Per-task movement of this iteration against the best iteration BEFORE it.
+    # A mean score cannot distinguish "fixed A, broke B" from "changed nothing";
+    # these two lists are that missing signal, and they are fed to the improver.
+    task_rewards: dict[str, float | None] = field(default_factory=dict)
+    fixed_tasks: list[str] = field(default_factory=list)
+    regressed_tasks: list[str] = field(default_factory=list)
+    # Version this iteration's spec was derived from (None for the baseline).
+    based_on_version: int | None = None
 
 
 @dataclass(frozen=True)
@@ -2908,6 +3434,7 @@ class JobRecord:
     improver_model: str
     max_iterations: int
     patience: int
+    min_iterations: int
     min_delta: float
     current_iteration: int
     best_agent_version_id: str | None
@@ -2924,10 +3451,15 @@ class JobRecord:
 
 @dataclass(frozen=True)
 class EvaluateOutcome:
-    """Result of an evaluate step. ``score`` is the mean reward for the iteration."""
+    """Result of an evaluate step. ``score`` is the mean reward for the iteration.
+
+    ``task_rewards`` is the per-task snapshot ``{task_id: reward | None}`` that
+    makes per-task movement derivable later; pass ``{}`` on the failure paths.
+    """
 
     run_id: str
     score: float | None
+    task_rewards: dict[str, float | None] = field(default_factory=dict)
     error_code: str | None = None
     error_message: str | None = None
 
@@ -3038,6 +3570,7 @@ class PostgresJobStore:
         improver_model: str,
         max_iterations: int,
         patience: int,
+        min_iterations: int,
         min_delta: float,
         max_job_duration_sec: int,
         evaluate_stale_after_sec: int,
@@ -3065,6 +3598,7 @@ class PostgresJobStore:
                     improver_model=improver_model,
                     max_iterations=max_iterations,
                     patience=patience,
+                    min_iterations=min_iterations,
                     min_delta=min_delta,
                     max_job_duration_sec=max_job_duration_sec,
                     evaluate_stale_after_sec=evaluate_stale_after_sec,
@@ -3149,6 +3683,7 @@ class PostgresJobStore:
                 improver_model=job.improver_model,
                 max_iterations=job.max_iterations,
                 patience=job.patience,
+                min_iterations=job.min_iterations,
                 min_delta=job.min_delta,
                 current_iteration=job.current_iteration,
                 best_agent_version_id=(
@@ -3905,6 +4440,7 @@ def _apply_evaluate_outcome(
         prior_non_improving_streak=job.non_improving_streak,
         max_iterations=job.max_iterations,
         patience=job.patience,
+        min_iterations=job.min_iterations,
         min_delta=job.min_delta,
         elapsed_sec=_elapsed_sec(job, now),
         max_job_duration_sec=job.max_job_duration_sec,
@@ -3921,6 +4457,11 @@ def _apply_evaluate_outcome(
         job.finished_at = now
         return
 
+    # The improve step edits the BEST spec so far, never a version that regressed.
+    # When this iteration improved, best_agent_version_id was just set to
+    # step.agent_version_id above, so the two coincide; when it regressed, this is
+    # what backtracks the loop instead of compounding a bad proposal. The rejected
+    # attempt stays visible in the iteration history the improver reads.
     session.add(
         StepRow(
             id=uuid.uuid4(),
@@ -3928,7 +4469,7 @@ def _apply_evaluate_outcome(
             type=STEP_IMPROVE,
             status=RunStatus.queued.value,
             iteration=step.iteration,
-            agent_version_id=step.agent_version_id,
+            agent_version_id=job.best_agent_version_id or step.agent_version_id,
             stale_after_sec=IMPROVE_STALE_AFTER_SEC,
             created_at=now,
         )
@@ -6449,7 +6990,7 @@ git commit -m "feat: add job API request/response schemas"
 
   class PostgresJobStore:
       def __init__(self, session_factory=None) -> None
-      def create_job(self, *, task_ids: list[str], agent_model: str,
+      def create_job(self, *, task_ids: list[str], agent_model: str, min_iterations: int,
                      improver_model: str, max_iterations: int, patience: int,
                      min_delta: float, max_job_duration_sec: int,
                      evaluate_stale_after_sec: int) -> JobRecord
