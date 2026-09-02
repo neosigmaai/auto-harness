@@ -215,6 +215,49 @@ def test_process_one_falls_back_to_standalone_run(stores) -> None:
     assert final.tasks[0].reward == pytest.approx(1.0)
 
 
+def test_store_traces_copies_harbor_trial_layout(stores) -> None:
+    """
+    The mock backend never produces traces (see PLATEAU_SCORE comment above), so
+    this drives StepExecutor._store_traces directly against a hand-built harbor
+    trial layout to prove the walk-and-copy logic works without harbor installed.
+    """
+    run_store, job_store, artifacts = stores
+    executor = _executor(run_store, job_store, artifacts, FakeImprover())
+    _make_job(job_store, max_iterations=1, patience=1)
+
+    run_id = "cccccccc-0000-0000-0000-000000000000"
+    run_dir = REPO_ROOT / "workspace" / "runs" / run_id
+    # harbor layout: <jobs_dir>/<harbor_job>/<task_id>__<trial>/agent/trace.json
+    fix_git_trace = run_dir / "harbor-job" / "fix-git__trial0" / "agent" / "trace.json"
+    regex_log_trace = run_dir / "harbor-job" / "regex-log__trial0" / "agent" / "trace.json"
+    unknown_task_trace = run_dir / "harbor-job" / "unknown-task__trial0" / "agent" / "trace.json"
+    for path, content in (
+        (fix_git_trace, '[{"role": "user", "content": "fix it"}]'),
+        (regex_log_trace, '[{"role": "user", "content": "regex it"}]'),
+        (unknown_task_trace, '[{"role": "user", "content": "not requested"}]'),
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
+    step = job_store.claim_next_step("w")  # iteration-0 evaluate step for job_id/iteration
+
+    try:
+        copied = executor._store_traces(step, run_id, list(TASK_IDS))
+        assert copied == 2  # only the two requested task_ids, not "unknown-task"
+
+        assert artifacts.get(
+            "jobs/%s/iterations/0/tasks/fix-git/trace.json" % step.job_id
+        ).decode() == '[{"role": "user", "content": "fix it"}]'
+        assert artifacts.get(
+            "jobs/%s/iterations/0/tasks/regex-log/trace.json" % step.job_id
+        ).decode() == '[{"role": "user", "content": "regex it"}]'
+        assert not artifacts.exists(
+            "jobs/%s/iterations/0/tasks/unknown-task/trace.json" % step.job_id
+        )
+    finally:
+        shutil.rmtree(run_dir, ignore_errors=True)
+
+
 def test_improver_error_completes_job_with_failed_improve(stores) -> None:
     run_store, job_store, artifacts = stores
     executor = _executor(run_store, job_store, artifacts, _RaisingImprover())
