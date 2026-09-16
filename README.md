@@ -35,6 +35,20 @@ run benchmark → analyze → improve agent/agent.py → gate → record → upd
 
 ---
 
+## First-run checklist
+
+Before running the initialization command in your chosen quick start:
+
+- [ ] **Choose one benchmark and install its prerequisites:** [Terminal-Bench 2.0](#quick-start-terminal-bench-20) needs the `harbor` CLI and a configured sandbox provider (or a running Docker daemon for `env_provider: "docker"`); [BIRD-Interact](#quick-start-bird-interact) needs Python 3.12+, Docker, `git-lfs`, and access to the ground-truth data described below; [tau-bench](#quick-start-tau-bench) uses Docker Compose and the image built by `docker compose build`.
+- [ ] **Configure the experiment:** copy [`experiment_config.yaml.template`](experiment_config.yaml.template) to `experiment_config.yaml`, uncomment only the benchmark section you intend to use, and review its models, dataset/domain, and `max_concurrency`. The template is entirely commented out, so copying it alone does not select a benchmark.
+- [ ] **Set credentials for the selected models and provider:** use [`.env.example`](.env.example) as a reference. For Terminal-Bench, supply the credential for the selected `env_provider`; Docker needs no sandbox-provider key, but model API credentials are still required. For BIRD-Interact, check both `agent_model` and `user_model`.
+- [ ] **Make credentials available to the process:** Docker Compose loads `.env` via `env_file`. When running `python prepare.py` directly, export the required variables in your shell first; `prepare.py` does not load `.env` automatically. For a shell-compatible `.env` you have reviewed, Bash/Zsh users can run `set -a; source .env; set +a` from the repository root.
+- [ ] **Plan for a baseline run:** on a fresh workspace, `python prepare.py` (or `docker compose run autoeval python prepare.py`) performs setup and launches the baseline benchmark. This makes model API calls and may incur sandbox-provider charges. Review your provider budget before running it; it is not a setup-only check.
+
+After initialization completes, follow [Running the loop](#running-the-loop). Optimization and [gating](#eval-suite) run additional benchmark tasks and can incur further usage charges.
+
+---
+
 ## Quick start: Terminal-Bench 2.0
 
 **Requirements:** `harbor` CLI, an `OPENAI_API_KEY`, and a coding agent (Claude Code, Codex CLI, or similar). If using a sandboxed `env_provider` (the default), you'll also need its credential: `E2B_API_KEY`, `DAYTONA_API_KEY`, or a Modal token via `modal token new` / `MODAL_TOKEN_ID` + `MODAL_TOKEN_SECRET`. `env_provider: "docker"` needs none of these.
