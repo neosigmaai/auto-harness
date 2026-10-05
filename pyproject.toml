@@ -11,6 +11,10 @@ dependencies = [
     "openai",
     "pyyaml",
     "tau2",
+    "bfcl-eval==2026.3.23",
+    # Transitive (qwen-agent) — bfcl-eval imports model_config which loads qwen_agent
+    # which imports soundfile at module load. qwen-agent does not pin it, so we do.
+    "soundfile",
 ]
 
 [tool.uv.sources]
