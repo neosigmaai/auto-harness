@@ -2,8 +2,9 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install git (needed for uv to fetch tau2 from git) and uv
-RUN apt-get update && apt-get install -y --no-install-recommends git \
+# Install git (needed for uv to fetch tau2 from git), Docker CLI for AgentBench,
+# and uv. AgentBench OS images are built on the host and consumed via Docker.
+RUN apt-get update && apt-get install -y --no-install-recommends git docker.io \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir uv
 

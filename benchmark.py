@@ -126,6 +126,433 @@ class TauBenchRunner(BenchmarkRunner):
         }
 
 
+class AgentBenchRunner(BenchmarkRunner):
+    """
+    Runner for AgentBench OS interaction tasks.
+
+    Supports both the directory layout described in the build plan
+    (data/<split>/*.json) and the current THUDM/AgentBench layout
+    (data/<split>.json with a list of task objects).
+    """
+
+    def __init__(
+        self,
+        data_dir: str | None = None,
+        split: str = "dev",
+        agent_model: str | None = None,
+        max_workers: int = 5,
+    ):
+        self.data_dir = data_dir or os.getenv(
+            "AGENTBENCH_DATA_DIR",
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "AgentBench", "data", "os_interaction")),
+        )
+        self.split = split
+        self.agent_model = agent_model or os.getenv("AGENT_MODEL", "gpt-4o")
+        self.max_workers = max_workers
+
+    def _split_dir(self) -> str:
+        return os.path.join(self.data_dir, "data", self.split)
+
+    def _split_file(self) -> str:
+        return os.path.join(self.data_dir, "data", f"{self.split}.json")
+
+    def _normalize_task(self, task: dict, fallback_id: str) -> dict:
+        task = dict(task)
+        task.setdefault("id", fallback_id)
+        if "instruction" not in task and "description" in task:
+            task["instruction"] = task["description"]
+        return task
+
+    def _load_tasks(self, task_ids: list[str] | None = None) -> list[dict]:
+        import glob
+
+        selected = {str(tid) for tid in task_ids} if task_ids is not None else None
+        tasks: list[dict] = []
+
+        split_dir = self._split_dir()
+        if os.path.isdir(split_dir):
+            for fpath in sorted(glob.glob(os.path.join(split_dir, "*.json"))):
+                with open(fpath) as f:
+                    task = json.load(f)
+                fallback_id = os.path.splitext(os.path.basename(fpath))[0]
+                task = self._normalize_task(task, fallback_id)
+                if selected is None or str(task["id"]) in selected:
+                    tasks.append(task)
+            return tasks
+
+        split_file = self._split_file()
+        if os.path.exists(split_file):
+            with open(split_file) as f:
+                raw_tasks = json.load(f)
+            for idx, task in enumerate(raw_tasks):
+                task = self._normalize_task(task, str(idx))
+                if selected is None or str(task["id"]) in selected:
+                    tasks.append(task)
+            return tasks
+
+        raise FileNotFoundError(
+            f"AgentBench split not found: expected {split_dir}/ or {split_file}"
+        )
+
+    def _image_for_task(self, task: dict) -> str:
+        create = task.get("create", {}) if isinstance(task.get("create"), dict) else {}
+        local = create.get("local", "default")
+        return f"local-os/{local}"
+
+    def _init_commands(self, task: dict) -> list[str]:
+        commands: list[str] = []
+        create = task.get("create", {}) if isinstance(task.get("create"), dict) else {}
+        init = create.get("init")
+        if isinstance(init, dict):
+            commands.append(self._load_script(init)[1])
+        elif isinstance(init, str):
+            commands.append(init)
+        for cmd in task.get("init", []) if isinstance(task.get("init"), list) else []:
+            commands.append(str(cmd))
+        if task.get("start"):
+            start = self._load_script(task["start"])
+            if start:
+                commands.append(start[1])
+        return commands
+
+    def _load_script(self, script_obj) -> tuple[str, str] | None:
+        if script_obj is None:
+            return None
+        if isinstance(script_obj, str):
+            return "bash", script_obj
+        language = script_obj.get("language", "bash")
+        if "file" in script_obj:
+            return language, self._read_agentbench_resource(str(script_obj["file"]))
+        if "code" in script_obj:
+            return language, str(script_obj["code"])
+        raise ValueError(f"Invalid AgentBench script object: {script_obj!r}")
+
+    def _read_agentbench_resource(self, rel_path: str) -> str:
+        candidate_roots = [
+            os.path.join(self.data_dir, "data"),
+            os.path.join(self.data_dir, "scripts"),
+            os.path.join(self.data_dir, "res"),
+            self.data_dir,
+        ]
+        for root in candidate_roots:
+            candidate = os.path.join(root, rel_path)
+            if os.path.exists(candidate):
+                with open(candidate) as f:
+                    return f.read()
+        for root in candidate_roots:
+            for dirpath, _, filenames in os.walk(root):
+                if os.path.basename(rel_path) in filenames:
+                    candidate = os.path.join(dirpath, os.path.basename(rel_path))
+                    if candidate.endswith(rel_path):
+                        with open(candidate) as f:
+                            return f.read()
+        raise FileNotFoundError(f"AgentBench resource not found: {rel_path}")
+
+    def _expected_labels(self, task: dict) -> list[str]:
+        evaluation = task.get("evaluation", {})
+        if isinstance(evaluation, dict) and "match" in evaluation:
+            match = evaluation["match"]
+            if isinstance(match, str):
+                return [match.strip()]
+            if isinstance(match, dict) and "answer" in match:
+                return [str(match["answer"]).strip()]
+            if isinstance(match, dict) and "regex" in match:
+                return [f"regex:{match['regex']}"]
+        if isinstance(evaluation, dict) and "check" in evaluation:
+            return ["<check-script>"]
+        return []
+
+    def _evaluation_scripts(self, task: dict) -> tuple[list[tuple[str, str] | None], tuple[str, str] | None]:
+        evaluation = task.get("evaluation", {})
+        check = evaluation.get("check") if isinstance(evaluation, dict) else None
+        example = evaluation.get("example") if isinstance(evaluation, dict) else None
+
+        if check is None:
+            return [], None
+        if isinstance(check, list):
+            scripts = [self._load_script(script_obj) for script_obj in check]
+        else:
+            scripts = [self._load_script(check)]
+        return scripts, self._load_script(example)
+
+    def _run_eval_script(
+        self,
+        container_name: str,
+        script: tuple[str, str],
+        params: list[str],
+        env: dict[str, str] | None = None,
+    ) -> subprocess.CompletedProcess:
+        language, code = script
+        docker_cmd = ["docker", "exec"]
+        for key, value in (env or {}).items():
+            docker_cmd.extend(["-e", f"{key}={value}"])
+        if language == "python":
+            cmd = [*docker_cmd, container_name, "python3", "-c", code, *params]
+        else:
+            cmd = [*docker_cmd, container_name, "bash", "-c", code, "--", *params]
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+
+    def _score_final_output(
+        self,
+        task: dict,
+        final_output: str | None,
+        container_name: str,
+        session_env: dict[str, str] | None = None,
+    ) -> float:
+        if final_output is None:
+            return 0.0
+
+        evaluation = task.get("evaluation", {})
+        if isinstance(evaluation, dict) and "match" in evaluation:
+            match = evaluation["match"]
+            answer = final_output.strip() if isinstance(match, str) or match.get("strip") else final_output
+            if isinstance(match, str):
+                return 1.0 if answer == match else 0.0
+            if isinstance(match, dict) and "answer" in match:
+                return 1.0 if answer == str(match["answer"]) else 0.0
+            if isinstance(match, dict) and "regex" in match:
+                import re
+
+                return 1.0 if re.search(str(match["regex"]), answer) else 0.0
+
+        scripts, example_script = self._evaluation_scripts(task)
+        if scripts:
+            params = [str(final_output)]
+            for script in scripts:
+                actual_script = script or example_script
+                if actual_script is None:
+                    return 0.0
+                result = self._run_eval_script(
+                    container_name,
+                    actual_script,
+                    params,
+                    env=session_env,
+                )
+                if result.returncode != 0:
+                    return 0.0
+                params.append(result.stdout)
+            return 1.0
+
+        return 0.0
+
+    def _update_session_context(
+        self,
+        command: str,
+        cwd: str,
+        user: str | None,
+        env: dict[str, str],
+    ) -> tuple[str, str | None, dict[str, str]]:
+        import re
+
+        cd_matches = re.findall(r"(?:^|&&|;)\s*cd\s+([^\s;&]+)", command)
+        for raw_path in cd_matches:
+            path = raw_path.strip("\"'")
+            if path.startswith("~"):
+                home = f"/home/{user}" if user and user != "root" else "/root"
+                path = home + path[1:]
+            elif not path.startswith("/"):
+                path = os.path.normpath(os.path.join(cwd, path))
+            cwd = path
+
+        su_match = re.search(r"(?:^|&&|;)\s*su\s+-\s*([A-Za-z0-9_-]+)", command)
+        if su_match:
+            user = su_match.group(1)
+            cwd = f"/home/{user}"
+
+        export_matches = re.findall(
+            r"(?:^|&&|;|\n)\s*export\s+([A-Za-z_][A-Za-z0-9_]*)=([^\n;&]+)",
+            command,
+        )
+        for name, raw_value in export_matches:
+            if name == "PATH":
+                continue
+            value = raw_value.strip().strip("\"'")
+            value = value.replace("$HOME", f"/home/{user}" if user and user != "root" else "/root")
+            if name in env:
+                value = value.replace(f"${name}", env[name])
+            if "$" in value:
+                continue
+            env[name] = value
+
+        return cwd, user, env
+
+    def _docker_exec(
+        self,
+        container_name: str,
+        command: str,
+        *,
+        cwd: str = "/",
+        user: str | None = None,
+        env: dict[str, str] | None = None,
+        timeout: int = 30,
+    ) -> subprocess.CompletedProcess:
+        docker_cmd = ["docker", "exec"]
+        for key, value in (env or {}).items():
+            docker_cmd.extend(["-e", f"{key}={value}"])
+        if user:
+            docker_cmd.extend(["-u", user])
+        if cwd:
+            docker_cmd.extend(["-w", cwd])
+        docker_cmd.extend([container_name, "bash", "-lc", command])
+        return subprocess.run(
+            docker_cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+
+    def _run_single_task(self, task: dict) -> tuple[str, float, dict]:
+        from agent.agent import HarnessAgent
+
+        task_id = str(task["id"])
+        labels = self._expected_labels(task)
+        trace = {
+            "task_id": task_id,
+            "instruction": task.get("instruction", ""),
+            "init_commands": self._init_commands(task),
+            "labels": labels,
+            "turns": [],
+            "final_output": None,
+            "reward": 0.0,
+        }
+
+        container_name = f"agentbench-os-{task_id}-{os.getpid()}-{int(time.time())}"
+        agent = HarnessAgent(model=self.agent_model)
+        reward = 0.0
+
+        try:
+            subprocess.run(
+                [
+                    "docker", "run", "-d", "--name", container_name,
+                    self._image_for_task(task), "bash", "-c", "sleep 3600",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            cwd = "/"
+            user: str | None = None
+            session_env: dict[str, str] = {}
+            for cmd in trace["init_commands"]:
+                result = self._docker_exec(
+                    container_name,
+                    cmd,
+                    cwd=cwd,
+                    user=user,
+                    env=session_env,
+                    timeout=60,
+                )
+                if result.returncode != 0:
+                    trace.setdefault("init_errors", []).append(
+                        {"cmd": cmd, "stderr": result.stderr[-1000:]}
+                    )
+                cwd, user, session_env = self._update_session_context(cmd, cwd, user, session_env)
+
+            history: list[dict] = []
+            final_output: str | None = None
+            max_turns = int(os.getenv("AGENTBENCH_MAX_TURNS", "10"))
+
+            for turn in range(max_turns):
+                agent_response = agent.step(
+                    instruction=trace["instruction"],
+                    history=history,
+                    container=container_name,
+                )
+                history.append({"role": "assistant", "content": agent_response})
+                trace_turn = {"turn": turn, "response": agent_response}
+                trace["turns"].append(trace_turn)
+
+                cmd_block = _extract_code_block(agent_response)
+                if cmd_block:
+                    result = self._docker_exec(
+                        container_name,
+                        cmd_block,
+                        cwd=cwd,
+                        user=user,
+                        env=session_env,
+                        timeout=30,
+                    )
+                    if result.returncode != 0 and "chdir to cwd" in result.stderr:
+                        cwd = "/"
+                        result = self._docker_exec(
+                            container_name,
+                            cmd_block,
+                            cwd=cwd,
+                            user=user,
+                            env=session_env,
+                            timeout=30,
+                        )
+                    stdout = result.stdout[-2000:]
+                    stderr = result.stderr[-500:]
+                    env_feedback = stdout + (f"\n[stderr]: {stderr}" if stderr else "")
+                    if not env_feedback.strip():
+                        env_feedback = "The command produced no output."
+                    history.append({"role": "user", "content": env_feedback})
+                    trace_turn["cmd"] = cmd_block
+                    trace_turn["env_output"] = env_feedback
+                    trace_turn["cmd_success"] = result.returncode == 0
+                    cwd, user, session_env = self._update_session_context(
+                        cmd_block,
+                        cwd,
+                        user,
+                        session_env,
+                    )
+
+                answer = _extract_final_answer(agent_response)
+                if answer is not None:
+                    final_output = answer
+                    break
+                if not cmd_block:
+                    feedback = (
+                        "No executable bash block or ANSWER was found. "
+                        "Continue by running one concrete bash command, or provide "
+                        "ANSWER: <value> if the task is complete."
+                    )
+                    history.append({"role": "user", "content": feedback})
+                    trace_turn["env_output"] = feedback
+                    trace_turn["cmd_success"] = False
+
+            reward = self._score_final_output(task, final_output, container_name, session_env)
+            trace["final_output"] = final_output
+            trace["reward"] = reward
+        except Exception as e:
+            trace["error"] = str(e)
+            reward = 0.0
+        finally:
+            subprocess.run(["docker", "rm", "-f", container_name], capture_output=True)
+
+        return task_id, reward, trace
+
+    def run(self, task_ids: list[str] | None = None) -> dict[str, float | None]:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        tasks = self._load_tasks(task_ids)
+        results: dict[str, float | None] = {}
+        traces: list[dict] = []
+
+        print(
+            f"[benchmark] running {len(tasks)} AgentBench OS tasks "
+            f"(split={self.split}, model={self.agent_model}, n={self.max_workers})"
+        )
+        with ThreadPoolExecutor(max_workers=self.max_workers) as pool:
+            futures = {pool.submit(self._run_single_task, task): task for task in tasks}
+            for fut in as_completed(futures):
+                tid, reward, trace = fut.result()
+                results[tid] = reward
+                traces.append(trace)
+                status = "PASS" if reward >= 0.5 else "FAIL"
+                print(f"  {status} {tid}: {reward:.2f}")
+
+        os.makedirs("workspace", exist_ok=True)
+        traces_path = f"workspace/{self.split}_traces.json"
+        with open(traces_path, "w") as f:
+            json.dump(sorted(traces, key=lambda t: t["task_id"]), f, indent=2)
+        print(f"[benchmark] traces saved to {traces_path}")
+
+        return results
+
+
 class TerminalBenchRunner(BenchmarkRunner):
     """
     Runner for Terminal-Bench 2.0 via Harbor framework.
@@ -795,6 +1222,36 @@ class BirdInteractRunner(BenchmarkRunner):
         return results
 
 
+def _extract_code_block(text: str) -> str | None:
+    """Extract bash/sh fenced code blocks from an agent response."""
+    import re
+
+    matches = re.findall(r"```(?:bash|sh)\n(.*?)```", text, re.DOTALL)
+    blocks = [match.strip() for match in matches if match.strip()]
+    return "\n\n".join(blocks) if blocks else None
+
+
+def _extract_final_answer(text: str) -> str | None:
+    """Extract the last ANSWER marker outside fenced code blocks."""
+    import re
+
+    text_without_code = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+    matches = re.findall(r"ANSWER:\s*(.+)", text_without_code)
+    if not matches:
+        return None
+    answer = matches[-1].strip()
+    if _looks_unresolved_answer(answer):
+        return None
+    return answer
+
+
+def _looks_unresolved_answer(answer: str) -> bool:
+    if not answer:
+        return True
+    unresolved_markers = ("$", "`", "$(", "${")
+    return any(marker in answer for marker in unresolved_markers)
+
+
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -818,7 +1275,10 @@ if __name__ == "__main__":
     if benchmark == "tau-bench":
         parser.add_argument("--domain", default=cfg.get("domain"), help="tau-bench domain (overrides experiment_config.yaml)")
     parser.add_argument("--split", default=cfg.get("split", "train"))
-    _concurrency_default = cfg.get("max_concurrency", 50 if benchmark == "terminal-bench" else 3)
+    _concurrency_default = cfg.get(
+        "max_concurrency",
+        50 if benchmark == "terminal-bench" else 5 if benchmark == "agentbench" else 3,
+    )
     parser.add_argument("--concurrency", type=int, default=_concurrency_default)
     args = parser.parse_args()
 
@@ -830,6 +1290,13 @@ if __name__ == "__main__":
             n_concurrent=args.concurrency,
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
             reasoning_effort=cfg.get("reasoning_effort"),
+        )
+    elif benchmark == "agentbench":
+        runner = AgentBenchRunner(
+            data_dir=cfg.get("agentbench_data_dir"),
+            split=args.split,
+            agent_model=cfg.get("agent_model"),
+            max_workers=args.concurrency,
         )
     elif benchmark == "bird-interact":
         runner = BirdInteractRunner(
@@ -881,12 +1348,20 @@ if __name__ == "__main__":
         status = "PASS" if reward is not None and reward >= 0.5 else ("TIMEOUT" if reward is None else "FAIL")
         print(f"  {status}  {task_id}: {f'{reward:.2f}' if reward is not None else 'N/A'}")
 
-    train_results_path = "workspace/train_results.json"
     os.makedirs("workspace", exist_ok=True)
-    with open(train_results_path, "w") as f:
-        _json.dump({
-            "split": args.split,
-            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
-            "results": results,
-        }, f, indent=2)
-    print(f"[benchmark] results saved to {train_results_path}")
+    result_payload = {
+        "split": args.split,
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+        "results": results,
+    }
+    split_results_path = f"workspace/{args.split}_results.json"
+    with open(split_results_path, "w") as f:
+        _json.dump(result_payload, f, indent=2)
+    print(f"[benchmark] results saved to {split_results_path}")
+
+    train_split = cfg.get("split", "train")
+    if args.split == train_split:
+        train_results_path = "workspace/train_results.json"
+        with open(train_results_path, "w") as f:
+            _json.dump(result_payload, f, indent=2)
+        print(f"[benchmark] train results saved to {train_results_path}")

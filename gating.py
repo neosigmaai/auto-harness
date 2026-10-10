@@ -21,7 +21,13 @@ import sys
 
 import yaml
 
-from benchmark import BenchmarkRunner, BirdInteractRunner, TauBenchRunner, TerminalBenchRunner
+from benchmark import (
+    AgentBenchRunner,
+    BenchmarkRunner,
+    BirdInteractRunner,
+    TauBenchRunner,
+    TerminalBenchRunner,
+)
 
 CONFIG_FILE = "experiment_config.yaml"
 
@@ -139,10 +145,10 @@ def file_guard_violations(*, check_last_commit: bool = False) -> list[str]:
         return []
 
     paths: set[str] = set()
-    paths.update(_git_lines("diff-index", "--name-only", "HEAD"))
-    paths.update(_git_lines("ls-files", "--others", "--exclude-standard"))
+    paths.update(_git_lines("diff-index", "--name-only", "--relative", "HEAD"))
+    paths.update(_git_lines("ls-files", "--others", "--exclude-standard", "--relative"))
     if check_last_commit and _has_parent_commit():
-        paths.update(_git_lines("diff", "--name-only", "HEAD~1", "HEAD"))
+        paths.update(_git_lines("diff", "--name-only", "--relative", "HEAD~1", "HEAD"))
     return sorted(paths - ALLOWED_AGENT_FILES)
 
 
@@ -280,8 +286,36 @@ def run_gate(train_runner: BenchmarkRunner, gate_runner: BenchmarkRunner) -> int
         print(f"\n[gate] FAILED — val_score {val:.4f} < best {best:.4f}")
         return 1
 
-    # ── Step 3: Promote newly-fixed train tasks into suite ────────────────────
-    print("\n[gate] Step 3: suite promotion")
+    # ── Step 3: Cluster regression check ─────────────────────────────────────
+    print("\n[gate] Step 3: cluster regression check")
+    taxonomy_path = "workspace/failure_taxonomy.json"
+    if os.path.exists(taxonomy_path):
+        with open(taxonomy_path) as f:
+            current_taxonomy = json.load(f)
+
+        prev_taxonomy_path = "workspace/failure_taxonomy_prev.json"
+        if os.path.exists(prev_taxonomy_path):
+            with open(prev_taxonomy_path) as f:
+                prev_taxonomy = json.load(f)
+
+            prev_failing_clusters = {r["cluster_id"] for r in prev_taxonomy if r.get("cluster_id")}
+            current_failing_clusters = {r["cluster_id"] for r in current_taxonomy if r.get("cluster_id")}
+            reappeared = current_failing_clusters - prev_failing_clusters
+            if reappeared:
+                print(f"  FAIL ✗ cluster regression detected: {sorted(reappeared)}")
+                print(f"\n[gate] FAILED — cluster regression in: {sorted(reappeared)}")
+                return 1
+            print(f"  PASS ✓ no cluster regressions (current failing clusters: {len(current_failing_clusters)})")
+        else:
+            print("  no previous taxonomy — skipping regression check (first iteration)")
+
+        import shutil
+        shutil.copy(taxonomy_path, prev_taxonomy_path)
+    else:
+        print(f"  {taxonomy_path} not found — skipping (run classifier.py first)")
+
+    # ── Step 4: Promote newly-fixed train tasks into suite ────────────────────
+    print("\n[gate] Step 4: suite promotion")
     train_results = load_train_results()
     if not train_results:
         print(f"       {TRAIN_RESULTS_FILE} not found — run benchmark.py first to populate it")
@@ -330,6 +364,19 @@ def _create_runners(cfg: dict) -> tuple[BenchmarkRunner, BenchmarkRunner]:
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
             jobs_dir="workspace/tbench_jobs/test",
             reasoning_effort=cfg.get("reasoning_effort"),
+        )
+    elif benchmark == "agentbench":
+        train_runner = AgentBenchRunner(
+            data_dir=cfg.get("agentbench_data_dir"),
+            split=cfg.get("split", "dev"),
+            agent_model=cfg.get("agent_model"),
+            max_workers=cfg.get("max_concurrency", 5),
+        )
+        gate_runner = AgentBenchRunner(
+            data_dir=cfg.get("agentbench_data_dir"),
+            split=cfg.get("gate_split", "test"),
+            agent_model=cfg.get("agent_model"),
+            max_workers=cfg.get("max_concurrency", 5),
         )
     elif benchmark == "bird-interact":
         train_runner = BirdInteractRunner(

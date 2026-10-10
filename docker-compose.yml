@@ -5,14 +5,20 @@ services:
     environment:
       - AGENT_MODEL=${AGENT_MODEL:-gpt-5.4}
       - TAU2_DATA_DIR=/tau2_data
+      - AGENTBENCH_DATA_DIR=${AGENTBENCH_DATA_DIR:-/agentbench/data/os_interaction}
+      - AGENTBENCH_MAX_WORKERS=${AGENTBENCH_MAX_WORKERS:-5}
     volumes:
       # Mount all editable files so changes take effect without rebuilding
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../AgentBench:/agentbench:ro
       - ./agent:/app/agent
       - ./workspace:/app/workspace
       - ./experiment_config.yaml:/app/experiment_config.yaml
       - ./benchmark.py:/app/benchmark.py
       - ./gating.py:/app/gating.py
       - ./prepare.py:/app/prepare.py
+      - ./classifier.py:/app/classifier.py
+      - ./success_store.py:/app/success_store.py
       - ./record.py:/app/record.py
       # TAU2_DATA_DIR has two layers: the host-side substitution here controls which
       # directory is mounted; the container always sees it as /tau2_data (set above
