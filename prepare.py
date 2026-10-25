@@ -360,6 +360,7 @@ def run_baseline(cfg: dict) -> None:
                 split=None,  # run all tasks
                 env_provider=cfg.get("env_provider", "e2b"),
                 n_concurrent=cfg.get("max_concurrency", 50),
+                per_task_timeout=cfg.get("per_task_timeout", 1200),
                 reasoning_effort=cfg.get("reasoning_effort"),
             )
             all_results = all_runner.run()
@@ -386,6 +387,7 @@ def run_baseline(cfg: dict) -> None:
                 split=cfg.get("gate_split", "test"),
                 env_provider=cfg.get("env_provider", "e2b"),
                 n_concurrent=cfg.get("max_concurrency", 50),
+                per_task_timeout=cfg.get("per_task_timeout", 1200),
                 reasoning_effort=cfg.get("reasoning_effort"),
             )
             test_results = runner.run()

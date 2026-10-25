@@ -828,6 +828,7 @@ if __name__ == "__main__":
             split=args.split,
             env_provider=cfg.get("env_provider", "e2b"),
             n_concurrent=args.concurrency,
+            per_task_timeout=cfg.get("per_task_timeout", 1200),
             dataset=cfg.get("dataset", "terminal-bench@2.0"),
             reasoning_effort=cfg.get("reasoning_effort"),
         )
