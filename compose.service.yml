@@ -1,0 +1,51 @@
+# Agent Optimization Service: Postgres + API + worker.
+#   docker compose -f compose.service.yml up --build
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: harness
+      POSTGRES_PASSWORD: harness
+      POSTGRES_DB: harness
+    ports: ["5433:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U harness"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    volumes: ["aos_pgdata:/var/lib/postgresql/data"]
+
+  migrate:
+    build: { context: ., dockerfile: Dockerfile.service }
+    command: python -m service.db migrate
+    environment: { DATABASE_URL: postgresql://harness:harness@db:5432/harness }
+    depends_on: { db: { condition: service_healthy } }
+
+  api:
+    build: { context: ., dockerfile: Dockerfile.service }
+    command: uvicorn service.api.app:app --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: postgresql://harness:harness@db:5432/harness
+      EXECUTOR: ${EXECUTOR:-simulated}
+      OPTIMIZER: ${OPTIMIZER:-simulated}
+      BOOTSTRAP_ADMIN_TOKEN: ${BOOTSTRAP_ADMIN_TOKEN:-dev-bootstrap-token}
+    ports: ["8000:8000"]
+    depends_on: { migrate: { condition: service_completed_successfully } }
+
+  worker:
+    build: { context: ., dockerfile: Dockerfile.service }
+    command: python -m service.worker.main
+    environment:
+      DATABASE_URL: postgresql://harness:harness@db:5432/harness
+      EXECUTOR: ${EXECUTOR:-simulated}
+      OPTIMIZER: ${OPTIMIZER:-simulated}
+      SANDBOX_PROVIDER: ${SANDBOX_PROVIDER:-e2b}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      E2B_API_KEY: ${E2B_API_KEY:-}
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-2}
+    volumes: ["./runs:/app/runs"]
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    deploy: { replicas: 2 }
+
+volumes:
+  aos_pgdata: {}
