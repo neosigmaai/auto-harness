@@ -1,0 +1,33 @@
+{
+  "model_calls": 2,
+  "real_provider_calls": 0,
+  "production_source_sha256": "7bc8de276922ed2b940ba92f7f51f2826515b9e6baa712e046ace421184a48c7",
+  "expected_outcome": "passed",
+  "no_host_bind_mount": true,
+  "single_internal_network": true,
+  "checks_output": "host marker absent; credential env absent; private/metadata proxy denied; direct host denied; public HTTPS works\n",
+  "status": "passed",
+  "reward": 1.0,
+  "duration_s": 14.833251875010319,
+  "runner_exit_code": 0,
+  "verifier_validity": {
+    "contract": "pinned-pytest-ctrf-v1",
+    "valid": true,
+    "orchestration_sha256": "850df0cba4fe1ad536858ad710f5d0e72b288abf7ee3035c78c37f86b1665d47",
+    "shell_started_at": 1794052569.081586,
+    "shell_finished_at": 1794052569.321625,
+    "shell_exit_code": 0,
+    "raw_reward": 1.0,
+    "counts": {
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "pending": 0,
+      "other": 0
+    },
+    "pytest_exit_code": 0,
+    "fresh_session_marker": true
+  },
+  "production_source_unchanged": true
+}

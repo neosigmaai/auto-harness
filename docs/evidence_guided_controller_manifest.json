@@ -1,0 +1,11 @@
+{
+  "production_sha256": "a9c1a5ced409f3f08006ae12ab72070ea736846ef6b372972909ed64d6834012",
+  "files": {
+    "scripts/run_calibrated_review.py": "030c5d5e33ef6602750bbb673e2852948728d1e49b29957b5302995c1bdbd325",
+    "scripts/run_final_holdout_review.py": "32985459b86282e1ae462b833def45d00554176819e492567b04d1361ab7bc6d",
+    "scripts/run_paired_selection_review.py": "679c829b606f55fc670487dfb75681e9f560073422b473513b88622d67e09a8f"
+  },
+  "baseline_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+  "archive_path": "runs/evidence-guided-source-archive.tar.gz",
+  "archive_sha256": "53dd3093fa55afde58980e9aa0e2818e0ac0ed1a1f80a2ed2b2cb32483cbab13"
+}

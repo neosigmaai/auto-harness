@@ -1,0 +1,42 @@
+{
+  "observed_at": "2026-11-07T13:20:50.431709+00:00",
+  "job_id": "253886be-b646-4176-ac23-7e6990e71755",
+  "candidate_sha256": "00fdb0c7d26e850e106445d3d46b2f517a27113a6335cbc400426b6a20c68fab",
+  "scope": "Only candidate3 feedback/control execution metadata; no selection or heldback assertions inspected.",
+  "observations": [
+    {
+      "trial": "extract-elf__UhGBqWA",
+      "trace_artifact": "runs/aos_development_20261107_80a1f86c/tasks/253886be-b646-4176-ac23-7e6990e71755/iter3/main/rep1/attempt1/3-main-r1-a1-extract-elf-15610986/harbor/trial/extract-elf__UhGBqWA/agent/trace.json",
+      "tool_command_count": 10,
+      "auto_pytest_feedback_present": false,
+      "prior_pytest_command_count": 0,
+      "ended_with_tool_free_completion": true
+    },
+    {
+      "trial": "fix-git__bN7pjBK",
+      "trace_artifact": "runs/aos_development_20261107_80a1f86c/tasks/253886be-b646-4176-ac23-7e6990e71755/iter3/main/rep1/attempt1/3-main-r1-a1-fix-git-54ac1b96/harbor/trial/fix-git__bN7pjBK/agent/trace.json",
+      "tool_command_count": 8,
+      "auto_pytest_feedback_present": false,
+      "prior_pytest_command_count": 0,
+      "ended_with_tool_free_completion": true
+    },
+    {
+      "trial": "sanitize-git-repo__wZq93VD",
+      "trace_artifact": "runs/aos_development_20261107_80a1f86c/tasks/253886be-b646-4176-ac23-7e6990e71755/iter3/main/rep1/attempt1/3-main-r1-a1-sanitize-git-repo-ff6d3da3/harbor/trial/sanitize-git-repo__wZq93VD/agent/trace.json",
+      "tool_command_count": 5,
+      "auto_pytest_feedback_present": false,
+      "prior_pytest_command_count": 0,
+      "ended_with_tool_free_completion": true
+    },
+    {
+      "trial": "sqlite-db-truncate__ZDtbbTd",
+      "trace_artifact": "runs/aos_development_20261107_80a1f86c/tasks/253886be-b646-4176-ac23-7e6990e71755/iter3/main/rep1/attempt1/3-main-r1-a1-sqlite-db-truncate-c80d8d57/harbor/trial/sqlite-db-truncate__ZDtbbTd/agent/trace.json",
+      "tool_command_count": 8,
+      "auto_pytest_feedback_present": false,
+      "prior_pytest_command_count": 0,
+      "ended_with_tool_free_completion": true
+    }
+  ],
+  "interpretation": "All four saved traces reached normal tool-free completion after commands with no earlier pytest call, but contain no auto-pytest feedback. Given this exact candidate control flow, the conditional probe took its __NO_PYTEST__ skip path. The saved trace does not distinguish missing /tests from missing pytest. No successful verification branch is established.",
+  "limitation": "A tighter optimizer capability contract is future work; hidden verifier tests are normally installed after agent execution."
+}

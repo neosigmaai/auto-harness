@@ -34,3 +34,7 @@ tau2_data/
 
 # BIRD-Interact-ADK (auto-cloned by prepare.py, not committed)
 bird_interact_adk/
+
+# agent optimization service (service/)
+.venv-service/
+runs/

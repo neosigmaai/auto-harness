@@ -1,0 +1,281 @@
+{
+  "job_id": "253886be-b646-4176-ac23-7e6990e71755",
+  "sources_copied_as_data_only": true,
+  "no_source_executed_on_host": true,
+  "iterations": [
+    {
+      "iteration": 0,
+      "sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+      "file": "docs/prepared_verified_candidates/baseline.py.txt",
+      "decision": "baseline",
+      "decision_reason": "complete baseline on the fixed selection set",
+      "proposal": {},
+      "metrics": {
+        "scope": "selection",
+        "errors": 0,
+        "failed": 2,
+        "passed": 1,
+        "complete": true,
+        "screened": false,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "mean_reward": 0.3333333333333333,
+        "input_tokens": 19764,
+        "evidence_kind": "execution",
+        "output_tokens": 2135,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "selection_tasks": [
+          "nginx-request-logging",
+          "largest-eigenval",
+          "cancel-async-tasks"
+        ],
+        "feedback_summary": {
+          "scope": "feedback_only",
+          "passed": 2,
+          "input_tokens": 77771,
+          "output_tokens": 4136,
+          "planned_tasks": 5,
+          "observed_tasks": 5,
+          "failure_classes": {
+            "wrong_output": 3
+          },
+          "coverage_complete": true,
+          "physical_attempts": 5,
+          "valid_observations": true,
+          "mean_reward_observed": 0.4,
+          "mean_model_cost_usd_observed": 0.01538805,
+          "p95_task_duration_s_observed": 47.42249604201061
+        },
+        "physical_attempts": 3,
+        "mean_model_cost_usd": 0.0081435,
+        "p95_task_duration_s": 51.386994750006124,
+        "mean_task_duration_s": 43.02536394434477,
+        "total_model_cost_usd": 0.0244305,
+        "total_sandbox_cost_usd": null
+      },
+      "mechanism_limitations": []
+    },
+    {
+      "iteration": 1,
+      "sha256": "2b1f9f1895bcd8ff0e070fcbf3894c7de91f32c446199f8f202c85fc22ae9843",
+      "file": "docs/prepared_verified_candidates/candidate1.py.txt",
+      "decision": "rejected",
+      "decision_reason": "screened_out: no feedback repair; unexecuted tasks remain unmeasured",
+      "proposal": {
+        "objective": "quality",
+        "hypothesis": "If the agent automatically appends a compact git diff summary after likely file-modifying bash commands, it will catch unintended repository edits before declaring completion, improving tasks that require precise in-place sanitization without changing unrelated content.",
+        "rationale": "The sanitize-git-repo failure shows the agent edited the right files but still failed because replacements altered content beyond the intended secrets: the test diff reports changed setup commands rather than exact token placeholder substitution. In the trace, the agent made a bulk Python edit and only ran grep afterward; grep cannot reveal collateral modifications, and earlier command outputs were truncated twice, reducing visibility into repo state. The baseline prompt already asked the model to verify, but that generic mechanism did not surface the bad diff. This proposal differs by adding execution-time evidence the model did not previously get: an automatic, compact `git diff --stat` plus zero-context patch excerpt immediately after write-like commands, so the model can see exact changed lines and correct over-broad edits. Expected benefit: higher success on edit-precision tasks, especially secret sanitization, with possible side benefit on other patch tasks. Likely regression: small runtime/token increase on modification-heavy tasks, and no benefit outside git repos or non-edit failures. The change is bounded by only triggering on likely write commands and truncating the diff output, aiming to stay within the promotion policy's cost/duration limits.",
+        "change_summary": "Add a lightweight post-write inspection hook: after likely file-modifying bash commands, if inside a git repo, append a compact `git diff --stat` and patch excerpt to the tool output so the model can detect unintended edits immediately."
+      },
+      "metrics": {
+        "scope": "selection",
+        "errors": 0,
+        "failed": 0,
+        "passed": 0,
+        "complete": false,
+        "screened": true,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "mean_reward": null,
+        "input_tokens": 0,
+        "evidence_kind": "execution",
+        "output_tokens": 0,
+        "planned_trials": 3,
+        "observed_trials": 0,
+        "selection_tasks": [
+          "nginx-request-logging",
+          "largest-eigenval",
+          "cancel-async-tasks"
+        ],
+        "feedback_summary": {
+          "scope": "feedback_only",
+          "passed": 1,
+          "input_tokens": 82179,
+          "output_tokens": 6061,
+          "planned_tasks": 5,
+          "observed_tasks": 4,
+          "failure_classes": {
+            "wrong_output": 3
+          },
+          "coverage_complete": false,
+          "physical_attempts": 4,
+          "valid_observations": true,
+          "mean_reward_observed": 0.25,
+          "mean_model_cost_usd_observed": 0.0222271875,
+          "p95_task_duration_s_observed": 51.65878425000119
+        },
+        "physical_attempts": 0,
+        "mean_model_cost_usd": null,
+        "p95_task_duration_s": null,
+        "mean_task_duration_s": null,
+        "total_model_cost_usd": null,
+        "total_sandbox_cost_usd": null
+      },
+      "mechanism_limitations": []
+    },
+    {
+      "iteration": 2,
+      "sha256": "767e0be90338532b832600550568d21efa6714641c29651c1a47659e5e82ac78",
+      "file": "docs/prepared_verified_candidates/candidate2.py.txt",
+      "decision": "rejected",
+      "decision_reason": "quality_regression",
+      "proposal": {
+        "objective": "efficiency",
+        "hypothesis": "If tool outputs are compacted by line as well as by character before being added to conversation history, the agent will spend fewer prompt tokens on noisy `find`/`grep`/listing commands and keep later reasoning context more relevant, improving efficiency and potentially reducing wrong edits caused by context overload without changing the tool interface.",
+        "rationale": "The strongest measured issue is context bloat from raw shell output. In `sanitize-git-repo`, input tokens were very high (36,201, the largest task) and the trace shows two tool outputs already hit the 8k-char truncation marker after broad `find`/`grep` commands, yet the task still failed with wrong edits. The current truncation keeps large character slices, which preserves lots of low-value bulk text. A line-aware compactor should retain salient head/tail evidence while dropping repetitive middle lines, reducing prompt growth across steps. This is a smaller, more general change than the previously rejected diff-hook idea: that earlier attempt added more post-command context and was screened out without repair evidence, while this proposal removes irrelevant context exposed by the feedback logs. Expected benefit: lower token cost and less context crowding, especially on repo-search tasks. Likely regression: if a crucial fact appears only in the omitted middle of a very long output, the model might miss it; keeping both head and tail plus omission counts limits that risk.",
+        "change_summary": "Replace character-only tool-output truncation with compact line-aware summarization that preserves head/tail context and omission counts before storing outputs in message history."
+      },
+      "metrics": {
+        "scope": "selection_confirmation",
+        "errors": 0,
+        "failed": 4,
+        "passed": 2,
+        "complete": true,
+        "incumbent": {
+          "errors": 0,
+          "failed": 3,
+          "passed": 3,
+          "complete": true,
+          "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+          "mean_reward": 0.5,
+          "input_tokens": 48543,
+          "evidence_kind": "execution",
+          "output_tokens": 4800,
+          "planned_trials": 6,
+          "observed_trials": 6,
+          "physical_attempts": 6,
+          "mean_model_cost_usd": 0.009667875,
+          "p95_task_duration_s": 58.07865408301586,
+          "mean_task_duration_s": 45.87050552100603,
+          "total_model_cost_usd": 0.058007249999999996,
+          "total_sandbox_cost_usd": null
+        },
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "mean_reward": 0.3333333333333333,
+        "preliminary": {
+          "scope": "selection",
+          "errors": 0,
+          "failed": 1,
+          "passed": 2,
+          "complete": true,
+          "screened": false,
+          "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+          "mean_reward": 0.6666666666666666,
+          "input_tokens": 14835,
+          "evidence_kind": "execution",
+          "output_tokens": 2856,
+          "planned_trials": 3,
+          "observed_trials": 3,
+          "selection_tasks": [
+            "nginx-request-logging",
+            "largest-eigenval",
+            "cancel-async-tasks"
+          ],
+          "physical_attempts": 3,
+          "mean_model_cost_usd": 0.00799275,
+          "p95_task_duration_s": 57.86853162499028,
+          "mean_task_duration_s": 45.77445004165444,
+          "total_model_cost_usd": 0.02397825,
+          "total_sandbox_cost_usd": null,
+          "confirmation_eligibility": {
+            "reason": "preliminary_quality_signal_requires_confirmation",
+            "eligible": true
+          }
+        },
+        "input_tokens": 46916,
+        "evidence_kind": "execution",
+        "output_tokens": 4589,
+        "planned_trials": 6,
+        "observed_trials": 6,
+        "selection_tasks": [
+          "nginx-request-logging",
+          "largest-eigenval",
+          "cancel-async-tasks"
+        ],
+        "feedback_summary": {
+          "scope": "feedback_only",
+          "passed": 2,
+          "input_tokens": 111954,
+          "output_tokens": 7449,
+          "planned_tasks": 5,
+          "observed_tasks": 5,
+          "failure_classes": {
+            "wrong_output": 3
+          },
+          "coverage_complete": true,
+          "physical_attempts": 5,
+          "valid_observations": true,
+          "mean_reward_observed": 0.4,
+          "mean_model_cost_usd_observed": 0.0234972,
+          "p95_task_duration_s_observed": 60.44251570801134
+        },
+        "physical_attempts": 6,
+        "mean_model_cost_usd": 0.00930625,
+        "p95_task_duration_s": 51.30948212501244,
+        "mean_task_duration_s": 43.223987145669525,
+        "total_model_cost_usd": 0.0558375,
+        "total_sandbox_cost_usd": null,
+        "confirmation_repetitions": 2
+      },
+      "mechanism_limitations": []
+    },
+    {
+      "iteration": 3,
+      "sha256": "00fdb0c7d26e850e106445d3d46b2f517a27113a6335cbc400426b6a20c68fab",
+      "file": "docs/prepared_verified_candidates/candidate3.py.txt",
+      "decision": "rejected",
+      "decision_reason": "screened_out: no feedback repair; unexecuted tasks remain unmeasured",
+      "proposal": {
+        "objective": "quality",
+        "hypothesis": "If the agent automatically runs the local pytest suite once before accepting its first tool-free completion whenever a /tests directory is present and no earlier command already invoked pytest, it will catch wrong-output submissions and give the model concrete failure signals to repair, improving pass rate on tasks that currently end prematurely with unverified artifacts.",
+        "rationale": "All three failures exited via agent_declared_done with wrong outputs and no evidence of pytest being run beforehand. In sqlite-db-truncate, the agent wrote `/app/recover.json` and declared success, but the test reported zero matching tuples. In extract-elf, the agent validated only that `extract.js` emitted some JSON, then declared success; pytest later showed only 18.52% coverage of expected values. In sanitize-git-repo, the agent used broad search-and-replace and declared completion; pytest later showed incorrect replacements and collateral content changes. This proposal differs from the prior rejected ideas: it is not another prompt-only reminder to verify, and it is not the earlier unmeasured post-write git diff hook. Instead it changes control flow with a concrete, falsifiable mechanism: intercept the first attempted completion, run the available local verifier once, feed back the actual test output, and let the model repair if needed. Expected benefit: higher reward by preventing premature completion on wrong-output tasks. Likely regression: some extra latency on already-passing tasks because pytest runs once before finalization, though the evidence shows current p95 is dominated by reasoning/work rather than test time; the added command should be modest and within the policy\u2019s 10% duration/cost guard more often than repeated failed submissions.",
+        "change_summary": "Intercept first attempted completion to auto-run `pytest -q` once when `/tests` exists and the agent has not already run pytest, then feed the result back into the conversation instead of finishing immediately."
+      },
+      "metrics": {
+        "scope": "selection",
+        "errors": 0,
+        "failed": 0,
+        "passed": 0,
+        "complete": false,
+        "screened": true,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "mean_reward": null,
+        "input_tokens": 0,
+        "evidence_kind": "execution",
+        "output_tokens": 0,
+        "planned_trials": 3,
+        "observed_trials": 0,
+        "selection_tasks": [
+          "nginx-request-logging",
+          "largest-eigenval",
+          "cancel-async-tasks"
+        ],
+        "feedback_summary": {
+          "scope": "feedback_only",
+          "passed": 1,
+          "input_tokens": 97509,
+          "output_tokens": 5312,
+          "planned_tasks": 5,
+          "observed_tasks": 4,
+          "failure_classes": {
+            "wrong_output": 3
+          },
+          "coverage_complete": false,
+          "physical_attempts": 4,
+          "valid_observations": true,
+          "mean_reward_observed": 0.25,
+          "mean_model_cost_usd_observed": 0.0242589375,
+          "p95_task_duration_s_observed": 54.992529291979736
+        },
+        "physical_attempts": 0,
+        "mean_model_cost_usd": null,
+        "p95_task_duration_s": null,
+        "mean_task_duration_s": null,
+        "total_model_cost_usd": null,
+        "total_sandbox_cost_usd": null
+      },
+      "mechanism_limitations": [
+        "The conditional local pytest mechanism skipped in all four feedback observations; source assumed test visibility. See the separate mechanism audit."
+      ]
+    }
+  ]
+}

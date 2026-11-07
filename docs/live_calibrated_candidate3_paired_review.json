@@ -1,0 +1,931 @@
+{
+  "status": "COMPLETE",
+  "mode": "external_confirmatory_audit_via_benchmark_only_api_jobs",
+  "started_at": "2026-11-07T11:58:42.198446+00:00",
+  "run_directory": "runs/aos_paired_selection_20261107_30e72ae3",
+  "source_job_id": "f37176ef-cff8-4d6b-8af3-2d82cc8c7e56",
+  "source_candidate_index": 3,
+  "previous_report_archive": null,
+  "expected_source_hashes": {
+    "baseline": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+    "candidate": "03c9651597773542fa305684ac2e531a17e4c92cc9bae58f19ff1a5f2e1fc828"
+  },
+  "source_fixture_proof": "runs/final-sandbox-source-proof.json",
+  "implementation_sha256": {
+    "files": {
+      "service/__init__.py": "99cc2ba921b33fc1c72f5fb71eaf9ff89588a115c71a9b8dbf92a22d9016cf25",
+      "service/api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "service/api/app.py": "4c3c1a9ca3393322f3b8653734661e7b79a99e51c02835cd71a34ed24e75e95c",
+      "service/api/routes_admin.py": "6ed8fba87957ba30c167d4195c899761b7dbb83208b2c5aabf8809b30d80f9fe",
+      "service/api/routes_jobs.py": "cbff9d616e343da413d6135400fd4be67a871ca955dd016ee62862d96729a3f6",
+      "service/api/routes_tasks.py": "82e6da260744ed7146ae0eaae52ab2d1f11fcd379cebd659f74dc8feabd465d8",
+      "service/auth.py": "1c5aab1a90c9738b42adf904c66ea283420ea25656c9c283e3742add41b64713",
+      "service/config.py": "3d8fcc3b4604a3d8d572f71405a495c52059ddd2e9c3f7ba677f8ff8b40a935d",
+      "service/db.py": "589f01079d8a8ce859144a008ee42f27829ad92d0515405ac28909986103192b",
+      "service/errors.py": "15ffadaa1ced65e754baaf2e9bc329cd1b93df288a587b78cc6e49e231e36bde",
+      "service/inference.py": "06d5ceb2b9e2a4ba8cc0e29b56f1b09f907554a479f88282beb44c6cfd534f97",
+      "service/migrations/0001_init.sql": "fd53b52ae645eb0352235eb8b1130a2eeea1dcb05eb9e02fc425c6c1ee725041",
+      "service/migrations/0002_durable_execution.sql": "db1dfeda6401bccc6daf854d4140e12fec445dec734b78851f43f4bdcaec5930",
+      "service/migrations/0003_nullable_costs.sql": "6945918803711dad747fcfb28ad8f800daf80e6a59e4d8b85e1dd2cc080c6ce7",
+      "service/models.py": "73ff7f84e323ed3b72c5fa9f133fa5722cda559f9222fcf3c4b86444446b877b",
+      "service/repo.py": "d0fea63272040def467e51b548bbbffdd86711d7a32c71a7da06cdcfe585cb9c",
+      "service/sandbox/__init__.py": "f2644f102ee4d260c546bf73e47d6656a8e3e0e5d548725e48f5e319de96ed8f",
+      "service/sandbox/cleanup_smoke.py": "533eeede379ebde26df82a5263ba6a712a9e5646a19b96058a1466695d8cc157",
+      "service/sandbox/docker_environment.py": "e6fff3a92e956319aed9c9a6da26232f410bd8637c010f35ed2b33d808b91709",
+      "service/sandbox/installed_agent.py": "060e673c8b17df5d3e28c27e1e7ee5d23b34bb9676117eded242ba11261eabf1",
+      "service/sandbox/preflight.py": "9dd6bdc50b61866812898ffbf58dca385222635993f9f0e97219b6b972c67e4a",
+      "service/sandbox/relay.py": "86540d673c4f40b4c45ee5b92f102ca8c1134b9927aed2f61f39db723158a163",
+      "service/sandbox/runtime.py": "11e54eb3396248bea1dd2cb6d9ccd98ee4fdc5bd0dfc053462b1726351d9c729",
+      "service/sandbox/smoke.py": "32cb3ff6e9fed96690c14ebddfb45df4f25969b4f959e1432d5e4d787ebca2fe",
+      "service/sandbox/verifier.py": "27be3f3105c7f9e53d2ce05c45d74a040c151e92256adc42d5dd6f4f99512fe4",
+      "service/sandbox/verifier_contract.py": "d4c8284fdb77a029c08755f9898755253d286c6932f70eeb44e24ca2732c84d5",
+      "service/sandbox/verifier_contracts.json": "3c41f5914ba4cc5f6e17d4acd11707e5edfeb62986c570077e4fc6418a6bbe8a",
+      "service/tasks_catalog.py": "9b1e716f10b67184d8fad69b9f538cb4a4b014e9003161fb4689567e3dfaca03",
+      "service/worker/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "service/worker/digest.py": "a117146a07c0659723a23ed0c83f3ddf1962ffa35fe2a9dc762e3bbd59856088",
+      "service/worker/executors/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "service/worker/executors/base.py": "fd564f35f05a261536dd4260b162d7c20d32d6c8dac1f7a2f78d64e42b900b41",
+      "service/worker/executors/harbor_runner.py": "1f431ac5cb45af022e4bbfcba12687c3631c46e081697234eea1fdab8f8677e4",
+      "service/worker/executors/simulated.py": "c4e38c6d75ee0f6dadc6093407916f26d008b3bdfcf51c65c17e388a1ad38d12",
+      "service/worker/job_runner.py": "797d53955ce3f414ed0cb1ccb19a0312191366731b59e60b02c19dc6baa2b7c3",
+      "service/worker/llm_optimizer.py": "a888b0bcbe32d05c776d9cc6cd31d910d02adee669049449b1c706fc6a68e192",
+      "service/worker/main.py": "c51635636425c014758bf42c4df3fe067b92c7e63a39f95bfebd4edf002b5109",
+      "service/worker/optimizer.py": "8d3063dbffe219c381c46883c8b8c9bacfd4f0ccaa7ca343e974501b0bce6eb5"
+    },
+    "aggregate_sha256": "7bc8de276922ed2b940ba92f7f51f2826515b9e6baa712e046ace421184a48c7"
+  },
+  "audit_runner_sha256": "29ff394f81b12ca1e7d57a00c9b7de6431a1da9ed43f27aa4def59a3da19455f",
+  "credential_source": "NEOSIGMA_OPEN_API_KEY",
+  "provider_seed_enforced": false,
+  "max_total_usd": 2.0,
+  "previous_spent_usd": 3.89668025,
+  "jobs": [
+    {
+      "job_id": "d79e662a-18d9-4895-ac4c-e5ef953ad74c",
+      "idempotency_key": "aos_paired_selection_20261107_30e72ae3-1-baseline",
+      "repetition": 1,
+      "source": "baseline",
+      "agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+      "status": "SUCCEEDED",
+      "attempts": [
+        {
+          "task_name": "nginx-request-logging",
+          "evaluation_phase": "main",
+          "repetition": 1,
+          "attempt": 1,
+          "lease_epoch": 1,
+          "status": "passed",
+          "reward": 1.0,
+          "failure_class": null,
+          "duration_s": 61.92976337502478,
+          "n_steps": 6,
+          "exit_reason": "agent_declared_done",
+          "input_tokens": 22450,
+          "output_tokens": 1578,
+          "model_cost_usd": 0.023938499999999998,
+          "sandbox_cost_usd": null,
+          "cost_usd": null,
+          "cost_known": true,
+          "metadata": {
+            "verifier_validity": {
+              "contract": "pinned-pytest-ctrf-v1",
+              "valid": true,
+              "counts": {
+                "other": 0,
+                "tests": 8,
+                "failed": 0,
+                "passed": 8,
+                "pending": 0,
+                "skipped": 0
+              },
+              "pytest_exit_code": 0,
+              "fresh_session_marker": true
+            },
+            "model_cost_known": true,
+            "duration_basis": "end_to_end_attempt_including_admission_wait_setup_verification_and_cleanup"
+          }
+        },
+        {
+          "task_name": "largest-eigenval",
+          "evaluation_phase": "main",
+          "repetition": 1,
+          "attempt": 1,
+          "lease_epoch": 1,
+          "status": "failed",
+          "reward": 0.0,
+          "failure_class": "wrong_output",
+          "duration_s": 86.1084109589865,
+          "n_steps": 5,
+          "exit_reason": "agent_declared_done",
+          "input_tokens": 7626,
+          "output_tokens": 901,
+          "model_cost_usd": 0.009774,
+          "sandbox_cost_usd": null,
+          "cost_usd": null,
+          "cost_known": true,
+          "metadata": {
+            "verifier_validity": {
+              "contract": "pinned-pytest-ctrf-v1",
+              "valid": true,
+              "counts": {
+                "other": 0,
+                "tests": 3,
+                "failed": 1,
+                "passed": 2,
+                "pending": 0,
+                "skipped": 0
+              },
+              "pytest_exit_code": 1,
+              "fresh_session_marker": true
+            },
+            "model_cost_known": true,
+            "duration_basis": "end_to_end_attempt_including_admission_wait_setup_verification_and_cleanup"
+          }
+        },
+        {
+          "task_name": "cancel-async-tasks",
+          "evaluation_phase": "main",
+          "repetition": 1,
+          "attempt": 1,
+          "lease_epoch": 1,
+          "status": "failed",
+          "reward": 0.0,
+          "failure_class": "wrong_output",
+          "duration_s": 121.7413869999873,
+          "n_steps": 4,
+          "exit_reason": "agent_declared_done",
+          "input_tokens": 3385,
+          "output_tokens": 791,
+          "model_cost_usd": 0.0060982499999999995,
+          "sandbox_cost_usd": null,
+          "cost_usd": null,
+          "cost_known": true,
+          "metadata": {
+            "verifier_validity": {
+              "contract": "pinned-pytest-ctrf-v1",
+              "valid": true,
+              "counts": {
+                "other": 0,
+                "tests": 6,
+                "failed": 1,
+                "passed": 5,
+                "pending": 0,
+                "skipped": 0
+              },
+              "pytest_exit_code": 1,
+              "fresh_session_marker": true
+            },
+            "model_cost_known": true,
+            "duration_basis": "end_to_end_attempt_including_admission_wait_setup_verification_and_cleanup"
+          }
+        }
+      ],
+      "stop_reason": "baseline_only",
+      "spent_usd": 0.03981075,
+      "reserved_usd": 0.0,
+      "metrics": {
+        "complete": true,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "passed": 1,
+        "failed": 2,
+        "errors": 0,
+        "mean_reward": 0.3333333333333333,
+        "mean_task_duration_s": 89.9265204446662,
+        "p95_task_duration_s": 121.7413869999873,
+        "mean_model_cost_usd": 0.013270249999999999,
+        "total_model_cost_usd": 0.03981075,
+        "total_sandbox_cost_usd": null,
+        "input_tokens": 33461,
+        "output_tokens": 3270,
+        "physical_attempts": 3,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "evidence_kind": "execution",
+        "verifier_complete": true
+      },
+      "workflow_metrics": {
+        "scope": "benchmark",
+        "errors": 0,
+        "failed": 2,
+        "passed": 1,
+        "complete": true,
+        "screened": false,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "mean_reward": 0.3333333333333333,
+        "input_tokens": 33461,
+        "evidence_kind": "execution",
+        "output_tokens": 3270,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "selection_tasks": [
+          "nginx-request-logging",
+          "largest-eigenval",
+          "cancel-async-tasks"
+        ],
+        "feedback_summary": {
+          "scope": "feedback_only",
+          "passed": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "planned_tasks": 0,
+          "observed_tasks": 0,
+          "failure_classes": {},
+          "coverage_complete": true,
+          "physical_attempts": 0,
+          "valid_observations": false,
+          "mean_reward_observed": null,
+          "mean_model_cost_usd_observed": null,
+          "p95_task_duration_s_observed": null
+        },
+        "physical_attempts": 3,
+        "mean_model_cost_usd": 0.013270249999999999,
+        "p95_task_duration_s": 121.7413869999873,
+        "mean_task_duration_s": 89.9265204446662,
+        "total_model_cost_usd": 0.03981075,
+        "total_sandbox_cost_usd": null
+      }
+    },
+    {
+      "job_id": "3b10d984-4617-4dcd-80ef-9771a83d9f03",
+      "idempotency_key": "aos_paired_selection_20261107_30e72ae3-1-candidate",
+      "repetition": 1,
+      "source": "candidate",
+      "agent_sha256": "03c9651597773542fa305684ac2e531a17e4c92cc9bae58f19ff1a5f2e1fc828",
+      "status": "SUCCEEDED",
+      "attempts": [
+        {
+          "task_name": "largest-eigenval",
+          "evaluation_phase": "main",
+          "repetition": 1,
+          "attempt": 1,
+          "lease_epoch": 1,
+          "status": "failed",
+          "reward": 0.0,
+          "failure_class": "wrong_output",
+          "duration_s": 42.015537042025244,
+          "n_steps": 8,
+          "exit_reason": "agent_declared_done",
+          "input_tokens": 18334,
+          "output_tokens": 1557,
+          "model_cost_usd": 0.020757,
+          "sandbox_cost_usd": null,
+          "cost_usd": null,
+          "cost_known": true,
+          "metadata": {
+            "verifier_validity": {
+              "contract": "pinned-pytest-ctrf-v1",
+              "valid": true,
+              "counts": {
+                "other": 0,
+                "tests": 3,
+                "failed": 1,
+                "passed": 2,
+                "pending": 0,
+                "skipped": 0
+              },
+              "pytest_exit_code": 1,
+              "fresh_session_marker": true
+            },
+            "model_cost_known": true,
+            "duration_basis": "end_to_end_attempt_including_admission_wait_setup_verification_and_cleanup"
+          }
+        },
+        {
+          "task_name": "cancel-async-tasks",
+          "evaluation_phase": "main",
+          "repetition": 1,
+          "attempt": 1,
+          "lease_epoch": 1,
+          "status": "failed",
+          "reward": 0.0,
+          "failure_class": "wrong_output",
+          "duration_s": 128.68917412500014,
+          "n_steps": 4,
+          "exit_reason": "agent_declared_done",
+          "input_tokens": 2999,
+          "output_tokens": 706,
+          "model_cost_usd": 0.00542625,
+          "sandbox_cost_usd": null,
+          "cost_usd": null,
+          "cost_known": true,
+          "metadata": {
+            "verifier_validity": {
+              "contract": "pinned-pytest-ctrf-v1",
+              "valid": true,
+              "counts": {
+                "other": 0,
+                "tests": 6,
+                "failed": 1,
+                "passed": 5,
+                "pending": 0,
+                "skipped": 0
+              },
+              "pytest_exit_code": 1,
+              "fresh_session_marker": true
+            },
+            "model_cost_known": true,
+            "duration_basis": "end_to_end_attempt_including_admission_wait_setup_verification_and_cleanup"
+          }
+        },
+        {
+          "task_name": "nginx-request-logging",
+          "evaluation_phase": "main",
+          "repetition": 1,
+          "attempt": 1,
+          "lease_epoch": 1,
+          "status": "passed",
+          "reward": 1.0,
+          "failure_class": null,
+          "duration_s": 186.48223545899964,
+          "n_steps": 5,
+          "exit_reason": "agent_declared_done",
+          "input_tokens": 19072,
+          "output_tokens": 1261,
+          "model_cost_usd": 0.019978500000000003,
+          "sandbox_cost_usd": null,
+          "cost_usd": null,
+          "cost_known": true,
+          "metadata": {
+            "verifier_validity": {
+              "contract": "pinned-pytest-ctrf-v1",
+              "valid": true,
+              "counts": {
+                "other": 0,
+                "tests": 8,
+                "failed": 0,
+                "passed": 8,
+                "pending": 0,
+                "skipped": 0
+              },
+              "pytest_exit_code": 0,
+              "fresh_session_marker": true
+            },
+            "model_cost_known": true,
+            "duration_basis": "end_to_end_attempt_including_admission_wait_setup_verification_and_cleanup"
+          }
+        }
+      ],
+      "stop_reason": "baseline_only",
+      "spent_usd": 0.04616175,
+      "reserved_usd": 0.0,
+      "metrics": {
+        "complete": true,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "passed": 1,
+        "failed": 2,
+        "errors": 0,
+        "mean_reward": 0.3333333333333333,
+        "mean_task_duration_s": 119.06231554200834,
+        "p95_task_duration_s": 186.48223545899964,
+        "mean_model_cost_usd": 0.01538725,
+        "total_model_cost_usd": 0.04616175,
+        "total_sandbox_cost_usd": null,
+        "input_tokens": 40405,
+        "output_tokens": 3524,
+        "physical_attempts": 3,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "evidence_kind": "execution",
+        "verifier_complete": true
+      },
+      "workflow_metrics": {
+        "scope": "benchmark",
+        "errors": 0,
+        "failed": 2,
+        "passed": 1,
+        "complete": true,
+        "screened": false,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "mean_reward": 0.3333333333333333,
+        "input_tokens": 40405,
+        "evidence_kind": "execution",
+        "output_tokens": 3524,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "selection_tasks": [
+          "nginx-request-logging",
+          "largest-eigenval",
+          "cancel-async-tasks"
+        ],
+        "feedback_summary": {
+          "scope": "feedback_only",
+          "passed": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "planned_tasks": 0,
+          "observed_tasks": 0,
+          "failure_classes": {},
+          "coverage_complete": true,
+          "physical_attempts": 0,
+          "valid_observations": false,
+          "mean_reward_observed": null,
+          "mean_model_cost_usd_observed": null,
+          "p95_task_duration_s_observed": null
+        },
+        "physical_attempts": 3,
+        "mean_model_cost_usd": 0.01538725,
+        "p95_task_duration_s": 186.48223545899964,
+        "mean_task_duration_s": 119.06231554200834,
+        "total_model_cost_usd": 0.04616175,
+        "total_sandbox_cost_usd": null
+      }
+    },
+    {
+      "job_id": "23870ed4-383f-46a5-bbeb-137a6b7f4b3a",
+      "idempotency_key": "aos_paired_selection_20261107_30e72ae3-2-candidate",
+      "repetition": 2,
+      "source": "candidate",
+      "agent_sha256": "03c9651597773542fa305684ac2e531a17e4c92cc9bae58f19ff1a5f2e1fc828",
+      "status": "SUCCEEDED",
+      "attempts": [
+        {
+          "task_name": "largest-eigenval",
+          "evaluation_phase": "main",
+          "repetition": 1,
+          "attempt": 1,
+          "lease_epoch": 1,
+          "status": "failed",
+          "reward": 0.0,
+          "failure_class": "wrong_output",
+          "duration_s": 35.09913275000872,
+          "n_steps": 6,
+          "exit_reason": "agent_declared_done",
+          "input_tokens": 10157,
+          "output_tokens": 913,
+          "model_cost_usd": 0.011726249999999999,
+          "sandbox_cost_usd": null,
+          "cost_usd": null,
+          "cost_known": true,
+          "metadata": {
+            "verifier_validity": {
+              "contract": "pinned-pytest-ctrf-v1",
+              "valid": true,
+              "counts": {
+                "other": 0,
+                "tests": 3,
+                "failed": 1,
+                "passed": 2,
+                "pending": 0,
+                "skipped": 0
+              },
+              "pytest_exit_code": 1,
+              "fresh_session_marker": true
+            },
+            "model_cost_known": true,
+            "duration_basis": "end_to_end_attempt_including_admission_wait_setup_verification_and_cleanup"
+          }
+        },
+        {
+          "task_name": "nginx-request-logging",
+          "evaluation_phase": "main",
+          "repetition": 1,
+          "attempt": 1,
+          "lease_epoch": 1,
+          "status": "passed",
+          "reward": 1.0,
+          "failure_class": null,
+          "duration_s": 60.026577625016216,
+          "n_steps": 4,
+          "exit_reason": "agent_declared_done",
+          "input_tokens": 12218,
+          "output_tokens": 1390,
+          "model_cost_usd": 0.0154185,
+          "sandbox_cost_usd": null,
+          "cost_usd": null,
+          "cost_known": true,
+          "metadata": {
+            "verifier_validity": {
+              "contract": "pinned-pytest-ctrf-v1",
+              "valid": true,
+              "counts": {
+                "other": 0,
+                "tests": 8,
+                "failed": 0,
+                "passed": 8,
+                "pending": 0,
+                "skipped": 0
+              },
+              "pytest_exit_code": 0,
+              "fresh_session_marker": true
+            },
+            "model_cost_known": true,
+            "duration_basis": "end_to_end_attempt_including_admission_wait_setup_verification_and_cleanup"
+          }
+        },
+        {
+          "task_name": "cancel-async-tasks",
+          "evaluation_phase": "main",
+          "repetition": 1,
+          "attempt": 1,
+          "lease_epoch": 1,
+          "status": "passed",
+          "reward": 1.0,
+          "failure_class": null,
+          "duration_s": 127.36455450000358,
+          "n_steps": 3,
+          "exit_reason": "agent_declared_done",
+          "input_tokens": 2048,
+          "output_tokens": 626,
+          "model_cost_usd": 0.004353,
+          "sandbox_cost_usd": null,
+          "cost_usd": null,
+          "cost_known": true,
+          "metadata": {
+            "verifier_validity": {
+              "contract": "pinned-pytest-ctrf-v1",
+              "valid": true,
+              "counts": {
+                "other": 0,
+                "tests": 6,
+                "failed": 0,
+                "passed": 6,
+                "pending": 0,
+                "skipped": 0
+              },
+              "pytest_exit_code": 0,
+              "fresh_session_marker": true
+            },
+            "model_cost_known": true,
+            "duration_basis": "end_to_end_attempt_including_admission_wait_setup_verification_and_cleanup"
+          }
+        }
+      ],
+      "stop_reason": "baseline_only",
+      "spent_usd": 0.03149775,
+      "reserved_usd": 0.0,
+      "metrics": {
+        "complete": true,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "passed": 2,
+        "failed": 1,
+        "errors": 0,
+        "mean_reward": 0.6666666666666666,
+        "mean_task_duration_s": 74.1634216250095,
+        "p95_task_duration_s": 127.36455450000358,
+        "mean_model_cost_usd": 0.01049925,
+        "total_model_cost_usd": 0.03149775,
+        "total_sandbox_cost_usd": null,
+        "input_tokens": 24423,
+        "output_tokens": 2929,
+        "physical_attempts": 3,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "evidence_kind": "execution",
+        "verifier_complete": true
+      },
+      "workflow_metrics": {
+        "scope": "benchmark",
+        "errors": 0,
+        "failed": 1,
+        "passed": 2,
+        "complete": true,
+        "screened": false,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "mean_reward": 0.6666666666666666,
+        "input_tokens": 24423,
+        "evidence_kind": "execution",
+        "output_tokens": 2929,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "selection_tasks": [
+          "nginx-request-logging",
+          "largest-eigenval",
+          "cancel-async-tasks"
+        ],
+        "feedback_summary": {
+          "scope": "feedback_only",
+          "passed": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "planned_tasks": 0,
+          "observed_tasks": 0,
+          "failure_classes": {},
+          "coverage_complete": true,
+          "physical_attempts": 0,
+          "valid_observations": false,
+          "mean_reward_observed": null,
+          "mean_model_cost_usd_observed": null,
+          "p95_task_duration_s_observed": null
+        },
+        "physical_attempts": 3,
+        "mean_model_cost_usd": 0.01049925,
+        "p95_task_duration_s": 127.36455450000358,
+        "mean_task_duration_s": 74.1634216250095,
+        "total_model_cost_usd": 0.03149775,
+        "total_sandbox_cost_usd": null
+      }
+    },
+    {
+      "job_id": "607f392f-f6dc-459e-a975-e210b5ce0bc9",
+      "idempotency_key": "aos_paired_selection_20261107_30e72ae3-2-baseline",
+      "repetition": 2,
+      "source": "baseline",
+      "agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+      "status": "SUCCEEDED",
+      "attempts": [
+        {
+          "task_name": "largest-eigenval",
+          "evaluation_phase": "main",
+          "repetition": 1,
+          "attempt": 1,
+          "lease_epoch": 1,
+          "status": "failed",
+          "reward": 0.0,
+          "failure_class": "wrong_output",
+          "duration_s": 62.7603310830018,
+          "n_steps": 11,
+          "exit_reason": "agent_declared_done",
+          "input_tokens": 29044,
+          "output_tokens": 1919,
+          "model_cost_usd": 0.030418500000000005,
+          "sandbox_cost_usd": null,
+          "cost_usd": null,
+          "cost_known": true,
+          "metadata": {
+            "verifier_validity": {
+              "contract": "pinned-pytest-ctrf-v1",
+              "valid": true,
+              "counts": {
+                "other": 0,
+                "tests": 3,
+                "failed": 1,
+                "passed": 2,
+                "pending": 0,
+                "skipped": 0
+              },
+              "pytest_exit_code": 1,
+              "fresh_session_marker": true
+            },
+            "model_cost_known": true,
+            "duration_basis": "end_to_end_attempt_including_admission_wait_setup_verification_and_cleanup"
+          }
+        },
+        {
+          "task_name": "nginx-request-logging",
+          "evaluation_phase": "main",
+          "repetition": 1,
+          "attempt": 1,
+          "lease_epoch": 1,
+          "status": "passed",
+          "reward": 1.0,
+          "failure_class": null,
+          "duration_s": 73.2268395840074,
+          "n_steps": 5,
+          "exit_reason": "agent_declared_done",
+          "input_tokens": 17647,
+          "output_tokens": 1051,
+          "model_cost_usd": 0.01796475,
+          "sandbox_cost_usd": null,
+          "cost_usd": null,
+          "cost_known": true,
+          "metadata": {
+            "verifier_validity": {
+              "contract": "pinned-pytest-ctrf-v1",
+              "valid": true,
+              "counts": {
+                "other": 0,
+                "tests": 8,
+                "failed": 0,
+                "passed": 8,
+                "pending": 0,
+                "skipped": 0
+              },
+              "pytest_exit_code": 0,
+              "fresh_session_marker": true
+            },
+            "model_cost_known": true,
+            "duration_basis": "end_to_end_attempt_including_admission_wait_setup_verification_and_cleanup"
+          }
+        },
+        {
+          "task_name": "cancel-async-tasks",
+          "evaluation_phase": "main",
+          "repetition": 1,
+          "attempt": 1,
+          "lease_epoch": 1,
+          "status": "passed",
+          "reward": 1.0,
+          "failure_class": null,
+          "duration_s": 120.32625104099861,
+          "n_steps": 4,
+          "exit_reason": "agent_declared_done",
+          "input_tokens": 2881,
+          "output_tokens": 669,
+          "model_cost_usd": 0.0051712500000000005,
+          "sandbox_cost_usd": null,
+          "cost_usd": null,
+          "cost_known": true,
+          "metadata": {
+            "verifier_validity": {
+              "contract": "pinned-pytest-ctrf-v1",
+              "valid": true,
+              "counts": {
+                "other": 0,
+                "tests": 6,
+                "failed": 0,
+                "passed": 6,
+                "pending": 0,
+                "skipped": 0
+              },
+              "pytest_exit_code": 0,
+              "fresh_session_marker": true
+            },
+            "model_cost_known": true,
+            "duration_basis": "end_to_end_attempt_including_admission_wait_setup_verification_and_cleanup"
+          }
+        }
+      ],
+      "stop_reason": "baseline_only",
+      "spent_usd": 0.0535545,
+      "reserved_usd": 0.0,
+      "metrics": {
+        "complete": true,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "passed": 2,
+        "failed": 1,
+        "errors": 0,
+        "mean_reward": 0.6666666666666666,
+        "mean_task_duration_s": 85.4378072360026,
+        "p95_task_duration_s": 120.32625104099861,
+        "mean_model_cost_usd": 0.017851500000000003,
+        "total_model_cost_usd": 0.053554500000000005,
+        "total_sandbox_cost_usd": null,
+        "input_tokens": 49572,
+        "output_tokens": 3639,
+        "physical_attempts": 3,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "evidence_kind": "execution",
+        "verifier_complete": true
+      },
+      "workflow_metrics": {
+        "scope": "benchmark",
+        "errors": 0,
+        "failed": 1,
+        "passed": 2,
+        "complete": true,
+        "screened": false,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "mean_reward": 0.6666666666666666,
+        "input_tokens": 49572,
+        "evidence_kind": "execution",
+        "output_tokens": 3639,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "selection_tasks": [
+          "nginx-request-logging",
+          "largest-eigenval",
+          "cancel-async-tasks"
+        ],
+        "feedback_summary": {
+          "scope": "feedback_only",
+          "passed": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "planned_tasks": 0,
+          "observed_tasks": 0,
+          "failure_classes": {},
+          "coverage_complete": true,
+          "physical_attempts": 0,
+          "valid_observations": false,
+          "mean_reward_observed": null,
+          "mean_model_cost_usd_observed": null,
+          "p95_task_duration_s_observed": null
+        },
+        "physical_attempts": 3,
+        "mean_model_cost_usd": 0.017851500000000003,
+        "p95_task_duration_s": 120.32625104099861,
+        "mean_task_duration_s": 85.4378072360026,
+        "total_model_cost_usd": 0.053554500000000005,
+        "total_sandbox_cost_usd": null
+      }
+    }
+  ],
+  "holdout_executed": false,
+  "old_experiment_decisions_modified": false,
+  "limitations": [
+    "Two repetitions of the source job's fixed selection tasks do not establish statistical significance or generalization.",
+    "Model dollars are uncached token-price estimates; local Docker dollars remain unpriced.",
+    "Warm amd64 images run on an aarch64 Docker daemon; timings include emulation.",
+    "Alternating source order reduces simple order effects but does not eliminate provider variance.",
+    "This independent audit does not retroactively promote a candidate or change the source experiment's recorded decisions."
+  ],
+  "source_job_status": "SUCCEEDED",
+  "source_job_stop_reason": "max_iterations",
+  "source_job_final_evaluation_status": "complete",
+  "source_candidate_status": "completed",
+  "source_candidate_decision": "rejected",
+  "source_candidate_original_score": 0.6666666666666666,
+  "tasks": [
+    "nginx-request-logging",
+    "largest-eigenval",
+    "cancel-async-tasks"
+  ],
+  "selection_task_count": 3,
+  "planned_trials_per_source": 6,
+  "benchmark_revision": "69671fbaac6d67a7ef0dfec016cc38a64ef7a77c",
+  "agent_model": "gpt-5.4-mini",
+  "options": {
+    "confirm_flips": true,
+    "two_phase_eval": true,
+    "max_agent_steps": 80,
+    "min_improvement": 0.0,
+    "agent_timeout_sec": 900,
+    "max_tokens_per_call": 4096,
+    "efficiency_tolerance": 0.1,
+    "confirmation_repetitions": 2,
+    "min_efficiency_improvement": 0.1,
+    "max_infrastructure_attempts": 2
+  },
+  "harness_overrides": {
+    "max_infrastructure_attempts": {
+      "prior": 2,
+      "audit": 2,
+      "applies_to": "both sources",
+      "accounting": "all retry time and model cost retained"
+    }
+  },
+  "effective_inference_limits": {
+    "max_output_tokens": 2048,
+    "max_request_bytes": 512000,
+    "max_model_calls_per_trial": 90
+  },
+  "source_hashes": {
+    "baseline": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+    "candidate": "03c9651597773542fa305684ac2e531a17e4c92cc9bae58f19ff1a5f2e1fc828"
+  },
+  "fixed_reasoning_policy": {
+    "tool_bearing_agent_requests": "none",
+    "optimizer_calls": 0
+  },
+  "planned_order": [
+    {
+      "repetition": 1,
+      "source": "baseline"
+    },
+    {
+      "repetition": 1,
+      "source": "candidate"
+    },
+    {
+      "repetition": 2,
+      "source": "candidate"
+    },
+    {
+      "repetition": 2,
+      "source": "baseline"
+    }
+  ],
+  "updated_at": "2026-11-07T12:11:08.151100+00:00",
+  "audit_spent_usd": 0.17102475,
+  "outstanding_reserved_usd": 0.0,
+  "cumulative_spent_usd": 4.067705,
+  "remaining_audit_budget_usd": 1.828975,
+  "metrics": {
+    "baseline": {
+      "complete": true,
+      "planned_trials": 6,
+      "observed_trials": 6,
+      "passed": 3,
+      "failed": 3,
+      "errors": 0,
+      "mean_reward": 0.5,
+      "mean_task_duration_s": 87.6821638403344,
+      "p95_task_duration_s": 121.7413869999873,
+      "mean_model_cost_usd": 0.015560875000000002,
+      "total_model_cost_usd": 0.09336525000000001,
+      "total_sandbox_cost_usd": null,
+      "input_tokens": 83033,
+      "output_tokens": 6909,
+      "physical_attempts": 6,
+      "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+      "evidence_kind": "execution",
+      "verifier_complete": true
+    },
+    "candidate": {
+      "complete": true,
+      "planned_trials": 6,
+      "observed_trials": 6,
+      "passed": 3,
+      "failed": 3,
+      "errors": 0,
+      "mean_reward": 0.5,
+      "mean_task_duration_s": 96.61286858350893,
+      "p95_task_duration_s": 186.48223545899964,
+      "mean_model_cost_usd": 0.012943250000000002,
+      "total_model_cost_usd": 0.0776595,
+      "total_sandbox_cost_usd": null,
+      "input_tokens": 64828,
+      "output_tokens": 6453,
+      "physical_attempts": 6,
+      "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+      "evidence_kind": "execution",
+      "verifier_complete": true
+    }
+  },
+  "observed_policy_decision": {
+    "candidate_qualifies": false,
+    "reason": "efficiency_guardrail:p95_task_duration_s",
+    "scope": "external fresh paired selection audit; not an old-job database promotion"
+  }
+}

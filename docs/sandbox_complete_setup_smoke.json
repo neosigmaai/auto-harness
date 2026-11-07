@@ -1,0 +1,178 @@
+{
+  "scope": "complete pre-agent setup only; no hidden tests, instructions, candidate or model calls",
+  "max_parallelism": 2,
+  "tasks": [
+    {
+      "task": "polyglot-c-py",
+      "real_provider_calls": 0,
+      "candidate_executed": false,
+      "instructions_or_assertions_accessed": false,
+      "system_python_command": "command -v python3 >/dev/null || (apt-get update -qq && apt-get install -y -qq python3)",
+      "resource_limits": {
+        "cpus": 1,
+        "memory_mb": 2048
+      },
+      "status": "passed",
+      "image_id_architecture": "sha256:0f1c3b7816d70cf5551573fd6aeef76893f2ae3000be2419997b6871b5d987ed amd64",
+      "python_prerequisite": {
+        "return_code": 0,
+        "stdout_tail": "cking libsqlite3-0:amd64 (3.45.1-1ubuntu2.9) ...\nSelecting previously unselected package libpython3.12-stdlib:amd64.\nPreparing to unpack .../7-libpython3.12-stdlib_3.12.3-1ubuntu0.17_amd64.deb ...\nUnpacking libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.17) ...\nSelecting previously unselected package python3.12.\nPreparing to unpack .../8-python3.12_3.12.3-1ubuntu0.17_amd64.deb ...\nUnpacking python3.12 (3.12.3-1ubuntu0.17) ...\nSelecting previously unselected package libpython3-stdlib:amd64.\nPreparing to unpack .../9-libpython3-stdlib_3.12.3-0ubuntu2.1_amd64.deb ...\nUnpacking libpython3-stdlib:amd64 (3.12.3-0ubuntu2.1) ...\nSetting up python3-minimal (3.12.3-0ubuntu2.1) ...\nSelecting previously unselected package python3.\n(Reading database ... \n(Reading database ... 5%\n(Reading database ... 10%\n(Reading database ... 15%\n(Reading database ... 20%\n(Reading database ... 25%\n(Reading database ... 30%\n(Reading database ... 35%\n(Reading database ... 40%\n(Reading database ... 45%\n(Reading database ... 50%\n(Reading database ... 55%\n(Reading database ... 60%\n(Reading database ... 65%\n(Reading database ... 70%\n(Reading database ... 75%\n(Reading database ... 80%\n(Reading database ... 85%\n(Reading database ... 90%\n(Reading database ... 95%\n(Reading database ... 100%\n(Reading database ... 11195 files and directories currently installed.)\nPreparing to unpack .../python3_3.12.3-0ubuntu2.1_amd64.deb ...\nUnpacking python3 (3.12.3-0ubuntu2.1) ...\nSelecting previously unselected package openssl.\nPreparing to unpack .../openssl_3.0.13-0ubuntu3.16_amd64.deb ...\nUnpacking openssl (3.0.13-0ubuntu3.16) ...\nSelecting previously unselected package ca-certificates.\nPreparing to unpack .../ca-certificates_20260816ubuntu0.24.04.2_all.deb ...\nUnpacking ca-certificates (20260816ubuntu0.24.04.2) ...\nSetting up media-types (10.1.0) ...\nSetting up libsqlite3-0:amd64 (3.45.1-1ubuntu2.9) ...\nSetting up tzdata (2026e-0ubuntu0.24.04.1) ...\ndebconf: unable to initialize frontend: Dialog\ndebconf: (TERM is not set, so the dialog frontend is not usable.)\ndebconf: falling back to frontend: Readline\ndebconf: unable to initialize frontend: Readline\ndebconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.38.2 /usr/local/share/perl/5.38.2 /usr/lib/x86_64-linux-gnu/perl5/5.38 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.38 /usr/share/perl/5.38 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8.)\ndebconf: falling back to frontend: Teletype\nConfiguring tzdata\n------------------\n\nPlease select the geographic area in which you live. Subsequent configuration\nquestions will narrow this down by presenting a list of cities, representing\nthe time zones in which they are located.\n\n  1. Africa      4. Arctic    7. Australia  10. Pacific\n  2. America     5. Asia      8. Europe     11. Etc\n  3. Antarctica  6. Atlantic  9. Indian     12. Legacy\nGeographic area: \nUse of uninitialized value $_[1] in join or string at /usr/share/perl5/Debconf/DbDriver/Stack.pm line 112.\n\nCurrent default time zone: '/UTC'\nLocal time is now:      Sat Nov  7 10:59:12 UTC 2026.\nUniversal Time is now:  Sat Nov  7 10:59:12 UTC 2026.\nRun 'dpkg-reconfigure tzdata' if you wish to change it.\n\nUse of uninitialized value $val in substitution (s///) at /usr/share/perl5/Debconf/Format/822.pm line 84, <GEN6> line 4.\nUse of uninitialized value $val in concatenation (.) or string at /usr/share/perl5/Debconf/Format/822.pm line 85, <GEN6> line 4.\nSetting up netbase (6.4) ...\nSetting up openssl (3.0.13-0ubuntu3.16) ...\nSetting up readline-common (8.2-4build1) ...\nSetting up ca-certificates (20260816ubuntu0.24.04.2) ...\ndebconf: unable to initialize frontend: Dialog\ndebconf: (TERM is not set, so the dialog frontend is not usable.)\ndebconf: falling back to frontend: Readline\ndebconf: unable to initialize frontend: Readline\ndebconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.38.2 /usr/local/share/perl/5.38.2 /usr/lib/x86_64-linux-gnu/perl5/5.38 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.38 /usr/share/perl/5.38 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8.)\ndebconf: falling back to frontend: Teletype\nUpdating certificates in /etc/ssl/certs...\n120 added, 0 removed; done.\nRunning hooks in /etc/ca-certificates/update.d...\ndone.\nSetting up libreadline8t64:amd64 (8.2-4build1) ...\nSetting up libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.17) ...\nSetting up python3.12 (3.12.3-1ubuntu0.17) ...\nSetting up libpython3-stdlib:amd64 (3.12.3-0ubuntu2.1) ...\nSetting up python3 (3.12.3-0ubuntu2.1) ...\nrunning python rtupdate hooks for python3.12...\nrunning python post-rtupdate hooks for python3.12...\nProcessing triggers for libc-bin (2.39-0ubuntu8.6) ...\n",
+        "stderr_tail": "debconf: delaying package configuration, since apt-utils is not installed\n"
+      },
+      "python_prerequisite_duration_s": 54.13968104199739,
+      "tool_preflight": {
+        "protocol": "verifier-tool-preflight-v1",
+        "task": "polyglot-c-py",
+        "mode": "uvx",
+        "direct_packages": [
+          "pytest==8.4.1",
+          "pytest-json-ctrf==0.3.5"
+        ],
+        "cache_mode": "isolated_container_cache_warmed_before_agent",
+        "candidate_visible_tooling": true,
+        "hidden_assertions_copied": false,
+        "max_attempts": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "timeout_sec": 160,
+            "return_code": 0,
+            "stdout_tail": "eb ...\nUnpacking libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...\nSelecting previously unselected package libkeyutils1:amd64.\nPreparing to unpack .../03-libkeyutils1_1.6.3-3build1_amd64.deb ...\nUnpacking libkeyutils1:amd64 (1.6.3-3build1) ...\nSelecting previously unselected package libkrb5-3:amd64.\nPreparing to unpack .../04-libkrb5-3_1.20.1-6ubuntu2.10_amd64.deb ...\nUnpacking libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...\nSelecting previously unselected package libgssapi-krb5-2:amd64.\nPreparing to unpack .../05-libgssapi-krb5-2_1.20.1-6ubuntu2.10_amd64.deb ...\nUnpacking libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\nSelecting previously unselected package libnghttp2-14:amd64.\nPreparing to unpack .../06-libnghttp2-14_1.59.0-1ubuntu0.4_amd64.deb ...\nUnpacking libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\nSelecting previously unselected package libpsl5t64:amd64.\nPreparing to unpack .../07-libpsl5t64_0.21.2-1.1build1_amd64.deb ...\nUnpacking libpsl5t64:amd64 (0.21.2-1.1build1) ...\nSelecting previously unselected package publicsuffix.\nPreparing to unpack .../08-publicsuffix_20231001.0357-0.1_all.deb ...\nUnpacking publicsuffix (20231001.0357-0.1) ...\nSelecting previously unselected package libsasl2-modules-db:amd64.\nPreparing to unpack .../09-libsasl2-modules-db_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSelecting previously unselected package libsasl2-2:amd64.\nPreparing to unpack .../10-libsasl2-2_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSelecting previously unselected package libldap2:amd64.\nPreparing to unpack .../11-libldap2_2.6.10+dfsg-0ubuntu0.24.04.1_amd64.deb ...\nUnpacking libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSelecting previously unselected package librtmp1:amd64.\nPreparing to unpack .../12-librtmp1_2.4+20151223.gitfa8646d.1-2build7_amd64.deb ...\nUnpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\nSelecting previously unselected package libssh-4:amd64.\nPreparing to unpack .../13-libssh-4_0.10.6-2ubuntu0.5_amd64.deb ...\nUnpacking libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\nSelecting previously unselected package libcurl4t64:amd64.\nPreparing to unpack .../14-libcurl4t64_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSelecting previously unselected package curl.\nPreparing to unpack .../15-curl_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking curl (8.5.0-2ubuntu10.16) ...\nSelecting previously unselected package libldap-common.\nPreparing to unpack .../16-libldap-common_2.6.10+dfsg-0ubuntu0.24.04.1_all.deb ...\nUnpacking libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSelecting previously unselected package libsasl2-modules:amd64.\nPreparing to unpack .../17-libsasl2-modules_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libkeyutils1:amd64 (1.6.3-3build1) ...\nSetting up libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libpsl5t64:amd64 (0.21.2-1.1build1) ...\nSetting up libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\nSetting up krb5-locales (1.20.1-6ubuntu2.10) ...\nSetting up libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSetting up libkrb5support0:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\nSetting up libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up publicsuffix (20231001.0357-0.1) ...\nSetting up libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSetting up libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\nSetting up libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSetting up curl (8.5.0-2ubuntu10.16) ...\nProcessing triggers for libc-bin (2.39-0ubuntu8.6) ...\n/tmp/tmp.HqqwmsWPFP/uv.tar.gz: OK\nuv 0.9.5\npytest 8.4.1\nPython 3.13.9\n",
+            "stderr_tail": "debconf: delaying package configuration, since apt-utils is not installed\nDownloading cpython-3.13.9-linux-x86_64-gnu (download) (32.0MiB)\n Downloading cpython-3.13.9-linux-x86_64-gnu (download)\nDownloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 33ms\n",
+            "duration_s": 39.77395779200015
+          }
+        ],
+        "status": "passed",
+        "uv_archive": {
+          "version": "0.9.5",
+          "architecture": "x86_64",
+          "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+          "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66"
+        },
+        "observed_versions": [
+          "uv 0.9.5",
+          "pytest 8.4.1",
+          "Python 3.13.9"
+        ],
+        "duration_s": 39.77396604101523
+      },
+      "complete_setup_duration_s": 93.91425762500148,
+      "provider_cleanup_confirmed": true
+    },
+    {
+      "task": "regex-log",
+      "real_provider_calls": 0,
+      "candidate_executed": false,
+      "instructions_or_assertions_accessed": false,
+      "system_python_command": "command -v python3 >/dev/null || (apt-get update -qq && apt-get install -y -qq python3)",
+      "resource_limits": {
+        "cpus": 1,
+        "memory_mb": 2048
+      },
+      "status": "passed",
+      "image_id_architecture": "sha256:90101b2e815323a8da20528a1439bebc407eb9761c9c68a3d557730856c878e9 amd64",
+      "python_prerequisite": {
+        "return_code": 0,
+        "stdout_tail": "acking libsqlite3-0:amd64 (3.45.1-1ubuntu2.9) ...\nSelecting previously unselected package libpython3.12-stdlib:amd64.\nPreparing to unpack .../7-libpython3.12-stdlib_3.12.3-1ubuntu0.17_amd64.deb ...\nUnpacking libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.17) ...\nSelecting previously unselected package python3.12.\nPreparing to unpack .../8-python3.12_3.12.3-1ubuntu0.17_amd64.deb ...\nUnpacking python3.12 (3.12.3-1ubuntu0.17) ...\nSelecting previously unselected package libpython3-stdlib:amd64.\nPreparing to unpack .../9-libpython3-stdlib_3.12.3-0ubuntu2.1_amd64.deb ...\nUnpacking libpython3-stdlib:amd64 (3.12.3-0ubuntu2.1) ...\nSetting up python3-minimal (3.12.3-0ubuntu2.1) ...\nSelecting previously unselected package python3.\n(Reading database ... \n(Reading database ... 5%\n(Reading database ... 10%\n(Reading database ... 15%\n(Reading database ... 20%\n(Reading database ... 25%\n(Reading database ... 30%\n(Reading database ... 35%\n(Reading database ... 40%\n(Reading database ... 45%\n(Reading database ... 50%\n(Reading database ... 55%\n(Reading database ... 60%\n(Reading database ... 65%\n(Reading database ... 70%\n(Reading database ... 75%\n(Reading database ... 80%\n(Reading database ... 85%\n(Reading database ... 90%\n(Reading database ... 95%\n(Reading database ... 100%\n(Reading database ... 5706 files and directories currently installed.)\nPreparing to unpack .../python3_3.12.3-0ubuntu2.1_amd64.deb ...\nUnpacking python3 (3.12.3-0ubuntu2.1) ...\nSelecting previously unselected package openssl.\nPreparing to unpack .../openssl_3.0.13-0ubuntu3.16_amd64.deb ...\nUnpacking openssl (3.0.13-0ubuntu3.16) ...\nSelecting previously unselected package ca-certificates.\nPreparing to unpack .../ca-certificates_20260816ubuntu0.24.04.2_all.deb ...\nUnpacking ca-certificates (20260816ubuntu0.24.04.2) ...\nSetting up media-types (10.1.0) ...\nSetting up libsqlite3-0:amd64 (3.45.1-1ubuntu2.9) ...\nSetting up tzdata (2026e-0ubuntu0.24.04.1) ...\ndebconf: unable to initialize frontend: Dialog\ndebconf: (TERM is not set, so the dialog frontend is not usable.)\ndebconf: falling back to frontend: Readline\ndebconf: unable to initialize frontend: Readline\ndebconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.38.2 /usr/local/share/perl/5.38.2 /usr/lib/x86_64-linux-gnu/perl5/5.38 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.38 /usr/share/perl/5.38 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8.)\ndebconf: falling back to frontend: Teletype\nConfiguring tzdata\n------------------\n\nPlease select the geographic area in which you live. Subsequent configuration\nquestions will narrow this down by presenting a list of cities, representing\nthe time zones in which they are located.\n\n  1. Africa      4. Arctic    7. Australia  10. Pacific\n  2. America     5. Asia      8. Europe     11. Etc\n  3. Antarctica  6. Atlantic  9. Indian     12. Legacy\nGeographic area: \nUse of uninitialized value $_[1] in join or string at /usr/share/perl5/Debconf/DbDriver/Stack.pm line 112.\n\nCurrent default time zone: '/UTC'\nLocal time is now:      Sat Nov  7 10:57:13 UTC 2026.\nUniversal Time is now:  Sat Nov  7 10:57:13 UTC 2026.\nRun 'dpkg-reconfigure tzdata' if you wish to change it.\n\nUse of uninitialized value $val in substitution (s///) at /usr/share/perl5/Debconf/Format/822.pm line 84, <GEN6> line 4.\nUse of uninitialized value $val in concatenation (.) or string at /usr/share/perl5/Debconf/Format/822.pm line 85, <GEN6> line 4.\nSetting up netbase (6.4) ...\nSetting up openssl (3.0.13-0ubuntu3.16) ...\nSetting up readline-common (8.2-4build1) ...\nSetting up ca-certificates (20260816ubuntu0.24.04.2) ...\ndebconf: unable to initialize frontend: Dialog\ndebconf: (TERM is not set, so the dialog frontend is not usable.)\ndebconf: falling back to frontend: Readline\ndebconf: unable to initialize frontend: Readline\ndebconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.38.2 /usr/local/share/perl/5.38.2 /usr/lib/x86_64-linux-gnu/perl5/5.38 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.38 /usr/share/perl/5.38 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8.)\ndebconf: falling back to frontend: Teletype\nUpdating certificates in /etc/ssl/certs...\n120 added, 0 removed; done.\nRunning hooks in /etc/ca-certificates/update.d...\ndone.\nSetting up libreadline8t64:amd64 (8.2-4build1) ...\nSetting up libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.17) ...\nSetting up python3.12 (3.12.3-1ubuntu0.17) ...\nSetting up libpython3-stdlib:amd64 (3.12.3-0ubuntu2.1) ...\nSetting up python3 (3.12.3-0ubuntu2.1) ...\nrunning python rtupdate hooks for python3.12...\nrunning python post-rtupdate hooks for python3.12...\nProcessing triggers for libc-bin (2.39-0ubuntu8.6) ...\n",
+        "stderr_tail": "debconf: delaying package configuration, since apt-utils is not installed\n"
+      },
+      "python_prerequisite_duration_s": 77.0368123750086,
+      "tool_preflight": {
+        "protocol": "verifier-tool-preflight-v1",
+        "task": "regex-log",
+        "mode": "uvx",
+        "direct_packages": [
+          "pytest==8.4.1",
+          "pytest-json-ctrf==0.3.5"
+        ],
+        "cache_mode": "isolated_container_cache_warmed_before_agent",
+        "candidate_visible_tooling": true,
+        "hidden_assertions_copied": false,
+        "max_attempts": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "timeout_sec": 160,
+            "return_code": 0,
+            "stdout_tail": "ild1) ...\nSelecting previously unselected package libkrb5-3:amd64.\nPreparing to unpack .../04-libkrb5-3_1.20.1-6ubuntu2.10_amd64.deb ...\nUnpacking libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...\nSelecting previously unselected package libgssapi-krb5-2:amd64.\nPreparing to unpack .../05-libgssapi-krb5-2_1.20.1-6ubuntu2.10_amd64.deb ...\nUnpacking libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\nSelecting previously unselected package libnghttp2-14:amd64.\nPreparing to unpack .../06-libnghttp2-14_1.59.0-1ubuntu0.4_amd64.deb ...\nUnpacking libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\nSelecting previously unselected package libpsl5t64:amd64.\nPreparing to unpack .../07-libpsl5t64_0.21.2-1.1build1_amd64.deb ...\nUnpacking libpsl5t64:amd64 (0.21.2-1.1build1) ...\nSelecting previously unselected package publicsuffix.\nPreparing to unpack .../08-publicsuffix_20231001.0357-0.1_all.deb ...\nUnpacking publicsuffix (20231001.0357-0.1) ...\nSelecting previously unselected package libbrotli1:amd64.\nPreparing to unpack .../09-libbrotli1_1.1.0-2ubuntu0.1_amd64.deb ...\nUnpacking libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...\nSelecting previously unselected package libsasl2-modules-db:amd64.\nPreparing to unpack .../10-libsasl2-modules-db_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSelecting previously unselected package libsasl2-2:amd64.\nPreparing to unpack .../11-libsasl2-2_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSelecting previously unselected package libldap2:amd64.\nPreparing to unpack .../12-libldap2_2.6.10+dfsg-0ubuntu0.24.04.1_amd64.deb ...\nUnpacking libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSelecting previously unselected package librtmp1:amd64.\nPreparing to unpack .../13-librtmp1_2.4+20151223.gitfa8646d.1-2build7_amd64.deb ...\nUnpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\nSelecting previously unselected package libssh-4:amd64.\nPreparing to unpack .../14-libssh-4_0.10.6-2ubuntu0.5_amd64.deb ...\nUnpacking libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\nSelecting previously unselected package libcurl4t64:amd64.\nPreparing to unpack .../15-libcurl4t64_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSelecting previously unselected package curl.\nPreparing to unpack .../16-curl_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking curl (8.5.0-2ubuntu10.16) ...\nSelecting previously unselected package libldap-common.\nPreparing to unpack .../17-libldap-common_2.6.10+dfsg-0ubuntu0.24.04.1_all.deb ...\nUnpacking libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSelecting previously unselected package libsasl2-modules:amd64.\nPreparing to unpack .../18-libsasl2-modules_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libkeyutils1:amd64 (1.6.3-3build1) ...\nSetting up libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...\nSetting up libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libpsl5t64:amd64 (0.21.2-1.1build1) ...\nSetting up libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\nSetting up krb5-locales (1.20.1-6ubuntu2.10) ...\nSetting up libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSetting up libkrb5support0:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\nSetting up libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up publicsuffix (20231001.0357-0.1) ...\nSetting up libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSetting up libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\nSetting up libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSetting up curl (8.5.0-2ubuntu10.16) ...\nProcessing triggers for libc-bin (2.39-0ubuntu8.6) ...\n/tmp/tmp.MT6SBDh2G2/uv.tar.gz: OK\nuv 0.9.5\npytest 8.4.1\nPython 3.13.9\n",
+            "stderr_tail": "debconf: delaying package configuration, since apt-utils is not installed\nDownloading cpython-3.13.9-linux-x86_64-gnu (download) (32.0MiB)\n Downloading cpython-3.13.9-linux-x86_64-gnu (download)\nDownloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 34ms\n",
+            "duration_s": 58.70549191700411
+          }
+        ],
+        "status": "passed",
+        "uv_archive": {
+          "version": "0.9.5",
+          "architecture": "x86_64",
+          "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+          "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66"
+        },
+        "observed_versions": [
+          "uv 0.9.5",
+          "pytest 8.4.1",
+          "Python 3.13.9"
+        ],
+        "duration_s": 58.705505958001595
+      },
+      "complete_setup_duration_s": 135.74286166697857,
+      "provider_cleanup_confirmed": true
+    },
+    {
+      "task": "sparql-university",
+      "real_provider_calls": 0,
+      "candidate_executed": false,
+      "instructions_or_assertions_accessed": false,
+      "system_python_command": "command -v python3 >/dev/null || (apt-get update -qq && apt-get install -y -qq python3)",
+      "resource_limits": {
+        "cpus": 1,
+        "memory_mb": 2048
+      },
+      "status": "passed",
+      "image_id_architecture": "sha256:92fa4304e51167f9fb4466144eba33ef9272a7df0ac1cab9fc3986bccd1ab708 amd64",
+      "python_prerequisite": {
+        "return_code": 0,
+        "stdout_tail": "acking libsqlite3-0:amd64 (3.45.1-1ubuntu2.9) ...\nSelecting previously unselected package libpython3.12-stdlib:amd64.\nPreparing to unpack .../7-libpython3.12-stdlib_3.12.3-1ubuntu0.17_amd64.deb ...\nUnpacking libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.17) ...\nSelecting previously unselected package python3.12.\nPreparing to unpack .../8-python3.12_3.12.3-1ubuntu0.17_amd64.deb ...\nUnpacking python3.12 (3.12.3-1ubuntu0.17) ...\nSelecting previously unselected package libpython3-stdlib:amd64.\nPreparing to unpack .../9-libpython3-stdlib_3.12.3-0ubuntu2.1_amd64.deb ...\nUnpacking libpython3-stdlib:amd64 (3.12.3-0ubuntu2.1) ...\nSetting up python3-minimal (3.12.3-0ubuntu2.1) ...\nSelecting previously unselected package python3.\n(Reading database ... \n(Reading database ... 5%\n(Reading database ... 10%\n(Reading database ... 15%\n(Reading database ... 20%\n(Reading database ... 25%\n(Reading database ... 30%\n(Reading database ... 35%\n(Reading database ... 40%\n(Reading database ... 45%\n(Reading database ... 50%\n(Reading database ... 55%\n(Reading database ... 60%\n(Reading database ... 65%\n(Reading database ... 70%\n(Reading database ... 75%\n(Reading database ... 80%\n(Reading database ... 85%\n(Reading database ... 90%\n(Reading database ... 95%\n(Reading database ... 100%\n(Reading database ... 5706 files and directories currently installed.)\nPreparing to unpack .../python3_3.12.3-0ubuntu2.1_amd64.deb ...\nUnpacking python3 (3.12.3-0ubuntu2.1) ...\nSelecting previously unselected package openssl.\nPreparing to unpack .../openssl_3.0.13-0ubuntu3.16_amd64.deb ...\nUnpacking openssl (3.0.13-0ubuntu3.16) ...\nSelecting previously unselected package ca-certificates.\nPreparing to unpack .../ca-certificates_20260816ubuntu0.24.04.2_all.deb ...\nUnpacking ca-certificates (20260816ubuntu0.24.04.2) ...\nSetting up media-types (10.1.0) ...\nSetting up libsqlite3-0:amd64 (3.45.1-1ubuntu2.9) ...\nSetting up tzdata (2026e-0ubuntu0.24.04.1) ...\ndebconf: unable to initialize frontend: Dialog\ndebconf: (TERM is not set, so the dialog frontend is not usable.)\ndebconf: falling back to frontend: Readline\ndebconf: unable to initialize frontend: Readline\ndebconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.38.2 /usr/local/share/perl/5.38.2 /usr/lib/x86_64-linux-gnu/perl5/5.38 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.38 /usr/share/perl/5.38 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8.)\ndebconf: falling back to frontend: Teletype\nConfiguring tzdata\n------------------\n\nPlease select the geographic area in which you live. Subsequent configuration\nquestions will narrow this down by presenting a list of cities, representing\nthe time zones in which they are located.\n\n  1. Africa      4. Arctic    7. Australia  10. Pacific\n  2. America     5. Asia      8. Europe     11. Etc\n  3. Antarctica  6. Atlantic  9. Indian     12. Legacy\nGeographic area: \nUse of uninitialized value $_[1] in join or string at /usr/share/perl5/Debconf/DbDriver/Stack.pm line 112.\n\nCurrent default time zone: '/UTC'\nLocal time is now:      Sat Nov  7 10:57:12 UTC 2026.\nUniversal Time is now:  Sat Nov  7 10:57:12 UTC 2026.\nRun 'dpkg-reconfigure tzdata' if you wish to change it.\n\nUse of uninitialized value $val in substitution (s///) at /usr/share/perl5/Debconf/Format/822.pm line 84, <GEN6> line 4.\nUse of uninitialized value $val in concatenation (.) or string at /usr/share/perl5/Debconf/Format/822.pm line 85, <GEN6> line 4.\nSetting up netbase (6.4) ...\nSetting up openssl (3.0.13-0ubuntu3.16) ...\nSetting up readline-common (8.2-4build1) ...\nSetting up ca-certificates (20260816ubuntu0.24.04.2) ...\ndebconf: unable to initialize frontend: Dialog\ndebconf: (TERM is not set, so the dialog frontend is not usable.)\ndebconf: falling back to frontend: Readline\ndebconf: unable to initialize frontend: Readline\ndebconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.38.2 /usr/local/share/perl/5.38.2 /usr/lib/x86_64-linux-gnu/perl5/5.38 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.38 /usr/share/perl/5.38 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8.)\ndebconf: falling back to frontend: Teletype\nUpdating certificates in /etc/ssl/certs...\n120 added, 0 removed; done.\nRunning hooks in /etc/ca-certificates/update.d...\ndone.\nSetting up libreadline8t64:amd64 (8.2-4build1) ...\nSetting up libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.17) ...\nSetting up python3.12 (3.12.3-1ubuntu0.17) ...\nSetting up libpython3-stdlib:amd64 (3.12.3-0ubuntu2.1) ...\nSetting up python3 (3.12.3-0ubuntu2.1) ...\nrunning python rtupdate hooks for python3.12...\nrunning python post-rtupdate hooks for python3.12...\nProcessing triggers for libc-bin (2.39-0ubuntu8.6) ...\n",
+        "stderr_tail": "debconf: delaying package configuration, since apt-utils is not installed\n"
+      },
+      "python_prerequisite_duration_s": 76.72251141699962,
+      "tool_preflight": {
+        "protocol": "verifier-tool-preflight-v1",
+        "task": "sparql-university",
+        "mode": "uvx",
+        "direct_packages": [
+          "pytest==8.4.1",
+          "rdflib==7.1.4",
+          "pytest-json-ctrf==0.3.5"
+        ],
+        "cache_mode": "isolated_container_cache_warmed_before_agent",
+        "candidate_visible_tooling": true,
+        "hidden_assertions_copied": false,
+        "max_attempts": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "timeout_sec": 160,
+            "return_code": 0,
+            "stdout_tail": "ild1) ...\nSelecting previously unselected package libkrb5-3:amd64.\nPreparing to unpack .../04-libkrb5-3_1.20.1-6ubuntu2.10_amd64.deb ...\nUnpacking libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...\nSelecting previously unselected package libgssapi-krb5-2:amd64.\nPreparing to unpack .../05-libgssapi-krb5-2_1.20.1-6ubuntu2.10_amd64.deb ...\nUnpacking libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\nSelecting previously unselected package libnghttp2-14:amd64.\nPreparing to unpack .../06-libnghttp2-14_1.59.0-1ubuntu0.4_amd64.deb ...\nUnpacking libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\nSelecting previously unselected package libpsl5t64:amd64.\nPreparing to unpack .../07-libpsl5t64_0.21.2-1.1build1_amd64.deb ...\nUnpacking libpsl5t64:amd64 (0.21.2-1.1build1) ...\nSelecting previously unselected package publicsuffix.\nPreparing to unpack .../08-publicsuffix_20231001.0357-0.1_all.deb ...\nUnpacking publicsuffix (20231001.0357-0.1) ...\nSelecting previously unselected package libbrotli1:amd64.\nPreparing to unpack .../09-libbrotli1_1.1.0-2ubuntu0.1_amd64.deb ...\nUnpacking libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...\nSelecting previously unselected package libsasl2-modules-db:amd64.\nPreparing to unpack .../10-libsasl2-modules-db_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSelecting previously unselected package libsasl2-2:amd64.\nPreparing to unpack .../11-libsasl2-2_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSelecting previously unselected package libldap2:amd64.\nPreparing to unpack .../12-libldap2_2.6.10+dfsg-0ubuntu0.24.04.1_amd64.deb ...\nUnpacking libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSelecting previously unselected package librtmp1:amd64.\nPreparing to unpack .../13-librtmp1_2.4+20151223.gitfa8646d.1-2build7_amd64.deb ...\nUnpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\nSelecting previously unselected package libssh-4:amd64.\nPreparing to unpack .../14-libssh-4_0.10.6-2ubuntu0.5_amd64.deb ...\nUnpacking libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\nSelecting previously unselected package libcurl4t64:amd64.\nPreparing to unpack .../15-libcurl4t64_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSelecting previously unselected package curl.\nPreparing to unpack .../16-curl_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking curl (8.5.0-2ubuntu10.16) ...\nSelecting previously unselected package libldap-common.\nPreparing to unpack .../17-libldap-common_2.6.10+dfsg-0ubuntu0.24.04.1_all.deb ...\nUnpacking libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSelecting previously unselected package libsasl2-modules:amd64.\nPreparing to unpack .../18-libsasl2-modules_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libkeyutils1:amd64 (1.6.3-3build1) ...\nSetting up libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...\nSetting up libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libpsl5t64:amd64 (0.21.2-1.1build1) ...\nSetting up libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\nSetting up krb5-locales (1.20.1-6ubuntu2.10) ...\nSetting up libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSetting up libkrb5support0:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\nSetting up libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up publicsuffix (20231001.0357-0.1) ...\nSetting up libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSetting up libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\nSetting up libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSetting up curl (8.5.0-2ubuntu10.16) ...\nProcessing triggers for libc-bin (2.39-0ubuntu8.6) ...\n/tmp/tmp.FCxAp7dTL0/uv.tar.gz: OK\nuv 0.9.5\npytest 8.4.1\nPython 3.13.9\n",
+            "stderr_tail": "debconf: delaying package configuration, since apt-utils is not installed\nDownloading cpython-3.13.9-linux-x86_64-gnu (download) (32.0MiB)\n Downloading cpython-3.13.9-linux-x86_64-gnu (download)\nDownloading pygments (1.2MiB)\n Downloading pygments\nInstalled 8 packages in 47ms\n",
+            "duration_s": 63.73309879199951
+          }
+        ],
+        "status": "passed",
+        "uv_archive": {
+          "version": "0.9.5",
+          "architecture": "x86_64",
+          "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+          "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66"
+        },
+        "observed_versions": [
+          "uv 0.9.5",
+          "pytest 8.4.1",
+          "Python 3.13.9"
+        ],
+        "duration_s": 63.733112957997946
+      },
+      "complete_setup_duration_s": 140.45615483398433,
+      "provider_cleanup_confirmed": true
+    }
+  ]
+}

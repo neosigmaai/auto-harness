@@ -1,0 +1,20 @@
+{
+  "recorded_at": "2026-11-07T10:57:57.837620+00:00",
+  "command": "AOS_TEST_DATABASE_URL=<isolated test server> .venv-service/bin/python -m service.tests.smoke_simulated",
+  "status": "passed",
+  "mode": "simulated_only",
+  "cli_iterations": 3,
+  "profile": "calibrated12",
+  "split_sizes": [
+    5,
+    3,
+    4
+  ],
+  "holdout": "complete",
+  "cancel_latency_s": 0.275,
+  "prior_candidate_resumed_with_fresh_trials": true,
+  "recovered_lease_epoch": 2,
+  "durable_deadline_preserved": true,
+  "provider_calls": 0,
+  "database": "disposable; dropped after smoke"
+}

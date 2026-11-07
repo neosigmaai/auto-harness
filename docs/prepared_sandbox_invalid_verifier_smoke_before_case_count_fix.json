@@ -1,0 +1,45 @@
+{
+  "model_calls": 2,
+  "real_provider_calls": 0,
+  "tool_task": "nginx-request-logging",
+  "harness_mode": "prepared-tools-v1",
+  "production_source_sha256": "db021ca970a521519d15bebc8ac7eef866d64da232574fd2df9d9a8b6616268f",
+  "expected_outcome": "unscorable",
+  "no_host_bind_mount": true,
+  "single_internal_network": true,
+  "checks_output": "host marker absent; credential env absent; private/metadata proxy denied; direct host denied; public HTTPS works\n",
+  "preflight": {
+    "protocol": "prepared-tools-v1",
+    "task": "nginx-request-logging",
+    "status": "passed",
+    "cache_mode": "immutable_image_fresh_container",
+    "image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+    "cache_key": "9140d3ff6fa2f39ede06ab007eac3fb68f15e272b3a465a75806761991c4d103",
+    "candidate_visible_tooling": true,
+    "hidden_assertions_copied": false,
+    "downloads_permitted_by_probe": false,
+    "return_code": 0,
+    "observed_versions": [
+      "Python 3.13.7",
+      "uv 0.9.5",
+      "pytest 8.4.1"
+    ],
+    "duration_s": 1.0118503330159
+  },
+  "status": "error",
+  "reward": null,
+  "duration_s": 12.034661124984268,
+  "runner_exit_code": 0,
+  "verifier_validity": {
+    "contract": "pinned-pytest-ctrf-v1",
+    "valid": false,
+    "orchestration_sha256": "9aef6d2797466c4ce1ee70cca2e11e36875753df8d22ab9782cba7a4138ea082",
+    "shell_started_at": 1794055480.776417,
+    "shell_finished_at": 1794055480.9430661,
+    "shell_exit_code": 0,
+    "raw_reward": 0.0,
+    "error_type": "VerifierProtocolError",
+    "reason": "missing_or_oversized_ctrf.json"
+  },
+  "production_source_unchanged": true
+}

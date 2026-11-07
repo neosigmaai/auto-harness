@@ -1,0 +1,772 @@
+{
+  "job_id": "099b4443-5052-4373-8605-dd7fd3e202c2",
+  "recorded_at": "2026-11-07T12:57:04.931370+00:00",
+  "status": "cancelled_after_confirmed_verifier_contract_defect",
+  "comparison_valid": false,
+  "stop_reason": "Pinned CTRF0.3.5 groups parameterized case results by function; guard incorrectly required collected case count to equal grouped CTRF count for success. A27-passed pytest session produced3passed CTRFgroups and was rejected.",
+  "historical_outcomes_rewritten": false,
+  "archived_report": "docs/live_prepared_development_review_ctrf_grouping_failure.json",
+  "source_index": "docs/prepared_interrupted_candidates/index.json",
+  "implementation_sha256": {
+    "files": {
+      "service/__init__.py": "99cc2ba921b33fc1c72f5fb71eaf9ff89588a115c71a9b8dbf92a22d9016cf25",
+      "service/api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "service/api/app.py": "4c3c1a9ca3393322f3b8653734661e7b79a99e51c02835cd71a34ed24e75e95c",
+      "service/api/routes_admin.py": "6ed8fba87957ba30c167d4195c899761b7dbb83208b2c5aabf8809b30d80f9fe",
+      "service/api/routes_jobs.py": "279c27c6ce7f09d6258870d4b31f40ee93238ef311c7bd57bd449ba7344d71da",
+      "service/api/routes_tasks.py": "82e6da260744ed7146ae0eaae52ab2d1f11fcd379cebd659f74dc8feabd465d8",
+      "service/auth.py": "1c5aab1a90c9738b42adf904c66ea283420ea25656c9c283e3742add41b64713",
+      "service/config.py": "eeb28f50e1a1c97979bfbb8d489be793e3cf9ef3a34176aa1dce217a4c72695f",
+      "service/db.py": "589f01079d8a8ce859144a008ee42f27829ad92d0515405ac28909986103192b",
+      "service/errors.py": "15ffadaa1ced65e754baaf2e9bc329cd1b93df288a587b78cc6e49e231e36bde",
+      "service/inference.py": "06d5ceb2b9e2a4ba8cc0e29b56f1b09f907554a479f88282beb44c6cfd534f97",
+      "service/migrations/0001_init.sql": "fd53b52ae645eb0352235eb8b1130a2eeea1dcb05eb9e02fc425c6c1ee725041",
+      "service/migrations/0002_durable_execution.sql": "db1dfeda6401bccc6daf854d4140e12fec445dec734b78851f43f4bdcaec5930",
+      "service/migrations/0003_nullable_costs.sql": "6945918803711dad747fcfb28ad8f800daf80e6a59e4d8b85e1dd2cc080c6ce7",
+      "service/models.py": "73ff7f84e323ed3b72c5fa9f133fa5722cda559f9222fcf3c4b86444446b877b",
+      "service/repo.py": "d0fea63272040def467e51b548bbbffdd86711d7a32c71a7da06cdcfe585cb9c",
+      "service/sandbox/__init__.py": "f2644f102ee4d260c546bf73e47d6656a8e3e0e5d548725e48f5e319de96ed8f",
+      "service/sandbox/cleanup_smoke.py": "533eeede379ebde26df82a5263ba6a712a9e5646a19b96058a1466695d8cc157",
+      "service/sandbox/docker_environment.py": "f1ea1a74bc331bf08784ddcdcd9f0b6f87f218fc562c6820889f1ebb5b104c98",
+      "service/sandbox/installed_agent.py": "a54c3f26ed313d2c380886f19f921d7fd19e3fa217957a29878a758a6ef36b35",
+      "service/sandbox/preflight.py": "3bbb71b7af4910f2d02636a7ad5317081b6b28f643cdf1db8079d84f1118e1a6",
+      "service/sandbox/prepared_images.py": "31399b2ae3abbec9d4597bd3b059637da7fa42c48e5d48f08e28306089909c4b",
+      "service/sandbox/relay.py": "86540d673c4f40b4c45ee5b92f102ca8c1134b9927aed2f61f39db723158a163",
+      "service/sandbox/runtime.py": "11e54eb3396248bea1dd2cb6d9ccd98ee4fdc5bd0dfc053462b1726351d9c729",
+      "service/sandbox/smoke.py": "d65ec578e7346d4066551e9e590d0ff6fbb5876898d8f4567013c5cf6f0a82a3",
+      "service/sandbox/verifier.py": "27be3f3105c7f9e53d2ce05c45d74a040c151e92256adc42d5dd6f4f99512fe4",
+      "service/sandbox/verifier_contract.py": "d4c8284fdb77a029c08755f9898755253d286c6932f70eeb44e24ca2732c84d5",
+      "service/sandbox/verifier_contracts.json": "3c41f5914ba4cc5f6e17d4acd11707e5edfeb62986c570077e4fc6418a6bbe8a",
+      "service/tasks_catalog.py": "9b1e716f10b67184d8fad69b9f538cb4a4b014e9003161fb4689567e3dfaca03",
+      "service/worker/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "service/worker/digest.py": "a117146a07c0659723a23ed0c83f3ddf1962ffa35fe2a9dc762e3bbd59856088",
+      "service/worker/executors/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "service/worker/executors/base.py": "fd564f35f05a261536dd4260b162d7c20d32d6c8dac1f7a2f78d64e42b900b41",
+      "service/worker/executors/harbor_runner.py": "2e369ba7971e4373731eb88569b38a50eebe14c1e9e6bc1479f994fe6836cd35",
+      "service/worker/executors/simulated.py": "c4e38c6d75ee0f6dadc6093407916f26d008b3bdfcf51c65c17e388a1ad38d12",
+      "service/worker/job_runner.py": "87a4a102bc081488e1c02762383599b60f2632864daff4b22ebdd60ebc6e22ae",
+      "service/worker/llm_optimizer.py": "a888b0bcbe32d05c776d9cc6cd31d910d02adee669049449b1c706fc6a68e192",
+      "service/worker/main.py": "c51635636425c014758bf42c4df3fe067b92c7e63a39f95bfebd4edf002b5109",
+      "service/worker/optimizer.py": "8d3063dbffe219c381c46883c8b8c9bacfd4f0ccaa7ca343e974501b0bce6eb5"
+    },
+    "aggregate_sha256": "db021ca970a521519d15bebc8ac7eef866d64da232574fd2df9d9a8b6616268f"
+  },
+  "sandbox_harness": {
+    "mode": "prepared-tools-v1",
+    "entries": {
+      "fix-git": {
+        "image_id": "sha256:043432cd0026a9587f468f3a1b13b6a93001b83162047821712afccdf38f548c",
+        "platform": "linux/amd64",
+        "cache_key": "6c937910ce5203c255d4c7ec6954d888dc4ee85c65f24f07c816f60442e588e8",
+        "preflight": {
+          "mode": "uvx",
+          "task": "fix-git",
+          "status": "passed",
+          "attempts": [
+            {
+              "attempt": 1,
+              "duration_s": 74.31664470798569,
+              "return_code": 0,
+              "stderr_tail": "",
+              "stdout_tail": "debconf: delaying package configuration, since apt-utils is not installed\n(Reading database ... \n(Reading database ... 5%\n(Reading database ... 10%\n(Reading database ... 15%\n(Reading database ... 20%\n(Reading database ... 25%\n(Reading database ... 30%\n(Reading database ... 35%\n(Reading database ... 40%\n(Reading database ... 45%\n(Reading database ... 50%\n(Reading database ... 55%\n(Reading database ... 60%\n(Reading database ... 65%\n(Reading database ... 70%\n(Reading database ... 75%\n(Reading database ... 80%\n(Reading database ... 85%\n(Reading database ... 90%\n(Reading database ... 95%\n(Reading database ... 100%\n(Reading database ... 10322 files and directories currently installed.)\nPreparing to unpack .../ca-certificates_20250419~deb12u2_all.deb ...\nUnpacking ca-certificates (20250419~deb12u2) over (20230311+deb12u1) ...\nSelecting previously unselected package libcurl4:amd64.\nPreparing to unpack .../libcurl4_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking libcurl4:amd64 (7.88.1-10+deb12u15) ...\nSelecting previously unselected package curl.\nPreparing to unpack .../curl_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking curl (7.88.1-10+deb12u15) ...\nPreparing to unpack .../libcurl3-gnutls_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking libcurl3-gnutls:amd64 (7.88.1-10+deb12u15) over (7.88.1-10+deb12u14) ...\nSetting up libcurl3-gnutls:amd64 (7.88.1-10+deb12u15) ...\nSetting up ca-certificates (20250419~deb12u2) ...\nUpdating certificates in /etc/ssl/certs...\nrehash: warning: skipping ca-certificates.crt,it does not contain exactly one certificate or CRL\n21 added, 15 removed; done.\nSetting up libcurl4:amd64 (7.88.1-10+deb12u15) ...\nSetting up curl (7.88.1-10+deb12u15) ...\nProcessing triggers for libc-bin (2.36-9+deb12u10) ...\nProcessing triggers for ca-certificates (20250419~deb12u2) ...\nUpdating certificates in /etc/ssl/certs...\n0 added, 0 removed; done.\nRunning hooks in /etc/ca-certificates/update.d...\ndone.\n/tmp/tmp.iK3v2YN5sG/uv.tar.gz: OK\nuv 0.9.5\nDownloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 34ms\npytest 8.4.1\nPython 3.13.7\n",
+              "timeout_sec": 160
+            }
+          ],
+          "protocol": "verifier-tool-preflight-v1",
+          "cache_mode": "isolated_container_cache_warmed_before_agent",
+          "duration_s": 74.3166531669849,
+          "uv_archive": {
+            "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+            "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66",
+            "version": "0.9.5",
+            "architecture": "x86_64"
+          },
+          "max_attempts": 2,
+          "direct_packages": [
+            "pytest==8.4.1",
+            "pytest-json-ctrf==0.3.5"
+          ],
+          "observed_versions": [
+            "uv 0.9.5",
+            "pytest 8.4.1",
+            "Python 3.13.7"
+          ],
+          "hidden_assertions_copied": false,
+          "candidate_visible_tooling": true
+        },
+        "cold_setup_s": 74.56076183301047,
+        "base_image_id": "sha256:61e431c00c58df652287aadce5457634d9f9330cfdd153ebdf2802df0d540119",
+        "recipe_digest": "bb662b1d2360327e800d029c940d6b15dfcd3ce9297f116b3c853d41b4f0a354",
+        "base_reference": "alexgshaw/fix-git:20251031",
+        "offline_probe_s": 1.225815000012517,
+        "build_and_probe_s": 82.847413416981,
+        "offline_probe_versions": [
+          "Python 3.13.7",
+          "uv 0.9.5",
+          "pytest 8.4.1"
+        ],
+        "candidate_ever_uploaded": false,
+        "credential_ever_supplied": false,
+        "instructions_or_assertions_uploaded": false
+      },
+      "regex-log": {
+        "image_id": "sha256:0ca4ebe752e9282bfb21d9c890dd29b5210df9c7abed71884d5a564f06a3aefc",
+        "platform": "linux/amd64",
+        "cache_key": "19631b8d6efec5af99a367f5183bec98a43b754fbdd727cf7cf218ba52ed5a05",
+        "preflight": {
+          "mode": "uvx",
+          "task": "regex-log",
+          "status": "passed",
+          "attempts": [
+            {
+              "attempt": 1,
+              "duration_s": 42.87433241598774,
+              "return_code": 0,
+              "stderr_tail": "",
+              "stdout_tail": "iously unselected package libgssapi-krb5-2:amd64.\nPreparing to unpack .../05-libgssapi-krb5-2_1.20.1-6ubuntu2.10_amd64.deb ...\nUnpacking libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\nSelecting previously unselected package libnghttp2-14:amd64.\nPreparing to unpack .../06-libnghttp2-14_1.59.0-1ubuntu0.4_amd64.deb ...\nUnpacking libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\nSelecting previously unselected package libpsl5t64:amd64.\nPreparing to unpack .../07-libpsl5t64_0.21.2-1.1build1_amd64.deb ...\nUnpacking libpsl5t64:amd64 (0.21.2-1.1build1) ...\nSelecting previously unselected package publicsuffix.\nPreparing to unpack .../08-publicsuffix_20231001.0357-0.1_all.deb ...\nUnpacking publicsuffix (20231001.0357-0.1) ...\nSelecting previously unselected package libbrotli1:amd64.\nPreparing to unpack .../09-libbrotli1_1.1.0-2ubuntu0.1_amd64.deb ...\nUnpacking libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...\nSelecting previously unselected package libsasl2-modules-db:amd64.\nPreparing to unpack .../10-libsasl2-modules-db_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSelecting previously unselected package libsasl2-2:amd64.\nPreparing to unpack .../11-libsasl2-2_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSelecting previously unselected package libldap2:amd64.\nPreparing to unpack .../12-libldap2_2.6.10+dfsg-0ubuntu0.24.04.1_amd64.deb ...\nUnpacking libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSelecting previously unselected package librtmp1:amd64.\nPreparing to unpack .../13-librtmp1_2.4+20151223.gitfa8646d.1-2build7_amd64.deb ...\nUnpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\nSelecting previously unselected package libssh-4:amd64.\nPreparing to unpack .../14-libssh-4_0.10.6-2ubuntu0.5_amd64.deb ...\nUnpacking libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\nSelecting previously unselected package libcurl4t64:amd64.\nPreparing to unpack .../15-libcurl4t64_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSelecting previously unselected package curl.\nPreparing to unpack .../16-curl_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking curl (8.5.0-2ubuntu10.16) ...\nSelecting previously unselected package libldap-common.\nPreparing to unpack .../17-libldap-common_2.6.10+dfsg-0ubuntu0.24.04.1_all.deb ...\nUnpacking libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSelecting previously unselected package libsasl2-modules:amd64.\nPreparing to unpack .../18-libsasl2-modules_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libkeyutils1:amd64 (1.6.3-3build1) ...\nSetting up libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...\nSetting up libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libpsl5t64:amd64 (0.21.2-1.1build1) ...\nSetting up libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\nSetting up krb5-locales (1.20.1-6ubuntu2.10) ...\nSetting up libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSetting up libkrb5support0:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\nSetting up libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up publicsuffix (20231001.0357-0.1) ...\nSetting up libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSetting up libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\nSetting up libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSetting up curl (8.5.0-2ubuntu10.16) ...\nProcessing triggers for libc-bin (2.39-0ubuntu8.6) ...\n/tmp/tmp.aNsTDDsqBF/uv.tar.gz: OK\nuv 0.9.5\nDownloading cpython-3.13.9-linux-x86_64-gnu (download) (32.0MiB)\n Downloading cpython-3.13.9-linux-x86_64-gnu (download)\nDownloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 34ms\npytest 8.4.1\nPython 3.13.9\n",
+              "timeout_sec": 160
+            }
+          ],
+          "protocol": "verifier-tool-preflight-v1",
+          "cache_mode": "isolated_container_cache_warmed_before_agent",
+          "duration_s": 42.87434429200948,
+          "uv_archive": {
+            "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+            "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66",
+            "version": "0.9.5",
+            "architecture": "x86_64"
+          },
+          "max_attempts": 2,
+          "direct_packages": [
+            "pytest==8.4.1",
+            "pytest-json-ctrf==0.3.5"
+          ],
+          "observed_versions": [
+            "uv 0.9.5",
+            "pytest 8.4.1",
+            "Python 3.13.9"
+          ],
+          "hidden_assertions_copied": false,
+          "candidate_visible_tooling": true
+        },
+        "cold_setup_s": 110.96395579099772,
+        "base_image_id": "sha256:90101b2e815323a8da20528a1439bebc407eb9761c9c68a3d557730856c878e9",
+        "recipe_digest": "bb662b1d2360327e800d029c940d6b15dfcd3ce9297f116b3c853d41b4f0a354",
+        "base_reference": "alexgshaw/regex-log:20251031",
+        "offline_probe_s": 4.203999541990925,
+        "build_and_probe_s": 128.60639695898863,
+        "offline_probe_versions": [
+          "Python 3.12.3",
+          "uv 0.9.5",
+          "pytest 8.4.1"
+        ],
+        "candidate_ever_uploaded": false,
+        "credential_ever_supplied": false,
+        "instructions_or_assertions_uploaded": false
+      },
+      "tune-mjcf": {
+        "image_id": "sha256:62ac3b1be866940dbf42584031dab254aa1f551b3390c59a50cf0b8a7f57bca0",
+        "platform": "linux/amd64",
+        "cache_key": "b87c99857d9e2dc6091701e09aa37dcaffb1cf37ec9e30a267ed9e50fc29c00f",
+        "preflight": {
+          "mode": "uvx",
+          "task": "tune-mjcf",
+          "status": "passed",
+          "attempts": [
+            {
+              "attempt": 1,
+              "duration_s": 80.36197912498028,
+              "return_code": 0,
+              "stderr_tail": "",
+              "stdout_tail": "2_1.20.1-2+deb12u5_amd64.deb ...\nUnpacking libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...\nSelecting previously unselected package libsasl2-modules-db:amd64.\nPreparing to unpack .../08-libsasl2-modules-db_2.1.28+dfsg-10+deb12u1_amd64.deb ...\nUnpacking libsasl2-modules-db:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSelecting previously unselected package libsasl2-2:amd64.\nPreparing to unpack .../09-libsasl2-2_2.1.28+dfsg-10+deb12u1_amd64.deb ...\nUnpacking libsasl2-2:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSelecting previously unselected package libldap-2.5-0:amd64.\nPreparing to unpack .../10-libldap-2.5-0_2.5.13+dfsg-5_amd64.deb ...\nUnpacking libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...\nSelecting previously unselected package libnghttp2-14:amd64.\nPreparing to unpack .../11-libnghttp2-14_1.52.0-1+deb12u3_amd64.deb ...\nUnpacking libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...\nSelecting previously unselected package libpsl5:amd64.\nPreparing to unpack .../12-libpsl5_0.21.2-1_amd64.deb ...\nUnpacking libpsl5:amd64 (0.21.2-1) ...\nSelecting previously unselected package librtmp1:amd64.\nPreparing to unpack .../13-librtmp1_2.4+20151223.gitfa8646d.1-2+b2_amd64.deb ...\nUnpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...\nSelecting previously unselected package libssh2-1:amd64.\nPreparing to unpack .../14-libssh2-1_1.10.0-3+deb12u1_amd64.deb ...\nUnpacking libssh2-1:amd64 (1.10.0-3+deb12u1) ...\nSelecting previously unselected package libcurl4:amd64.\nPreparing to unpack .../15-libcurl4_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking libcurl4:amd64 (7.88.1-10+deb12u15) ...\nSelecting previously unselected package curl.\nPreparing to unpack .../16-curl_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking curl (7.88.1-10+deb12u15) ...\nSelecting previously unselected package libldap-common.\nPreparing to unpack .../17-libldap-common_2.5.13+dfsg-5_all.deb ...\nUnpacking libldap-common (2.5.13+dfsg-5) ...\nSelecting previously unselected package libsasl2-modules:amd64.\nPreparing to unpack .../18-libsasl2-modules_2.1.28+dfsg-10+deb12u1_amd64.deb ...\nUnpacking libsasl2-modules:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSelecting previously unselected package publicsuffix.\nPreparing to unpack .../19-publicsuffix_20230209.2326-1_all.deb ...\nUnpacking publicsuffix (20230209.2326-1) ...\nSetting up libkeyutils1:amd64 (1.6.3-2) ...\nSetting up libpsl5:amd64 (0.21.2-1) ...\nSetting up libbrotli1:amd64 (1.0.9-2+deb12u1) ...\nSetting up libsasl2-modules:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSetting up libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...\nSetting up krb5-locales (1.20.1-2+deb12u5) ...\nSetting up libldap-common (2.5.13+dfsg-5) ...\nSetting up libkrb5support0:amd64 (1.20.1-2+deb12u5) ...\nSetting up libsasl2-modules-db:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSetting up ca-certificates (20250419~deb12u2) ...\nUpdating certificates in /etc/ssl/certs...\nrehash: warning: skipping ca-certificates.crt,it does not contain exactly one certificate or CRL\n21 added, 15 removed; done.\nSetting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...\nSetting up libk5crypto3:amd64 (1.20.1-2+deb12u5) ...\nSetting up libsasl2-2:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSetting up libssh2-1:amd64 (1.10.0-3+deb12u1) ...\nSetting up libkrb5-3:amd64 (1.20.1-2+deb12u5) ...\nSetting up publicsuffix (20230209.2326-1) ...\nSetting up libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...\nSetting up libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...\nSetting up libcurl4:amd64 (7.88.1-10+deb12u15) ...\nSetting up curl (7.88.1-10+deb12u15) ...\nProcessing triggers for libc-bin (2.36-9+deb12u10) ...\nProcessing triggers for ca-certificates (20250419~deb12u2) ...\nUpdating certificates in /etc/ssl/certs...\n0 added, 0 removed; done.\nRunning hooks in /etc/ca-certificates/update.d...\ndone.\n/tmp/tmp.Jyxx1WISFD/uv.tar.gz: OK\nuv 0.9.5\nDownloading pygments (1.2MiB)\nDownloading numpy (15.9MiB)\nDownloading mujoco (6.4MiB)\nDownloading pyopengl (3.0MiB)\n Downloading pygments\n Downloading pyopengl\n Downloading mujoco\n Downloading numpy\nInstalled 15 packages in 161ms\npytest 8.4.1\nPython 3.13.7\n",
+              "timeout_sec": 160
+            }
+          ],
+          "protocol": "verifier-tool-preflight-v1",
+          "cache_mode": "isolated_container_cache_warmed_before_agent",
+          "duration_s": 80.36198874999536,
+          "uv_archive": {
+            "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+            "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66",
+            "version": "0.9.5",
+            "architecture": "x86_64"
+          },
+          "max_attempts": 2,
+          "direct_packages": [
+            "pytest==8.4.1",
+            "mujoco==3.3.5",
+            "pytest-json-ctrf==0.3.5"
+          ],
+          "observed_versions": [
+            "uv 0.9.5",
+            "pytest 8.4.1",
+            "Python 3.13.7"
+          ],
+          "hidden_assertions_copied": false,
+          "candidate_visible_tooling": true
+        },
+        "cold_setup_s": 80.53528133401414,
+        "base_image_id": "sha256:56c197739db2db79562384581fcc9d3d71e6c171bf052104b1a7ee0282e7c3cf",
+        "recipe_digest": "bfd2e7f07c2b9b30291fc0afb7ca24612d8fa48a422fccff1a956e22740966ae",
+        "base_reference": "alexgshaw/tune-mjcf:20251031",
+        "offline_probe_s": 1.81006091699237,
+        "build_and_probe_s": 94.93719341699034,
+        "offline_probe_versions": [
+          "Python 3.13.7",
+          "uv 0.9.5",
+          "pytest 8.4.1"
+        ],
+        "candidate_ever_uploaded": false,
+        "credential_ever_supplied": false,
+        "instructions_or_assertions_uploaded": false
+      },
+      "extract-elf": {
+        "image_id": "sha256:57eae32d5c92f6e8db856961fc16e8fac52d576a317b420f7a2bb95d96af94bd",
+        "platform": "linux/amd64",
+        "cache_key": "b7ea45b7a664b898b7651e7b1f37ef79b91eda2654a5d9005b1295780738a8fa",
+        "preflight": {
+          "mode": "uvx",
+          "task": "extract-elf",
+          "status": "passed",
+          "attempts": [
+            {
+              "attempt": 1,
+              "duration_s": 96.20146045798901,
+              "return_code": 0,
+              "stderr_tail": "",
+              "stdout_tail": "debconf: delaying package configuration, since apt-utils is not installed\n(Reading database ... \n(Reading database ... 5%\n(Reading database ... 10%\n(Reading database ... 15%\n(Reading database ... 20%\n(Reading database ... 25%\n(Reading database ... 30%\n(Reading database ... 35%\n(Reading database ... 40%\n(Reading database ... 45%\n(Reading database ... 50%\n(Reading database ... 55%\n(Reading database ... 60%\n(Reading database ... 65%\n(Reading database ... 70%\n(Reading database ... 75%\n(Reading database ... 80%\n(Reading database ... 85%\n(Reading database ... 90%\n(Reading database ... 95%\n(Reading database ... 100%\n(Reading database ... 49547 files and directories currently installed.)\nPreparing to unpack .../ca-certificates_20260816ubuntu0.24.04.2_all.deb ...\nUnpacking ca-certificates (20260816ubuntu0.24.04.2) over (20240203) ...\nSelecting previously unselected package libcurl4t64:amd64.\nPreparing to unpack .../libcurl4t64_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSelecting previously unselected package curl.\nPreparing to unpack .../curl_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking curl (8.5.0-2ubuntu10.16) ...\nPreparing to unpack .../libcurl3t64-gnutls_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.16) over (8.5.0-2ubuntu10.6) ...\nSetting up libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSetting up libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.16) ...\nSetting up ca-certificates (20260816ubuntu0.24.04.2) ...\nUpdating certificates in /etc/ssl/certs...\nrehash: warning: skipping ca-certificates.crt,it does not contain exactly one certificate or CRL\n17 added, 43 removed; done.\nRunning hooks in /etc/ca-certificates/update.d...\ndone.\nSetting up curl (8.5.0-2ubuntu10.16) ...\nProcessing triggers for libc-bin (2.39-0ubuntu8.6) ...\n/tmp/tmp.vP78rFAW5C/uv.tar.gz: OK\nuv 0.9.5\nDownloading cpython-3.13.9-linux-x86_64-gnu (download) (32.0MiB)\n Downloading cpython-3.13.9-linux-x86_64-gnu (download)\nDownloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 37ms\npytest 8.4.1\nPython 3.13.9\n",
+              "timeout_sec": 160
+            }
+          ],
+          "protocol": "verifier-tool-preflight-v1",
+          "cache_mode": "isolated_container_cache_warmed_before_agent",
+          "duration_s": 96.20146716700401,
+          "uv_archive": {
+            "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+            "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66",
+            "version": "0.9.5",
+            "architecture": "x86_64"
+          },
+          "max_attempts": 2,
+          "direct_packages": [
+            "pytest==8.4.1",
+            "pytest-json-ctrf==0.3.5"
+          ],
+          "observed_versions": [
+            "uv 0.9.5",
+            "pytest 8.4.1",
+            "Python 3.13.9"
+          ],
+          "hidden_assertions_copied": false,
+          "candidate_visible_tooling": true
+        },
+        "cold_setup_s": 96.36959179199766,
+        "base_image_id": "sha256:6932e4cb318464307eacd497ef8dc617eaf551b6a90231f815ec0b911895cfed",
+        "recipe_digest": "d8520932e3e97e774df4b4b0a798dd68e09a79dc4a4de81f19e357c5847f7534",
+        "base_reference": "alexgshaw/extract-elf:20251031",
+        "offline_probe_s": 2.1206098340044264,
+        "build_and_probe_s": 119.11389924999094,
+        "offline_probe_versions": [
+          "Python 3.12.3",
+          "uv 0.9.5",
+          "pytest 8.4.1"
+        ],
+        "candidate_ever_uploaded": false,
+        "credential_ever_supplied": false,
+        "instructions_or_assertions_uploaded": false
+      },
+      "polyglot-c-py": {
+        "image_id": "sha256:a5e10dd4d79cd2cdcb9bc66a8cc753cc328eab0cdbda531100af0e63c2f43905",
+        "platform": "linux/amd64",
+        "cache_key": "acc2d39bb14303d158abe7a9ef067a063b991b67e80c10cf10a7e99dad897d74",
+        "preflight": {
+          "mode": "uvx",
+          "task": "polyglot-c-py",
+          "status": "passed",
+          "attempts": [
+            {
+              "attempt": 1,
+              "duration_s": 35.9683091249899,
+              "return_code": 0,
+              "stderr_tail": "",
+              "stdout_tail": "keyutils1:amd64 (1.6.3-3build1) ...\nSelecting previously unselected package libkrb5-3:amd64.\nPreparing to unpack .../04-libkrb5-3_1.20.1-6ubuntu2.10_amd64.deb ...\nUnpacking libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...\nSelecting previously unselected package libgssapi-krb5-2:amd64.\nPreparing to unpack .../05-libgssapi-krb5-2_1.20.1-6ubuntu2.10_amd64.deb ...\nUnpacking libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\nSelecting previously unselected package libnghttp2-14:amd64.\nPreparing to unpack .../06-libnghttp2-14_1.59.0-1ubuntu0.4_amd64.deb ...\nUnpacking libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\nSelecting previously unselected package libpsl5t64:amd64.\nPreparing to unpack .../07-libpsl5t64_0.21.2-1.1build1_amd64.deb ...\nUnpacking libpsl5t64:amd64 (0.21.2-1.1build1) ...\nSelecting previously unselected package publicsuffix.\nPreparing to unpack .../08-publicsuffix_20231001.0357-0.1_all.deb ...\nUnpacking publicsuffix (20231001.0357-0.1) ...\nSelecting previously unselected package libsasl2-modules-db:amd64.\nPreparing to unpack .../09-libsasl2-modules-db_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSelecting previously unselected package libsasl2-2:amd64.\nPreparing to unpack .../10-libsasl2-2_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSelecting previously unselected package libldap2:amd64.\nPreparing to unpack .../11-libldap2_2.6.10+dfsg-0ubuntu0.24.04.1_amd64.deb ...\nUnpacking libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSelecting previously unselected package librtmp1:amd64.\nPreparing to unpack .../12-librtmp1_2.4+20151223.gitfa8646d.1-2build7_amd64.deb ...\nUnpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\nSelecting previously unselected package libssh-4:amd64.\nPreparing to unpack .../13-libssh-4_0.10.6-2ubuntu0.5_amd64.deb ...\nUnpacking libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\nSelecting previously unselected package libcurl4t64:amd64.\nPreparing to unpack .../14-libcurl4t64_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSelecting previously unselected package curl.\nPreparing to unpack .../15-curl_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking curl (8.5.0-2ubuntu10.16) ...\nSelecting previously unselected package libldap-common.\nPreparing to unpack .../16-libldap-common_2.6.10+dfsg-0ubuntu0.24.04.1_all.deb ...\nUnpacking libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSelecting previously unselected package libsasl2-modules:amd64.\nPreparing to unpack .../17-libsasl2-modules_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libkeyutils1:amd64 (1.6.3-3build1) ...\nSetting up libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libpsl5t64:amd64 (0.21.2-1.1build1) ...\nSetting up libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\nSetting up krb5-locales (1.20.1-6ubuntu2.10) ...\nSetting up libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSetting up libkrb5support0:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\nSetting up libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up publicsuffix (20231001.0357-0.1) ...\nSetting up libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSetting up libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\nSetting up libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSetting up curl (8.5.0-2ubuntu10.16) ...\nProcessing triggers for libc-bin (2.39-0ubuntu8.6) ...\n/tmp/tmp.BADoDVzRXw/uv.tar.gz: OK\nuv 0.9.5\nDownloading cpython-3.13.9-linux-x86_64-gnu (download) (32.0MiB)\n Downloading cpython-3.13.9-linux-x86_64-gnu (download)\nDownloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 38ms\npytest 8.4.1\nPython 3.13.9\n",
+              "timeout_sec": 160
+            }
+          ],
+          "protocol": "verifier-tool-preflight-v1",
+          "cache_mode": "isolated_container_cache_warmed_before_agent",
+          "duration_s": 35.96831579200807,
+          "uv_archive": {
+            "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+            "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66",
+            "version": "0.9.5",
+            "architecture": "x86_64"
+          },
+          "max_attempts": 2,
+          "direct_packages": [
+            "pytest==8.4.1",
+            "pytest-json-ctrf==0.3.5"
+          ],
+          "observed_versions": [
+            "uv 0.9.5",
+            "pytest 8.4.1",
+            "Python 3.13.9"
+          ],
+          "hidden_assertions_copied": false,
+          "candidate_visible_tooling": true
+        },
+        "cold_setup_s": 111.75868879200425,
+        "base_image_id": "sha256:0f1c3b7816d70cf5551573fd6aeef76893f2ae3000be2419997b6871b5d987ed",
+        "recipe_digest": "bb662b1d2360327e800d029c940d6b15dfcd3ce9297f116b3c853d41b4f0a354",
+        "base_reference": "alexgshaw/polyglot-c-py:20251031",
+        "offline_probe_s": 2.3306773339863867,
+        "build_and_probe_s": 128.59708283399232,
+        "offline_probe_versions": [
+          "Python 3.12.3",
+          "uv 0.9.5",
+          "pytest 8.4.1"
+        ],
+        "candidate_ever_uploaded": false,
+        "credential_ever_supplied": false,
+        "instructions_or_assertions_uploaded": false
+      },
+      "largest-eigenval": {
+        "image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+        "platform": "linux/amd64",
+        "cache_key": "b2cb09e54775466aefc6fbea668fa03b14b75acca11af007d6a4be42613b0f68",
+        "preflight": {
+          "mode": "pip",
+          "task": "largest-eigenval",
+          "status": "passed",
+          "attempts": [
+            {
+              "attempt": 1,
+              "duration_s": 86.34650416701334,
+              "return_code": 0,
+              "stderr_tail": "",
+              "stdout_tail": "Collecting pytest==8.4.1\n  Downloading pytest-8.4.1-py3-none-any.whl.metadata (7.7 kB)\nCollecting pytest-json-ctrf==0.3.5\n  Downloading pytest_json_ctrf-0.3.5-py3-none-any.whl.metadata (3.3 kB)\nCollecting iniconfig>=1 (from pytest==8.4.1)\n  Downloading iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)\nCollecting packaging>=20 (from pytest==8.4.1)\n  Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)\nCollecting pluggy<2,>=1.5 (from pytest==8.4.1)\n  Downloading pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)\nCollecting pygments>=2.7.2 (from pytest==8.4.1)\n  Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)\nDownloading pytest-8.4.1-py3-none-any.whl (365 kB)\nDownloading pytest_json_ctrf-0.3.5-py3-none-any.whl (6.8 kB)\nDownloading pluggy-1.7.0-py3-none-any.whl (27 kB)\nDownloading iniconfig-2.3.1-py3-none-any.whl (7.6 kB)\nDownloading packaging-26.3-py3-none-any.whl (129 kB)\nDownloading pygments-2.21.0-py3-none-any.whl (1.3 MB)\n   \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501 1.3/1.3 MB 26.3 kB/s  0:00:54\nInstalling collected packages: pygments, pluggy, packaging, iniconfig, pytest, pytest-json-ctrf\n\nSuccessfully installed iniconfig-2.3.1 packaging-26.3 pluggy-1.7.0 pygments-2.21.0 pytest-8.4.1 pytest-json-ctrf-0.3.5\nWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.\npytest 8.4.1\nPython 3.13.7\n",
+              "timeout_sec": 160
+            }
+          ],
+          "protocol": "verifier-tool-preflight-v1",
+          "cache_mode": "isolated_container_cache_warmed_before_agent",
+          "duration_s": 86.34651066700462,
+          "max_attempts": 2,
+          "direct_packages": [
+            "pytest==8.4.1",
+            "pytest-json-ctrf==0.3.5"
+          ],
+          "observed_versions": [
+            "pytest 8.4.1",
+            "Python 3.13.7"
+          ],
+          "hidden_assertions_copied": false,
+          "candidate_visible_tooling": true
+        },
+        "cold_setup_s": 86.52352366701234,
+        "base_image_id": "sha256:cb9e3e3b09d0783f3bbcfeec8d77bc32d3791204fb2be6650b19be4fbc082b2e",
+        "recipe_digest": "464984ba5ebe5f99096832291a796b8942d1d05fb2ce128ed7f9b09c3cf0ed64",
+        "base_reference": "alexgshaw/largest-eigenval:20251031",
+        "offline_probe_s": 0.7307702499965671,
+        "build_and_probe_s": 91.06379837499117,
+        "offline_probe_versions": [
+          "Python 3.13.7",
+          "pytest 8.4.1"
+        ],
+        "candidate_ever_uploaded": false,
+        "credential_ever_supplied": false,
+        "instructions_or_assertions_uploaded": false
+      },
+      "sanitize-git-repo": {
+        "image_id": "sha256:c28f05a295ca097b2f55ae59bc3bf86a09831b6a057667c37976e3cfcfbb71d0",
+        "platform": "linux/amd64",
+        "cache_key": "c157e213c09041eb951a288ffd1054f7870423853be091b820eaeef8cdc5e33c",
+        "preflight": {
+          "mode": "uvx",
+          "task": "sanitize-git-repo",
+          "status": "passed",
+          "attempts": [
+            {
+              "attempt": 1,
+              "duration_s": 74.90302033300395,
+              "return_code": 0,
+              "stderr_tail": "",
+              "stdout_tail": "debconf: delaying package configuration, since apt-utils is not installed\n(Reading database ... \n(Reading database ... 5%\n(Reading database ... 10%\n(Reading database ... 15%\n(Reading database ... 20%\n(Reading database ... 25%\n(Reading database ... 30%\n(Reading database ... 35%\n(Reading database ... 40%\n(Reading database ... 45%\n(Reading database ... 50%\n(Reading database ... 55%\n(Reading database ... 60%\n(Reading database ... 65%\n(Reading database ... 70%\n(Reading database ... 75%\n(Reading database ... 80%\n(Reading database ... 85%\n(Reading database ... 90%\n(Reading database ... 95%\n(Reading database ... 100%\n(Reading database ... 10322 files and directories currently installed.)\nPreparing to unpack .../ca-certificates_20250419~deb12u2_all.deb ...\nUnpacking ca-certificates (20250419~deb12u2) over (20230311+deb12u1) ...\nSelecting previously unselected package libcurl4:amd64.\nPreparing to unpack .../libcurl4_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking libcurl4:amd64 (7.88.1-10+deb12u15) ...\nSelecting previously unselected package curl.\nPreparing to unpack .../curl_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking curl (7.88.1-10+deb12u15) ...\nPreparing to unpack .../libcurl3-gnutls_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking libcurl3-gnutls:amd64 (7.88.1-10+deb12u15) over (7.88.1-10+deb12u14) ...\nSetting up libcurl3-gnutls:amd64 (7.88.1-10+deb12u15) ...\nSetting up ca-certificates (20250419~deb12u2) ...\nUpdating certificates in /etc/ssl/certs...\nrehash: warning: skipping ca-certificates.crt,it does not contain exactly one certificate or CRL\n21 added, 15 removed; done.\nSetting up libcurl4:amd64 (7.88.1-10+deb12u15) ...\nSetting up curl (7.88.1-10+deb12u15) ...\nProcessing triggers for libc-bin (2.36-9+deb12u10) ...\nProcessing triggers for ca-certificates (20250419~deb12u2) ...\nUpdating certificates in /etc/ssl/certs...\n0 added, 0 removed; done.\nRunning hooks in /etc/ca-certificates/update.d...\ndone.\n/tmp/tmp.jFRsqokkw3/uv.tar.gz: OK\nuv 0.9.5\nDownloading pygments (1.2MiB)\n Downloading pygments\nInstalled 9 packages in 35ms\npytest 8.4.1\nPython 3.13.7\n",
+              "timeout_sec": 160
+            }
+          ],
+          "protocol": "verifier-tool-preflight-v1",
+          "cache_mode": "isolated_container_cache_warmed_before_agent",
+          "duration_s": 74.903027458,
+          "uv_archive": {
+            "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+            "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66",
+            "version": "0.9.5",
+            "architecture": "x86_64"
+          },
+          "max_attempts": 2,
+          "direct_packages": [
+            "pytest==8.4.1",
+            "gitpython==3.1.44",
+            "pytest-json-ctrf==0.3.5"
+          ],
+          "observed_versions": [
+            "uv 0.9.5",
+            "pytest 8.4.1",
+            "Python 3.13.7"
+          ],
+          "hidden_assertions_copied": false,
+          "candidate_visible_tooling": true
+        },
+        "cold_setup_s": 75.0728605419863,
+        "base_image_id": "sha256:4b5234da5bb0d67f3b0bf8db40a2883c07a5219f62b64c2bf9ff1ac84cd0f672",
+        "recipe_digest": "43546e95588e977f9994b3338b70dc00c8377ed88681b1bf87f2091f47633461",
+        "base_reference": "alexgshaw/sanitize-git-repo:20251031",
+        "offline_probe_s": 1.5686334169877227,
+        "build_and_probe_s": 84.65656725000008,
+        "offline_probe_versions": [
+          "Python 3.13.7",
+          "uv 0.9.5",
+          "pytest 8.4.1"
+        ],
+        "candidate_ever_uploaded": false,
+        "credential_ever_supplied": false,
+        "instructions_or_assertions_uploaded": false
+      },
+      "sparql-university": {
+        "image_id": "sha256:77808a3daff00cca413b9c6d6832fe171623a9a0a22e0e3de52bd54121b1b9ab",
+        "platform": "linux/amd64",
+        "cache_key": "4752e28ea32cff1dfcd2edf6f2d22ae35983db66b10eed63b1a83e5935e0d923",
+        "preflight": {
+          "mode": "uvx",
+          "task": "sparql-university",
+          "status": "passed",
+          "attempts": [
+            {
+              "attempt": 1,
+              "duration_s": 46.09624845802318,
+              "return_code": 0,
+              "stderr_tail": "",
+              "stdout_tail": "ously unselected package libgssapi-krb5-2:amd64.\nPreparing to unpack .../05-libgssapi-krb5-2_1.20.1-6ubuntu2.10_amd64.deb ...\nUnpacking libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\nSelecting previously unselected package libnghttp2-14:amd64.\nPreparing to unpack .../06-libnghttp2-14_1.59.0-1ubuntu0.4_amd64.deb ...\nUnpacking libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\nSelecting previously unselected package libpsl5t64:amd64.\nPreparing to unpack .../07-libpsl5t64_0.21.2-1.1build1_amd64.deb ...\nUnpacking libpsl5t64:amd64 (0.21.2-1.1build1) ...\nSelecting previously unselected package publicsuffix.\nPreparing to unpack .../08-publicsuffix_20231001.0357-0.1_all.deb ...\nUnpacking publicsuffix (20231001.0357-0.1) ...\nSelecting previously unselected package libbrotli1:amd64.\nPreparing to unpack .../09-libbrotli1_1.1.0-2ubuntu0.1_amd64.deb ...\nUnpacking libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...\nSelecting previously unselected package libsasl2-modules-db:amd64.\nPreparing to unpack .../10-libsasl2-modules-db_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSelecting previously unselected package libsasl2-2:amd64.\nPreparing to unpack .../11-libsasl2-2_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSelecting previously unselected package libldap2:amd64.\nPreparing to unpack .../12-libldap2_2.6.10+dfsg-0ubuntu0.24.04.1_amd64.deb ...\nUnpacking libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSelecting previously unselected package librtmp1:amd64.\nPreparing to unpack .../13-librtmp1_2.4+20151223.gitfa8646d.1-2build7_amd64.deb ...\nUnpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\nSelecting previously unselected package libssh-4:amd64.\nPreparing to unpack .../14-libssh-4_0.10.6-2ubuntu0.5_amd64.deb ...\nUnpacking libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\nSelecting previously unselected package libcurl4t64:amd64.\nPreparing to unpack .../15-libcurl4t64_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSelecting previously unselected package curl.\nPreparing to unpack .../16-curl_8.5.0-2ubuntu10.16_amd64.deb ...\nUnpacking curl (8.5.0-2ubuntu10.16) ...\nSelecting previously unselected package libldap-common.\nPreparing to unpack .../17-libldap-common_2.6.10+dfsg-0ubuntu0.24.04.1_all.deb ...\nUnpacking libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSelecting previously unselected package libsasl2-modules:amd64.\nPreparing to unpack .../18-libsasl2-modules_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\nUnpacking libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libkeyutils1:amd64 (1.6.3-3build1) ...\nSetting up libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...\nSetting up libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libpsl5t64:amd64 (0.21.2-1.1build1) ...\nSetting up libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\nSetting up krb5-locales (1.20.1-6ubuntu2.10) ...\nSetting up libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSetting up libkrb5support0:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\nSetting up libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\nSetting up libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up publicsuffix (20231001.0357-0.1) ...\nSetting up libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\nSetting up libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\nSetting up libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\nSetting up libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\nSetting up curl (8.5.0-2ubuntu10.16) ...\nProcessing triggers for libc-bin (2.39-0ubuntu8.6) ...\n/tmp/tmp.qAqHBDPaRb/uv.tar.gz: OK\nuv 0.9.5\nDownloading cpython-3.13.9-linux-x86_64-gnu (download) (32.0MiB)\n Downloading cpython-3.13.9-linux-x86_64-gnu (download)\nDownloading pygments (1.2MiB)\n Downloading pygments\nInstalled 8 packages in 200ms\npytest 8.4.1\nPython 3.13.9\n",
+              "timeout_sec": 160
+            }
+          ],
+          "protocol": "verifier-tool-preflight-v1",
+          "cache_mode": "isolated_container_cache_warmed_before_agent",
+          "duration_s": 46.09625875001075,
+          "uv_archive": {
+            "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+            "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66",
+            "version": "0.9.5",
+            "architecture": "x86_64"
+          },
+          "max_attempts": 2,
+          "direct_packages": [
+            "pytest==8.4.1",
+            "rdflib==7.1.4",
+            "pytest-json-ctrf==0.3.5"
+          ],
+          "observed_versions": [
+            "uv 0.9.5",
+            "pytest 8.4.1",
+            "Python 3.13.9"
+          ],
+          "hidden_assertions_copied": false,
+          "candidate_visible_tooling": true
+        },
+        "cold_setup_s": 114.16186191601446,
+        "base_image_id": "sha256:92fa4304e51167f9fb4466144eba33ef9272a7df0ac1cab9fc3986bccd1ab708",
+        "recipe_digest": "6d20a9cdc84789c0e539f00684ef34d1ec21110590b1634fc474292fc0856f51",
+        "base_reference": "alexgshaw/sparql-university:20251031",
+        "offline_probe_s": 2.789976583007956,
+        "build_and_probe_s": 131.35944308299804,
+        "offline_probe_versions": [
+          "Python 3.12.3",
+          "uv 0.9.5",
+          "pytest 8.4.1"
+        ],
+        "candidate_ever_uploaded": false,
+        "credential_ever_supplied": false,
+        "instructions_or_assertions_uploaded": false
+      },
+      "cancel-async-tasks": {
+        "image_id": "sha256:addf501a605e42642228cf6875c2e62d2def75661d091c534466485b8a60f33c",
+        "platform": "linux/amd64",
+        "cache_key": "63ce25ab9929ea152359353614bb1b7d8f1d23c8adeb43fa4a906b573c3267f2",
+        "preflight": {
+          "mode": "uvx",
+          "task": "cancel-async-tasks",
+          "status": "passed",
+          "attempts": [
+            {
+              "attempt": 1,
+              "duration_s": 74.96602799999528,
+              "return_code": 0,
+              "stderr_tail": "",
+              "stdout_tail": "ing libkrb5-3:amd64 (1.20.1-2+deb12u5) ...\nSelecting previously unselected package libgssapi-krb5-2:amd64.\nPreparing to unpack .../07-libgssapi-krb5-2_1.20.1-2+deb12u5_amd64.deb ...\nUnpacking libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...\nSelecting previously unselected package libsasl2-modules-db:amd64.\nPreparing to unpack .../08-libsasl2-modules-db_2.1.28+dfsg-10+deb12u1_amd64.deb ...\nUnpacking libsasl2-modules-db:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSelecting previously unselected package libsasl2-2:amd64.\nPreparing to unpack .../09-libsasl2-2_2.1.28+dfsg-10+deb12u1_amd64.deb ...\nUnpacking libsasl2-2:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSelecting previously unselected package libldap-2.5-0:amd64.\nPreparing to unpack .../10-libldap-2.5-0_2.5.13+dfsg-5_amd64.deb ...\nUnpacking libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...\nSelecting previously unselected package libnghttp2-14:amd64.\nPreparing to unpack .../11-libnghttp2-14_1.52.0-1+deb12u3_amd64.deb ...\nUnpacking libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...\nSelecting previously unselected package libpsl5:amd64.\nPreparing to unpack .../12-libpsl5_0.21.2-1_amd64.deb ...\nUnpacking libpsl5:amd64 (0.21.2-1) ...\nSelecting previously unselected package librtmp1:amd64.\nPreparing to unpack .../13-librtmp1_2.4+20151223.gitfa8646d.1-2+b2_amd64.deb ...\nUnpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...\nSelecting previously unselected package libssh2-1:amd64.\nPreparing to unpack .../14-libssh2-1_1.10.0-3+deb12u1_amd64.deb ...\nUnpacking libssh2-1:amd64 (1.10.0-3+deb12u1) ...\nSelecting previously unselected package libcurl4:amd64.\nPreparing to unpack .../15-libcurl4_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking libcurl4:amd64 (7.88.1-10+deb12u15) ...\nSelecting previously unselected package curl.\nPreparing to unpack .../16-curl_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking curl (7.88.1-10+deb12u15) ...\nSelecting previously unselected package libldap-common.\nPreparing to unpack .../17-libldap-common_2.5.13+dfsg-5_all.deb ...\nUnpacking libldap-common (2.5.13+dfsg-5) ...\nSelecting previously unselected package libsasl2-modules:amd64.\nPreparing to unpack .../18-libsasl2-modules_2.1.28+dfsg-10+deb12u1_amd64.deb ...\nUnpacking libsasl2-modules:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSelecting previously unselected package publicsuffix.\nPreparing to unpack .../19-publicsuffix_20230209.2326-1_all.deb ...\nUnpacking publicsuffix (20230209.2326-1) ...\nSetting up libkeyutils1:amd64 (1.6.3-2) ...\nSetting up libpsl5:amd64 (0.21.2-1) ...\nSetting up libbrotli1:amd64 (1.0.9-2+deb12u1) ...\nSetting up libsasl2-modules:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSetting up libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...\nSetting up krb5-locales (1.20.1-2+deb12u5) ...\nSetting up libldap-common (2.5.13+dfsg-5) ...\nSetting up libkrb5support0:amd64 (1.20.1-2+deb12u5) ...\nSetting up libsasl2-modules-db:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSetting up ca-certificates (20250419~deb12u2) ...\nUpdating certificates in /etc/ssl/certs...\nrehash: warning: skipping ca-certificates.crt,it does not contain exactly one certificate or CRL\n21 added, 15 removed; done.\nSetting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...\nSetting up libk5crypto3:amd64 (1.20.1-2+deb12u5) ...\nSetting up libsasl2-2:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSetting up libssh2-1:amd64 (1.10.0-3+deb12u1) ...\nSetting up libkrb5-3:amd64 (1.20.1-2+deb12u5) ...\nSetting up publicsuffix (20230209.2326-1) ...\nSetting up libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...\nSetting up libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...\nSetting up libcurl4:amd64 (7.88.1-10+deb12u15) ...\nSetting up curl (7.88.1-10+deb12u15) ...\nProcessing triggers for libc-bin (2.36-9+deb12u10) ...\nProcessing triggers for ca-certificates (20250419~deb12u2) ...\nUpdating certificates in /etc/ssl/certs...\n0 added, 0 removed; done.\nRunning hooks in /etc/ca-certificates/update.d...\ndone.\n/tmp/tmp.AwFLjNwcm7/uv.tar.gz: OK\nuv 0.9.5\nDownloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 44ms\npytest 8.4.1\nPython 3.13.7\n",
+              "timeout_sec": 160
+            }
+          ],
+          "protocol": "verifier-tool-preflight-v1",
+          "cache_mode": "isolated_container_cache_warmed_before_agent",
+          "duration_s": 74.96603450001567,
+          "uv_archive": {
+            "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+            "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66",
+            "version": "0.9.5",
+            "architecture": "x86_64"
+          },
+          "max_attempts": 2,
+          "direct_packages": [
+            "pytest==8.4.1",
+            "pytest-json-ctrf==0.3.5"
+          ],
+          "observed_versions": [
+            "uv 0.9.5",
+            "pytest 8.4.1",
+            "Python 3.13.7"
+          ],
+          "hidden_assertions_copied": false,
+          "candidate_visible_tooling": true
+        },
+        "cold_setup_s": 75.11025050000171,
+        "base_image_id": "sha256:84c7fae6b256dcc56a350790e2a9715eefc7dad662a9d8e8a472363aa71ef18d",
+        "recipe_digest": "771ea96b86e1c54b8ed4af92841e3ce96118f3b70e95b67d0d437e482d8c72fa",
+        "base_reference": "alexgshaw/cancel-async-tasks:20251031",
+        "offline_probe_s": 1.763799124979414,
+        "build_and_probe_s": 83.44251516700024,
+        "offline_probe_versions": [
+          "Python 3.13.7",
+          "uv 0.9.5",
+          "pytest 8.4.1"
+        ],
+        "candidate_ever_uploaded": false,
+        "credential_ever_supplied": false,
+        "instructions_or_assertions_uploaded": false
+      },
+      "sqlite-db-truncate": {
+        "image_id": "sha256:7e09eb89427b3d825ca15f123085fe57febf91bbf54ed5912c0582fa894205ca",
+        "platform": "linux/amd64",
+        "cache_key": "8ddc4b421c004979ce0750ded63e0dd0fcc38e60520867598200189954366ce0",
+        "preflight": {
+          "mode": "uvx",
+          "task": "sqlite-db-truncate",
+          "status": "passed",
+          "attempts": [
+            {
+              "attempt": 1,
+              "duration_s": 76.6227842499793,
+              "return_code": 0,
+              "stderr_tail": "",
+              "stdout_tail": "ing libkrb5-3:amd64 (1.20.1-2+deb12u5) ...\nSelecting previously unselected package libgssapi-krb5-2:amd64.\nPreparing to unpack .../07-libgssapi-krb5-2_1.20.1-2+deb12u5_amd64.deb ...\nUnpacking libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...\nSelecting previously unselected package libsasl2-modules-db:amd64.\nPreparing to unpack .../08-libsasl2-modules-db_2.1.28+dfsg-10+deb12u1_amd64.deb ...\nUnpacking libsasl2-modules-db:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSelecting previously unselected package libsasl2-2:amd64.\nPreparing to unpack .../09-libsasl2-2_2.1.28+dfsg-10+deb12u1_amd64.deb ...\nUnpacking libsasl2-2:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSelecting previously unselected package libldap-2.5-0:amd64.\nPreparing to unpack .../10-libldap-2.5-0_2.5.13+dfsg-5_amd64.deb ...\nUnpacking libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...\nSelecting previously unselected package libnghttp2-14:amd64.\nPreparing to unpack .../11-libnghttp2-14_1.52.0-1+deb12u3_amd64.deb ...\nUnpacking libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...\nSelecting previously unselected package libpsl5:amd64.\nPreparing to unpack .../12-libpsl5_0.21.2-1_amd64.deb ...\nUnpacking libpsl5:amd64 (0.21.2-1) ...\nSelecting previously unselected package librtmp1:amd64.\nPreparing to unpack .../13-librtmp1_2.4+20151223.gitfa8646d.1-2+b2_amd64.deb ...\nUnpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...\nSelecting previously unselected package libssh2-1:amd64.\nPreparing to unpack .../14-libssh2-1_1.10.0-3+deb12u1_amd64.deb ...\nUnpacking libssh2-1:amd64 (1.10.0-3+deb12u1) ...\nSelecting previously unselected package libcurl4:amd64.\nPreparing to unpack .../15-libcurl4_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking libcurl4:amd64 (7.88.1-10+deb12u15) ...\nSelecting previously unselected package curl.\nPreparing to unpack .../16-curl_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking curl (7.88.1-10+deb12u15) ...\nSelecting previously unselected package libldap-common.\nPreparing to unpack .../17-libldap-common_2.5.13+dfsg-5_all.deb ...\nUnpacking libldap-common (2.5.13+dfsg-5) ...\nSelecting previously unselected package libsasl2-modules:amd64.\nPreparing to unpack .../18-libsasl2-modules_2.1.28+dfsg-10+deb12u1_amd64.deb ...\nUnpacking libsasl2-modules:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSelecting previously unselected package publicsuffix.\nPreparing to unpack .../19-publicsuffix_20230209.2326-1_all.deb ...\nUnpacking publicsuffix (20230209.2326-1) ...\nSetting up libkeyutils1:amd64 (1.6.3-2) ...\nSetting up libpsl5:amd64 (0.21.2-1) ...\nSetting up libbrotli1:amd64 (1.0.9-2+deb12u1) ...\nSetting up libsasl2-modules:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSetting up libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...\nSetting up krb5-locales (1.20.1-2+deb12u5) ...\nSetting up libldap-common (2.5.13+dfsg-5) ...\nSetting up libkrb5support0:amd64 (1.20.1-2+deb12u5) ...\nSetting up libsasl2-modules-db:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSetting up ca-certificates (20250419~deb12u2) ...\nUpdating certificates in /etc/ssl/certs...\nrehash: warning: skipping ca-certificates.crt,it does not contain exactly one certificate or CRL\n21 added, 15 removed; done.\nSetting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...\nSetting up libk5crypto3:amd64 (1.20.1-2+deb12u5) ...\nSetting up libsasl2-2:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSetting up libssh2-1:amd64 (1.10.0-3+deb12u1) ...\nSetting up libkrb5-3:amd64 (1.20.1-2+deb12u5) ...\nSetting up publicsuffix (20230209.2326-1) ...\nSetting up libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...\nSetting up libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...\nSetting up libcurl4:amd64 (7.88.1-10+deb12u15) ...\nSetting up curl (7.88.1-10+deb12u15) ...\nProcessing triggers for libc-bin (2.36-9+deb12u10) ...\nProcessing triggers for ca-certificates (20250419~deb12u2) ...\nUpdating certificates in /etc/ssl/certs...\n0 added, 0 removed; done.\nRunning hooks in /etc/ca-certificates/update.d...\ndone.\n/tmp/tmp.7AMEczgZ5p/uv.tar.gz: OK\nuv 0.9.5\nDownloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 51ms\npytest 8.4.1\nPython 3.13.7\n",
+              "timeout_sec": 160
+            }
+          ],
+          "protocol": "verifier-tool-preflight-v1",
+          "cache_mode": "isolated_container_cache_warmed_before_agent",
+          "duration_s": 76.6227912089962,
+          "uv_archive": {
+            "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+            "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66",
+            "version": "0.9.5",
+            "architecture": "x86_64"
+          },
+          "max_attempts": 2,
+          "direct_packages": [
+            "pytest==8.4.1",
+            "pytest-json-ctrf==0.3.5"
+          ],
+          "observed_versions": [
+            "uv 0.9.5",
+            "pytest 8.4.1",
+            "Python 3.13.7"
+          ],
+          "hidden_assertions_copied": false,
+          "candidate_visible_tooling": true
+        },
+        "cold_setup_s": 76.80064225001843,
+        "base_image_id": "sha256:aabac93c93bd1f310e6a6fb893911d7735026ed18491c72133c9196a09092ca4",
+        "recipe_digest": "bb662b1d2360327e800d029c940d6b15dfcd3ce9297f116b3c853d41b4f0a354",
+        "base_reference": "alexgshaw/sqlite-db-truncate:20251031",
+        "offline_probe_s": 1.5481267920113169,
+        "build_and_probe_s": 84.76828270798433,
+        "offline_probe_versions": [
+          "Python 3.13.7",
+          "uv 0.9.5",
+          "pytest 8.4.1"
+        ],
+        "candidate_ever_uploaded": false,
+        "credential_ever_supplied": false,
+        "instructions_or_assertions_uploaded": false
+      },
+      "nginx-request-logging": {
+        "image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+        "platform": "linux/amd64",
+        "cache_key": "9140d3ff6fa2f39ede06ab007eac3fb68f15e272b3a465a75806761991c4d103",
+        "preflight": {
+          "mode": "uvx",
+          "task": "nginx-request-logging",
+          "status": "passed",
+          "attempts": [
+            {
+              "attempt": 1,
+              "duration_s": 12.922617834003177,
+              "return_code": 0,
+              "stderr_tail": "",
+              "stdout_tail": "/tmp/tmp.8ImVXEKRZ2/uv.tar.gz: OK\nuv 0.9.5\nDownloading pygments (1.2MiB)\n Downloading pygments\nInstalled 11 packages in 68ms\npytest 8.4.1\nPython 3.13.7\n",
+              "timeout_sec": 160
+            }
+          ],
+          "protocol": "verifier-tool-preflight-v1",
+          "cache_mode": "isolated_container_cache_warmed_before_agent",
+          "duration_s": 12.922624416998588,
+          "uv_archive": {
+            "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+            "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66",
+            "version": "0.9.5",
+            "architecture": "x86_64"
+          },
+          "max_attempts": 2,
+          "direct_packages": [
+            "pytest==8.4.1",
+            "requests==2.32.4",
+            "pytest-json-ctrf==0.3.5"
+          ],
+          "observed_versions": [
+            "uv 0.9.5",
+            "pytest 8.4.1",
+            "Python 3.13.7"
+          ],
+          "hidden_assertions_copied": false,
+          "candidate_visible_tooling": true
+        },
+        "cold_setup_s": 13.164714292011922,
+        "base_image_id": "sha256:693e64431a0dbf45952e8b91a298d54fd60247e501c6623fb8fa3ebc07fc3d3d",
+        "recipe_digest": "7cdadef2997609a302fcf74062b86bb5c2a7f48e5a08a8b0dd04c16ffe9e99ca",
+        "base_reference": "alexgshaw/nginx-request-logging:20251031",
+        "offline_probe_s": 1.3388540410087444,
+        "build_and_probe_s": 20.664602874981938,
+        "offline_probe_versions": [
+          "Python 3.13.7",
+          "uv 0.9.5",
+          "pytest 8.4.1"
+        ],
+        "candidate_ever_uploaded": false,
+        "credential_ever_supplied": false,
+        "instructions_or_assertions_uploaded": false
+      },
+      "openssl-selfsigned-cert": {
+        "image_id": "sha256:bcb976b46758935d3eb2fd335b3ed2716d599fb267136fef26c5d81b998a37b8",
+        "platform": "linux/amd64",
+        "cache_key": "35f49433d7c27b10b8d4af2960d5794a95f0b25faca8b3228120bce566d7210f",
+        "preflight": {
+          "mode": "uvx",
+          "task": "openssl-selfsigned-cert",
+          "status": "passed",
+          "attempts": [
+            {
+              "attempt": 1,
+              "duration_s": 80.94144237498404,
+              "return_code": 0,
+              "stderr_tail": "",
+              "stdout_tail": "ing libkrb5-3:amd64 (1.20.1-2+deb12u5) ...\nSelecting previously unselected package libgssapi-krb5-2:amd64.\nPreparing to unpack .../07-libgssapi-krb5-2_1.20.1-2+deb12u5_amd64.deb ...\nUnpacking libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...\nSelecting previously unselected package libsasl2-modules-db:amd64.\nPreparing to unpack .../08-libsasl2-modules-db_2.1.28+dfsg-10+deb12u1_amd64.deb ...\nUnpacking libsasl2-modules-db:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSelecting previously unselected package libsasl2-2:amd64.\nPreparing to unpack .../09-libsasl2-2_2.1.28+dfsg-10+deb12u1_amd64.deb ...\nUnpacking libsasl2-2:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSelecting previously unselected package libldap-2.5-0:amd64.\nPreparing to unpack .../10-libldap-2.5-0_2.5.13+dfsg-5_amd64.deb ...\nUnpacking libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...\nSelecting previously unselected package libnghttp2-14:amd64.\nPreparing to unpack .../11-libnghttp2-14_1.52.0-1+deb12u3_amd64.deb ...\nUnpacking libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...\nSelecting previously unselected package libpsl5:amd64.\nPreparing to unpack .../12-libpsl5_0.21.2-1_amd64.deb ...\nUnpacking libpsl5:amd64 (0.21.2-1) ...\nSelecting previously unselected package librtmp1:amd64.\nPreparing to unpack .../13-librtmp1_2.4+20151223.gitfa8646d.1-2+b2_amd64.deb ...\nUnpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...\nSelecting previously unselected package libssh2-1:amd64.\nPreparing to unpack .../14-libssh2-1_1.10.0-3+deb12u1_amd64.deb ...\nUnpacking libssh2-1:amd64 (1.10.0-3+deb12u1) ...\nSelecting previously unselected package libcurl4:amd64.\nPreparing to unpack .../15-libcurl4_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking libcurl4:amd64 (7.88.1-10+deb12u15) ...\nSelecting previously unselected package curl.\nPreparing to unpack .../16-curl_7.88.1-10+deb12u15_amd64.deb ...\nUnpacking curl (7.88.1-10+deb12u15) ...\nSelecting previously unselected package libldap-common.\nPreparing to unpack .../17-libldap-common_2.5.13+dfsg-5_all.deb ...\nUnpacking libldap-common (2.5.13+dfsg-5) ...\nSelecting previously unselected package libsasl2-modules:amd64.\nPreparing to unpack .../18-libsasl2-modules_2.1.28+dfsg-10+deb12u1_amd64.deb ...\nUnpacking libsasl2-modules:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSelecting previously unselected package publicsuffix.\nPreparing to unpack .../19-publicsuffix_20230209.2326-1_all.deb ...\nUnpacking publicsuffix (20230209.2326-1) ...\nSetting up libkeyutils1:amd64 (1.6.3-2) ...\nSetting up libpsl5:amd64 (0.21.2-1) ...\nSetting up libbrotli1:amd64 (1.0.9-2+deb12u1) ...\nSetting up libsasl2-modules:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSetting up libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...\nSetting up krb5-locales (1.20.1-2+deb12u5) ...\nSetting up libldap-common (2.5.13+dfsg-5) ...\nSetting up libkrb5support0:amd64 (1.20.1-2+deb12u5) ...\nSetting up libsasl2-modules-db:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSetting up ca-certificates (20250419~deb12u2) ...\nUpdating certificates in /etc/ssl/certs...\nrehash: warning: skipping ca-certificates.crt,it does not contain exactly one certificate or CRL\n21 added, 15 removed; done.\nSetting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...\nSetting up libk5crypto3:amd64 (1.20.1-2+deb12u5) ...\nSetting up libsasl2-2:amd64 (2.1.28+dfsg-10+deb12u1) ...\nSetting up libssh2-1:amd64 (1.10.0-3+deb12u1) ...\nSetting up libkrb5-3:amd64 (1.20.1-2+deb12u5) ...\nSetting up publicsuffix (20230209.2326-1) ...\nSetting up libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...\nSetting up libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...\nSetting up libcurl4:amd64 (7.88.1-10+deb12u15) ...\nSetting up curl (7.88.1-10+deb12u15) ...\nProcessing triggers for libc-bin (2.36-9+deb12u10) ...\nProcessing triggers for ca-certificates (20250419~deb12u2) ...\nUpdating certificates in /etc/ssl/certs...\n0 added, 0 removed; done.\nRunning hooks in /etc/ca-certificates/update.d...\ndone.\n/tmp/tmp.1KDVOG9Ggs/uv.tar.gz: OK\nuv 0.9.5\nDownloading pygments (1.2MiB)\n Downloading pygments\nInstalled 6 packages in 37ms\npytest 8.4.1\nPython 3.13.7\n",
+              "timeout_sec": 160
+            }
+          ],
+          "protocol": "verifier-tool-preflight-v1",
+          "cache_mode": "isolated_container_cache_warmed_before_agent",
+          "duration_s": 80.94144900000538,
+          "uv_archive": {
+            "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+            "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66",
+            "version": "0.9.5",
+            "architecture": "x86_64"
+          },
+          "max_attempts": 2,
+          "direct_packages": [
+            "pytest==8.4.1",
+            "pytest-json-ctrf==0.3.5"
+          ],
+          "observed_versions": [
+            "uv 0.9.5",
+            "pytest 8.4.1",
+            "Python 3.13.7"
+          ],
+          "hidden_assertions_copied": false,
+          "candidate_visible_tooling": true
+        },
+        "cold_setup_s": 81.1123624999891,
+        "base_image_id": "sha256:4c948a4e630af2435ae0a19108fc0814a946ac2fa29a512469e0fc77b38c8c12",
+        "recipe_digest": "bb662b1d2360327e800d029c940d6b15dfcd3ce9297f116b3c853d41b4f0a354",
+        "base_reference": "alexgshaw/openssl-selfsigned-cert:20251031",
+        "offline_probe_s": 1.4626244160172064,
+        "build_and_probe_s": 89.23447020800086,
+        "offline_probe_versions": [
+          "Python 3.13.7",
+          "uv 0.9.5",
+          "pytest 8.4.1"
+        ],
+        "candidate_ever_uploaded": false,
+        "credential_ever_supplied": false,
+        "instructions_or_assertions_uploaded": false
+      }
+    },
+    "provider_id": "docker:bcd388ea-816e-4acf-8dc7-2c3713b5ac25",
+    "manifest_sha256": "ee64d5cc3516b978c7f1f197b7866369fb4524dfaf8472b027e34145bbdb4953",
+    "benchmark_revision": "69671fbaac6d67a7ef0dfec016cc38a64ef7a77c"
+  },
+  "attempt_count": 21,
+  "verifier_guard_accepted_count": 20,
+  "guard_rejected_observations": [
+    {
+      "iteration": 1,
+      "phase": "main",
+      "task": "largest-eigenval",
+      "attempt": 1,
+      "status": "error",
+      "reason": "reward_report_mismatch"
+    }
+  ],
+  "new_heldback_observations": 0,
+  "inherited_prior_exposure": {
+    "development_repeat": true,
+    "prior_calibrated_jobs": 1,
+    "prior_holdout_observations": 4,
+    "previously_unobserved_holdout": false
+  },
+  "experiment_spent_usd": 0.57680875,
+  "cumulative_spent_usd": 4.64451375,
+  "reserved_usd": 0.0,
+  "cleanup": {
+    "observed_at": "2026-11-07T12:57:04.881820+00:00",
+    "active_jobs": 0,
+    "sandbox_slots": 0,
+    "database_spent_usd": 4.643578,
+    "session_spent_usd": 4.64451375,
+    "reserved_usd": 0.0,
+    "owned_processes": {
+      "api_pid": {
+        "pid": 67112,
+        "alive": false
+      },
+      "worker_pid": {
+        "pid": 67117,
+        "alive": false
+      }
+    },
+    "containers": {
+      "query_exit_code": 0,
+      "ids": []
+    },
+    "networks": {
+      "query_exit_code": 0,
+      "ids": []
+    },
+    "all_resources_clean": true
+  },
+  "final_evaluation": {
+    "status": "incomplete",
+    "reason": "cancelled",
+    "used_for_selection": false
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "job_id": "f37176ef-cff8-4d6b-8af3-2d82cc8c7e56",
+  "observed_at": "2026-11-07T11:53:29.295816+00:00",
+  "status": "SUCCEEDED",
+  "implementation_sha256": {
+    "files": {
+      "service/__init__.py": "99cc2ba921b33fc1c72f5fb71eaf9ff89588a115c71a9b8dbf92a22d9016cf25",
+      "service/api/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "service/api/app.py": "4c3c1a9ca3393322f3b8653734661e7b79a99e51c02835cd71a34ed24e75e95c",
+      "service/api/routes_admin.py": "6ed8fba87957ba30c167d4195c899761b7dbb83208b2c5aabf8809b30d80f9fe",
+      "service/api/routes_jobs.py": "cbff9d616e343da413d6135400fd4be67a871ca955dd016ee62862d96729a3f6",
+      "service/api/routes_tasks.py": "82e6da260744ed7146ae0eaae52ab2d1f11fcd379cebd659f74dc8feabd465d8",
+      "service/auth.py": "1c5aab1a90c9738b42adf904c66ea283420ea25656c9c283e3742add41b64713",
+      "service/config.py": "3d8fcc3b4604a3d8d572f71405a495c52059ddd2e9c3f7ba677f8ff8b40a935d",
+      "service/db.py": "589f01079d8a8ce859144a008ee42f27829ad92d0515405ac28909986103192b",
+      "service/errors.py": "15ffadaa1ced65e754baaf2e9bc329cd1b93df288a587b78cc6e49e231e36bde",
+      "service/inference.py": "06d5ceb2b9e2a4ba8cc0e29b56f1b09f907554a479f88282beb44c6cfd534f97",
+      "service/migrations/0001_init.sql": "fd53b52ae645eb0352235eb8b1130a2eeea1dcb05eb9e02fc425c6c1ee725041",
+      "service/migrations/0002_durable_execution.sql": "db1dfeda6401bccc6daf854d4140e12fec445dec734b78851f43f4bdcaec5930",
+      "service/migrations/0003_nullable_costs.sql": "6945918803711dad747fcfb28ad8f800daf80e6a59e4d8b85e1dd2cc080c6ce7",
+      "service/models.py": "73ff7f84e323ed3b72c5fa9f133fa5722cda559f9222fcf3c4b86444446b877b",
+      "service/repo.py": "d0fea63272040def467e51b548bbbffdd86711d7a32c71a7da06cdcfe585cb9c",
+      "service/sandbox/__init__.py": "f2644f102ee4d260c546bf73e47d6656a8e3e0e5d548725e48f5e319de96ed8f",
+      "service/sandbox/cleanup_smoke.py": "533eeede379ebde26df82a5263ba6a712a9e5646a19b96058a1466695d8cc157",
+      "service/sandbox/docker_environment.py": "e6fff3a92e956319aed9c9a6da26232f410bd8637c010f35ed2b33d808b91709",
+      "service/sandbox/installed_agent.py": "060e673c8b17df5d3e28c27e1e7ee5d23b34bb9676117eded242ba11261eabf1",
+      "service/sandbox/preflight.py": "9dd6bdc50b61866812898ffbf58dca385222635993f9f0e97219b6b972c67e4a",
+      "service/sandbox/relay.py": "86540d673c4f40b4c45ee5b92f102ca8c1134b9927aed2f61f39db723158a163",
+      "service/sandbox/runtime.py": "11e54eb3396248bea1dd2cb6d9ccd98ee4fdc5bd0dfc053462b1726351d9c729",
+      "service/sandbox/smoke.py": "32cb3ff6e9fed96690c14ebddfb45df4f25969b4f959e1432d5e4d787ebca2fe",
+      "service/sandbox/verifier.py": "27be3f3105c7f9e53d2ce05c45d74a040c151e92256adc42d5dd6f4f99512fe4",
+      "service/sandbox/verifier_contract.py": "d4c8284fdb77a029c08755f9898755253d286c6932f70eeb44e24ca2732c84d5",
+      "service/sandbox/verifier_contracts.json": "3c41f5914ba4cc5f6e17d4acd11707e5edfeb62986c570077e4fc6418a6bbe8a",
+      "service/tasks_catalog.py": "9b1e716f10b67184d8fad69b9f538cb4a4b014e9003161fb4689567e3dfaca03",
+      "service/worker/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "service/worker/digest.py": "a117146a07c0659723a23ed0c83f3ddf1962ffa35fe2a9dc762e3bbd59856088",
+      "service/worker/executors/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "service/worker/executors/base.py": "fd564f35f05a261536dd4260b162d7c20d32d6c8dac1f7a2f78d64e42b900b41",
+      "service/worker/executors/harbor_runner.py": "1f431ac5cb45af022e4bbfcba12687c3631c46e081697234eea1fdab8f8677e4",
+      "service/worker/executors/simulated.py": "c4e38c6d75ee0f6dadc6093407916f26d008b3bdfcf51c65c17e388a1ad38d12",
+      "service/worker/job_runner.py": "6bf943c2e2a7bb2bbb2fc4374ec815fe9b7da015c59624ad2fb2a7ffc25e1767",
+      "service/worker/llm_optimizer.py": "a888b0bcbe32d05c776d9cc6cd31d910d02adee669049449b1c706fc6a68e192",
+      "service/worker/main.py": "c51635636425c014758bf42c4df3fe067b92c7e63a39f95bfebd4edf002b5109",
+      "service/worker/optimizer.py": "8d3063dbffe219c381c46883c8b8c9bacfd4f0ccaa7ca343e974501b0bce6eb5"
+    },
+    "aggregate_sha256": "e67f2d81b417d776d419567d104a4e78de356b814f248770106e9b9a4da4928e"
+  },
+  "attempt_count": 36,
+  "all_terminal_observations_verifier_valid": true,
+  "unverified_observations": [],
+  "timeout_count": 0,
+  "infrastructure_error_count": 0,
+  "confirmation_observation_count": 0,
+  "automatic_selected_iteration": 0,
+  "automatic_selection_claim": "No candidate met the balanced promotion rule; original baseline retained. Candidate3 preliminary2/3 quality signal remains independently unconfirmed.",
+  "holdout": {
+    "status": "complete",
+    "baseline_iteration": 0,
+    "final_iteration": 0,
+    "used_for_selection": false,
+    "baseline": {
+      "errors": 0,
+      "failed": 3,
+      "passed": 1,
+      "complete": true,
+      "mean_reward": 0.25,
+      "input_tokens": 158510,
+      "output_tokens": 7352,
+      "planned_trials": 4,
+      "observed_trials": 4,
+      "physical_attempts": 4,
+      "mean_model_cost_usd": 0.037991625,
+      "p95_task_duration_s": 197.00271095798234,
+      "mean_task_duration_s": 169.3032256039878,
+      "total_model_cost_usd": 0.1519665,
+      "total_sandbox_cost_usd": null
+    },
+    "final": {
+      "errors": 0,
+      "failed": 3,
+      "passed": 1,
+      "complete": true,
+      "mean_reward": 0.25,
+      "input_tokens": 158510,
+      "output_tokens": 7352,
+      "planned_trials": 4,
+      "observed_trials": 4,
+      "physical_attempts": 4,
+      "mean_model_cost_usd": 0.037991625,
+      "p95_task_duration_s": 197.00271095798234,
+      "mean_task_duration_s": 169.3032256039878,
+      "total_model_cost_usd": 0.1519665,
+      "total_sandbox_cost_usd": null
+    }
+  },
+  "same_source_holdout_reused": true,
+  "source_index": "docs/calibrated_candidates/index.json",
+  "cleanup": {
+    "observed_at": "2026-11-07T11:53:29.237844+00:00",
+    "active_jobs_in_evidence_db": 0,
+    "sandbox_slots_in_evidence_db": 0,
+    "database_spent_usd": 3.8957445,
+    "database_reserved_usd": 0.0,
+    "diagnostic_spent_usd": 0.00093575,
+    "session_spent_usd": 3.89668025,
+    "owned_processes": {
+      "api_pid": {
+        "pid": 32512,
+        "alive": false
+      },
+      "worker_pid": {
+        "pid": 32513,
+        "alive": false
+      }
+    },
+    "containers": {
+      "query_exit_code": 0,
+      "ids": []
+    },
+    "networks": {
+      "query_exit_code": 0,
+      "ids": []
+    },
+    "all_resources_clean": true
+  },
+  "limitations": [
+    "The calibrated12 cohort differs from stress16; scores cannot be compared directly across those experiments.",
+    "Using gpt-5.4 for proposals is a new optimizer hypothesis, not demonstrated improvement or an isolated model ablation.",
+    "The original baseline is re-evaluated; no old results or candidate source enter this experiment.",
+    "Small fixed task sets and paired confirmation do not establish broad benchmark generalization.",
+    "The workflow freezes the final source before its own holdout; holdout results are not optimizer feedback.",
+    "Holdout runs baseline first; identical final source reuses its attempts, so this is not an independent repetition.",
+    "Model cost uses uncached token-price estimates; local Docker dollars are unpriced.",
+    "Measured runtime includes setup, verification, cleanup and amd64 emulation on aarch64.",
+    "Pinned verifier completion is operational evidence, not tamper-proof adversarial grading.",
+    "One paid controller is required; advisory exclusion covers only cooperating review scripts."
+  ]
+}

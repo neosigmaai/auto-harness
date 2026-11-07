@@ -1,0 +1,102 @@
+{
+  "recorded_at": "2026-11-07T11:56:15.663901+00:00",
+  "kind": "offline_metric_replay_not_a_new_benchmark",
+  "recorded_implementation_sha256": "e67f2d81b417d776d419567d104a4e78de356b814f248770106e9b9a4da4928e",
+  "current_job_runner_sha256": "797d53955ce3f414ed0cb1ccb19a0312191366731b59e60b02c19dc6baa2b7c3",
+  "all_observations_have_valid_verifier_evidence": true,
+  "observation_count": 36,
+  "comparisons": [
+    {
+      "iteration": 0,
+      "phase": "main_selection",
+      "matches": true,
+      "metrics": {
+        "complete": true,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "passed": 1,
+        "failed": 2,
+        "errors": 0,
+        "mean_reward": 0.3333333333333333,
+        "mean_model_cost_usd": 0.0069525,
+        "p95_task_duration_s": 126.3895243750012,
+        "mean_task_duration_s": 83.27252645833262,
+        "total_model_cost_usd": 0.0208575
+      }
+    },
+    {
+      "iteration": 1,
+      "phase": "main_selection",
+      "matches": true,
+      "metrics": {
+        "complete": true,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "passed": 1,
+        "failed": 2,
+        "errors": 0,
+        "mean_reward": 0.3333333333333333,
+        "mean_model_cost_usd": 0.0204005,
+        "p95_task_duration_s": 131.38629687501816,
+        "mean_task_duration_s": 85.41949184700691,
+        "total_model_cost_usd": 0.06120149999999999
+      }
+    },
+    {
+      "iteration": 2,
+      "phase": "main_selection",
+      "matches": true,
+      "metrics": {
+        "complete": true,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "passed": 1,
+        "failed": 2,
+        "errors": 0,
+        "mean_reward": 0.3333333333333333,
+        "mean_model_cost_usd": 0.009191,
+        "p95_task_duration_s": 135.25443195799016,
+        "mean_task_duration_s": 78.07516048600276,
+        "total_model_cost_usd": 0.027573
+      }
+    },
+    {
+      "iteration": 3,
+      "phase": "main_selection",
+      "matches": true,
+      "metrics": {
+        "complete": true,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "passed": 2,
+        "failed": 1,
+        "errors": 0,
+        "mean_reward": 0.6666666666666666,
+        "mean_model_cost_usd": 0.01301425,
+        "p95_task_duration_s": 120.34520720801083,
+        "mean_task_duration_s": 94.69317216666725,
+        "total_model_cost_usd": 0.03904275
+      }
+    },
+    {
+      "iteration": 0,
+      "phase": "holdout_final",
+      "matches": true,
+      "metrics": {
+        "complete": true,
+        "planned_trials": 4,
+        "observed_trials": 4,
+        "passed": 1,
+        "failed": 3,
+        "errors": 0,
+        "mean_reward": 0.25,
+        "mean_model_cost_usd": 0.037991625,
+        "p95_task_duration_s": 197.00271095798234,
+        "mean_task_duration_s": 169.3032256039878,
+        "total_model_cost_usd": 0.1519665
+      }
+    }
+  ],
+  "all_metrics_unchanged": true,
+  "provider_calls": 0
+}

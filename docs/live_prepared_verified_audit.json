@@ -1,0 +1,1233 @@
+{
+  "job_id": "253886be-b646-4176-ac23-7e6990e71755",
+  "observed_at": "2026-11-07T13:25:03.791436+00:00",
+  "status": "SUCCEEDED",
+  "started_at": "2026-11-07T13:03:33.582128Z",
+  "finished_at": "2026-11-07T13:24:00.174536Z",
+  "deadline_at": "2026-11-07T13:28:33.582128Z",
+  "production_source_sha256": "99ead2b2fc81d10797661254f4f92d980b3732d3f5921a1b1cec49b4f492d2f4",
+  "production_source_files": 39,
+  "production_files_changed": [],
+  "prepared_manifest_sha256": "ee64d5cc3516b978c7f1f197b7866369fb4524dfaf8472b027e34145bbdb4953",
+  "attempt_count": 40,
+  "all_terminal_observations_verifier_valid": true,
+  "unverified_observations": [],
+  "infrastructure_error_count": 0,
+  "timeout_count": 0,
+  "physical_retry_count": 0,
+  "confirmation_observation_count": 12,
+  "confirmation_order": [
+    {
+      "iteration": 0,
+      "repetition": 1,
+      "task_count": 3,
+      "started_at": "2026-11-07T13:12:37.782291Z",
+      "finished_at": "2026-11-07T13:13:50.640579Z"
+    },
+    {
+      "iteration": 2,
+      "repetition": 1,
+      "task_count": 3,
+      "started_at": "2026-11-07T13:13:55.376270Z",
+      "finished_at": "2026-11-07T13:15:09.688735Z"
+    },
+    {
+      "iteration": 2,
+      "repetition": 2,
+      "task_count": 3,
+      "started_at": "2026-11-07T13:15:13.808922Z",
+      "finished_at": "2026-11-07T13:16:25.301333Z"
+    },
+    {
+      "iteration": 0,
+      "repetition": 2,
+      "task_count": 3,
+      "started_at": "2026-11-07T13:16:31.932506Z",
+      "finished_at": "2026-11-07T13:17:51.266627Z"
+    }
+  ],
+  "confirmation_metrics": {
+    "scope": "selection_confirmation",
+    "errors": 0,
+    "failed": 4,
+    "passed": 2,
+    "complete": true,
+    "incumbent": {
+      "errors": 0,
+      "failed": 3,
+      "passed": 3,
+      "complete": true,
+      "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+      "mean_reward": 0.5,
+      "input_tokens": 48543,
+      "evidence_kind": "execution",
+      "output_tokens": 4800,
+      "planned_trials": 6,
+      "observed_trials": 6,
+      "physical_attempts": 6,
+      "mean_model_cost_usd": 0.009667875,
+      "p95_task_duration_s": 58.07865408301586,
+      "mean_task_duration_s": 45.87050552100603,
+      "total_model_cost_usd": 0.058007249999999996,
+      "total_sandbox_cost_usd": null
+    },
+    "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+    "mean_reward": 0.3333333333333333,
+    "preliminary": {
+      "scope": "selection",
+      "errors": 0,
+      "failed": 1,
+      "passed": 2,
+      "complete": true,
+      "screened": false,
+      "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+      "mean_reward": 0.6666666666666666,
+      "input_tokens": 14835,
+      "evidence_kind": "execution",
+      "output_tokens": 2856,
+      "planned_trials": 3,
+      "observed_trials": 3,
+      "selection_tasks": [
+        "nginx-request-logging",
+        "largest-eigenval",
+        "cancel-async-tasks"
+      ],
+      "physical_attempts": 3,
+      "mean_model_cost_usd": 0.00799275,
+      "p95_task_duration_s": 57.86853162499028,
+      "mean_task_duration_s": 45.77445004165444,
+      "total_model_cost_usd": 0.02397825,
+      "total_sandbox_cost_usd": null,
+      "confirmation_eligibility": {
+        "reason": "preliminary_quality_signal_requires_confirmation",
+        "eligible": true
+      }
+    },
+    "input_tokens": 46916,
+    "evidence_kind": "execution",
+    "output_tokens": 4589,
+    "planned_trials": 6,
+    "observed_trials": 6,
+    "selection_tasks": [
+      "nginx-request-logging",
+      "largest-eigenval",
+      "cancel-async-tasks"
+    ],
+    "feedback_summary": {
+      "scope": "feedback_only",
+      "passed": 2,
+      "input_tokens": 111954,
+      "output_tokens": 7449,
+      "planned_tasks": 5,
+      "observed_tasks": 5,
+      "failure_classes": {
+        "wrong_output": 3
+      },
+      "coverage_complete": true,
+      "physical_attempts": 5,
+      "valid_observations": true,
+      "mean_reward_observed": 0.4,
+      "mean_model_cost_usd_observed": 0.0234972,
+      "p95_task_duration_s_observed": 60.44251570801134
+    },
+    "physical_attempts": 6,
+    "mean_model_cost_usd": 0.00930625,
+    "p95_task_duration_s": 51.30948212501244,
+    "mean_task_duration_s": 43.223987145669525,
+    "total_model_cost_usd": 0.0558375,
+    "total_sandbox_cost_usd": null,
+    "confirmation_repetitions": 2
+  },
+  "automatic_selected_iteration": 0,
+  "accepted_improvement": false,
+  "source_index": "docs/prepared_verified_candidates/index.json",
+  "candidate3_mechanism_audit": "docs/live_prepared_verified_candidate3_mechanism.json",
+  "final_evaluation": {
+    "status": "complete",
+    "baseline_iteration": 0,
+    "final_iteration": 0,
+    "used_for_selection": false,
+    "baseline": {
+      "errors": 0,
+      "failed": 3,
+      "passed": 1,
+      "complete": true,
+      "mean_reward": 0.25,
+      "input_tokens": 67549,
+      "output_tokens": 6394,
+      "planned_trials": 4,
+      "observed_trials": 4,
+      "physical_attempts": 4,
+      "mean_model_cost_usd": 0.0198586875,
+      "p95_task_duration_s": 190.4171766670188,
+      "mean_task_duration_s": 89.97593709376088,
+      "total_model_cost_usd": 0.07943475,
+      "total_sandbox_cost_usd": null
+    },
+    "final": {
+      "errors": 0,
+      "failed": 3,
+      "passed": 1,
+      "complete": true,
+      "mean_reward": 0.25,
+      "input_tokens": 67549,
+      "output_tokens": 6394,
+      "planned_trials": 4,
+      "observed_trials": 4,
+      "physical_attempts": 4,
+      "mean_model_cost_usd": 0.0198586875,
+      "p95_task_duration_s": 190.4171766670188,
+      "mean_task_duration_s": 89.97593709376088,
+      "total_model_cost_usd": 0.07943475,
+      "total_sandbox_cost_usd": null
+    }
+  },
+  "experiment_spent_usd": 0.8211915,
+  "cumulative_spent_usd": 5.46570525,
+  "reserved_usd": 0.0,
+  "cleanup": {
+    "owned_processes_stopped": true,
+    "api_pid_alive": false,
+    "worker_pid_alive": false,
+    "active_jobs": 0,
+    "sandbox_slots": 0,
+    "containers": {
+      "return_code": 0,
+      "remaining_ids": []
+    },
+    "networks": {
+      "return_code": 0,
+      "remaining_ids": []
+    }
+  },
+  "runtime_observations": [
+    {
+      "iteration": 0,
+      "evaluation_phase": "confirm_2",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "cancel-async-tasks",
+      "started_at": "2026-11-07T13:13:04.281731Z",
+      "finished_at": "2026-11-07T13:13:50.640579Z",
+      "stage_seconds": {
+        "environment_setup": 3.226039,
+        "agent_setup": 1.645594,
+        "agent_execution": 8.732893,
+        "verifier": 28.196081
+      },
+      "offline_probe_s": 1.1424982919998001,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:addf501a605e42642228cf6875c2e62d2def75661d091c534466485b8a60f33c",
+      "frozen_image_id": "sha256:addf501a605e42642228cf6875c2e62d2def75661d091c534466485b8a60f33c",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "confirm_2",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "largest-eigenval",
+      "started_at": "2026-11-07T13:12:37.782480Z",
+      "finished_at": "2026-11-07T13:13:00.081075Z",
+      "stage_seconds": {
+        "environment_setup": 3.172504,
+        "agent_setup": 1.596873,
+        "agent_execution": 8.479741,
+        "verifier": 4.429476
+      },
+      "offline_probe_s": 0.996346458006883,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+      "frozen_image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "confirm_2",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "nginx-request-logging",
+      "started_at": "2026-11-07T13:12:37.782291Z",
+      "finished_at": "2026-11-07T13:13:29.254055Z",
+      "stage_seconds": {
+        "environment_setup": 3.172545,
+        "agent_setup": 2.244935,
+        "agent_execution": 27.112967,
+        "verifier": 14.796485
+      },
+      "offline_probe_s": 1.7186612079967745,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+      "frozen_image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "confirm_2",
+      "repetition": 2,
+      "attempt": 1,
+      "task_name": "cancel-async-tasks",
+      "started_at": "2026-11-07T13:17:07.512787Z",
+      "finished_at": "2026-11-07T13:17:51.266627Z",
+      "stage_seconds": {
+        "environment_setup": 4.933623,
+        "agent_setup": 1.945702,
+        "agent_execution": 8.094469,
+        "verifier": 25.124311
+      },
+      "offline_probe_s": 1.3374033749860246,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:addf501a605e42642228cf6875c2e62d2def75661d091c534466485b8a60f33c",
+      "frozen_image_id": "sha256:addf501a605e42642228cf6875c2e62d2def75661d091c534466485b8a60f33c",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "confirm_2",
+      "repetition": 2,
+      "attempt": 1,
+      "task_name": "largest-eigenval",
+      "started_at": "2026-11-07T13:16:31.932729Z",
+      "finished_at": "2026-11-07T13:17:03.056760Z",
+      "stage_seconds": {
+        "environment_setup": 3.632058,
+        "agent_setup": 1.08831,
+        "agent_execution": 16.479702,
+        "verifier": 6.170188
+      },
+      "offline_probe_s": 0.6074276249855757,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+      "frozen_image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "confirm_2",
+      "repetition": 2,
+      "attempt": 1,
+      "task_name": "nginx-request-logging",
+      "started_at": "2026-11-07T13:16:31.932506Z",
+      "finished_at": "2026-11-07T13:17:24.459253Z",
+      "stage_seconds": {
+        "environment_setup": 3.570646,
+        "agent_setup": 1.825029,
+        "agent_execution": 23.54031,
+        "verifier": 19.612599
+      },
+      "offline_probe_s": 1.2546583749935962,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+      "frozen_image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "holdout_final",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "polyglot-c-py",
+      "started_at": "2026-11-07T13:20:54.753763Z",
+      "finished_at": "2026-11-07T13:21:36.657970Z",
+      "stage_seconds": {
+        "environment_setup": 3.470879,
+        "agent_setup": 2.427428,
+        "agent_execution": 8.870047,
+        "verifier": 23.47354
+      },
+      "offline_probe_s": 1.8331271249917336,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:a5e10dd4d79cd2cdcb9bc66a8cc753cc328eab0cdbda531100af0e63c2f43905",
+      "frozen_image_id": "sha256:a5e10dd4d79cd2cdcb9bc66a8cc753cc328eab0cdbda531100af0e63c2f43905",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "holdout_final",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "regex-log",
+      "started_at": "2026-11-07T13:19:52.526536Z",
+      "finished_at": "2026-11-07T13:20:46.494008Z",
+      "stage_seconds": {
+        "environment_setup": 3.210899,
+        "agent_setup": 2.308927,
+        "agent_execution": 18.578152,
+        "verifier": 26.157777
+      },
+      "offline_probe_s": 1.7634050410124473,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:0ca4ebe752e9282bfb21d9c890dd29b5210df9c7abed71884d5a564f06a3aefc",
+      "frozen_image_id": "sha256:0ca4ebe752e9282bfb21d9c890dd29b5210df9c7abed71884d5a564f06a3aefc",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "holdout_final",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "sparql-university",
+      "started_at": "2026-11-07T13:19:52.526594Z",
+      "finished_at": "2026-11-07T13:20:51.176611Z",
+      "stage_seconds": {
+        "environment_setup": 3.192858,
+        "agent_setup": 2.410018,
+        "agent_execution": 11.321305,
+        "verifier": 38.077594
+      },
+      "offline_probe_s": 1.8123322089959402,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:77808a3daff00cca413b9c6d6832fe171623a9a0a22e0e3de52bd54121b1b9ab",
+      "frozen_image_id": "sha256:77808a3daff00cca413b9c6d6832fe171623a9a0a22e0e3de52bd54121b1b9ab",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "holdout_final",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "tune-mjcf",
+      "started_at": "2026-11-07T13:20:50.564058Z",
+      "finished_at": "2026-11-07T13:23:56.805514Z",
+      "stage_seconds": {
+        "environment_setup": 3.219733,
+        "agent_setup": 4.429419,
+        "agent_execution": 132.314421,
+        "verifier": 42.663803
+      },
+      "offline_probe_s": 3.9086235419963486,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:62ac3b1be866940dbf42584031dab254aa1f551b3390c59a50cf0b8a7f57bca0",
+      "frozen_image_id": "sha256:62ac3b1be866940dbf42584031dab254aa1f551b3390c59a50cf0b8a7f57bca0",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "cancel-async-tasks",
+      "started_at": "2026-11-07T13:05:56.277227Z",
+      "finished_at": "2026-11-07T13:06:39.926687Z",
+      "stage_seconds": {
+        "environment_setup": 3.617673,
+        "agent_setup": 1.768103,
+        "agent_execution": 8.753761,
+        "verifier": 25.896733
+      },
+      "offline_probe_s": 1.235475666995626,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:addf501a605e42642228cf6875c2e62d2def75661d091c534466485b8a60f33c",
+      "frozen_image_id": "sha256:addf501a605e42642228cf6875c2e62d2def75661d091c534466485b8a60f33c",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "extract-elf",
+      "started_at": "2026-11-07T13:04:16.643946Z",
+      "finished_at": "2026-11-07T13:05:00.351325Z",
+      "stage_seconds": {
+        "environment_setup": 2.983411,
+        "agent_setup": 2.093553,
+        "agent_execution": 14.529649,
+        "verifier": 20.437698
+      },
+      "offline_probe_s": 1.5564568330009934,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:57eae32d5c92f6e8db856961fc16e8fac52d576a317b420f7a2bb95d96af94bd",
+      "frozen_image_id": "sha256:57eae32d5c92f6e8db856961fc16e8fac52d576a317b420f7a2bb95d96af94bd",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "fix-git",
+      "started_at": "2026-11-07T13:03:35.147691Z",
+      "finished_at": "2026-11-07T13:04:13.067932Z",
+      "stage_seconds": {
+        "environment_setup": 4.101369,
+        "agent_setup": 2.395171,
+        "agent_execution": 14.077537,
+        "verifier": 13.502708
+      },
+      "offline_probe_s": 1.7270307500148192,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:043432cd0026a9587f468f3a1b13b6a93001b83162047821712afccdf38f548c",
+      "frozen_image_id": "sha256:043432cd0026a9587f468f3a1b13b6a93001b83162047821712afccdf38f548c",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "largest-eigenval",
+      "started_at": "2026-11-07T13:05:26.088488Z",
+      "finished_at": "2026-11-07T13:05:50.717274Z",
+      "stage_seconds": {
+        "environment_setup": 2.942812,
+        "agent_setup": 1.037797,
+        "agent_execution": 11.036573,
+        "verifier": 5.57269
+      },
+      "offline_probe_s": 0.5514824580168352,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+      "frozen_image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "nginx-request-logging",
+      "started_at": "2026-11-07T13:05:04.274633Z",
+      "finished_at": "2026-11-07T13:05:48.866205Z",
+      "stage_seconds": {
+        "environment_setup": 2.963418,
+        "agent_setup": 1.651771,
+        "agent_execution": 22.547767,
+        "verifier": 13.416556
+      },
+      "offline_probe_s": 1.1654624170041643,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+      "frozen_image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "openssl-selfsigned-cert",
+      "started_at": "2026-11-07T13:03:35.147478Z",
+      "finished_at": "2026-11-07T13:04:07.909407Z",
+      "stage_seconds": {
+        "environment_setup": 4.101351,
+        "agent_setup": 2.39501,
+        "agent_execution": 6.748811,
+        "verifier": 14.433746
+      },
+      "offline_probe_s": 1.714075708994642,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:bcb976b46758935d3eb2fd335b3ed2716d599fb267136fef26c5d81b998a37b8",
+      "frozen_image_id": "sha256:bcb976b46758935d3eb2fd335b3ed2716d599fb267136fef26c5d81b998a37b8",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "sanitize-git-repo",
+      "started_at": "2026-11-07T13:04:46.839302Z",
+      "finished_at": "2026-11-07T13:05:21.527303Z",
+      "stage_seconds": {
+        "environment_setup": 2.877805,
+        "agent_setup": 1.787272,
+        "agent_execution": 11.465406,
+        "verifier": 14.892272
+      },
+      "offline_probe_s": 1.2936337499995716,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:c28f05a295ca097b2f55ae59bc3bf86a09831b6a057667c37976e3cfcfbb71d0",
+      "frozen_image_id": "sha256:c28f05a295ca097b2f55ae59bc3bf86a09831b6a057667c37976e3cfcfbb71d0",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 0,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "sqlite-db-truncate",
+      "started_at": "2026-11-07T13:04:13.234529Z",
+      "finished_at": "2026-11-07T13:04:42.892964Z",
+      "stage_seconds": {
+        "environment_setup": 2.993167,
+        "agent_setup": 2.069512,
+        "agent_execution": 10.264139,
+        "verifier": 10.511282
+      },
+      "offline_probe_s": 1.5552781660226174,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:7e09eb89427b3d825ca15f123085fe57febf91bbf54ed5912c0582fa894205ca",
+      "frozen_image_id": "sha256:7e09eb89427b3d825ca15f123085fe57febf91bbf54ed5912c0582fa894205ca",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 1,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "extract-elf",
+      "started_at": "2026-11-07T13:07:13.995015Z",
+      "finished_at": "2026-11-07T13:08:01.567785Z",
+      "stage_seconds": {
+        "environment_setup": 3.889206,
+        "agent_setup": 2.174047,
+        "agent_execution": 16.815364,
+        "verifier": 21.231877
+      },
+      "offline_probe_s": 1.6587756249937229,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:57eae32d5c92f6e8db856961fc16e8fac52d576a317b420f7a2bb95d96af94bd",
+      "frozen_image_id": "sha256:57eae32d5c92f6e8db856961fc16e8fac52d576a317b420f7a2bb95d96af94bd",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 1,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "fix-git",
+      "started_at": "2026-11-07T13:08:05.121042Z",
+      "finished_at": "2026-11-07T13:08:37.201534Z",
+      "stage_seconds": {
+        "environment_setup": 2.885117,
+        "agent_setup": 1.52358,
+        "agent_execution": 11.409278,
+        "verifier": 12.366243
+      },
+      "offline_probe_s": 1.0507806669920683,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:043432cd0026a9587f468f3a1b13b6a93001b83162047821712afccdf38f548c",
+      "frozen_image_id": "sha256:043432cd0026a9587f468f3a1b13b6a93001b83162047821712afccdf38f548c",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 1,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "sanitize-git-repo",
+      "started_at": "2026-11-07T13:07:59.114406Z",
+      "finished_at": "2026-11-07T13:08:31.174067Z",
+      "stage_seconds": {
+        "environment_setup": 2.884275,
+        "agent_setup": 1.696639,
+        "agent_execution": 11.328795,
+        "verifier": 12.525788
+      },
+      "offline_probe_s": 1.1113725419854745,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:c28f05a295ca097b2f55ae59bc3bf86a09831b6a057667c37976e3cfcfbb71d0",
+      "frozen_image_id": "sha256:c28f05a295ca097b2f55ae59bc3bf86a09831b6a057667c37976e3cfcfbb71d0",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 1,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "sqlite-db-truncate",
+      "started_at": "2026-11-07T13:07:13.994973Z",
+      "finished_at": "2026-11-07T13:07:54.853736Z",
+      "stage_seconds": {
+        "environment_setup": 3.657925,
+        "agent_setup": 1.646888,
+        "agent_execution": 20.746195,
+        "verifier": 11.107642
+      },
+      "offline_probe_s": 1.1558672910032328,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:7e09eb89427b3d825ca15f123085fe57febf91bbf54ed5912c0582fa894205ca",
+      "frozen_image_id": "sha256:7e09eb89427b3d825ca15f123085fe57febf91bbf54ed5912c0582fa894205ca",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "confirm_2",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "cancel-async-tasks",
+      "started_at": "2026-11-07T13:14:27.235862Z",
+      "finished_at": "2026-11-07T13:15:09.688735Z",
+      "stage_seconds": {
+        "environment_setup": 3.074396,
+        "agent_setup": 2.274087,
+        "agent_execution": 7.087334,
+        "verifier": 26.309287
+      },
+      "offline_probe_s": 1.7051801669877023,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:addf501a605e42642228cf6875c2e62d2def75661d091c534466485b8a60f33c",
+      "frozen_image_id": "sha256:addf501a605e42642228cf6875c2e62d2def75661d091c534466485b8a60f33c",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "confirm_2",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "largest-eigenval",
+      "started_at": "2026-11-07T13:13:55.376643Z",
+      "finished_at": "2026-11-07T13:14:23.156594Z",
+      "stage_seconds": {
+        "environment_setup": 3.365206,
+        "agent_setup": 1.115753,
+        "agent_execution": 15.268159,
+        "verifier": 4.428542
+      },
+      "offline_probe_s": 0.5993356249819044,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+      "frozen_image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "confirm_2",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "nginx-request-logging",
+      "started_at": "2026-11-07T13:13:55.376270Z",
+      "finished_at": "2026-11-07T13:14:41.704735Z",
+      "stage_seconds": {
+        "environment_setup": 3.365736,
+        "agent_setup": 1.933938,
+        "agent_execution": 22.414844,
+        "verifier": 14.231459
+      },
+      "offline_probe_s": 1.236028208018979,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+      "frozen_image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "confirm_2",
+      "repetition": 2,
+      "attempt": 1,
+      "task_name": "cancel-async-tasks",
+      "started_at": "2026-11-07T13:15:43.268931Z",
+      "finished_at": "2026-11-07T13:16:25.301333Z",
+      "stage_seconds": {
+        "environment_setup": 2.846453,
+        "agent_setup": 1.552082,
+        "agent_execution": 8.704312,
+        "verifier": 24.675923
+      },
+      "offline_probe_s": 1.0585385829908773,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:addf501a605e42642228cf6875c2e62d2def75661d091c534466485b8a60f33c",
+      "frozen_image_id": "sha256:addf501a605e42642228cf6875c2e62d2def75661d091c534466485b8a60f33c",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "confirm_2",
+      "repetition": 2,
+      "attempt": 1,
+      "task_name": "largest-eigenval",
+      "started_at": "2026-11-07T13:15:13.808922Z",
+      "finished_at": "2026-11-07T13:15:39.452611Z",
+      "stage_seconds": {
+        "environment_setup": 3.172258,
+        "agent_setup": 1.174799,
+        "agent_execution": 14.212127,
+        "verifier": 3.287134
+      },
+      "offline_probe_s": 0.6212352080037817,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+      "frozen_image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "confirm_2",
+      "repetition": 2,
+      "attempt": 1,
+      "task_name": "nginx-request-logging",
+      "started_at": "2026-11-07T13:15:13.808923Z",
+      "finished_at": "2026-11-07T13:16:01.041081Z",
+      "stage_seconds": {
+        "environment_setup": 3.172371,
+        "agent_setup": 1.831975,
+        "agent_execution": 22.3139,
+        "verifier": 16.262888
+      },
+      "offline_probe_s": 1.2413112919894047,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+      "frozen_image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "cancel-async-tasks",
+      "started_at": "2026-11-07T13:11:51.533024Z",
+      "finished_at": "2026-11-07T13:12:33.780516Z",
+      "stage_seconds": {
+        "environment_setup": 3.180132,
+        "agent_setup": 1.696584,
+        "agent_execution": 8.549783,
+        "verifier": 25.192159
+      },
+      "offline_probe_s": 1.182879125000909,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:addf501a605e42642228cf6875c2e62d2def75661d091c534466485b8a60f33c",
+      "frozen_image_id": "sha256:addf501a605e42642228cf6875c2e62d2def75661d091c534466485b8a60f33c",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "extract-elf",
+      "started_at": "2026-11-07T13:09:53.801522Z",
+      "finished_at": "2026-11-07T13:10:49.589006Z",
+      "stage_seconds": {
+        "environment_setup": 4.588548,
+        "agent_setup": 2.417056,
+        "agent_execution": 20.760994,
+        "verifier": 24.059437
+      },
+      "offline_probe_s": 1.6340668330085464,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:57eae32d5c92f6e8db856961fc16e8fac52d576a317b420f7a2bb95d96af94bd",
+      "frozen_image_id": "sha256:57eae32d5c92f6e8db856961fc16e8fac52d576a317b420f7a2bb95d96af94bd",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "fix-git",
+      "started_at": "2026-11-07T13:09:09.892856Z",
+      "finished_at": "2026-11-07T13:09:50.351973Z",
+      "stage_seconds": {
+        "environment_setup": 3.304971,
+        "agent_setup": 1.689408,
+        "agent_execution": 13.21868,
+        "verifier": 18.620973
+      },
+      "offline_probe_s": 1.1470100419828668,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:043432cd0026a9587f468f3a1b13b6a93001b83162047821712afccdf38f548c",
+      "frozen_image_id": "sha256:043432cd0026a9587f468f3a1b13b6a93001b83162047821712afccdf38f548c",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "largest-eigenval",
+      "started_at": "2026-11-07T13:11:18.233786Z",
+      "finished_at": "2026-11-07T13:11:46.275347Z",
+      "stage_seconds": {
+        "environment_setup": 3.357746,
+        "agent_setup": 1.224302,
+        "agent_execution": 13.121834,
+        "verifier": 6.357491
+      },
+      "offline_probe_s": 0.6617303329985589,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+      "frozen_image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "nginx-request-logging",
+      "started_at": "2026-11-07T13:10:54.921712Z",
+      "finished_at": "2026-11-07T13:11:47.635073Z",
+      "stage_seconds": {
+        "environment_setup": 3.907972,
+        "agent_setup": 2.052714,
+        "agent_execution": 25.609114,
+        "verifier": 17.381884
+      },
+      "offline_probe_s": 1.51890579200699,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+      "frozen_image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "openssl-selfsigned-cert",
+      "started_at": "2026-11-07T13:09:09.892618Z",
+      "finished_at": "2026-11-07T13:09:44.395448Z",
+      "stage_seconds": {
+        "environment_setup": 3.305048,
+        "agent_setup": 1.712478,
+        "agent_execution": 9.57592,
+        "verifier": 16.29848
+      },
+      "offline_probe_s": 1.1663532919774298,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:bcb976b46758935d3eb2fd335b3ed2716d599fb267136fef26c5d81b998a37b8",
+      "frozen_image_id": "sha256:bcb976b46758935d3eb2fd335b3ed2716d599fb267136fef26c5d81b998a37b8",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "sanitize-git-repo",
+      "started_at": "2026-11-07T13:10:35.785218Z",
+      "finished_at": "2026-11-07T13:11:13.575760Z",
+      "stage_seconds": {
+        "environment_setup": 3.021692,
+        "agent_setup": 1.55869,
+        "agent_execution": 15.301562,
+        "verifier": 13.637779
+      },
+      "offline_probe_s": 1.075409207987832,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:c28f05a295ca097b2f55ae59bc3bf86a09831b6a057667c37976e3cfcfbb71d0",
+      "frozen_image_id": "sha256:c28f05a295ca097b2f55ae59bc3bf86a09831b6a057667c37976e3cfcfbb71d0",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 2,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "sqlite-db-truncate",
+      "started_at": "2026-11-07T13:09:49.342318Z",
+      "finished_at": "2026-11-07T13:10:30.202474Z",
+      "stage_seconds": {
+        "environment_setup": 3.028765,
+        "agent_setup": 2.238752,
+        "agent_execution": 17.904185,
+        "verifier": 13.177559
+      },
+      "offline_probe_s": 1.2330676249985117,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:7e09eb89427b3d825ca15f123085fe57febf91bbf54ed5912c0582fa894205ca",
+      "frozen_image_id": "sha256:7e09eb89427b3d825ca15f123085fe57febf91bbf54ed5912c0582fa894205ca",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 3,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "extract-elf",
+      "started_at": "2026-11-07T13:18:25.318559Z",
+      "finished_at": "2026-11-07T13:19:16.213176Z",
+      "stage_seconds": {
+        "environment_setup": 3.298348,
+        "agent_setup": 2.299409,
+        "agent_execution": 19.727204,
+        "verifier": 22.067215
+      },
+      "offline_probe_s": 1.7160239169897977,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:57eae32d5c92f6e8db856961fc16e8fac52d576a317b420f7a2bb95d96af94bd",
+      "frozen_image_id": "sha256:57eae32d5c92f6e8db856961fc16e8fac52d576a317b420f7a2bb95d96af94bd",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 3,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "fix-git",
+      "started_at": "2026-11-07T13:19:19.601873Z",
+      "finished_at": "2026-11-07T13:19:49.100682Z",
+      "stage_seconds": {
+        "environment_setup": 2.872618,
+        "agent_setup": 1.713906,
+        "agent_execution": 11.688042,
+        "verifier": 9.84968
+      },
+      "offline_probe_s": 1.143694124999456,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:043432cd0026a9587f468f3a1b13b6a93001b83162047821712afccdf38f548c",
+      "frozen_image_id": "sha256:043432cd0026a9587f468f3a1b13b6a93001b83162047821712afccdf38f548c",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 3,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "sanitize-git-repo",
+      "started_at": "2026-11-07T13:19:10.388279Z",
+      "finished_at": "2026-11-07T13:19:44.306183Z",
+      "stage_seconds": {
+        "environment_setup": 3.042474,
+        "agent_setup": 1.51805,
+        "agent_execution": 11.148242,
+        "verifier": 14.661576
+      },
+      "offline_probe_s": 1.0312663329823408,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:c28f05a295ca097b2f55ae59bc3bf86a09831b6a057667c37976e3cfcfbb71d0",
+      "frozen_image_id": "sha256:c28f05a295ca097b2f55ae59bc3bf86a09831b6a057667c37976e3cfcfbb71d0",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    },
+    {
+      "iteration": 3,
+      "evaluation_phase": "main",
+      "repetition": 1,
+      "attempt": 1,
+      "task_name": "sqlite-db-truncate",
+      "started_at": "2026-11-07T13:18:25.318507Z",
+      "finished_at": "2026-11-07T13:19:02.789217Z",
+      "stage_seconds": {
+        "environment_setup": 3.298418,
+        "agent_setup": 1.82441,
+        "agent_execution": 17.63008,
+        "verifier": 10.843595
+      },
+      "offline_probe_s": 1.266653958009556,
+      "offline_probe_status": "passed",
+      "runtime_image_id": "sha256:7e09eb89427b3d825ca15f123085fe57febf91bbf54ed5912c0582fa894205ca",
+      "frozen_image_id": "sha256:7e09eb89427b3d825ca15f123085fe57febf91bbf54ed5912c0582fa894205ca",
+      "runtime_matches_frozen_image": true,
+      "verifier_result_present": true
+    }
+  ],
+  "events": [
+    {
+      "ts": "2026-11-07 13:03:33.619289+00:00",
+      "kind": "iteration.started",
+      "payload": {
+        "agent_sha": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+        "iteration": 0
+      }
+    },
+    {
+      "ts": "2026-11-07 13:03:33.624915+00:00",
+      "kind": "iteration.phase",
+      "payload": {
+        "phase": "BENCHMARK",
+        "iteration_id": "ba68881a-adae-4da0-afaf-a70fa69efbc7"
+      }
+    },
+    {
+      "ts": "2026-11-07 13:06:42.969627+00:00",
+      "kind": "iteration.finished",
+      "payload": {
+        "score": 0.3333333333333333,
+        "reason": "complete baseline on the fixed selection set",
+        "decision": "baseline",
+        "iteration": 0
+      }
+    },
+    {
+      "ts": "2026-11-07 13:06:42.978836+00:00",
+      "kind": "iteration.proposing",
+      "payload": {
+        "iteration": 1,
+        "feedback_failures": 3
+      }
+    },
+    {
+      "ts": "2026-11-07 13:07:12.660487+00:00",
+      "kind": "iteration.started",
+      "payload": {
+        "agent_sha": "2b1f9f1895bcd8ff0e070fcbf3894c7de91f32c446199f8f202c85fc22ae9843",
+        "iteration": 1
+      }
+    },
+    {
+      "ts": "2026-11-07 13:07:12.668036+00:00",
+      "kind": "iteration.phase",
+      "payload": {
+        "phase": "BENCHMARK",
+        "iteration_id": "133d5908-a8b1-447c-b15f-a7bb029a824d"
+      }
+    },
+    {
+      "ts": "2026-11-07 13:08:39.817409+00:00",
+      "kind": "iteration.screened_out",
+      "payload": {
+        "tasks": [
+          "sqlite-db-truncate",
+          "extract-elf",
+          "sanitize-git-repo",
+          "fix-git"
+        ],
+        "iteration": 1
+      }
+    },
+    {
+      "ts": "2026-11-07 13:08:39.821396+00:00",
+      "kind": "iteration.finished",
+      "payload": {
+        "score": null,
+        "reason": "screened_out: no feedback repair; unexecuted tasks remain unmeasured",
+        "decision": "rejected",
+        "iteration": 1
+      }
+    },
+    {
+      "ts": "2026-11-07 13:08:39.829717+00:00",
+      "kind": "iteration.proposing",
+      "payload": {
+        "iteration": 2,
+        "feedback_failures": 3
+      }
+    },
+    {
+      "ts": "2026-11-07 13:09:08.543081+00:00",
+      "kind": "iteration.started",
+      "payload": {
+        "agent_sha": "767e0be90338532b832600550568d21efa6714641c29651c1a47659e5e82ac78",
+        "iteration": 2
+      }
+    },
+    {
+      "ts": "2026-11-07 13:09:08.546924+00:00",
+      "kind": "iteration.phase",
+      "payload": {
+        "phase": "BENCHMARK",
+        "iteration_id": "66575e3b-0d7e-4c03-a909-ba64b5f6139b"
+      }
+    },
+    {
+      "ts": "2026-11-07 13:12:36.842803+00:00",
+      "kind": "confirmation.scheduled",
+      "payload": {
+        "reason": "preliminary_quality_signal_requires_confirmation",
+        "iteration": 2
+      }
+    },
+    {
+      "ts": "2026-11-07 13:12:36.847814+00:00",
+      "kind": "iteration.phase",
+      "payload": {
+        "phase": "CONFIRM",
+        "iteration_id": "66575e3b-0d7e-4c03-a909-ba64b5f6139b"
+      }
+    },
+    {
+      "ts": "2026-11-07 13:17:54.282648+00:00",
+      "kind": "iteration.finished",
+      "payload": {
+        "score": 0.3333333333333333,
+        "reason": "quality_regression",
+        "decision": "rejected",
+        "iteration": 2
+      }
+    },
+    {
+      "ts": "2026-11-07 13:17:54.291796+00:00",
+      "kind": "iteration.proposing",
+      "payload": {
+        "iteration": 3,
+        "feedback_failures": 3
+      }
+    },
+    {
+      "ts": "2026-11-07 13:18:23.830173+00:00",
+      "kind": "iteration.started",
+      "payload": {
+        "agent_sha": "00fdb0c7d26e850e106445d3d46b2f517a27113a6335cbc400426b6a20c68fab",
+        "iteration": 3
+      }
+    },
+    {
+      "ts": "2026-11-07 13:18:23.834887+00:00",
+      "kind": "iteration.phase",
+      "payload": {
+        "phase": "BENCHMARK",
+        "iteration_id": "c84267d5-fd44-4097-b85c-1a06993ce48a"
+      }
+    },
+    {
+      "ts": "2026-11-07 13:19:51.625807+00:00",
+      "kind": "iteration.screened_out",
+      "payload": {
+        "tasks": [
+          "sqlite-db-truncate",
+          "extract-elf",
+          "sanitize-git-repo",
+          "fix-git"
+        ],
+        "iteration": 3
+      }
+    },
+    {
+      "ts": "2026-11-07 13:19:51.630047+00:00",
+      "kind": "iteration.finished",
+      "payload": {
+        "score": null,
+        "reason": "screened_out: no feedback repair; unexecuted tasks remain unmeasured",
+        "decision": "rejected",
+        "iteration": 3
+      }
+    }
+  ],
+  "limitations": [
+    "Repeated development validation; the four heldback tasks had been observed in earlier experiments. No new untouched-generalization claim.",
+    "Three selection tasks with two repeats are a small descriptive comparison; provider randomness is not seeded.",
+    "Model dollars are token-price estimates; local Docker dollars are unpriced. All physical retry time and cost remain counted.",
+    "Prepared image creation cost/time is separate from per-trial offline probes; comparisons against historical cold runs are not controlled causal speedup estimates.",
+    "amd64 task images run on an aarch64 Docker daemon, so timings include emulation.",
+    "No candidate was accepted: screening and fresh confirmation must be distinguished from improvement."
+  ],
+  "same_source_heldback_evaluation_reused": true,
+  "audit_runner_sha256": "34adc72281fe469a6d3ff00f4ecb2456155b823939422c552104473f3cbe90a3",
+  "shared_helpers_sha256": {
+    "scripts/run_paired_selection_review.py": "679c829b606f55fc670487dfb75681e9f560073422b473513b88622d67e09a8f",
+    "scripts/run_final_holdout_review.py": "32985459b86282e1ae462b833def45d00554176819e492567b04d1361ab7bc6d"
+  },
+  "audit_code_files_changed": [],
+  "source_exports_verified": true
+}

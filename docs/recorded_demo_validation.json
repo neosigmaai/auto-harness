@@ -1,0 +1,68 @@
+{
+  "protocol": "recorded-history-demo-v1",
+  "scope": "Actual read-only replay of an existing terminal job through a temporary GET/HEAD-only API. This is a history-access demonstration, not a new benchmark execution.",
+  "replays": [
+    {
+      "status": "passed",
+      "return_code": 0,
+      "elapsed_s": 1.034,
+      "script_sha256": "adebd37686211082ca3024163c44934be4df9ed084ed8352c6752256f2a4927d",
+      "source_report": "docs/live_calibrated_benchmark_review.json",
+      "job_id": "f37176ef-cff8-4d6b-8af3-2d82cc8c7e56",
+      "read_only_attachment": true,
+      "worker_started": false,
+      "submission_requested": false,
+      "provider_calls_requested": false,
+      "historical_succeeded_displayed": true,
+      "iteration_rows": 4,
+      "baseline_retained_displayed": true,
+      "api_cleanup_confirmed": true,
+      "private_credentials_absent_from_output": true
+    },
+    {
+      "status": "passed",
+      "return_code": 0,
+      "elapsed_s": 1.174,
+      "script_sha256": "adebd37686211082ca3024163c44934be4df9ed084ed8352c6752256f2a4927d",
+      "source_report": "docs/live_prepared_verified_review.json",
+      "job_id": "253886be-b646-4176-ac23-7e6990e71755",
+      "read_only_attachment": true,
+      "worker_started": false,
+      "submission_requested": false,
+      "provider_calls_requested": false,
+      "terminal_succeeded_displayed": true,
+      "iteration_rows": 4,
+      "baseline_retained_displayed": true,
+      "api_cleanup_confirmed": true,
+      "private_credentials_absent_from_output": true
+    },
+    {
+      "status": "passed",
+      "return_code": 0,
+      "elapsed_s": 1.541,
+      "script_sha256": "adebd37686211082ca3024163c44934be4df9ed084ed8352c6752256f2a4927d",
+      "source_report": "docs/live_evidence_guided_review.json",
+      "job_id": "1e3b888c-6921-4de2-b4be-abe343d74e57",
+      "read_only_attachment": true,
+      "worker_started": false,
+      "submission_requested": false,
+      "provider_calls_requested": false,
+      "terminal_cancelled_displayed": true,
+      "iteration_rows": 4,
+      "baseline_retained_displayed": true,
+      "api_cleanup_confirmed": true,
+      "private_credentials_absent_from_output": true
+    }
+  ],
+  "focused_helper_tests": {
+    "passed": 4,
+    "duration_s": 0.3,
+    "database_required": false
+  },
+  "limitations": [
+    "The ignored private local control file and original evidence database are required.",
+    "No service credentials, database URL, private control contents or raw task traces are included here.",
+    "The replay does not establish agent improvement or re-run benchmark verification."
+  ],
+  "recommended_report": "docs/live_prepared_verified_review.json"
+}

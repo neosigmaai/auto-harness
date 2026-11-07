@@ -1,0 +1,714 @@
+{
+  "observed_at": "2026-11-07T12:13:04.229556+00:00",
+  "status": "COMPLETE",
+  "source_report": "docs/live_calibrated_candidate3_paired_review.json",
+  "implementation_aggregate_sha256": "7bc8de276922ed2b940ba92f7f51f2826515b9e6baa712e046ace421184a48c7",
+  "source_hashes": {
+    "baseline": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+    "candidate": "03c9651597773542fa305684ac2e531a17e4c92cc9bae58f19ff1a5f2e1fc828"
+  },
+  "source_order": [
+    {
+      "repetition": 1,
+      "source": "baseline"
+    },
+    {
+      "repetition": 1,
+      "source": "candidate"
+    },
+    {
+      "repetition": 2,
+      "source": "candidate"
+    },
+    {
+      "repetition": 2,
+      "source": "baseline"
+    }
+  ],
+  "planned_trials_per_source": 6,
+  "verifier_valid_observations": 12,
+  "total_observations": 12,
+  "infrastructure_errors": 0,
+  "timeouts": 0,
+  "metrics": {
+    "baseline": {
+      "complete": true,
+      "planned_trials": 6,
+      "observed_trials": 6,
+      "passed": 3,
+      "failed": 3,
+      "errors": 0,
+      "mean_reward": 0.5,
+      "mean_task_duration_s": 87.6821638403344,
+      "p95_task_duration_s": 121.7413869999873,
+      "mean_model_cost_usd": 0.015560875000000002,
+      "total_model_cost_usd": 0.09336525000000001,
+      "total_sandbox_cost_usd": null,
+      "input_tokens": 83033,
+      "output_tokens": 6909,
+      "physical_attempts": 6,
+      "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+      "evidence_kind": "execution",
+      "verifier_complete": true
+    },
+    "candidate": {
+      "complete": true,
+      "planned_trials": 6,
+      "observed_trials": 6,
+      "passed": 3,
+      "failed": 3,
+      "errors": 0,
+      "mean_reward": 0.5,
+      "mean_task_duration_s": 96.61286858350893,
+      "p95_task_duration_s": 186.48223545899964,
+      "mean_model_cost_usd": 0.012943250000000002,
+      "total_model_cost_usd": 0.0776595,
+      "total_sandbox_cost_usd": null,
+      "input_tokens": 64828,
+      "output_tokens": 6453,
+      "physical_attempts": 6,
+      "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+      "evidence_kind": "execution",
+      "verifier_complete": true
+    }
+  },
+  "observed_policy_decision": {
+    "candidate_qualifies": false,
+    "reason": "efficiency_guardrail:p95_task_duration_s",
+    "scope": "external fresh paired selection audit; not an old-job database promotion"
+  },
+  "relative_changes": {
+    "mean_model_cost_fraction": -0.16821836818302316,
+    "p95_end_to_end_duration_fraction": 0.5317899693308004,
+    "mean_end_to_end_duration_fraction": 0.10185315179307142,
+    "reward_difference": 0.0
+  },
+  "candidate_max_duration_observation": {
+    "source": "candidate",
+    "repetition": 1,
+    "job_id": "3b10d984-4617-4dcd-80ef-9771a83d9f03",
+    "task_name": "nginx-request-logging",
+    "status": "passed",
+    "reward": 1.0,
+    "end_to_end_duration_s": 186.48223545899964,
+    "model_cost_usd": 0.019978500000000003,
+    "verifier_valid": true,
+    "harbor_started_at": "2026-11-07T12:01:55.107189Z",
+    "harbor_finished_at": "2026-11-07T12:04:57.482122Z",
+    "harbor_duration_s": 182.374933,
+    "stages": {
+      "environment_setup": {
+        "started_at": "2026-11-07T12:01:55.146565Z",
+        "finished_at": "2026-11-07T12:01:58.245195Z",
+        "duration_s": 3.09863
+      },
+      "agent_setup": {
+        "started_at": "2026-11-07T12:01:58.245315Z",
+        "finished_at": "2026-11-07T12:04:10.044919Z",
+        "duration_s": 131.799604
+      },
+      "agent_execution": {
+        "started_at": "2026-11-07T12:04:10.045469Z",
+        "finished_at": "2026-11-07T12:04:39.143958Z",
+        "duration_s": 29.098489
+      },
+      "verifier": {
+        "started_at": "2026-11-07T12:04:40.002438Z",
+        "finished_at": "2026-11-07T12:04:54.601596Z",
+        "duration_s": 14.599158
+      }
+    },
+    "preflight": {
+      "status": "passed",
+      "duration_s": 131.11808054201538
+    },
+    "timing_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/3b10d984-4617-4dcd-80ef-9771a83d9f03/iter0/main/rep1/attempt1/0-main-r1-a1-nginx-request-logging-d1626207/harbor/trial/nginx-request-logging__4khgvnr/result.json",
+    "preflight_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/3b10d984-4617-4dcd-80ef-9771a83d9f03/iter0/main/rep1/attempt1/0-main-r1-a1-nginx-request-logging-d1626207/verifier-preflight.json"
+  },
+  "timing_interpretation": "The maximum candidate observation includes131.118s successful dependency preflight inside131.800s setup, versus29.098s measured agent execution. Keep its full186.482s end-to-end value in the declared policy. This trace does not establish candidate code caused the tail; setup/network/provider variability remain material.",
+  "observations": [
+    {
+      "source": "baseline",
+      "repetition": 1,
+      "job_id": "d79e662a-18d9-4895-ac4c-e5ef953ad74c",
+      "task_name": "nginx-request-logging",
+      "status": "passed",
+      "reward": 1.0,
+      "end_to_end_duration_s": 61.92976337502478,
+      "model_cost_usd": 0.023938499999999998,
+      "verifier_valid": true,
+      "harbor_started_at": "2026-11-07T11:58:44.040436Z",
+      "harbor_finished_at": "2026-11-07T11:59:41.827748Z",
+      "harbor_duration_s": 57.787312,
+      "stages": {
+        "environment_setup": {
+          "started_at": "2026-11-07T11:58:44.136580Z",
+          "finished_at": "2026-11-07T11:58:47.420106Z",
+          "duration_s": 3.283526
+        },
+        "agent_setup": {
+          "started_at": "2026-11-07T11:58:47.420236Z",
+          "finished_at": "2026-11-07T11:58:55.426846Z",
+          "duration_s": 8.00661
+        },
+        "agent_execution": {
+          "started_at": "2026-11-07T11:58:55.427419Z",
+          "finished_at": "2026-11-07T11:59:21.352822Z",
+          "duration_s": 25.925403
+        },
+        "verifier": {
+          "started_at": "2026-11-07T11:59:21.947985Z",
+          "finished_at": "2026-11-07T11:59:38.849349Z",
+          "duration_s": 16.901364
+        }
+      },
+      "preflight": {
+        "status": "passed",
+        "duration_s": 7.341496874985751
+      },
+      "timing_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/d79e662a-18d9-4895-ac4c-e5ef953ad74c/iter0/main/rep1/attempt1/0-main-r1-a1-nginx-request-logging-2a5cbe4e/harbor/trial/nginx-request-logging__bP7DFZT/result.json",
+      "preflight_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/d79e662a-18d9-4895-ac4c-e5ef953ad74c/iter0/main/rep1/attempt1/0-main-r1-a1-nginx-request-logging-2a5cbe4e/verifier-preflight.json"
+    },
+    {
+      "source": "baseline",
+      "repetition": 1,
+      "job_id": "d79e662a-18d9-4895-ac4c-e5ef953ad74c",
+      "task_name": "largest-eigenval",
+      "status": "failed",
+      "reward": 0.0,
+      "end_to_end_duration_s": 86.1084109589865,
+      "model_cost_usd": 0.009774,
+      "verifier_valid": true,
+      "harbor_started_at": "2026-11-07T11:58:44.040566Z",
+      "harbor_finished_at": "2026-11-07T12:00:06.353751Z",
+      "harbor_duration_s": 82.313185,
+      "stages": {
+        "environment_setup": {
+          "started_at": "2026-11-07T11:58:44.136885Z",
+          "finished_at": "2026-11-07T11:58:47.420102Z",
+          "duration_s": 3.283217
+        },
+        "agent_setup": {
+          "started_at": "2026-11-07T11:58:47.420228Z",
+          "finished_at": "2026-11-07T11:59:45.527341Z",
+          "duration_s": 58.107113
+        },
+        "agent_execution": {
+          "started_at": "2026-11-07T11:59:45.527750Z",
+          "finished_at": "2026-11-07T11:59:58.962229Z",
+          "duration_s": 13.434479
+        },
+        "verifier": {
+          "started_at": "2026-11-07T11:59:59.565970Z",
+          "finished_at": "2026-11-07T12:00:03.422150Z",
+          "duration_s": 3.85618
+        }
+      },
+      "preflight": {
+        "status": "passed",
+        "duration_s": 57.456284624990076
+      },
+      "timing_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/d79e662a-18d9-4895-ac4c-e5ef953ad74c/iter0/main/rep1/attempt1/0-main-r1-a1-largest-eigenval-c2ba4c80/harbor/trial/largest-eigenval__GfxkQN8/result.json",
+      "preflight_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/d79e662a-18d9-4895-ac4c-e5ef953ad74c/iter0/main/rep1/attempt1/0-main-r1-a1-largest-eigenval-c2ba4c80/verifier-preflight.json"
+    },
+    {
+      "source": "baseline",
+      "repetition": 1,
+      "job_id": "d79e662a-18d9-4895-ac4c-e5ef953ad74c",
+      "task_name": "cancel-async-tasks",
+      "status": "failed",
+      "reward": 0.0,
+      "end_to_end_duration_s": 121.7413869999873,
+      "model_cost_usd": 0.0060982499999999995,
+      "verifier_valid": true,
+      "harbor_started_at": "2026-11-07T11:59:45.863788Z",
+      "harbor_finished_at": "2026-11-07T12:01:43.865635Z",
+      "harbor_duration_s": 118.001847,
+      "stages": {
+        "environment_setup": {
+          "started_at": "2026-11-07T11:59:45.902939Z",
+          "finished_at": "2026-11-07T11:59:48.845012Z",
+          "duration_s": 2.942073
+        },
+        "agent_setup": {
+          "started_at": "2026-11-07T11:59:48.845121Z",
+          "finished_at": "2026-11-07T12:01:07.065690Z",
+          "duration_s": 78.220569
+        },
+        "agent_execution": {
+          "started_at": "2026-11-07T12:01:07.066067Z",
+          "finished_at": "2026-11-07T12:01:17.531182Z",
+          "duration_s": 10.465115
+        },
+        "verifier": {
+          "started_at": "2026-11-07T12:01:18.126908Z",
+          "finished_at": "2026-11-07T12:01:40.930735Z",
+          "duration_s": 22.803827
+        }
+      },
+      "preflight": {
+        "status": "passed",
+        "duration_s": 77.60007145898999
+      },
+      "timing_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/d79e662a-18d9-4895-ac4c-e5ef953ad74c/iter0/main/rep1/attempt1/0-main-r1-a1-cancel-async-tasks-0d7aed7c/harbor/trial/cancel-async-tasks__84WScrg/result.json",
+      "preflight_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/d79e662a-18d9-4895-ac4c-e5ef953ad74c/iter0/main/rep1/attempt1/0-main-r1-a1-cancel-async-tasks-0d7aed7c/verifier-preflight.json"
+    },
+    {
+      "source": "candidate",
+      "repetition": 1,
+      "job_id": "3b10d984-4617-4dcd-80ef-9771a83d9f03",
+      "task_name": "largest-eigenval",
+      "status": "failed",
+      "reward": 0.0,
+      "end_to_end_duration_s": 42.015537042025244,
+      "model_cost_usd": 0.020757,
+      "verifier_valid": true,
+      "harbor_started_at": "2026-11-07T12:01:55.107434Z",
+      "harbor_finished_at": "2026-11-07T12:02:32.831282Z",
+      "harbor_duration_s": 37.723848,
+      "stages": {
+        "environment_setup": {
+          "started_at": "2026-11-07T12:01:55.146656Z",
+          "finished_at": "2026-11-07T12:01:58.237194Z",
+          "duration_s": 3.090538
+        },
+        "agent_setup": {
+          "started_at": "2026-11-07T12:01:58.237390Z",
+          "finished_at": "2026-11-07T12:02:03.145578Z",
+          "duration_s": 4.908188
+        },
+        "agent_execution": {
+          "started_at": "2026-11-07T12:02:03.145749Z",
+          "finished_at": "2026-11-07T12:02:24.480762Z",
+          "duration_s": 21.335013
+        },
+        "verifier": {
+          "started_at": "2026-11-07T12:02:25.163915Z",
+          "finished_at": "2026-11-07T12:02:29.769904Z",
+          "duration_s": 4.605989
+        }
+      },
+      "preflight": {
+        "status": "passed",
+        "duration_s": 4.234539083990967
+      },
+      "timing_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/3b10d984-4617-4dcd-80ef-9771a83d9f03/iter0/main/rep1/attempt1/0-main-r1-a1-largest-eigenval-03ac370e/harbor/trial/largest-eigenval__wZnX6ZY/result.json",
+      "preflight_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/3b10d984-4617-4dcd-80ef-9771a83d9f03/iter0/main/rep1/attempt1/0-main-r1-a1-largest-eigenval-03ac370e/verifier-preflight.json"
+    },
+    {
+      "source": "candidate",
+      "repetition": 1,
+      "job_id": "3b10d984-4617-4dcd-80ef-9771a83d9f03",
+      "task_name": "cancel-async-tasks",
+      "status": "failed",
+      "reward": 0.0,
+      "end_to_end_duration_s": 128.68917412500014,
+      "model_cost_usd": 0.00542625,
+      "verifier_valid": true,
+      "harbor_started_at": "2026-11-07T12:02:37.071386Z",
+      "harbor_finished_at": "2026-11-07T12:04:41.605813Z",
+      "harbor_duration_s": 124.534427,
+      "stages": {
+        "environment_setup": {
+          "started_at": "2026-11-07T12:02:37.104701Z",
+          "finished_at": "2026-11-07T12:02:40.106926Z",
+          "duration_s": 3.002225
+        },
+        "agent_setup": {
+          "started_at": "2026-11-07T12:02:40.107068Z",
+          "finished_at": "2026-11-07T12:03:57.716672Z",
+          "duration_s": 77.609604
+        },
+        "agent_execution": {
+          "started_at": "2026-11-07T12:03:57.717468Z",
+          "finished_at": "2026-11-07T12:04:07.869816Z",
+          "duration_s": 10.152348
+        },
+        "verifier": {
+          "started_at": "2026-11-07T12:04:08.489343Z",
+          "finished_at": "2026-11-07T12:04:37.903642Z",
+          "duration_s": 29.414299
+        }
+      },
+      "preflight": {
+        "status": "passed",
+        "duration_s": 76.73611979201087
+      },
+      "timing_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/3b10d984-4617-4dcd-80ef-9771a83d9f03/iter0/main/rep1/attempt1/0-main-r1-a1-cancel-async-tasks-e95d590d/harbor/trial/cancel-async-tasks__jePU5A2/result.json",
+      "preflight_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/3b10d984-4617-4dcd-80ef-9771a83d9f03/iter0/main/rep1/attempt1/0-main-r1-a1-cancel-async-tasks-e95d590d/verifier-preflight.json"
+    },
+    {
+      "source": "candidate",
+      "repetition": 1,
+      "job_id": "3b10d984-4617-4dcd-80ef-9771a83d9f03",
+      "task_name": "nginx-request-logging",
+      "status": "passed",
+      "reward": 1.0,
+      "end_to_end_duration_s": 186.48223545899964,
+      "model_cost_usd": 0.019978500000000003,
+      "verifier_valid": true,
+      "harbor_started_at": "2026-11-07T12:01:55.107189Z",
+      "harbor_finished_at": "2026-11-07T12:04:57.482122Z",
+      "harbor_duration_s": 182.374933,
+      "stages": {
+        "environment_setup": {
+          "started_at": "2026-11-07T12:01:55.146565Z",
+          "finished_at": "2026-11-07T12:01:58.245195Z",
+          "duration_s": 3.09863
+        },
+        "agent_setup": {
+          "started_at": "2026-11-07T12:01:58.245315Z",
+          "finished_at": "2026-11-07T12:04:10.044919Z",
+          "duration_s": 131.799604
+        },
+        "agent_execution": {
+          "started_at": "2026-11-07T12:04:10.045469Z",
+          "finished_at": "2026-11-07T12:04:39.143958Z",
+          "duration_s": 29.098489
+        },
+        "verifier": {
+          "started_at": "2026-11-07T12:04:40.002438Z",
+          "finished_at": "2026-11-07T12:04:54.601596Z",
+          "duration_s": 14.599158
+        }
+      },
+      "preflight": {
+        "status": "passed",
+        "duration_s": 131.11808054201538
+      },
+      "timing_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/3b10d984-4617-4dcd-80ef-9771a83d9f03/iter0/main/rep1/attempt1/0-main-r1-a1-nginx-request-logging-d1626207/harbor/trial/nginx-request-logging__4khgvnr/result.json",
+      "preflight_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/3b10d984-4617-4dcd-80ef-9771a83d9f03/iter0/main/rep1/attempt1/0-main-r1-a1-nginx-request-logging-d1626207/verifier-preflight.json"
+    },
+    {
+      "source": "candidate",
+      "repetition": 2,
+      "job_id": "23870ed4-383f-46a5-bbeb-137a6b7f4b3a",
+      "task_name": "largest-eigenval",
+      "status": "failed",
+      "reward": 0.0,
+      "end_to_end_duration_s": 35.09913275000872,
+      "model_cost_usd": 0.011726249999999999,
+      "verifier_valid": true,
+      "harbor_started_at": "2026-11-07T12:05:06.799656Z",
+      "harbor_finished_at": "2026-11-07T12:05:37.925667Z",
+      "harbor_duration_s": 31.126011,
+      "stages": {
+        "environment_setup": {
+          "started_at": "2026-11-07T12:05:06.837665Z",
+          "finished_at": "2026-11-07T12:05:09.877797Z",
+          "duration_s": 3.040132
+        },
+        "agent_setup": {
+          "started_at": "2026-11-07T12:05:09.877910Z",
+          "finished_at": "2026-11-07T12:05:15.825956Z",
+          "duration_s": 5.948046
+        },
+        "agent_execution": {
+          "started_at": "2026-11-07T12:05:15.826154Z",
+          "finished_at": "2026-11-07T12:05:30.971808Z",
+          "duration_s": 15.145654
+        },
+        "verifier": {
+          "started_at": "2026-11-07T12:05:31.600387Z",
+          "finished_at": "2026-11-07T12:05:34.924329Z",
+          "duration_s": 3.323942
+        }
+      },
+      "preflight": {
+        "status": "passed",
+        "duration_s": 5.286388666980201
+      },
+      "timing_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/23870ed4-383f-46a5-bbeb-137a6b7f4b3a/iter0/main/rep1/attempt1/0-main-r1-a1-largest-eigenval-1ba59f92/harbor/trial/largest-eigenval__tnR5HPf/result.json",
+      "preflight_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/23870ed4-383f-46a5-bbeb-137a6b7f4b3a/iter0/main/rep1/attempt1/0-main-r1-a1-largest-eigenval-1ba59f92/verifier-preflight.json"
+    },
+    {
+      "source": "candidate",
+      "repetition": 2,
+      "job_id": "23870ed4-383f-46a5-bbeb-137a6b7f4b3a",
+      "task_name": "nginx-request-logging",
+      "status": "passed",
+      "reward": 1.0,
+      "end_to_end_duration_s": 60.026577625016216,
+      "model_cost_usd": 0.0154185,
+      "verifier_valid": true,
+      "harbor_started_at": "2026-11-07T12:05:06.799517Z",
+      "harbor_finished_at": "2026-11-07T12:06:01.924460Z",
+      "harbor_duration_s": 55.124943,
+      "stages": {
+        "environment_setup": {
+          "started_at": "2026-11-07T12:05:06.837641Z",
+          "finished_at": "2026-11-07T12:05:09.848746Z",
+          "duration_s": 3.011105
+        },
+        "agent_setup": {
+          "started_at": "2026-11-07T12:05:09.848886Z",
+          "finished_at": "2026-11-07T12:05:18.325835Z",
+          "duration_s": 8.476949
+        },
+        "agent_execution": {
+          "started_at": "2026-11-07T12:05:18.326013Z",
+          "finished_at": "2026-11-07T12:05:41.556828Z",
+          "duration_s": 23.230815
+        },
+        "verifier": {
+          "started_at": "2026-11-07T12:05:42.263859Z",
+          "finished_at": "2026-11-07T12:05:58.998511Z",
+          "duration_s": 16.734652
+        }
+      },
+      "preflight": {
+        "status": "passed",
+        "duration_s": 7.844935791013995
+      },
+      "timing_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/23870ed4-383f-46a5-bbeb-137a6b7f4b3a/iter0/main/rep1/attempt1/0-main-r1-a1-nginx-request-logging-647b1a5c/harbor/trial/nginx-request-logging__raB9PCy/result.json",
+      "preflight_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/23870ed4-383f-46a5-bbeb-137a6b7f4b3a/iter0/main/rep1/attempt1/0-main-r1-a1-nginx-request-logging-647b1a5c/verifier-preflight.json"
+    },
+    {
+      "source": "candidate",
+      "repetition": 2,
+      "job_id": "23870ed4-383f-46a5-bbeb-137a6b7f4b3a",
+      "task_name": "cancel-async-tasks",
+      "status": "passed",
+      "reward": 1.0,
+      "end_to_end_duration_s": 127.36455450000358,
+      "model_cost_usd": 0.004353,
+      "verifier_valid": true,
+      "harbor_started_at": "2026-11-07T12:05:41.864413Z",
+      "harbor_finished_at": "2026-11-07T12:07:45.542578Z",
+      "harbor_duration_s": 123.678165,
+      "stages": {
+        "environment_setup": {
+          "started_at": "2026-11-07T12:05:41.942944Z",
+          "finished_at": "2026-11-07T12:05:44.938265Z",
+          "duration_s": 2.995321
+        },
+        "agent_setup": {
+          "started_at": "2026-11-07T12:05:44.938373Z",
+          "finished_at": "2026-11-07T12:07:05.826664Z",
+          "duration_s": 80.888291
+        },
+        "agent_execution": {
+          "started_at": "2026-11-07T12:07:05.827218Z",
+          "finished_at": "2026-11-07T12:07:12.393363Z",
+          "duration_s": 6.566145
+        },
+        "verifier": {
+          "started_at": "2026-11-07T12:07:13.366366Z",
+          "finished_at": "2026-11-07T12:07:42.578888Z",
+          "duration_s": 29.212522
+        }
+      },
+      "preflight": {
+        "status": "passed",
+        "duration_s": 80.19828995902208
+      },
+      "timing_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/23870ed4-383f-46a5-bbeb-137a6b7f4b3a/iter0/main/rep1/attempt1/0-main-r1-a1-cancel-async-tasks-2501f242/harbor/trial/cancel-async-tasks__XgobybR/result.json",
+      "preflight_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/23870ed4-383f-46a5-bbeb-137a6b7f4b3a/iter0/main/rep1/attempt1/0-main-r1-a1-cancel-async-tasks-2501f242/verifier-preflight.json"
+    },
+    {
+      "source": "baseline",
+      "repetition": 2,
+      "job_id": "607f392f-f6dc-459e-a975-e210b5ce0bc9",
+      "task_name": "largest-eigenval",
+      "status": "failed",
+      "reward": 0.0,
+      "end_to_end_duration_s": 62.7603310830018,
+      "model_cost_usd": 0.030418500000000005,
+      "verifier_valid": true,
+      "harbor_started_at": "2026-11-07T12:07:57.952399Z",
+      "harbor_finished_at": "2026-11-07T12:08:56.066074Z",
+      "harbor_duration_s": 58.113675,
+      "stages": {
+        "environment_setup": {
+          "started_at": "2026-11-07T12:07:57.991276Z",
+          "finished_at": "2026-11-07T12:08:01.022088Z",
+          "duration_s": 3.030812
+        },
+        "agent_setup": {
+          "started_at": "2026-11-07T12:08:01.022224Z",
+          "finished_at": "2026-11-07T12:08:08.654755Z",
+          "duration_s": 7.632531
+        },
+        "agent_execution": {
+          "started_at": "2026-11-07T12:08:08.654919Z",
+          "finished_at": "2026-11-07T12:08:44.154179Z",
+          "duration_s": 35.49926
+        },
+        "verifier": {
+          "started_at": "2026-11-07T12:08:44.741839Z",
+          "finished_at": "2026-11-07T12:08:53.121541Z",
+          "duration_s": 8.379702
+        }
+      },
+      "preflight": {
+        "status": "passed",
+        "duration_s": 6.984549084008904
+      },
+      "timing_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/607f392f-f6dc-459e-a975-e210b5ce0bc9/iter0/main/rep1/attempt1/0-main-r1-a1-largest-eigenval-e3234f8a/harbor/trial/largest-eigenval__WQzUBAc/result.json",
+      "preflight_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/607f392f-f6dc-459e-a975-e210b5ce0bc9/iter0/main/rep1/attempt1/0-main-r1-a1-largest-eigenval-e3234f8a/verifier-preflight.json"
+    },
+    {
+      "source": "baseline",
+      "repetition": 2,
+      "job_id": "607f392f-f6dc-459e-a975-e210b5ce0bc9",
+      "task_name": "nginx-request-logging",
+      "status": "passed",
+      "reward": 1.0,
+      "end_to_end_duration_s": 73.2268395840074,
+      "model_cost_usd": 0.01796475,
+      "verifier_valid": true,
+      "harbor_started_at": "2026-11-07T12:07:57.952294Z",
+      "harbor_finished_at": "2026-11-07T12:09:07.538182Z",
+      "harbor_duration_s": 69.585888,
+      "stages": {
+        "environment_setup": {
+          "started_at": "2026-11-07T12:07:57.991249Z",
+          "finished_at": "2026-11-07T12:08:01.022103Z",
+          "duration_s": 3.030854
+        },
+        "agent_setup": {
+          "started_at": "2026-11-07T12:08:01.022223Z",
+          "finished_at": "2026-11-07T12:08:23.028984Z",
+          "duration_s": 22.006761
+        },
+        "agent_execution": {
+          "started_at": "2026-11-07T12:08:23.029173Z",
+          "finished_at": "2026-11-07T12:08:48.932085Z",
+          "duration_s": 25.902912
+        },
+        "verifier": {
+          "started_at": "2026-11-07T12:08:49.525200Z",
+          "finished_at": "2026-11-07T12:09:04.255514Z",
+          "duration_s": 14.730314
+        }
+      },
+      "preflight": {
+        "status": "passed",
+        "duration_s": 21.31267574999947
+      },
+      "timing_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/607f392f-f6dc-459e-a975-e210b5ce0bc9/iter0/main/rep1/attempt1/0-main-r1-a1-nginx-request-logging-e873f719/harbor/trial/nginx-request-logging__FyHAp3A/result.json",
+      "preflight_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/607f392f-f6dc-459e-a975-e210b5ce0bc9/iter0/main/rep1/attempt1/0-main-r1-a1-nginx-request-logging-e873f719/verifier-preflight.json"
+    },
+    {
+      "source": "baseline",
+      "repetition": 2,
+      "job_id": "607f392f-f6dc-459e-a975-e210b5ce0bc9",
+      "task_name": "cancel-async-tasks",
+      "status": "passed",
+      "reward": 1.0,
+      "end_to_end_duration_s": 120.32625104099861,
+      "model_cost_usd": 0.0051712500000000005,
+      "verifier_valid": true,
+      "harbor_started_at": "2026-11-07T12:09:00.715102Z",
+      "harbor_finished_at": "2026-11-07T12:10:57.147516Z",
+      "harbor_duration_s": 116.432414,
+      "stages": {
+        "environment_setup": {
+          "started_at": "2026-11-07T12:09:00.752441Z",
+          "finished_at": "2026-11-07T12:09:04.059131Z",
+          "duration_s": 3.30669
+        },
+        "agent_setup": {
+          "started_at": "2026-11-07T12:09:04.059280Z",
+          "finished_at": "2026-11-07T12:10:20.324982Z",
+          "duration_s": 76.265702
+        },
+        "agent_execution": {
+          "started_at": "2026-11-07T12:10:20.325367Z",
+          "finished_at": "2026-11-07T12:10:28.608528Z",
+          "duration_s": 8.283161
+        },
+        "verifier": {
+          "started_at": "2026-11-07T12:10:29.246766Z",
+          "finished_at": "2026-11-07T12:10:54.205733Z",
+          "duration_s": 24.958967
+        }
+      },
+      "preflight": {
+        "status": "passed",
+        "duration_s": 75.53599483298603
+      },
+      "timing_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/607f392f-f6dc-459e-a975-e210b5ce0bc9/iter0/main/rep1/attempt1/0-main-r1-a1-cancel-async-tasks-71f0ca7d/harbor/trial/cancel-async-tasks__e8nhiiL/result.json",
+      "preflight_source": "runs/aos_paired_selection_20261107_30e72ae3/tasks/607f392f-f6dc-459e-a975-e210b5ce0bc9/iter0/main/rep1/attempt1/0-main-r1-a1-cancel-async-tasks-71f0ca7d/verifier-preflight.json"
+    }
+  ],
+  "cleanup": {
+    "observed_at": "2026-11-07T12:13:04.043664+00:00",
+    "active_jobs_in_evidence_db": 0,
+    "sandbox_slots_in_evidence_db": 0,
+    "database_spent_usd": 4.06676925,
+    "database_reserved_usd": 0.0,
+    "diagnostic_spent_usd": 0.00093575,
+    "session_spent_usd": 4.067705,
+    "owned_processes": {
+      "api_pid": {
+        "pid": 55858,
+        "alive": false
+      },
+      "worker_pid": {
+        "pid": 55859,
+        "alive": false
+      }
+    },
+    "job_resources": [
+      {
+        "job_id": "d79e662a-18d9-4895-ac4c-e5ef953ad74c",
+        "containers": {
+          "query_exit_code": 0,
+          "ids": []
+        },
+        "networks": {
+          "query_exit_code": 0,
+          "ids": []
+        }
+      },
+      {
+        "job_id": "3b10d984-4617-4dcd-80ef-9771a83d9f03",
+        "containers": {
+          "query_exit_code": 0,
+          "ids": []
+        },
+        "networks": {
+          "query_exit_code": 0,
+          "ids": []
+        }
+      },
+      {
+        "job_id": "23870ed4-383f-46a5-bbeb-137a6b7f4b3a",
+        "containers": {
+          "query_exit_code": 0,
+          "ids": []
+        },
+        "networks": {
+          "query_exit_code": 0,
+          "ids": []
+        }
+      },
+      {
+        "job_id": "607f392f-f6dc-459e-a975-e210b5ce0bc9",
+        "containers": {
+          "query_exit_code": 0,
+          "ids": []
+        },
+        "networks": {
+          "query_exit_code": 0,
+          "ids": []
+        }
+      }
+    ],
+    "all_resources_clean": true
+  },
+  "audit_spent_usd": 0.17102475,
+  "cumulative_spent_usd": 4.067705,
+  "cumulative_reserved_usd": 0.0,
+  "original_job_decisions_unchanged": true,
+  "new_proposals_generated": false,
+  "holdout_executed_in_audit": false,
+  "limitations": [
+    "Two repetitions of the source job's fixed selection tasks do not establish statistical significance or generalization.",
+    "Model dollars are uncached token-price estimates; local Docker dollars remain unpriced.",
+    "Warm amd64 images run on an aarch64 Docker daemon; timings include emulation.",
+    "Alternating source order reduces simple order effects but does not eliminate provider variance.",
+    "This independent audit does not retroactively promote a candidate or change the source experiment's recorded decisions."
+  ]
+}

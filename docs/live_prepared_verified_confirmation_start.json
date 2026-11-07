@@ -1,0 +1,89 @@
+{
+  "observed_at": "2026-11-07T13:13:52.834942+00:00",
+  "job_id": "253886be-b646-4176-ac23-7e6990e71755",
+  "source_hashes": {
+    "incumbent": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+    "candidate": "767e0be90338532b832600550568d21efa6714641c29651c1a47659e5e82ac78"
+  },
+  "selection_tasks": [
+    "nginx-request-logging",
+    "largest-eigenval",
+    "cancel-async-tasks"
+  ],
+  "preliminary": {
+    "incumbent": {
+      "complete": true,
+      "planned_trials": 3,
+      "observed_trials": 3,
+      "passed": 1,
+      "failed": 2,
+      "errors": 0,
+      "mean_reward": 0.3333333333333333,
+      "mean_task_duration_s": 43.02536394434477,
+      "p95_task_duration_s": 51.386994750006124,
+      "mean_model_cost_usd": 0.0081435,
+      "total_model_cost_usd": 0.0244305,
+      "total_sandbox_cost_usd": null,
+      "input_tokens": 19764,
+      "output_tokens": 2135,
+      "physical_attempts": 3,
+      "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+      "evidence_kind": "execution"
+    },
+    "candidate": {
+      "complete": true,
+      "planned_trials": 3,
+      "observed_trials": 3,
+      "passed": 2,
+      "failed": 1,
+      "errors": 0,
+      "mean_reward": 0.6666666666666666,
+      "mean_task_duration_s": 45.77445004165444,
+      "p95_task_duration_s": 57.86853162499028,
+      "mean_model_cost_usd": 0.00799275,
+      "total_model_cost_usd": 0.02397825,
+      "total_sandbox_cost_usd": null,
+      "input_tokens": 14835,
+      "output_tokens": 2856,
+      "physical_attempts": 3,
+      "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+      "evidence_kind": "execution"
+    }
+  },
+  "eligibility": {
+    "eligible": true,
+    "reason": "preliminary_quality_signal_requires_confirmation"
+  },
+  "scheduled_event": {
+    "ts": "2026-11-07 13:12:36.842803+00:00",
+    "kind": "confirmation.scheduled",
+    "payload": {
+      "reason": "preliminary_quality_signal_requires_confirmation",
+      "iteration": 2
+    }
+  },
+  "planned_fresh_order": [
+    {
+      "iteration": 0,
+      "repetition": 1,
+      "phase": "confirm_2"
+    },
+    {
+      "iteration": 2,
+      "repetition": 1,
+      "phase": "confirm_2"
+    },
+    {
+      "iteration": 2,
+      "repetition": 2,
+      "phase": "confirm_2"
+    },
+    {
+      "iteration": 0,
+      "repetition": 2,
+      "phase": "confirm_2"
+    }
+  ],
+  "promoted": false,
+  "claim": "Confirmation is measurement, not acceptance; finalpolicy unchanged."
+}

@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "timestamp_utc": "2026-11-07T10:49:21.949155+00:00",
+  "model": "gpt-5.4",
+  "credential_source": "NEOSIGMA_OPEN_API_KEY",
+  "endpoint": "https://api.openai.com/v1/chat/completions",
+  "maximum_budget_usd": 0.02,
+  "automatic_retries": 0,
+  "scope": "one tool-free optimizer-format JSON completion; no source proposal or benchmark claim",
+  "reasoning_effort": "low",
+  "reserved_upper_estimate_usd": 0.01336,
+  "duration_s": 1.288,
+  "expected_output_matched": true,
+  "usage": {
+    "input_tokens": 17,
+    "output_tokens": 26,
+    "cost_usd": 0.0004325,
+    "cost_known": true,
+    "pricing_basis": "standard uncached text-token estimate; not provider invoice"
+  },
+  "ledger": {
+    "spent_usd": 0.0004325,
+    "reserved_usd": 0.0,
+    "input_tokens": 17,
+    "output_tokens": 26
+  },
+  "reservation_count": 1,
+  "settled_count": 1
+}
