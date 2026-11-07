@@ -1,0 +1,130 @@
+{
+  "status": "CANCELLED",
+  "started_at": "2026-11-07T08:11:15.097860+00:00",
+  "evidence_database": "aos_live_review_20261107_143aa455",
+  "run_directory": "runs/aos_live_review_20261107_143aa455",
+  "mode": "real_harbor_docker_and_company_model",
+  "credential_source": "NEOSIGMA_OPEN_API_KEY",
+  "baseline_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+  "request": {
+    "tasks": [
+      "fix-git",
+      "regex-log",
+      "nginx-request-logging",
+      "largest-eigenval",
+      "sparql-university",
+      "extract-elf",
+      "sanitize-git-repo",
+      "cancel-async-tasks",
+      "tune-mjcf",
+      "configure-git-webserver",
+      "chess-best-move",
+      "adaptive-rejection-sampler",
+      "polyglot-c-py",
+      "gcode-to-text",
+      "sqlite-db-truncate",
+      "openssl-selfsigned-cert"
+    ],
+    "max_iterations": 2,
+    "patience": 2,
+    "seed": 1234,
+    "agent_model": "gpt-5.4-mini",
+    "optimizer_model": "gpt-5.4-mini",
+    "budget": {
+      "max_wall_clock_min": 90,
+      "max_llm_usd": 14.9
+    },
+    "options": {
+      "confirmation_repetitions": 2,
+      "max_infrastructure_attempts": 1
+    },
+    "evaluation_split": {
+      "feedback": [
+        "fix-git",
+        "openssl-selfsigned-cert",
+        "sqlite-db-truncate",
+        "extract-elf",
+        "sanitize-git-repo",
+        "configure-git-webserver",
+        "chess-best-move",
+        "gcode-to-text"
+      ],
+      "selection": [
+        "nginx-request-logging",
+        "largest-eigenval",
+        "cancel-async-tasks",
+        "adaptive-rejection-sampler"
+      ],
+      "holdout": [
+        "regex-log",
+        "sparql-university",
+        "tune-mjcf",
+        "polyglot-c-py"
+      ]
+    }
+  },
+  "limitations": [
+    "Small fixed subset, not a full Terminal-Bench result.",
+    "Model USD estimates use uncached token rates; local Docker dollars are unpriced.",
+    "Selection repetitions are screening evidence, not statistical significance."
+  ],
+  "updated_at": "2026-11-07T08:13:06.052844+00:00",
+  "job": {
+    "job_id": "d8dd633c-5b3a-45d5-870f-05a8e067cebd",
+    "status": "CANCELLED",
+    "current_iteration": 0,
+    "baseline_score": null,
+    "best_score": null,
+    "best_iteration_index": null,
+    "stop_reason": "cancelled",
+    "error": null,
+    "cancel_requested": true,
+    "progress": {
+      "iteration": 0,
+      "phase": "DONE",
+      "iteration_status": "errored",
+      "tasks_done": 0,
+      "tasks_total": 12
+    },
+    "started_at": "2026-11-07T08:11:15.919407Z",
+    "finished_at": "2026-11-07T08:12:58.648712Z",
+    "deadline_at": "2026-11-07T09:41:15.919408Z",
+    "final_evaluation": {
+      "reason": "cancelled",
+      "status": "incomplete",
+      "used_for_selection": false
+    },
+    "spent_usd": 0.0,
+    "reserved_usd": 0.0
+  },
+  "iterations": [
+    {
+      "index": 0,
+      "phase": "DONE",
+      "status": "errored",
+      "decision": "rejected",
+      "decision_reason": "cancelled",
+      "score": null,
+      "summary": {
+        "n_tasks": 0,
+        "passed": 0,
+        "failed": 0,
+        "errored": 0,
+        "score": null
+      },
+      "hypothesis": null,
+      "agent_version_id": "8c3f3050-bcf8-4349-8bc7-4c7c75e29772",
+      "agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+      "started_at": "2026-11-07T08:11:15.945939Z",
+      "finished_at": "2026-11-07T08:12:58.641045Z",
+      "metrics": {
+        "reason": "cancelled",
+        "complete": false,
+        "interrupted": true
+      }
+    }
+  ],
+  "attempts": [],
+  "review_abort_reason": "Two initial agent model requests returned HTTP400; review cancelled before valid task results or any settled model spend.",
+  "valid_benchmark_results": false
+}

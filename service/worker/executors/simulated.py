@@ -44,7 +44,7 @@ class SimulatedExecutor:
                     return
                 if on_start:
                     await on_start(task)
-                rng = random.Random(f"{sha}:{task}:{ctx.seed}:{ctx.attempt}")
+                rng = random.Random(f"{sha}:{task}:{ctx.seed}:{ctx.evaluation_phase}:{ctx.repetition}:{ctx.attempt}")
                 await asyncio.sleep(settings.simulated_task_delay_sec * rng.uniform(0.5, 1.5))
                 p = _pass_probability(task, agent_source)
                 passed = rng.random() < p
@@ -61,6 +61,13 @@ class SimulatedExecutor:
                                    "agent_timeout" if fc == "timeout" else "agent_declared_done",
                                    f"FAILED test_outputs.py::test_result - AssertionError: expected output not found ({fc})",
                                    _trace(task, steps, False), f"sim-{task[:8]}-{ctx.iteration_index}")
+                # Synthetic values exercise accounting; they are never evidence
+                # of real model spend, runtime or benchmark improvement.
+                r.input_tokens = steps * 200
+                r.output_tokens = steps * 50
+                r.model_cost_usd = r.cost_usd = round(steps * .0004, 6)
+                r.cost_known = True
+                r.metadata = {"simulated": True, "cost_basis": "synthetic_fixture"}
                 results[task] = r
                 await on_result(r)
 

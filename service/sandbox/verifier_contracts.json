@@ -1,0 +1,379 @@
+{
+  "contract": "pinned-pytest-cases-v2",
+  "benchmark_revision": "69671fbaac6d67a7ef0dfec016cc38a64ef7a77c",
+  "tasks": {
+    "fix-git": "4770437ea96c3cc84684b4f99d55fb148fcac09f9ea1e8ef49de487716e6c334",
+    "regex-log": "4770437ea96c3cc84684b4f99d55fb148fcac09f9ea1e8ef49de487716e6c334",
+    "nginx-request-logging": "27761195f53cbfe5941fe39b573631f6c926869e64b7c43220377e1e116528e7",
+    "largest-eigenval": "fc40868bee6cbcfd6e906b0522dda9a778064ea9876e64a40a377d66087a174b",
+    "sparql-university": "45902b57bd0f1dd6959216bc9943ab27bb349edc7ff557035a1ecc8732e4cc6b",
+    "extract-elf": "84ee50194effb4c72b9cbd0306cccaf0f855f3634227cd8359928722a53bbdaf",
+    "sanitize-git-repo": "16014722171ae4479112051d2e8af7d0c5bb231bae6aff1b80cfa19e718c814f",
+    "cancel-async-tasks": "79600a6b863def31b4daa008297423010cd2d6243e689d67503e118e4dc53397",
+    "tune-mjcf": "343a0604775b960f47cb7ed04bc0c4f9e23f8439c4ba44d6027f0cb245327e97",
+    "configure-git-webserver": "afafc3ffdaf911f7a93003c0746f217188099c174e5d3eb7dada17133df15895",
+    "chess-best-move": "4770437ea96c3cc84684b4f99d55fb148fcac09f9ea1e8ef49de487716e6c334",
+    "adaptive-rejection-sampler": "38b43560d173cc2b952c3a3e17b8a480216d84e33450515e047bcb0d806b1e0a",
+    "polyglot-c-py": "4770437ea96c3cc84684b4f99d55fb148fcac09f9ea1e8ef49de487716e6c334",
+    "gcode-to-text": "4770437ea96c3cc84684b4f99d55fb148fcac09f9ea1e8ef49de487716e6c334",
+    "sqlite-db-truncate": "4770437ea96c3cc84684b4f99d55fb148fcac09f9ea1e8ef49de487716e6c334",
+    "openssl-selfsigned-cert": "4770437ea96c3cc84684b4f99d55fb148fcac09f9ea1e8ef49de487716e6c334",
+    "model-extraction-relu-logits": "3b2d8f5e0353c2bab3515d6387468a863a4f9f241ee131c73f545f3fdf9e2d52",
+    "build-pmars": "4770437ea96c3cc84684b4f99d55fb148fcac09f9ea1e8ef49de487716e6c334",
+    "count-dataset-tokens": "4770437ea96c3cc84684b4f99d55fb148fcac09f9ea1e8ef49de487716e6c334",
+    "build-cython-ext": "0156c9c4085258b696ce424cf1ce96cba44d1263c5d73bdf54083fd80237f915",
+    "password-recovery": "4770437ea96c3cc84684b4f99d55fb148fcac09f9ea1e8ef49de487716e6c334",
+    "kv-store-grpc": "c348467a076bf614d0a850e25b2263f85bbf7b4c7a8d344fbd5454a0611a0df8"
+  },
+  "bootstrap": {
+    "fix-git": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "regex-log": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "nginx-request-logging": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "requests==2.32.4",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "largest-eigenval": {
+      "mode": "pip",
+      "install_argv": [
+        "pip",
+        "install",
+        "pytest==8.4.1",
+        "pytest-json-ctrf==0.3.5",
+        "--break-system-packages"
+      ],
+      "warm_argv": [
+        "python",
+        "-m",
+        "pytest",
+        "--version"
+      ]
+    },
+    "sparql-university": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "rdflib==7.1.4",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "extract-elf": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "sanitize-git-repo": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "gitpython==3.1.44",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "cancel-async-tasks": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "tune-mjcf": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "mujoco==3.3.5",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "configure-git-webserver": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "chess-best-move": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "adaptive-rejection-sampler": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "numpy==2.3.3",
+        "-w",
+        "scipy==1.16.2",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "polyglot-c-py": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "gcode-to-text": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "sqlite-db-truncate": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "openssl-selfsigned-cert": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "model-extraction-relu-logits": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "numpy==2.3.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "build-pmars": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "count-dataset-tokens": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "build-cython-ext": {
+      "mode": "pip",
+      "install_argv": [
+        "pip",
+        "install",
+        "pytest==8.4.1",
+        "pytest-json-ctrf==0.3.5"
+      ],
+      "warm_argv": [
+        "pytest",
+        "--version"
+      ]
+    },
+    "password-recovery": {
+      "mode": "uvx",
+      "uv_version": "0.9.5",
+      "warm_argv": [
+        "uvx",
+        "-p",
+        "3.13",
+        "-w",
+        "pytest==8.4.1",
+        "-w",
+        "pytest-json-ctrf==0.3.5",
+        "pytest",
+        "--version"
+      ]
+    },
+    "kv-store-grpc": {
+      "mode": "pip",
+      "install_argv": [
+        "pip",
+        "install",
+        "pytest==8.4.2",
+        "requests==2.32.5",
+        "psutil==7.0.0",
+        "pytest-json-ctrf==0.3.5"
+      ],
+      "warm_argv": [
+        "pytest",
+        "--version"
+      ]
+    }
+  },
+  "uv_archive": {
+    "version": "0.9.5",
+    "architecture": "x86_64",
+    "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+    "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66"
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "protocol": "prepared-tool-infrastructure-probe-v1",
+  "real_provider_calls": 0,
+  "task_assertions_executed": false,
+  "candidate_executed": false,
+  "manifest_sha256": "ee64d5cc3516b978c7f1f197b7866369fb4524dfaf8472b027e34145bbdb4953",
+  "provider_id": "docker:bcd388ea-816e-4acf-8dc7-2c3713b5ac25",
+  "script_sha256": "e53ca350c27350255820a56ed79f15db204267052175e1d3905a259cc99c71e2",
+  "tasks": [
+    {
+      "task": "fix-git",
+      "base_image_id": "sha256:61e431c00c58df652287aadce5457634d9f9330cfdd153ebdf2802df0d540119",
+      "prepared_image_id": "sha256:043432cd0026a9587f468f3a1b13b6a93001b83162047821712afccdf38f548c",
+      "cache_key": "6c937910ce5203c255d4c7ec6954d888dc4ee85c65f24f07c816f60442e588e8",
+      "cold_setup_s": 74.56076183301047,
+      "cold_sample_count": 1,
+      "warm_probe_samples": [
+        {
+          "repetition": 1,
+          "probe_s": 1.1536382919875905,
+          "versions": [
+            "Python 3.13.7",
+            "uv 0.9.5",
+            "pytest 8.4.1"
+          ],
+          "no_candidate_or_capability_files": true,
+          "prior_container_marker_absent": true,
+          "disposable_layer_poisoned_after_probe": true,
+          "container_lifecycle_s": 1.641173665993847
+        },
+        {
+          "repetition": 2,
+          "probe_s": 1.0578288340184372,
+          "versions": [
+            "Python 3.13.7",
+            "uv 0.9.5",
+            "pytest 8.4.1"
+          ],
+          "no_candidate_or_capability_files": true,
+          "prior_container_marker_absent": true,
+          "container_lifecycle_s": 1.5057915409852285
+        },
+        {
+          "repetition": 3,
+          "probe_s": 1.0969727920019068,
+          "versions": [
+            "Python 3.13.7",
+            "uv 0.9.5",
+            "pytest 8.4.1"
+          ],
+          "no_candidate_or_capability_files": true,
+          "prior_container_marker_absent": true,
+          "container_lifecycle_s": 1.5124425840040203
+        }
+      ],
+      "warm_probe_median_s": 1.0969727920019068,
+      "one_time_build_and_probe_s": 82.847413416981,
+      "one_time_cost_basis": "includes provision/setup/commit/offline validation, excludes final builder cleanup",
+      "fresh_layer_contamination_isolation_observed": true
+    },
+    {
+      "task": "nginx-request-logging",
+      "base_image_id": "sha256:693e64431a0dbf45952e8b91a298d54fd60247e501c6623fb8fa3ebc07fc3d3d",
+      "prepared_image_id": "sha256:e65c15e60903dd4607c053b72ad97ce5d87fb23d8fe3ad5d7965b85aa5453eb5",
+      "cache_key": "9140d3ff6fa2f39ede06ab007eac3fb68f15e272b3a465a75806761991c4d103",
+      "cold_setup_s": 13.164714292011922,
+      "cold_sample_count": 1,
+      "warm_probe_samples": [
+        {
+          "repetition": 1,
+          "probe_s": 0.9895138339779805,
+          "versions": [
+            "Python 3.13.7",
+            "uv 0.9.5",
+            "pytest 8.4.1"
+          ],
+          "no_candidate_or_capability_files": true,
+          "prior_container_marker_absent": true,
+          "disposable_layer_poisoned_after_probe": true,
+          "container_lifecycle_s": 1.4325527920154855
+        },
+        {
+          "repetition": 2,
+          "probe_s": 1.0324274160084315,
+          "versions": [
+            "Python 3.13.7",
+            "uv 0.9.5",
+            "pytest 8.4.1"
+          ],
+          "no_candidate_or_capability_files": true,
+          "prior_container_marker_absent": true,
+          "container_lifecycle_s": 1.4278620419790968
+        },
+        {
+          "repetition": 3,
+          "probe_s": 1.0236322920245584,
+          "versions": [
+            "Python 3.13.7",
+            "uv 0.9.5",
+            "pytest 8.4.1"
+          ],
+          "no_candidate_or_capability_files": true,
+          "prior_container_marker_absent": true,
+          "container_lifecycle_s": 1.4230729170085397
+        }
+      ],
+      "warm_probe_median_s": 1.0236322920245584,
+      "one_time_build_and_probe_s": 20.664602874981938,
+      "one_time_cost_basis": "includes provision/setup/commit/offline validation, excludes final builder cleanup",
+      "fresh_layer_contamination_isolation_observed": true
+    },
+    {
+      "task": "largest-eigenval",
+      "base_image_id": "sha256:cb9e3e3b09d0783f3bbcfeec8d77bc32d3791204fb2be6650b19be4fbc082b2e",
+      "prepared_image_id": "sha256:96fcc7839aac7a9155c7dfb260846ebeff5da014dce2e91add2cd0cdbc032726",
+      "cache_key": "b2cb09e54775466aefc6fbea668fa03b14b75acca11af007d6a4be42613b0f68",
+      "cold_setup_s": 86.52352366701234,
+      "cold_sample_count": 1,
+      "warm_probe_samples": [
+        {
+          "repetition": 1,
+          "probe_s": 0.5540936659963336,
+          "versions": [
+            "Python 3.13.7",
+            "pytest 8.4.1"
+          ],
+          "no_candidate_or_capability_files": true,
+          "prior_container_marker_absent": true,
+          "disposable_layer_poisoned_after_probe": true,
+          "container_lifecycle_s": 1.005600875010714
+        },
+        {
+          "repetition": 2,
+          "probe_s": 0.5353546669939533,
+          "versions": [
+            "Python 3.13.7",
+            "pytest 8.4.1"
+          ],
+          "no_candidate_or_capability_files": true,
+          "prior_container_marker_absent": true,
+          "container_lifecycle_s": 0.9458894169947598
+        },
+        {
+          "repetition": 3,
+          "probe_s": 0.49134341601165943,
+          "versions": [
+            "Python 3.13.7",
+            "pytest 8.4.1"
+          ],
+          "no_candidate_or_capability_files": true,
+          "prior_container_marker_absent": true,
+          "container_lifecycle_s": 0.90644424999482
+        }
+      ],
+      "warm_probe_median_s": 0.5353546669939533,
+      "one_time_build_and_probe_s": 91.06379837499117,
+      "one_time_cost_basis": "includes provision/setup/commit/offline validation, excludes final builder cleanup",
+      "fresh_layer_contamination_isolation_observed": true
+    },
+    {
+      "task": "regex-log",
+      "base_image_id": "sha256:90101b2e815323a8da20528a1439bebc407eb9761c9c68a3d557730856c878e9",
+      "prepared_image_id": "sha256:0ca4ebe752e9282bfb21d9c890dd29b5210df9c7abed71884d5a564f06a3aefc",
+      "cache_key": "19631b8d6efec5af99a367f5183bec98a43b754fbdd727cf7cf218ba52ed5a05",
+      "cold_setup_s": 110.96395579099772,
+      "cold_sample_count": 1,
+      "warm_probe_samples": [
+        {
+          "repetition": 1,
+          "probe_s": 1.5775092499970924,
+          "versions": [
+            "Python 3.12.3",
+            "uv 0.9.5",
+            "pytest 8.4.1"
+          ],
+          "no_candidate_or_capability_files": true,
+          "prior_container_marker_absent": true,
+          "disposable_layer_poisoned_after_probe": true,
+          "container_lifecycle_s": 2.0924511670018546
+        },
+        {
+          "repetition": 2,
+          "probe_s": 1.3782705000194255,
+          "versions": [
+            "Python 3.12.3",
+            "uv 0.9.5",
+            "pytest 8.4.1"
+          ],
+          "no_candidate_or_capability_files": true,
+          "prior_container_marker_absent": true,
+          "container_lifecycle_s": 1.92634429098689
+        },
+        {
+          "repetition": 3,
+          "probe_s": 1.3500451250001788,
+          "versions": [
+            "Python 3.12.3",
+            "uv 0.9.5",
+            "pytest 8.4.1"
+          ],
+          "no_candidate_or_capability_files": true,
+          "prior_container_marker_absent": true,
+          "container_lifecycle_s": 1.6976455840049312
+        }
+      ],
+      "warm_probe_median_s": 1.3782705000194255,
+      "one_time_build_and_probe_s": 128.60639695898863,
+      "one_time_cost_basis": "includes provision/setup/commit/offline validation, excludes final builder cleanup",
+      "fresh_layer_contamination_isolation_observed": true
+    }
+  ],
+  "limitations": [
+    "One cold preparation per task; warm samples are not a randomized end-to-end agent comparison.",
+    "Original benchmark verifier scripts remain unchanged and may still download dependencies.",
+    "These results measure tool preparation, not benchmark success or model cost improvements."
+  ]
+}

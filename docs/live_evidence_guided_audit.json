@@ -1,0 +1,171 @@
+{
+  "observed_at": "2026-11-07T14:06:54.870674+00:00",
+  "job_id": "1e3b888c-6921-4de2-b4be-abe343d74e57",
+  "status": "CANCELLED",
+  "finished_at": "2026-11-07 14:06:31.399391+00:00",
+  "deadline_at": "2026-11-07 14:06:29.251403+00:00",
+  "production_sha256": "a9c1a5ced409f3f08006ae12ab72070ea736846ef6b372972909ed64d6834012",
+  "production_and_helpers_unchanged": true,
+  "reserved_usd": 0.0,
+  "spend_by_kind": [
+    {
+      "kind": "agent",
+      "actual_usd": "0.79943850",
+      "reserved_usd": "0",
+      "calls": 268
+    },
+    {
+      "kind": "optimizer",
+      "actual_usd": "0.4533000",
+      "reserved_usd": "0",
+      "calls": 3
+    }
+  ],
+  "independent_valid_verifier_observations": 45,
+  "unscorable_observations": [],
+  "infrastructure_errors": 0,
+  "phase_counts": {
+    "main": 32,
+    "confirm_3": 12,
+    "holdout_final": 1
+  },
+  "confirmation_attempt_order_by_completion": [
+    {
+      "iteration": 0,
+      "task": "largest-eigenval",
+      "repetition": 1,
+      "attempt": 1,
+      "finished_at": "2026-11-07 13:59:26.652062+00:00",
+      "expected_agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+      "observed_agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7"
+    },
+    {
+      "iteration": 0,
+      "task": "nginx-request-logging",
+      "repetition": 1,
+      "attempt": 1,
+      "finished_at": "2026-11-07 13:59:57.234588+00:00",
+      "expected_agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+      "observed_agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7"
+    },
+    {
+      "iteration": 0,
+      "task": "cancel-async-tasks",
+      "repetition": 1,
+      "attempt": 1,
+      "finished_at": "2026-11-07 14:00:19.992294+00:00",
+      "expected_agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+      "observed_agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7"
+    },
+    {
+      "iteration": 3,
+      "task": "largest-eigenval",
+      "repetition": 1,
+      "attempt": 1,
+      "finished_at": "2026-11-07 14:00:58.808239+00:00",
+      "expected_agent_sha256": "d05b02faf5f2c6f0670cf84dc0709d68f6c6ea9cad10776b1ac3091cc1ad6c65",
+      "observed_agent_sha256": "d05b02faf5f2c6f0670cf84dc0709d68f6c6ea9cad10776b1ac3091cc1ad6c65"
+    },
+    {
+      "iteration": 3,
+      "task": "nginx-request-logging",
+      "repetition": 1,
+      "attempt": 1,
+      "finished_at": "2026-11-07 14:01:41.729069+00:00",
+      "expected_agent_sha256": "d05b02faf5f2c6f0670cf84dc0709d68f6c6ea9cad10776b1ac3091cc1ad6c65",
+      "observed_agent_sha256": "d05b02faf5f2c6f0670cf84dc0709d68f6c6ea9cad10776b1ac3091cc1ad6c65"
+    },
+    {
+      "iteration": 3,
+      "task": "cancel-async-tasks",
+      "repetition": 1,
+      "attempt": 1,
+      "finished_at": "2026-11-07 14:01:53.181555+00:00",
+      "expected_agent_sha256": "d05b02faf5f2c6f0670cf84dc0709d68f6c6ea9cad10776b1ac3091cc1ad6c65",
+      "observed_agent_sha256": "d05b02faf5f2c6f0670cf84dc0709d68f6c6ea9cad10776b1ac3091cc1ad6c65"
+    },
+    {
+      "iteration": 3,
+      "task": "largest-eigenval",
+      "repetition": 2,
+      "attempt": 1,
+      "finished_at": "2026-11-07 14:03:02.046608+00:00",
+      "expected_agent_sha256": "d05b02faf5f2c6f0670cf84dc0709d68f6c6ea9cad10776b1ac3091cc1ad6c65",
+      "observed_agent_sha256": "d05b02faf5f2c6f0670cf84dc0709d68f6c6ea9cad10776b1ac3091cc1ad6c65"
+    },
+    {
+      "iteration": 3,
+      "task": "nginx-request-logging",
+      "repetition": 2,
+      "attempt": 1,
+      "finished_at": "2026-11-07 14:03:02.047751+00:00",
+      "expected_agent_sha256": "d05b02faf5f2c6f0670cf84dc0709d68f6c6ea9cad10776b1ac3091cc1ad6c65",
+      "observed_agent_sha256": "d05b02faf5f2c6f0670cf84dc0709d68f6c6ea9cad10776b1ac3091cc1ad6c65"
+    },
+    {
+      "iteration": 3,
+      "task": "cancel-async-tasks",
+      "repetition": 2,
+      "attempt": 1,
+      "finished_at": "2026-11-07 14:03:56.137614+00:00",
+      "expected_agent_sha256": "d05b02faf5f2c6f0670cf84dc0709d68f6c6ea9cad10776b1ac3091cc1ad6c65",
+      "observed_agent_sha256": "d05b02faf5f2c6f0670cf84dc0709d68f6c6ea9cad10776b1ac3091cc1ad6c65"
+    },
+    {
+      "iteration": 0,
+      "task": "largest-eigenval",
+      "repetition": 2,
+      "attempt": 1,
+      "finished_at": "2026-11-07 14:04:40.521957+00:00",
+      "expected_agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+      "observed_agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7"
+    },
+    {
+      "iteration": 0,
+      "task": "nginx-request-logging",
+      "repetition": 2,
+      "attempt": 1,
+      "finished_at": "2026-11-07 14:04:53.068030+00:00",
+      "expected_agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+      "observed_agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7"
+    },
+    {
+      "iteration": 0,
+      "task": "cancel-async-tasks",
+      "repetition": 2,
+      "attempt": 1,
+      "finished_at": "2026-11-07 14:05:30.494631+00:00",
+      "expected_agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+      "observed_agent_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7"
+    }
+  ],
+  "declared_confirmation_block_order": [
+    "baseline_rep1",
+    "candidate3_rep1",
+    "candidate3_rep2",
+    "baseline_rep2"
+  ],
+  "inherited_rejection_memory_entries": 3,
+  "inherited_recent_feedback_dossiers": 6,
+  "inherited_candidate": false,
+  "owned_processes_stopped": true,
+  "remaining_job_slots": 0,
+  "remaining_job_containers": 0,
+  "remaining_job_networks": 0,
+  "active_jobs_in_evidence_database": 0,
+  "source_export": "docs/evidence_guided_candidates/index.json",
+  "limitations": [
+    "Repeated development cohort; no previously unseen holdout claim.",
+    "Token-price estimates, not provider invoices; Docker cost remains unpriced.",
+    "Operational verifier validity is not tamper-proof reward integrity.",
+    "Candidate artifact directories without durable completed results are not scored; their settled inference charges remain included in total spend."
+  ],
+  "attempt_artifact_inventory": {
+    "candidate_artifact_directories": 47,
+    "durable_completed_observations": 45,
+    "difference_not_scored": 2
+  },
+  "completed_physical_attempts": 45,
+  "estimated_model_spend_usd": 1.2527385,
+  "limit_reached": "25-minute wall-clock budget; financial cap not reached"
+}

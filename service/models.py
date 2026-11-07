@@ -5,9 +5,9 @@ from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-from .tasks_catalog import ALL_TASK_NAMES, DEFAULT_TASKS
+from .tasks_catalog import ALL_TASK_NAMES, BY_NAME, DEFAULT_PROFILE, PROFILES
 
 JobStatusT = Literal["QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "CANCELLED"]
 TERMINAL_STATES = {"SUCCEEDED", "FAILED", "CANCELLED"}
@@ -15,18 +15,43 @@ TERMINAL_STATES = {"SUCCEEDED", "FAILED", "CANCELLED"}
 
 class Budget(BaseModel):
     max_wall_clock_min: int = Field(default=120, ge=1, le=24 * 60)
-    max_llm_usd: float = Field(default=10.0, ge=0)
+    max_llm_usd: float = Field(default=10.0, ge=0, allow_inf_nan=False)
 
 
 class JobOptions(BaseModel):
-    two_phase_eval: bool = Field(default=True, description="Run failing tasks first; skip the rest if nothing improved.")
-    confirm_flips: bool = Field(default=True, description="Re-run tasks whose outcome flipped before accepting.")
+    two_phase_eval: bool = Field(default=True, description="Screen quality proposals on feedback tasks; screened candidates cannot be promoted.")
+    confirm_flips: bool = Field(default=True, description="Confirm promising candidates and incumbent on the complete selection set; retained for client compatibility.")
     min_improvement: float = Field(default=0.0, ge=0, le=1, description="Accept only if score - best > this.")
+    confirmation_repetitions: int = Field(default=2, ge=1, le=5)
+    efficiency_tolerance: float = Field(default=0.10, ge=0, le=1,
+        description="Predeclared maximum relative runtime/model-cost increase during a quality improvement.")
+    min_efficiency_improvement: float = Field(default=0.10, gt=0, le=1)
+    max_agent_steps: int = Field(default=80, ge=1, le=100)
+    max_tokens_per_call: int = Field(default=4096, ge=128, le=16384)
+    agent_timeout_sec: int = Field(default=900, ge=10, le=1800)
+    max_infrastructure_attempts: int = Field(default=2, ge=1, le=3,
+        description="Total attempts for an infrastructure failure; failed verifier outcomes are never retried.")
+
+
+class EvaluationSplit(BaseModel):
+    feedback: list[str]
+    selection: list[str]
+    holdout: list[str]
+
+    @model_validator(mode="after")
+    def disjoint_nonempty(self):
+        parts = (self.feedback, self.selection, self.holdout)
+        flat = [task for part in parts for task in part]
+        if any(not part for part in parts) or len(flat) != len(set(flat)):
+            raise ValueError("feedback, selection and holdout must be nonempty, disjoint task lists")
+        return self
 
 
 class JobCreate(BaseModel):
     benchmark: Literal["terminal-bench-2"] = "terminal-bench-2"
-    tasks: list[str] | None = Field(default=None, description="Task names; null = curated default subset.")
+    profile: Literal["calibrated12", "stress16"] | None = Field(default=None,
+        description="Named frozen task/split profile; omitted with no custom tasks resolves to calibrated12. Mutually exclusive with tasks.")
+    tasks: list[str] | None = Field(default=None, description="Custom task names; omit with profile, or omit both for calibrated12.")
     max_iterations: int = Field(default=5, ge=0, le=50, description="0 = baseline only (plain benchmark run).")
     patience: int = Field(default=3, ge=1, le=20)
     agent_model: str | None = None
@@ -35,6 +60,11 @@ class JobCreate(BaseModel):
     seed: int | None = None
     budget: Budget = Field(default_factory=Budget)
     options: JobOptions = Field(default_factory=JobOptions)
+    evaluation_split: EvaluationSplit | None = None
+    prior_job_id: UUID | None = Field(default=None,
+        description="Authorized prior experiment with the identical frozen task/model/baseline plan; imports completed rejections only.")
+    resume_candidate_index: int | None = Field(default=None, ge=1, le=50,
+        description="Re-evaluate this prior unconfirmed candidate using fresh evidence, without another optimizer call.")
 
     @field_validator("tasks")
     @classmethod
@@ -51,7 +81,50 @@ class JobCreate(BaseModel):
         return v
 
     def resolved_tasks(self) -> list[str]:
-        return list(self.tasks) if self.tasks else list(DEFAULT_TASKS)
+        return list(self.tasks) if self.tasks is not None else list(PROFILES[self.profile or DEFAULT_PROFILE]["tasks"])
+
+    @model_validator(mode="after")
+    def freeze_split(self):
+        if self.tasks is not None and self.profile is not None:
+            raise ValueError("profile and custom tasks are mutually exclusive")
+        if self.tasks is None:
+            self.profile = self.profile or DEFAULT_PROFILE
+        named_split = PROFILES[self.profile]["evaluation_split"] if self.profile else None
+        if named_split and self.evaluation_split is not None and self.evaluation_split.model_dump() != named_split:
+            raise ValueError("evaluation_split must match the named profile; use custom tasks for a custom split")
+        if self.resume_candidate_index is not None and self.prior_job_id is None:
+            raise ValueError("resume_candidate_index requires prior_job_id")
+        if self.resume_candidate_index is not None and self.max_iterations == 0:
+            raise ValueError("resuming a candidate requires max_iterations greater than zero")
+        tasks = self.resolved_tasks()
+        if self.max_iterations == 0:
+            return self
+        if len(tasks) < 3:
+            raise ValueError("optimization needs at least three tasks for feedback, selection and holdout; use max_iterations=0 for a small benchmark")
+        if named_split is not None:
+            self.evaluation_split = EvaluationSplit(**{name: list(tasks) for name, tasks in named_split.items()})
+        elif self.evaluation_split is None:
+            n_feedback = max(1, len(tasks) // 2)
+            n_selection = max(1, len(tasks) // 4)
+            capacity = {"feedback": n_feedback, "selection": n_selection,
+                        "holdout": len(tasks) - n_feedback - n_selection}
+            groups = {name: [] for name in capacity}
+            # Spread easy/hard proxy ranks across all parts, instead of slicing
+            # the catalog (which puts canaries first). This is a transparent
+            # sampling heuristic, not a representativeness guarantee.
+            ranked = sorted(tasks, key=lambda task: (-(BY_NAME[task].get("leaderboard_solve_rate") or 0), task))
+            cycle = ("feedback", "selection", "holdout", "feedback")
+            position = 0
+            for task in ranked:
+                while len(groups[cycle[position % len(cycle)]]) >= capacity[cycle[position % len(cycle)]]:
+                    position += 1
+                groups[cycle[position % len(cycle)]].append(task)
+                position += 1
+            self.evaluation_split = EvaluationSplit(**groups)
+        split = self.evaluation_split
+        if set(split.feedback + split.selection + split.holdout) != set(tasks):
+            raise ValueError("evaluation_split must partition exactly the selected tasks")
+        return self
 
 
 class JobAccepted(BaseModel):
@@ -68,6 +141,12 @@ class TaskRunOut(BaseModel):
     duration_s: float | None = None
     n_steps: int | None = None
     exit_reason: str | None = None
+    input_tokens: int = 0
+    output_tokens: int = 0
+    model_cost_usd: float | None = None
+    sandbox_cost_usd: float | None = None
+    cost_usd: float | None = None
+    cost_known: bool = False
 
 
 class TaskRunDetail(TaskRunOut):
@@ -97,6 +176,7 @@ class IterationSummary(BaseModel):
     agent_sha256: str
     started_at: datetime
     finished_at: datetime | None
+    metrics: dict[str, Any] = Field(default_factory=dict)
 
 
 class IterationDetail(IterationSummary):
@@ -124,6 +204,10 @@ class JobOut(BaseModel):
     created_at: datetime
     started_at: datetime | None
     finished_at: datetime | None
+    deadline_at: datetime | None = None
+    final_evaluation: dict[str, Any] | None = None
+    spent_usd: float = 0.0
+    reserved_usd: float = 0.0
 
 
 class JobList(BaseModel):
@@ -156,6 +240,8 @@ class TaskCatalogEntry(BaseModel):
     verifier_timeout_sec: int
     leaderboard_solve_rate: float | None
     why: str
+    profiles: list[str] = Field(default_factory=list)
+    evaluation_roles: dict[str, str] = Field(default_factory=dict)
 
 
 # ── admin ──────────────────────────────────────────────────────────────────────

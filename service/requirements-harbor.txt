@@ -1,0 +1,3 @@
+# Install with: uv tool install -r is not supported; use uv tool install 'harbor==0.20.0'
+# Kept as a conventional requirements file for pip-managed worker environments.
+harbor==0.20.0

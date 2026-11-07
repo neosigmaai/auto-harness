@@ -1,6 +1,7 @@
 """asyncpg pool + tiny SQL migration runner (numbered files in service/migrations)."""
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import pathlib
@@ -13,6 +14,7 @@ from .config import settings
 MIGRATIONS_DIR = pathlib.Path(__file__).parent / "migrations"
 
 _pool: asyncpg.Pool | None = None
+_pool_lock = asyncio.Lock()
 
 
 async def _init_conn(conn: asyncpg.Connection) -> None:
@@ -23,21 +25,23 @@ async def _init_conn(conn: asyncpg.Connection) -> None:
 
 async def get_pool() -> asyncpg.Pool:
     global _pool
-    if _pool is None:
-        _pool = await asyncpg.create_pool(
-            settings.database_url,
-            min_size=settings.db_pool_min,
-            max_size=settings.db_pool_max,
-            init=_init_conn,
-        )
+    async with _pool_lock:
+        if _pool is None:
+            _pool = await asyncpg.create_pool(
+                settings.database_url,
+                min_size=settings.db_pool_min,
+                max_size=settings.db_pool_max,
+                init=_init_conn,
+            )
     return _pool
 
 
 async def close_pool() -> None:
     global _pool
-    if _pool is not None:
-        await _pool.close()
-        _pool = None
+    async with _pool_lock:
+        if _pool is not None:
+            await _pool.close()
+            _pool = None
 
 
 async def migrate(dsn: str | None = None) -> list[str]:
@@ -45,6 +49,9 @@ async def migrate(dsn: str | None = None) -> list[str]:
     conn = await asyncpg.connect(dsn or settings.database_url)
     applied: list[str] = []
     try:
+        # Multiple API/worker deployments may start together. Serialize schema
+        # changes without imposing a lock on normal application transactions.
+        await conn.execute('SELECT pg_advisory_lock(781204991)')
         await conn.execute(
             "CREATE TABLE IF NOT EXISTS schema_migrations (name text PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now())"
         )
@@ -57,7 +64,10 @@ async def migrate(dsn: str | None = None) -> list[str]:
                 await conn.execute("INSERT INTO schema_migrations(name) VALUES ($1)", path.name)
             applied.append(path.name)
     finally:
-        await conn.close()
+        try:
+            await conn.execute('SELECT pg_advisory_unlock(781204991)')
+        finally:
+            await conn.close()
     return applied
 
 

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Protocol
 from uuid import UUID
@@ -18,6 +19,12 @@ class RunContext:
     attempt: int = 1                 # bumped for confirmation re-runs
     work_dir: Path | None = None     # runs/<job>/<iter>/ for executors that need disk
     extra: dict[str, Any] = field(default_factory=dict)
+    lease_owner: str = ""
+    lease_epoch: int = 0
+    deadline_at: datetime | None = None
+    evaluation_phase: str = "main"
+    repetition: int = 1
+    lease: Any = None
 
 
 @dataclass
@@ -33,6 +40,13 @@ class TaskResult:
     trace: Any = None                # list of messages (OpenAI-style) or None
     sandbox_id: str | None = None
     instruction: str | None = None   # task instruction text when the executor knows it
+    input_tokens: int = 0
+    output_tokens: int = 0
+    model_cost_usd: float | None = None
+    sandbox_cost_usd: float | None = None
+    cost_usd: float | None = None
+    cost_known: bool = False
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def passed(self) -> bool:

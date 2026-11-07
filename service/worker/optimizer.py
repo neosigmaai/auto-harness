@@ -13,6 +13,11 @@ class HistoryEntry:
     score: float | None
     flipped_to_pass: list[str] = field(default_factory=list)
     flipped_to_fail: list[str] = field(default_factory=list)
+    decision_reason: str | None = None
+    change_summary: str | None = None
+    feedback_summary: dict[str, Any] | None = None
+    source_job_id: str | None = None
+    agent_sha256: str | None = None
 
 
 @dataclass
@@ -35,10 +40,11 @@ class Proposal:
     change_summary: str
     learnings: str | None = None
     raw: dict | None = None
+    objective: str = "quality"
 
     def to_json(self) -> dict:
         return {"hypothesis": self.hypothesis, "targets": self.targets, "rationale": self.rationale,
-                "change_summary": self.change_summary}
+                "change_summary": self.change_summary, "objective": self.objective}
 
 
 class Optimizer(Protocol):

@@ -1,0 +1,246 @@
+{
+  "source_job_id": "099b4443-5052-4373-8605-dd7fd3e202c2",
+  "exported_at": "2026-11-07T12:57:04.930969+00:00",
+  "sources_read_as_data_only": true,
+  "evaluation_caveat": "Experiment interrupted for confirmed CTRF parametrized-case grouping incompatibility. Recorded decisions are retained as history, not evidence of balanced superiority or inferiority.",
+  "items": [
+    {
+      "iteration": 0,
+      "source_file": "baseline.py.txt",
+      "sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+      "recorded_decision": "baseline",
+      "recorded_reason": "complete baseline on the fixed selection set",
+      "proposal": {
+        "objective": null,
+        "hypothesis": null,
+        "targets": null,
+        "rationale": null,
+        "change_summary": null
+      },
+      "metrics": {
+        "scope": "selection",
+        "errors": 0,
+        "failed": 1,
+        "passed": 2,
+        "complete": true,
+        "screened": false,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "mean_reward": 0.6666666666666666,
+        "input_tokens": 20316,
+        "evidence_kind": "execution",
+        "output_tokens": 2419,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "selection_tasks": [
+          "nginx-request-logging",
+          "largest-eigenval",
+          "cancel-async-tasks"
+        ],
+        "feedback_summary": {
+          "scope": "feedback_only",
+          "passed": 4,
+          "input_tokens": 134629,
+          "output_tokens": 7217,
+          "planned_tasks": 5,
+          "observed_tasks": 5,
+          "failure_classes": {
+            "wrong_output": 1
+          },
+          "coverage_complete": true,
+          "physical_attempts": 5,
+          "valid_observations": true,
+          "mean_reward_observed": 0.8,
+          "mean_model_cost_usd_observed": 0.026689650000000002,
+          "p95_task_duration_s_observed": 47.03034616599325
+        },
+        "physical_attempts": 3,
+        "mean_model_cost_usd": 0.0087075,
+        "p95_task_duration_s": 50.37984141698689,
+        "mean_task_duration_s": 43.51388538866498,
+        "total_model_cost_usd": 0.0261225,
+        "total_sandbox_cost_usd": null
+      }
+    },
+    {
+      "iteration": 1,
+      "source_file": "candidate1.py.txt",
+      "sha256": "fed13611df38e52684bc0cfb30cec0639c697fa5aa9afcd3a2359852d0afcce1",
+      "recorded_decision": "rejected",
+      "recorded_reason": "efficiency_guardrail:mean_model_cost_usd",
+      "proposal": {
+        "objective": "efficiency",
+        "hypothesis": "If the agent automatically compacts long path/search-style bash outputs into a file-oriented summary instead of naive head+tail truncation, the model will retain broader coverage of affected files while using fewer tokens, reducing misses and over-editing on repository tasks without changing behavior on short outputs.",
+        "targets": [
+          "sanitize-git-repo"
+        ],
+        "rationale": "The only failure used very large recursive listing/search commands whose outputs were truncated three times. In that run, input tokens were much higher than the other tasks (63,767 vs 7,521\u201326,278), yet the agent still edited an extra file and missed the verifier\u2019s expected replacement set. The evidence shows commands like recursive `find` and `grep -RIn` produced outputs with many omitted characters, so the model likely saw incomplete file coverage and noisy context. This proposal changes the mechanism from blind character truncation to structure-aware compaction for long search/list outputs: preserve a complete-ish set of file paths plus a few sample lines per file. Expected benefit: better file targeting and lower prompt cost, especially on repo-scanning tasks. Likely regression: for a long command where exact raw body text matters more than file coverage, summarization could hide some detail; to limit this, the change only activates for obviously path-oriented commands or outputs with many newline-delimited path-like lines, and short outputs still pass through unchanged. This differs from prior behavior because the current agent merely truncates head/tail, which preserved neither complete file lists nor token efficiency in the failing run.",
+        "change_summary": "Replace naive long-output truncation with structure-aware compaction for search/list/path-heavy bash results, preserving more file coverage at lower token cost."
+      },
+      "metrics": {
+        "scope": "selection",
+        "errors": 0,
+        "failed": 1,
+        "passed": 2,
+        "complete": true,
+        "screened": false,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "mean_reward": 0.6666666666666666,
+        "input_tokens": 42105,
+        "evidence_kind": "execution",
+        "output_tokens": 4613,
+        "planned_trials": 3,
+        "observed_trials": 3,
+        "selection_tasks": [
+          "nginx-request-logging",
+          "largest-eigenval",
+          "cancel-async-tasks"
+        ],
+        "feedback_summary": {
+          "scope": "feedback_only",
+          "passed": 1,
+          "input_tokens": 91156,
+          "output_tokens": 5858,
+          "planned_tasks": 5,
+          "observed_tasks": 5,
+          "failure_classes": {
+            "wrong_output": 4
+          },
+          "coverage_complete": true,
+          "physical_attempts": 5,
+          "valid_observations": true,
+          "mean_reward_observed": 0.2,
+          "mean_model_cost_usd_observed": 0.0189456,
+          "p95_task_duration_s_observed": 52.28164283299702
+        },
+        "physical_attempts": 4,
+        "mean_model_cost_usd": 0.01744575,
+        "p95_task_duration_s": 66.09639620798407,
+        "mean_task_duration_s": 53.62230627732546,
+        "total_model_cost_usd": 0.052337249999999995,
+        "total_sandbox_cost_usd": null,
+        "confirmation_eligibility": {
+          "reason": "no_meaningful_preliminary_signal",
+          "eligible": false
+        }
+      }
+    },
+    {
+      "iteration": 2,
+      "source_file": "candidate2.py.txt",
+      "sha256": "f6a728dd664e1572ebf0333caed18ba5391cb3f256b171cb54e59a390fa4c0b2",
+      "recorded_decision": "rejected",
+      "recorded_reason": "screened_out: no feedback repair; unexecuted tasks remain unmeasured",
+      "proposal": {
+        "objective": "quality",
+        "hypothesis": "If the agent automatically reports the current tracked-file change set after likely mutating bash commands inside a git repo, the model will better detect unintended edits and recover before declaring completion, improving repository-edit tasks without materially affecting non-repo tasks.",
+        "targets": [
+          "sanitize-git-repo"
+        ],
+        "rationale": "The only observed failure was a repository sanitization task where the agent changed an extra file (`rust_processing/tokshuf-rs/README.md`) and still declared done. The trace shows it manually checked `git status` once, but not as a reliable guard tied to subsequent edits, so it missed that its final change scope no longer matched the task. This proposal adds a concrete mechanism: after commands likely to mutate files, automatically append a concise `git status --short --untracked-files=no` summary when inside a git repo. That gives the model immediate execution evidence about accidental file drift with minimal extra tokens and shell time. Likely benefit: fewer wrong-output failures from unnoticed extra edits in repo tasks, and possibly faster correction because the model need not remember to ask for status manually. Likely regression: a small time/token increase from one extra git command after mutating steps, and slight noise on edit-heavy tasks. This differs from the previously rejected long-output compaction attempt: it does not alter general tool-output formatting or truncation behavior, and instead adds targeted state feedback only after probable mutations, addressing the observed failure mode directly.",
+        "change_summary": "Add automatic concise git-status feedback after likely file-mutating bash commands, so the model sees current tracked-file edit scope without needing to ask manually."
+      },
+      "metrics": {
+        "scope": "selection",
+        "errors": 0,
+        "failed": 0,
+        "passed": 0,
+        "complete": false,
+        "screened": true,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "mean_reward": null,
+        "input_tokens": 0,
+        "evidence_kind": "execution",
+        "output_tokens": 0,
+        "planned_trials": 3,
+        "observed_trials": 0,
+        "selection_tasks": [
+          "nginx-request-logging",
+          "largest-eigenval",
+          "cancel-async-tasks"
+        ],
+        "feedback_summary": {
+          "scope": "feedback_only",
+          "passed": 1,
+          "input_tokens": 83239,
+          "output_tokens": 1615,
+          "planned_tasks": 5,
+          "observed_tasks": 2,
+          "failure_classes": {
+            "wrong_output": 1
+          },
+          "coverage_complete": false,
+          "physical_attempts": 2,
+          "valid_observations": true,
+          "mean_reward_observed": 0.5,
+          "mean_model_cost_usd_observed": 0.034848375,
+          "p95_task_duration_s_observed": 41.34919974999502
+        },
+        "physical_attempts": 0,
+        "mean_model_cost_usd": null,
+        "p95_task_duration_s": null,
+        "mean_task_duration_s": null,
+        "total_model_cost_usd": null,
+        "total_sandbox_cost_usd": null
+      }
+    },
+    {
+      "iteration": 3,
+      "source_file": "candidate3.py.txt",
+      "sha256": "5bc6fcecfc83aaf3bb23dc8e1396c9dbe1ee122549c22196c2b8c1934a1ff229",
+      "recorded_decision": "rejected",
+      "recorded_reason": "screened_out: no feedback repair; unexecuted tasks remain unmeasured",
+      "proposal": {
+        "objective": "quality",
+        "hypothesis": "If the agent tracks file paths surfaced by secret-search commands and, after likely file-editing commands inside a git repo, automatically appends a concise changed-file scope check with an explicit warning for edits outside the discovered target set, it will reduce unintended repository edits and improve secret-sanitization correctness without materially affecting non-repo tasks.",
+        "targets": [
+          "sanitize-git-repo"
+        ],
+        "rationale": "The only observed failure is sanitize-git-repo. The trace shows the agent found candidate secret locations with grep, then edited an extra file (`rust_processing/tokshuf-rs/README.md`) that tests later flagged as out of scope. This is a concrete scope-control failure, not just a need for more generic verification. A prior attempted idea added generic git-status feedback after mutating commands, but it was screened out before full measurement and did not connect edits to the earlier contamination search. This proposal differs by preserving a task-relevant set of candidate files from search output and comparing actual tracked-file edits against that set, emitting a focused warning only when scope drifts. Expected benefit: better recovery from over-editing on repo sanitation tasks. Likely regression: small extra latency/cost from one additional cheap git command after edit-like commands in git repos, and possible false warnings when a legitimate edit was not preceded by a recognizable search command. That overhead should stay modest because the check is concise and conditional.",
+        "change_summary": "Track candidate file paths from search outputs and append a conditional git changed-file scope check after edit-like commands, warning when edits extend beyond previously surfaced files."
+      },
+      "metrics": {
+        "scope": "selection",
+        "errors": 0,
+        "failed": 0,
+        "passed": 0,
+        "complete": false,
+        "screened": true,
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "mean_reward": null,
+        "input_tokens": 0,
+        "evidence_kind": "execution",
+        "output_tokens": 0,
+        "planned_trials": 3,
+        "observed_trials": 0,
+        "selection_tasks": [
+          "nginx-request-logging",
+          "largest-eigenval",
+          "cancel-async-tasks"
+        ],
+        "feedback_summary": {
+          "scope": "feedback_only",
+          "passed": 1,
+          "input_tokens": 40164,
+          "output_tokens": 1399,
+          "planned_tasks": 5,
+          "observed_tasks": 2,
+          "failure_classes": {
+            "wrong_output": 1
+          },
+          "coverage_complete": false,
+          "physical_attempts": 2,
+          "valid_observations": true,
+          "mean_reward_observed": 0.5,
+          "mean_model_cost_usd_observed": 0.018209250000000003,
+          "p95_task_duration_s_observed": 35.774300749995746
+        },
+        "physical_attempts": 0,
+        "mean_model_cost_usd": null,
+        "p95_task_duration_s": null,
+        "mean_task_duration_s": null,
+        "total_model_cost_usd": null,
+        "total_sandbox_cost_usd": null
+      }
+    }
+  ]
+}

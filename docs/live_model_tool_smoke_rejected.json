@@ -1,0 +1,23 @@
+{
+  "status": "failed",
+  "timestamp_utc": "2026-11-07T08:14:29.823712+00:00",
+  "model": "gpt-5.4-mini",
+  "credential_source": "NEOSIGMA_OPEN_API_KEY",
+  "endpoint": "https://api.openai.com/v1/chat/completions",
+  "maximum_budget_usd": 0.01,
+  "automatic_retries": 0,
+  "scope": "one live completion with unchanged template tool schema and system/user messages; no tool execution",
+  "reserved_upper_estimate_usd": 0.0052335,
+  "error_type": "InferenceError",
+  "provider_error": {
+    "type": "invalid_request_error",
+    "param": "reasoning_effort"
+  },
+  "ledger": {
+    "spent_usd": 0.0,
+    "reserved_usd": 0.0,
+    "input_tokens": 0,
+    "output_tokens": 0
+  },
+  "reasoning_effort": "low"
+}

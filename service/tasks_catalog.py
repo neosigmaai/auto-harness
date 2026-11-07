@@ -1,11 +1,12 @@
 """Curated Terminal-Bench 2.0 task subset.
 
-Generated from each task's task.toml (timeouts, resources, pinned image) and the public
-leaderboard dataset (harborframework/terminal-bench-2-leaderboard; mixed-strength average solve
-rate across 27 submissions). Rationale for the selection lives in docs/DESIGN_PLAN.md §10.
+Task metadata and solve-rate proxies were inherited from the proposed design.
+Solve rates are historical mixed-agent heuristics, not measurements of our model.
+The pinned task revision is authoritative; measured runtime is reported separately.
+Selection rationale and limitations live in docs/DESIGN_PLAN.md.
 
 role:
-  canary    - near-certain pass for the baseline agent; detects regressions, no learning signal
+  canary    - easier historical proxy; regression detector, baseline pass not guaranteed
   signal    - 25-80 % average solve rate; where an optimisation loop can win tasks
   alternate - same constraints; swapped in if a signal task proves degenerate in calibration
 """
@@ -300,6 +301,51 @@ TASKS: list[dict] = [
     }
 ]
 
-DEFAULT_TASKS: list[str] = [t["name"] for t in TASKS if t["role"] in ("canary", "signal")]
+STRESS_TASKS: list[str] = [t["name"] for t in TASKS if t["role"] in ("canary", "signal")]
+STRESS_SPLIT: dict[str, list[str]] = {
+    "feedback": ["fix-git", "openssl-selfsigned-cert", "sqlite-db-truncate", "extract-elf",
+                 "sanitize-git-repo", "configure-git-webserver", "chess-best-move", "gcode-to-text"],
+    "selection": ["nginx-request-logging", "largest-eigenval", "cancel-async-tasks",
+                  "adaptive-rejection-sampler"],
+    "holdout": ["regex-log", "sparql-university", "tune-mjcf", "polyglot-c-py"],
+}
+CALIBRATED_SPLIT: dict[str, list[str]] = {
+    "feedback": ["fix-git", "openssl-selfsigned-cert", "sqlite-db-truncate", "extract-elf",
+                 "sanitize-git-repo"],
+    "selection": ["nginx-request-logging", "largest-eigenval", "cancel-async-tasks"],
+    "holdout": ["regex-log", "sparql-university", "tune-mjcf", "polyglot-c-py"],
+}
+CALIBRATED_TASKS: list[str] = [task for group in CALIBRATED_SPLIT.values() for task in group]
+CALIBRATION_EXCLUSIONS: dict[str, str] = {
+    "chess-best-move": "Representation mismatch for the current text-only agent interface.",
+    "gcode-to-text": "Geometry reconstruction is outside this small text-only execution-loop calibration.",
+    "adaptive-rejection-sampler": "Repeated pre-agent dependency bootstrap failures and large observed setup/runtime.",
+    "configure-git-webserver": "Coupled multi-service setup obscures execution-loop changes in a small calibration budget.",
+}
+DEFAULT_PROFILE = "calibrated12"
+PROFILES: dict[str, dict] = {
+    "calibrated12": {
+        "tasks": CALIBRATED_TASKS,
+        "evaluation_split": CALIBRATED_SPLIT,
+        "why": "A budget-conscious calibration of the current text-only execution loop across five feedback, "
+               "three selection and four untouched holdout tasks. Exclusions are operational/interface choices, "
+               "not evidence of better benchmark performance; this is not a representative Terminal-Bench score.",
+        "exclusions": CALIBRATION_EXCLUSIONS,
+    },
+    "stress16": {
+        "tasks": STRESS_TASKS,
+        "evaluation_split": STRESS_SPLIT,
+        "why": "The original wider stress set, retaining representation, dependency and multi-service challenges.",
+        "exclusions": {},
+    },
+}
+DEFAULT_TASKS: list[str] = list(CALIBRATED_TASKS)
 ALL_TASK_NAMES: set[str] = {t["name"] for t in TASKS}
 BY_NAME: dict[str, dict] = {t["name"]: t for t in TASKS}
+
+for task in TASKS:
+    task["profiles"] = [name for name, profile in PROFILES.items() if task["name"] in profile["tasks"]]
+    task["evaluation_roles"] = {
+        name: role for name, profile in PROFILES.items()
+        for role, names in profile["evaluation_split"].items() if task["name"] in names
+    }

@@ -1,26 +1,61 @@
-"""The per-job state machine. One instance per claimed job. Every phase is checkpointed; a
-worker that takes over after a crash calls run() again and resumes where the last one stopped."""
+"""Durable candidate evaluation with immutable evidence and a sealed final holdout.
+
+Phases are progress markers. On recovery, persisted attempt identities determine what
+can be reused; no unexecuted task is assigned another agent's result.
+"""
 from __future__ import annotations
 
+import ast
 import asyncio
+import contextlib
+import json
 import logging
-import time
-from dataclasses import dataclass
+import math
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Any
 from uuid import UUID
 
 import asyncpg
 
 from .. import repo
 from ..config import settings
+from ..inference import InferenceError
 from ..repo import Lease, LeaseLost
-from .digest import build_digest
+from .digest import build_digest, dossier_from_row
 from .executors.base import Executor, RunContext, TaskResult
 from .optimizer import HistoryEntry, Optimizer, OptimizerInput
 
 log = logging.getLogger("worker.job")
-
 TEMPLATE_PATH = Path(__file__).resolve().parents[2] / "agent" / "templates" / "terminal_bench.py"
+TERMINAL_TRIAL_STATUSES = {"passed", "failed", "timeout"}
+
+
+def rejected_feedback_dossiers(rows, feedback, *, source_job_id, index, reason):
+    """Only measured diagnostic failures, bounded separately from incumbent data."""
+    return [{"source_job_id": str(source_job_id), "iteration_index": index,
+             "decision": "rejected", "decision_reason": reason, "task_name": task,
+             "dossier": dossier_from_row(dict(rows[task]))}
+            for task in feedback if task in rows and rows[task].get("status") == "failed"
+            and type(rows[task].get("reward")) in (int, float)
+            and math.isfinite(rows[task]["reward"])][:3]
+
+
+def bounded_recent_feedback(entries, feedback):
+    retained, groups = [], []
+    for entry in reversed(entries):
+        if entry.get("task_name") not in feedback or entry.get("decision") != "rejected":
+            continue
+        identity = (entry.get("source_job_id"), entry.get("iteration_index"))
+        if identity not in groups:
+            if len(groups) == 2:
+                continue
+            groups.append(identity)
+        retained.append(entry)
+        if len(retained) == 6:
+            break
+    return list(reversed(retained))
 
 
 class Cancelled(Exception):
@@ -33,379 +68,666 @@ class IterOutcome:
     index: int
     agent_version_id: UUID
     agent_source: str
-    results: dict[str, repo.asyncpg.Record]   # task -> task_runs row
+    results: dict[str, Any]
     score: float | None
     n_pass: int
     n_fail: int
     n_error: int
+    metrics: dict[str, Any] = field(default_factory=dict)
+    screened: bool = False
+
+
+def evaluation_metrics(samples: list[dict], expected_count: int) -> dict:
+    """Summarize a fixed plan. Missing/infra-failed observations never improve score.
+
+    Dollar comparisons use attributable model cost. Local Docker resource use is
+    reported as task time, not invented as a zero-dollar cloud bill.
+    """
+    terminal = [r for r in samples if r.get("status") in TERMINAL_TRIAL_STATUSES]
+    complete = len(samples) == expected_count and len(terminal) == expected_count and expected_count > 0
+    passed = sum(r.get("status") == "passed" for r in samples)
+    errors = sum(r.get("status") == "error" for r in samples)
+    rewards = []
+    for r in terminal:
+        reward = r.get("reward")
+        # A terminal status is not a verifier reward. In particular, the
+        # executor's outer timeout has no grading evidence. Keep such results
+        # incomplete, including historical rows, instead of inventing zero/one.
+        # Simulated outcomes and verified execution supply explicit rewards.
+        if type(reward) not in (int, float) or not math.isfinite(reward) or not 0 <= reward <= 1:
+            complete = False
+        else:
+            rewards.append(float(reward))
+    durations = [r.get("duration_s") for r in samples]
+    runtime_known = complete and all(isinstance(d, (int, float)) and math.isfinite(d) and d >= 0 for d in durations)
+    costs = [r.get("model_cost_usd") if r.get("model_cost_usd") is not None else r.get("cost_usd") for r in samples]
+    cost_known = complete and all(r.get("model_cost_known", (r.get("metadata") or {}).get(
+        "model_cost_known", r.get("cost_known", False))) for r in samples) and all(
+        isinstance(c, (int, float)) and math.isfinite(c) and c >= 0 for c in costs)
+    sandbox_costs = [r.get("sandbox_cost_usd") for r in samples]
+    sandbox_known = complete and all(isinstance(c, (int, float)) and math.isfinite(c) and c >= 0 for c in sandbox_costs)
+    return {
+        "complete": complete, "planned_trials": expected_count, "observed_trials": len(samples),
+        "passed": passed, "failed": len(terminal) - passed, "errors": errors,
+        "mean_reward": sum(rewards) / expected_count if complete else None,
+        "mean_task_duration_s": sum(durations) / expected_count if runtime_known else None,
+        "p95_task_duration_s": sorted(durations)[max(0, math.ceil(.95 * expected_count) - 1)] if runtime_known else None,
+        "mean_model_cost_usd": sum(costs) / expected_count if cost_known else None,
+        "total_model_cost_usd": sum(costs) if cost_known else None,
+        "total_sandbox_cost_usd": sum(sandbox_costs) if sandbox_known else None,
+        "input_tokens": sum(r.get("input_tokens") or 0 for r in samples),
+        "output_tokens": sum(r.get("output_tokens") or 0 for r in samples),
+        "physical_attempts": sum(r.get("physical_attempts", 1) for r in samples),
+        "cost_scope": "model_inference; sandbox dollars reported separately when priced",
+        "evidence_kind": "simulated" if samples and all((r.get("metadata") or {}).get("simulated") for r in samples) else "execution",
+    }
+
+
+def promotion_decision(candidate: dict, incumbent: dict, options: dict) -> tuple[bool, str]:
+    """A declared epsilon-Pareto policy, with no step-count cost proxy."""
+    if not candidate.get("complete") or not incumbent.get("complete"):
+        return False, "incomplete_comparison: all planned trials must finish with valid verifier outcomes"
+    quality = candidate["mean_reward"]
+    old_quality = incumbent["mean_reward"]
+    if quality < old_quality:
+        return False, "quality_regression"
+    tolerance = float(options.get("efficiency_tolerance", .10))
+    threshold = float(options.get("min_efficiency_improvement", .10))
+    efficiency_gain = False
+    for key in ("mean_model_cost_usd", "p95_task_duration_s"):
+        current, previous = candidate.get(key), incumbent.get(key)
+        if current is None or previous is None:
+            return False, f"unmeasured_objective:{key}"
+        if current > previous * (1 + tolerance) + 1e-12:
+            return False, f"efficiency_guardrail:{key}"
+        if previous > 0 and current <= previous * (1 - threshold):
+            efficiency_gain = True
+    if quality > old_quality + float(options.get("min_improvement", 0)):
+        return True, "verified_quality_gain_within_declared_efficiency_tolerances"
+    if quality > 0 and efficiency_gain:
+        return True, "verified_efficiency_gain_without_observed_quality_regression"
+    return False, "no_meaningful_improvement"
+
+
+def confirmation_eligibility(candidate: dict, incumbent: dict, options: dict) -> tuple[bool, str]:
+    """Decide whether to spend on fresh paired evidence, not whether to promote.
+
+    A single preliminary run can contain setup/provider noise. Keep the declared
+    minimum improvement signal and reject missing evidence or observed quality
+    regression, but apply cost/latency regression ceilings only to confirmation.
+    The durable job budget and deadline still bound this extra measurement.
+    """
+    if not candidate.get("complete") or not incumbent.get("complete"):
+        return False, "incomplete_comparison: all planned trials must finish with valid verifier outcomes"
+    for key in ("mean_reward", "mean_model_cost_usd", "p95_task_duration_s"):
+        values = (candidate.get(key), incumbent.get(key))
+        if any(type(value) not in (int, float) or not math.isfinite(value) or value < 0
+               or (key == "mean_reward" and value > 1) for value in values):
+            return False, f"unmeasured_objective:{key}"
+    quality, old_quality = candidate["mean_reward"], incumbent["mean_reward"]
+    if quality < old_quality:
+        return False, "quality_regression"
+    if quality > old_quality + float(options.get("min_improvement", 0)):
+        return True, "preliminary_quality_signal_requires_confirmation"
+    threshold = float(options.get("min_efficiency_improvement", .10))
+    if quality > 0 and any(
+        incumbent[key] > 0 and candidate[key] <= incumbent[key] * (1 - threshold)
+        for key in ("mean_model_cost_usd", "p95_task_duration_s")
+    ):
+        return True, "preliminary_efficiency_signal_requires_confirmation"
+    return False, "no_meaningful_preliminary_signal"
+
+
+def hypothesis_context(index: int, note: str, decision: str | None, reason: str | None) -> str:
+    """Separate a pre-test optimizer suggestion from the measured decision.
+
+    Persist the original note unchanged; this labelled representation is only
+    for subsequent proposal context, including when rebuilding after a restart.
+    """
+    return json.dumps({"iteration": index, "source": "optimizer_before_evaluation",
+        "status": "unverified_hypothesis", "proposal_note": note,
+        "evaluation": {"decision": decision, "reason": reason}}, ensure_ascii=False)
+
+
+def summarize_feedback(rows: dict, tasks: list[str]) -> dict:
+    """Measured diagnostic evidence; partial screens keep an explicit denominator."""
+    observed = [dict(rows[task]) for task in tasks if task in rows]
+    summary = evaluation_metrics(observed, len(observed))
+    failures: dict[str, int] = {}
+    for row in observed:
+        if row.get("status") != "passed":
+            cause = row.get("failure_class") or (row.get("digest") or {}).get("stats", {}).get("failure_class") or "unknown"
+            failures[cause] = failures.get(cause, 0) + 1
+    return {"scope": "feedback_only", "observed_tasks": len(observed), "planned_tasks": len(tasks),
+        "coverage_complete": len(observed) == len(tasks), "valid_observations": summary["complete"],
+        "passed": summary["passed"], "failure_classes": failures,
+        "mean_reward_observed": summary["mean_reward"], "mean_model_cost_usd_observed": summary["mean_model_cost_usd"],
+        "p95_task_duration_s_observed": summary["p95_task_duration_s"], "input_tokens": summary["input_tokens"],
+        "output_tokens": summary["output_tokens"], "physical_attempts": summary["physical_attempts"]}
 
 
 class JobRunner:
-    def __init__(self, pool: asyncpg.Pool, job: asyncpg.Record, lease: Lease, executor: Executor, optimizer: Optimizer):
+    def __init__(self, pool: asyncpg.Pool, job, lease: Lease, executor: Executor, optimizer: Optimizer):
         self.pool, self.job, self.lease, self.executor, self.optimizer = pool, job, lease, executor, optimizer
         self.cfg = job["config"]
-        self.tasks: list[str] = list(self.cfg["tasks"])
-        self.max_iterations: int = int(self.cfg.get("max_iterations", 5))
-        self.patience: int = int(self.cfg.get("patience", 3))
+        self.tasks = list(self.cfg["tasks"])
+        self.max_iterations = int(self.cfg.get("max_iterations", 5))
+        self.patience = int(self.cfg.get("patience", 3))
         self.opts = self.cfg.get("options") or {}
-        self.seed = int(self.cfg.get("seed") or 1234)
-        self.deadline = time.monotonic() + 60 * int((self.cfg.get("budget") or {}).get("max_wall_clock_min", 120))
+        self.seed = int(self.cfg.get("seed") if self.cfg.get("seed") is not None else 1234)
+        split = self.cfg.get("evaluation_split")
+        if self.max_iterations > 0:
+            if not split:
+                raise ValueError("optimization jobs require a persisted feedback/selection/holdout split")
+            self.feedback, self.selection, self.holdout = (list(split[k]) for k in ("feedback", "selection", "holdout"))
+            if (not self.feedback or not self.selection or not self.holdout or
+                len(set(self.feedback + self.selection + self.holdout)) != len(self.tasks) or
+                set(self.feedback + self.selection + self.holdout) != set(self.tasks)):
+                raise ValueError("invalid persisted evaluation split")
+        else:
+            self.feedback, self.selection, self.holdout = [], self.tasks, []
+        frozen_deadline = job.get("deadline_at")
+        if frozen_deadline is None:
+            # Compatibility with older rows. Never reset a recovered job's clock.
+            anchor = job.get("started_at") or job.get("created_at")
+            if anchor is None:
+                raise ValueError("job needs a durable deadline or creation timestamp")
+            frozen_deadline = anchor + timedelta(minutes=int((self.cfg.get("budget") or {}).get("max_wall_clock_min", 120)))
+        self.deadline_at = frozen_deadline if frozen_deadline.tzinfo else frozen_deadline.replace(tzinfo=timezone.utc)
         self.cancel_flag = asyncio.Event()
+        self.stop_reason: str | None = None
+        self.proposal_attempts: dict[int, int] = {}
+        self.proposal_rejections: dict[int, str] = {}
         self.work_root = Path(settings.runs_dir) / str(job["id"])
 
-    # ── helpers ───────────────────────────────────────────────────────────────
+    def request_stop(self, reason: str = "cancelled") -> None:
+        self.stop_reason = reason
+        self.cancel_flag.set()
+
+    def _seconds_left(self) -> float:
+        return (self.deadline_at - datetime.now(timezone.utc)).total_seconds()
+
     async def _check_cancel(self):
         if self.cancel_flag.is_set():
+            if self.stop_reason in ("lease_lost", "database_unavailable", "shutdown"):
+                raise LeaseLost(self.stop_reason)
             raise Cancelled()
-        if time.monotonic() > self.deadline:
-            raise TimeoutError("wall-clock budget exhausted")
+        if self._seconds_left() <= 0:
+            raise TimeoutError("durable job deadline exhausted")
+
+    async def _interruptible(self, operation):
+        """Interrupt running model/provider work instead of waiting for a whole batch."""
+        task = asyncio.ensure_future(operation)
+        waiter = asyncio.create_task(self.cancel_flag.wait())
+        try:
+            await self._check_cancel()
+            done, _ = await asyncio.wait({task, waiter}, timeout=self._seconds_left(), return_when=asyncio.FIRST_COMPLETED)
+            if waiter in done or not done:
+                await self.executor.cancel()
+                task.cancel()
+                with contextlib.suppress(asyncio.CancelledError, Exception):
+                    await asyncio.wait_for(task, timeout=5)
+                await self._check_cancel()
+                raise TimeoutError("durable job deadline exhausted")
+            result = await task
+            await self._check_cancel()
+            return result
+        finally:
+            waiter.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await waiter
+            if not task.done():
+                task.cancel()
+                with contextlib.suppress(asyncio.CancelledError, Exception):
+                    await asyncio.wait_for(task, timeout=5)
 
     async def _event(self, kind: str, payload: dict | None = None):
-        async with self.pool.acquire() as c:
-            await repo.add_event(c, self.lease.job_id, kind, payload)
+        async with self.pool.acquire() as conn:
+            async with repo.lease_transaction(conn, self.lease):
+                await repo.add_event(conn, self.lease.job_id, kind, payload)
 
     async def _set_phase(self, iteration_id: UUID, phase: str):
-        async with self.pool.acquire() as c:
-            await repo.set_phase(c, self.lease, iteration_id, phase)
+        async with self.pool.acquire() as conn:
+            await repo.set_phase(conn, self.lease, iteration_id, phase)
+
+    async def _restore_proposal_attempts(self):
+        # Started attempts are durable before dispatch. A process restart cannot
+        # reset the two-request cap, including an ambiguous interrupted request.
+        cursor = 0
+        while True:
+            async with self.pool.acquire() as conn:
+                events = await repo.list_events(conn, self.lease.job_id, cursor, 500)
+            for event in events:
+                payload = event["payload"] or {}
+                index = payload.get("iteration")
+                if type(index) is not int:
+                    continue
+                if event["kind"] == "optimizer.proposal_started":
+                    self.proposal_attempts[index] = max(self.proposal_attempts.get(index, 0), payload.get("proposal_attempt", 0))
+                elif event["kind"] == "optimizer.rejected":
+                    self.proposal_rejections[index] = payload.get("reason", "invalid_response")
+            if len(events) < 500:
+                break
+            cursor = events[-1]["id"]
+
+    async def _propose(self, inp: OptimizerInput):
+        index = inp.iteration_index
+        while self.proposal_attempts.get(index, 0) < 2:
+            attempt = self.proposal_attempts.get(index, 0) + 1
+            if attempt > 1:
+                inp.constraints = {**inp.constraints, "repair_attempt": 1,
+                    "previous_proposal_rejection": self.proposal_rejections.get(index, "interrupted_before_candidate_persistence")}
+            await self._event("optimizer.proposal_started", {"iteration": index, "proposal_attempt": attempt})
+            self.proposal_attempts[index] = attempt
+            try:
+                return await self._interruptible(self.optimizer.propose(inp))
+            except InferenceError as exc:
+                # Record a stable diagnostic, never an upstream body, prompt or
+                # provider credential. Budget/cancel/lease exceptions propagate.
+                message = str(exc).lower()
+                reason = next((code for phrase, code in (
+                    ("valid json", "invalid_json"), ("token limit", "truncated_output"),
+                    ("required string", "missing_fields"), ("targets", "invalid_targets"),
+                    ("outside its diagnostic", "invalid_targets"), ("80kb", "source_too_large"),
+                    ("objective", "invalid_objective"), ("completion choice", "missing_completion"))
+                    if phrase in message), "provider_or_validation_error")
+                self.proposal_rejections[index] = reason
+                await self._event("optimizer.rejected", {"iteration": index, "proposal_attempt": attempt,
+                                                         "reason": reason, "repair_remaining": 2 - attempt})
+        raise InferenceError("Optimizer failed to produce a valid proposal within two durable metered attempts")
 
     @staticmethod
     def _score(rows: dict) -> tuple[float | None, int, int, int]:
-        n_pass = sum(1 for r in rows.values() if r["status"] == "passed")
-        n_err = sum(1 for r in rows.values() if r["status"] == "error")
-        n_fail = len(rows) - n_pass - n_err
-        total = len(rows)
-        return (n_pass / total if total else None), n_pass, n_fail, n_err
+        metrics = evaluation_metrics([dict(r) for r in rows.values()], len(rows))
+        return metrics["mean_reward"], metrics["passed"], metrics["failed"], metrics["errors"]
 
-    # ── benchmark phase (resumable, incremental) ──────────────────────────────
-    async def _benchmark(self, iteration_id: UUID, index: int, agent_source: str, tasks: list[str], attempt: int = 1) -> dict[str, TaskResult]:
-        async with self.pool.acquire() as c:
-            await repo.ensure_task_runs(c, iteration_id, tasks)
-            pending = [t for t in await repo.pending_task_names(c, iteration_id) if t in tasks]
+    async def _phase_results(self, iteration_id, phase="main", repetition=1):
+        async with self.pool.acquire() as conn:
+            chosen = await repo.attempt_results(conn, iteration_id, phase, repetition)
+            attempts = await repo.list_attempts(conn, iteration_id)
+        rows = {task: dict(row) for task, row in chosen.items()}
+        for task, row in rows.items():
+            trials = [a for a in attempts if a["task_name"] == task and
+                      a["evaluation_phase"] == phase and a["repetition"] == repetition]
+            row["physical_attempts"] = len(trials)
+            # A recovered infrastructure retry must not make a candidate appear
+            # cheaper or faster by discarding the failed attempt's resource use.
+            for field in ("duration_s", "model_cost_usd", "cost_usd", "sandbox_cost_usd"):
+                values = [a.get(field) for a in trials]
+                row[field] = sum(values) if values and all(v is not None for v in values) else None
+            for field in ("input_tokens", "output_tokens"):
+                row[field] = sum(a.get(field) or 0 for a in trials)
+            row["cost_known"] = bool(trials) and all(a.get("cost_known", False) for a in trials)
+            row["model_cost_known"] = bool(trials) and all((a.get("metadata") or {}).get(
+                "model_cost_known", a.get("cost_known", False)) for a in trials)
+        return rows
+
+    async def _benchmark(self, iteration_id, index, agent_source, tasks, *, phase="main", repetition=1):
+        await self._check_cancel()
+        previous = await self._phase_results(iteration_id, phase, repetition)
+        pending = [task for task in tasks if task not in previous or (
+            previous[task]["status"] == "error" and
+            (previous[task].get("failure_class") == "infra_error" or
+             (previous[task].get("exit_reason") or "").startswith("infra")) and
+            previous[task].get("physical_attempts", 1) < self.opts.get("max_infrastructure_attempts", 2))]
         if not pending:
-            return {}
+            return previous
+        async with self.pool.acquire() as conn:
+            if phase == "main" and repetition == 1:
+                await repo.ensure_task_runs(conn, iteration_id, tasks, lease=self.lease)
+            attempt = await repo.next_attempt_number(conn, iteration_id, phase, repetition)
         ctx = RunContext(job_id=self.lease.job_id, iteration_index=index, iteration_id=iteration_id,
-                         org_id=self.job["org_id"], agent_model=self.cfg.get("agent_model", settings.agent_model),
-                         seed=self.seed, attempt=attempt, work_dir=self.work_root / f"iter{index}")
-        collected: dict[str, TaskResult] = {}
+            org_id=self.job["org_id"], agent_model=self.cfg.get("agent_model", settings.agent_model),
+            seed=self.seed + repetition - 1, attempt=attempt,
+            work_dir=self.work_root / f"iter{index}" / phase / f"rep{repetition}" / f"attempt{attempt}",
+            extra={**self.opts, "benchmark_revision": self.cfg.get("benchmark_revision", settings.benchmark_revision),
+                   "sandbox_harness": self.cfg.get("sandbox_harness", {"mode": "cold-v1"})},
+            lease_owner=self.lease.owner, lease_epoch=self.lease.epoch,
+            deadline_at=self.deadline_at, evaluation_phase=phase, repetition=repetition, lease=self.lease)
 
-        async def on_start(task: str):
-            async with self.pool.acquire() as c:
-                await repo.mark_task_running(c, iteration_id, task)
+        async def on_start(task):
+            if phase == "main" and repetition == 1:
+                async with self.pool.acquire() as conn:
+                    await repo.mark_task_running(conn, iteration_id, task, lease=self.lease)
 
-        async def on_result(r: TaskResult):
-            d = build_digest(r, r.instruction)
-            collected[r.task_name] = r
-            async with self.pool.acquire() as c:
-                await repo.record_task_result(
-                    c, self.lease, iteration_id, r.task_name, status=r.status, reward=r.reward,
-                    failure_class=d["stats"]["failure_class"], duration_s=r.duration_s, n_steps=r.n_steps,
-                    exit_reason=r.exit_reason, test_stdout=r.test_stdout, trace=r.trace, digest=d, sandbox_id=r.sandbox_id)
-                await repo.add_event(c, self.lease.job_id, "task.finished",
-                                     {"iteration": index, "task": r.task_name, "status": r.status, "attempt": attempt})
+        async def on_result(result: TaskResult):
+            if result.task_name not in pending:
+                raise ValueError("executor returned a task outside its frozen plan")
+            digest = build_digest(result, result.instruction, self.opts.get("max_agent_steps", 80))
+            async with self.pool.acquire() as conn:
+                await repo.record_task_result(conn, self.lease, iteration_id, result.task_name,
+                    status=result.status, reward=result.reward, failure_class=digest["stats"]["failure_class"],
+                    duration_s=result.duration_s, n_steps=result.n_steps, exit_reason=result.exit_reason,
+                    test_stdout=result.test_stdout, trace=result.trace, digest=digest, sandbox_id=result.sandbox_id,
+                    evaluation_phase=phase, repetition=repetition, attempt=attempt,
+                    input_tokens=result.input_tokens, output_tokens=result.output_tokens,
+                    cost_usd=result.cost_usd, model_cost_usd=result.model_cost_usd,
+                    sandbox_cost_usd=result.sandbox_cost_usd, cost_known=result.cost_known, metadata=result.metadata)
+            await self._event("task.finished", {"iteration": index,
+                "phase": phase, "task": result.task_name, "status": result.status,
+                "repetition": repetition, "attempt": attempt})
 
-        await self.executor.run_benchmark(ctx, agent_source, pending, on_result, on_start)
-        await self._check_cancel()
-        return collected
+        await self._interruptible(self.executor.run_benchmark(ctx, agent_source, pending, on_result, on_start))
+        results = await self._phase_results(iteration_id, phase, repetition)
+        retryable = any(row["status"] == "error" and
+                        (row.get("failure_class") == "infra_error" or
+                         (row.get("exit_reason") or "").startswith("infra")) and
+                        row.get("physical_attempts", 1) < self.opts.get("max_infrastructure_attempts", 2)
+                        for task, row in results.items() if task in tasks)
+        if retryable:
+            await self._event("tasks.infrastructure_retry", {"iteration": index, "phase": phase})
+            return await self._benchmark(iteration_id, index, agent_source, tasks, phase=phase, repetition=repetition)
+        return results
 
-    async def _confirm_flips(self, iteration_id: UUID, index: int, agent_source: str, flipped: list[str],
-                             parent_results: dict) -> None:
-        """Re-run flipped tasks once; a flip must reproduce or we revert that task to the parent's outcome."""
-        if not flipped:
+    def _outcome(self, iteration, source, rows, *, screened=False, metrics=None):
+        if metrics is None:
+            metrics = evaluation_metrics([dict(rows[t]) for t in self.selection if t in rows], len(self.selection))
+        metrics = {**metrics, "scope": "selection" if self.max_iterations else "benchmark",
+                   "selection_tasks": self.selection, "screened": screened}
+        if screened:
+            metrics["complete"] = False
+            metrics["mean_reward"] = None
+        return IterOutcome(iteration["id"], iteration["index"], iteration["agent_version_id"], source, dict(rows),
+            metrics["mean_reward"], metrics["passed"], metrics["failed"], metrics["errors"], metrics, screened)
+
+    async def _run_iteration(self, iteration, agent_source, parent: IterOutcome | None):
+        index, iteration_id = iteration["index"], iteration["id"]
+        await self._set_phase(iteration_id, "BENCHMARK")
+        proposal = iteration.get("proposal") or {}
+        if (parent is not None and not proposal.get("resumed_from") and self.opts.get("two_phase_eval", True)
+                and proposal.get("objective", "quality") == "quality"):
+            failing = [t for t in self.feedback if t in parent.results and parent.results[t]["status"] != "passed"]
+            controls = [t for t in self.feedback if t in parent.results and parent.results[t]["status"] == "passed"][:1]
+            if failing:
+                rows = await self._benchmark(iteration_id, index, agent_source, failing + controls)
+                has_gain = any(rows.get(t, {}).get("status") == "passed" for t in failing)
+                if not has_gain:
+                    await self._event("iteration.screened_out", {"iteration": index, "tasks": failing + controls})
+                    return self._outcome(iteration, agent_source, rows, screened=True)
+        rows = await self._benchmark(iteration_id, index, agent_source, self.feedback + self.selection)
+        out = self._outcome(iteration, agent_source, rows)
+        if parent is None:
+            return out
+        eligible, reason = confirmation_eligibility(out.metrics, parent.metrics, self.opts)
+        out.metrics["confirmation_eligibility"] = {"eligible": eligible, "reason": reason}
+        if not eligible:
+            return out
+        await self._event("confirmation.scheduled", {"iteration": index, "reason": reason})
+        if not self.opts.get("confirm_flips", True):
+            # The legacy switch never disables the correctness gate in live optimization.
+            await self._event("confirmation.required", {"iteration": index, "legacy_switch_ignored": True})
+        await self._set_phase(iteration_id, "CONFIRM")
+        repetitions = int(self.opts.get("confirmation_repetitions", 2))
+        phase = f"confirm_{index}"
+        parent_samples, candidate_samples = [], []
+        for rep in range(1, repetitions + 1):
+            # Alternate order across repetitions to reduce simple timing/provider bias.
+            evaluations = [(parent, parent_samples), (out, candidate_samples)]
+            if rep % 2 == 0:
+                evaluations.reverse()
+            for version, samples in evaluations:
+                result = await self._benchmark(version.iteration_id, version.index, version.agent_source,
+                    self.selection, phase=phase, repetition=rep)
+                samples.extend(dict(result[t]) for t in self.selection if t in result)
+        expected = len(self.selection) * repetitions
+        candidate_metrics = evaluation_metrics(candidate_samples, expected)
+        parent_metrics = evaluation_metrics(parent_samples, expected)
+        candidate_metrics.update({"scope": "selection_confirmation", "selection_tasks": self.selection,
+                                  "confirmation_repetitions": repetitions, "incumbent": parent_metrics,
+                                  "preliminary": out.metrics})
+        out.metrics = candidate_metrics
+        out.score = candidate_metrics["mean_reward"]
+        out.n_pass, out.n_fail, out.n_error = (candidate_metrics[k] for k in ("passed", "failed", "errors"))
+        return out
+
+    async def _load_outcome(self, iteration):
+        async with self.pool.acquire() as conn:
+            version = await repo.get_agent_version(conn, iteration["agent_version_id"])
+        rows = await self._phase_results(iteration["id"])
+        metrics = dict(iteration.get("metrics") or {})
+        if not metrics:
+            metrics = evaluation_metrics([dict(rows[t]) for t in self.selection if t in rows], len(self.selection))
+        return self._outcome(iteration, version["content"], rows, metrics=metrics)
+
+    async def _finalize(self, reason, best, baseline):
+        final = {"status": "not_applicable", "reason": "benchmark_only"}
+        if self.holdout and best is not None and baseline is not None:
+            await self._event("holdout.started", {"baseline_iteration": baseline.index, "final_iteration": best.index})
+            comparisons = {}
+            for label, version in (("baseline", baseline), ("final", best)):
+                rows = await self._benchmark(version.iteration_id, version.index, version.agent_source,
+                                             self.holdout, phase="holdout_final")
+                comparisons[label] = evaluation_metrics([dict(rows[t]) for t in self.holdout if t in rows], len(self.holdout))
+            final = {"status": "complete" if all(v["complete"] for v in comparisons.values()) else "incomplete",
+                     "tasks": self.holdout, "baseline_iteration": baseline.index, "final_iteration": best.index,
+                     **comparisons, "used_for_selection": False,
+                     "limitation": "small fixed subset; repeats do not establish broad benchmark generalization"}
+        async with self.pool.acquire() as conn:
+            await repo.finish_job(conn, self.lease, "SUCCEEDED", reason,
+                best_iteration_id=best.iteration_id if best else None,
+                best_score=best.score if best else None,
+                baseline_score=baseline.score if baseline else None, final_evaluation=final)
+
+    async def _abandon_iteration(self, iteration_id, reason):
+        if iteration_id is None:
             return
-        await self._event("iteration.confirm_flips", {"iteration": index, "tasks": flipped})
-        async with self.pool.acquire() as c:
-            first = await repo.task_results(c, iteration_id)
-            await c.execute("UPDATE task_runs SET status='pending' WHERE iteration_id=$1 AND task_name = ANY($2::text[])",
-                            iteration_id, flipped)
-        second = await self._benchmark(iteration_id, index, agent_source, flipped, attempt=2)
-        async with self.pool.acquire() as c:
-            for t in flipped:
-                a, b = first[t], second.get(t)
-                if b is None:
-                    continue
-                agree = (a["status"] == "passed") == b.passed
-                note = {"confirmation": {"first": a["status"], "second": b.status, "reproduced": agree}}
-                if not agree:
-                    # Conservative: a flip that does not reproduce is treated as noise -> revert this task to
-                    # the parent's outcome (so neither a lucky pass nor an unlucky fail drives the decision).
-                    pr = parent_results[t]
-                    note["confirmation"]["resolved_as"] = f"parent:{pr['status']}"
-                    await c.execute(
-                        """UPDATE task_runs SET status=$3, reward=$4, digest = coalesce(digest,'{}'::jsonb) || $5::jsonb
-                           WHERE iteration_id=$1 AND task_name=$2""",
-                        iteration_id, t, pr["status"], pr["reward"], note)
-                else:
-                    await c.execute("UPDATE task_runs SET digest = coalesce(digest,'{}'::jsonb) || $3::jsonb WHERE iteration_id=$1 AND task_name=$2",
-                                    iteration_id, t, note)
+        async with self.pool.acquire() as conn:
+            await repo.complete_iteration(conn, self.lease, iteration_id, score=None, n_pass=0,
+                n_fail=0, n_error=0, decision="rejected", decision_reason=reason, status="errored",
+                metrics={"complete": False, "interrupted": True, "reason": reason})
 
-    # ── one iteration end-to-end (idempotent on resume) ───────────────────────
-    async def _run_iteration(self, it: asyncpg.Record, agent_source: str, parent: IterOutcome | None) -> IterOutcome:
-        iteration_id, index = it["id"], it["index"]
-        phase = it["phase"]
-        await self._check_cancel()
-
-        if phase in ("PROVISION",):
-            self.work_root.mkdir(parents=True, exist_ok=True)
-            (self.work_root / f"iter{index}").mkdir(parents=True, exist_ok=True)
-            await self._set_phase(iteration_id, "BENCHMARK"); phase = "BENCHMARK"
-
-        if phase == "BENCHMARK":
-            two_phase = bool(self.opts.get("two_phase_eval", True)) and parent is not None
-            if two_phase:
-                failing = [t for t, r in parent.results.items() if r["status"] != "passed"]
-                passing = [t for t in self.tasks if t not in failing]
-                first = await self._benchmark(iteration_id, index, agent_source, failing)
-                async with self.pool.acquire() as c:
-                    rows = await repo.task_results(c, iteration_id)
-                flipped_up = [t for t in failing if rows.get(t) and rows[t]["status"] == "passed"]
-                if not flipped_up and passing:
-                    # Screened out: nothing improved, do not spend on the passing tasks.
-                    await self._event("iteration.screened_out", {"iteration": index, "screened": len(failing)})
-                    async with self.pool.acquire() as c:
-                        await c.execute("DELETE FROM task_runs WHERE iteration_id=$1 AND status='pending'", iteration_id)
-                        await repo.set_phase(c, self.lease, iteration_id, "DECIDE")
-                    phase = "DECIDE"
-                else:
-                    await self._benchmark(iteration_id, index, agent_source, passing)
-            else:
-                await self._benchmark(iteration_id, index, agent_source, self.tasks)
-            if phase == "BENCHMARK":
-                await self._set_phase(iteration_id, "COLLECT"); phase = "COLLECT"
-
-        if phase == "COLLECT":
-            if parent is not None and bool(self.opts.get("confirm_flips", True)):
-                async with self.pool.acquire() as c:
-                    rows = await repo.task_results(c, iteration_id)
-                flipped = [t for t, r in rows.items() if t in parent.results and (r["status"] == "passed") != (parent.results[t]["status"] == "passed")]
-                await self._confirm_flips(iteration_id, index, agent_source, flipped, parent.results)
-            await self._set_phase(iteration_id, "DECIDE"); phase = "DECIDE"
-
-        async with self.pool.acquire() as c:
-            rows = await repo.task_results(c, iteration_id)
-        if parent is not None and len(rows) < len(self.tasks):
-            # screened iteration: fill in parent's outcomes for tasks we did not run, for scoring only
-            merged = dict(rows)
-            for t in self.tasks:
-                if t not in merged:
-                    merged[t] = parent.results[t]
-            score, n_pass, n_fail, n_err = self._score(merged)
-            results = merged
-        else:
-            score, n_pass, n_fail, n_err = self._score(rows)
-            results = rows
-        return IterOutcome(iteration_id, index, it["agent_version_id"], agent_source, results, score, n_pass, n_fail, n_err)
-
-    # ── main loop ─────────────────────────────────────────────────────────────
-    async def run(self) -> None:
-        job_id = self.lease.job_id
+    async def run(self):
+        best = baseline = None
+        active_iteration_id = None
         try:
-            async with self.pool.acquire() as c:
-                existing = await repo.list_iterations(c, job_id)
-            best: IterOutcome | None = None
-            history: list[HistoryEntry] = []
-            scoreboard: dict[str, list[bool | None]] = {t: [] for t in self.tasks}
+            await self._restore_proposal_attempts()
+            async with self.pool.acquire() as conn:
+                existing = await repo.list_iterations(conn, self.lease.job_id)
+            history = [HistoryEntry(**entry) for entry in self.cfg.get("optimizer_history_seed", [])]
+            recent_feedback = bounded_recent_feedback(self.cfg.get("optimizer_recent_feedback_seed", []), self.feedback)
+            learnings = []
+            seen_hashes = {entry.agent_sha256 for entry in history if entry.agent_sha256}
+            scoreboard = {task: [] for task in self.feedback}
             no_improve = 0
-            learnings: list[str] = []
-
-            # Replay completed iterations (resume path) to rebuild in-memory state.
-            for it in existing:
-                if it["status"] != "completed":
+            for iteration in existing:
+                seen_hashes.add(iteration["agent_sha256"])
+                if iteration["status"] != "completed":
                     continue
-                async with self.pool.acquire() as c:
-                    rows = await repo.task_results(c, it["id"])
-                    av = await repo.get_agent_version(c, it["agent_version_id"])
-                results = dict(rows)
-                if best is not None:
-                    for t in self.tasks:
-                        results.setdefault(t, best.results[t])
-                out = IterOutcome(it["id"], it["index"], it["agent_version_id"], av["content"], results, it["score"],
-                                  it["n_pass"] or 0, it["n_fail"] or 0, it["n_error"] or 0)
-                for t in self.tasks:
-                    scoreboard[t].append(results[t]["status"] == "passed" if t in results else None)
-                hyp = (it["proposal"] or {}).get("hypothesis")
-                history.append(HistoryEntry(it["index"], hyp, it["decision"], it["score"]))
-                if it["learnings"]:
-                    learnings.append(it["learnings"])
-                if it["decision"] in ("baseline", "accepted"):
-                    best = out; no_improve = 0
+                out = await self._load_outcome(iteration)
+                prop = iteration.get("proposal") or {}
+                history.append(HistoryEntry(iteration["index"], prop.get("hypothesis"), iteration["decision"],
+                    iteration["score"], decision_reason=iteration.get("decision_reason"), change_summary=prop.get("change_summary"),
+                    feedback_summary=(iteration.get("metrics") or {}).get("feedback_summary") or summarize_feedback(out.results, self.feedback)))
+                for task in self.feedback:
+                    scoreboard[task].append(out.results[task]["status"] == "passed" if task in out.results else None)
+                if iteration.get("learnings"):
+                    learnings.append(hypothesis_context(iteration["index"], iteration["learnings"],
+                                                       iteration["decision"], iteration.get("decision_reason")))
+                if iteration["decision"] == "baseline":
+                    baseline = out
+                if iteration["decision"] in ("baseline", "accepted"):
+                    best, no_improve = out, 0
                 else:
                     no_improve += 1
-
-            index = existing[-1]["index"] + 1 if existing else 0
-            resume_it = existing[-1] if existing and existing[-1]["status"] == "running" else None
-            if resume_it is not None:
-                index = resume_it["index"]
-                await self._event("job.resumed", {"iteration": index, "phase": resume_it["phase"], "epoch": self.lease.epoch})
-
+                    recent_feedback = bounded_recent_feedback(recent_feedback + rejected_feedback_dossiers(
+                        out.results, self.feedback, source_job_id=self.lease.job_id,
+                        index=iteration["index"], reason=iteration.get("decision_reason")), self.feedback)
+            resume = existing[-1] if existing and existing[-1]["status"] == "running" else None
+            index = resume["index"] if resume else (existing[-1]["index"] + 1 if existing else 0)
             while True:
                 await self._check_cancel()
-                # ── stop checks (before starting a new iteration) ──
-                if best is not None and resume_it is None:
-                    if index > self.max_iterations:
-                        return await self._finish("max_iterations", best)
-                    if best.score is not None and best.score >= 1.0:
-                        return await self._finish("perfect_score", best)
+                if best is not None and resume is None:
+                    if self.max_iterations == 0 or index > self.max_iterations:
+                        return await self._finalize("baseline_only" if self.max_iterations == 0 else "max_iterations", best, baseline)
                     if no_improve >= self.patience:
-                        return await self._finish("patience_exhausted", best)
-
-                # ── provision agent version + iteration row (or pick up the running one) ──
+                        return await self._finalize("patience_exhausted", best, baseline)
                 learn_note = None
-                if resume_it is not None:
-                    it = resume_it; resume_it = None
-                    async with self.pool.acquire() as c:
-                        av = await repo.get_agent_version(c, it["agent_version_id"])
-                    agent_source = av["content"]
-                    proposal_json = it["proposal"]
+                if resume is not None:
+                    iteration, resume = resume, None
+                    active_iteration_id = iteration["id"]
+                    async with self.pool.acquire() as conn:
+                        version = await repo.get_agent_version(conn, iteration["agent_version_id"])
+                    source = version["content"]
                 else:
                     if best is None:
-                        agent_source = self.cfg.get("agent_source") or TEMPLATE_PATH.read_text()
-                        proposal_json, learn_note = None, None
-                        parent_version_id = None
+                        source = self.cfg.get("agent_source") or TEMPLATE_PATH.read_text()
+                        proposal_json, parent_version = None, None
+                    elif index == 1 and self.cfg.get("resume_candidate"):
+                        candidate = self.cfg["resume_candidate"]
+                        source = candidate["source"]
+                        proposal_json = {**(candidate.get("proposal") or {}), "resumed_from": {
+                            "job_id": candidate["source_job_id"], "iteration": candidate["source_iteration_index"]}}
+                        parent_version = best.agent_version_id
+                        await self._event("iteration.resuming_candidate", {"iteration": index,
+                            "source_job_id": candidate["source_job_id"], "source_iteration_index": candidate["source_iteration_index"]})
                     else:
                         dossiers = []
-                        for t, r in best.results.items():
-                            if r["status"] != "passed":
-                                d = dict(r["digest"] or {}); d["task_name"] = t; dossiers.append(d)
+                        for task in self.feedback:
+                            row = best.results.get(task)
+                            if row is not None and row["status"] != "passed":
+                                digest = dossier_from_row(dict(row))
+                                digest["task_name"] = task
+                                dossiers.append(digest)
                         inp = OptimizerInput(index, best.agent_source, scoreboard, dossiers, history,
-                                             "\n".join(learnings[-10:]) or None,
-                                             {"agent_model": self.cfg.get("agent_model"), "may_change": "whole file except model/timeouts"})
-                        await self._event("iteration.proposing", {"iteration": index, "n_failing": len(dossiers)})
-                        proposal = await self.optimizer.propose(inp)
-                        agent_source, proposal_json, learn_note = proposal.new_source, proposal.to_json(), proposal.learnings
-                        parent_version_id = best.agent_version_id
-                        ok, why = validate_agent_source(agent_source)
-                        if not ok:
-                            async with self.pool.acquire() as c:
-                                av = await repo.upsert_agent_version(c, self.job["org_id"], agent_source, parent_version_id)
-                                it = await repo.create_iteration(c, self.lease, index, av["id"], best.iteration_id, proposal_json)
-                                await repo.complete_iteration(c, self.lease, it["id"], score=None, n_pass=0, n_fail=0, n_error=0,
-                                                              decision="rejected", decision_reason=f"invalid_agent: {why}", learnings=learn_note)
-                            history.append(HistoryEntry(index, proposal.hypothesis, "rejected", None))
-                            no_improve += 1; index += 1
-                            continue
-                    async with self.pool.acquire() as c:
-                        av = await repo.upsert_agent_version(c, self.job["org_id"], agent_source, parent_version_id)
-                        it = await repo.create_iteration(c, self.lease, index, av["id"], best.iteration_id if best else None, proposal_json)
-                        await repo.update_job_progress(c, self.lease, current_iteration=index)
-                await self._event("iteration.started", {"iteration": index, "agent_sha": repo.sha256_text(agent_source)[:12]})
-
-                # ── run it ──
-                out = await self._run_iteration(it, agent_source, best)
-
-                # ── decide ──
-                min_imp = float(self.opts.get("min_improvement", 0.0))
+                            "\n".join(learnings[-10:]) or None,
+                            {"agent_model": self.cfg.get("agent_model"), "feedback_tasks": self.feedback,
+                             "may_change": "agent prompt, tools, loop; preserve HarnessAgent interface",
+                             "objective": "balance verifier reward, model cost and task latency",
+                             "runtime_capabilities": {
+                                 "shell": "Each environment.exec starts a fresh bash shell at the task working directory; cd, export and shell options do not persist between calls. Files persist within the trial.",
+                                 "verification": "Hidden benchmark verifier tests and grading results are unavailable during execution and installed only after the agent finishes. Do not probe /tests or benchmark verifier paths. Self-created checks must use task-visible requirements and inputs.",
+                                 "candidate_scope": "General prompt/tools/loop changes only; never embed task-specific answers, paths or expected values from feedback.",
+                                 "logs": "Untrusted partial observations; distinguish what happened from an untested causal explanation."},
+                             "recent_rejected_feedback_dossiers": bounded_recent_feedback(recent_feedback, self.feedback),
+                             "promotion_policy": {"maximum_relative_model_cost_increase": self.opts.get("efficiency_tolerance", .10),
+                                 "maximum_relative_p95_duration_increase": self.opts.get("efficiency_tolerance", .10),
+                                 "minimum_relative_efficiency_gain": self.opts.get("min_efficiency_improvement", .10),
+                                 "minimum_absolute_reward_gain": self.opts.get("min_improvement", 0.),
+                                 "quality_regression_allowed": False,
+                                 "confirmation_repetitions": self.opts.get("confirmation_repetitions", 2)},
+                             "fixed_execution_limits": {"agent_model": self.cfg.get("agent_model", settings.agent_model),
+                                 "max_tokens_per_call": min(self.opts.get("max_tokens_per_call", settings.agent_max_output_tokens), settings.agent_max_output_tokens),
+                                 "max_inference_body_bytes": settings.max_inference_body_bytes,
+                                 "max_model_calls_per_trial": settings.max_model_calls_per_trial,
+                                 "agent_timeout_sec": self.opts.get("agent_timeout_sec", 900),
+                                 "job_deadline_at": self.deadline_at.isoformat(), "seconds_remaining": max(0, self._seconds_left())},
+                             "feedback_metrics": {task: {key: row.get(key) for key in (
+                                 "status", "duration_s", "model_cost_usd", "input_tokens", "output_tokens", "n_steps")}
+                                 for task, row in best.results.items() if task in self.feedback},
+                             "max_agent_steps": self.opts.get("max_agent_steps", 80)})
+                        await self._event("iteration.proposing", {"iteration": index, "feedback_failures": len(dossiers)})
+                        proposal = await self._propose(inp)
+                        source, proposal_json, learn_note = proposal.new_source, proposal.to_json(), proposal.learnings
+                        parent_version = best.agent_version_id
+                    ok, why = validate_agent_source(source)
+                    sha = repo.sha256_text(source)
+                    rejection = None if ok else f"invalid_agent:{why}"
+                    if best is not None and sha in seen_hashes:
+                        rejection = "duplicate_source: already proposed under this frozen experiment"
+                    async with self.pool.acquire() as conn:
+                        version = await repo.upsert_agent_version(conn, self.job["org_id"], source, parent_version)
+                        iteration = await repo.create_iteration(conn, self.lease, index, version["id"],
+                            best.iteration_id if best else None, proposal_json)
+                        active_iteration_id = iteration["id"]
+                        await repo.update_job_progress(conn, self.lease, current_iteration=index)
+                    seen_hashes.add(sha)
+                    if rejection:
+                        async with self.pool.acquire() as conn:
+                            await repo.complete_iteration(conn, self.lease, iteration["id"], score=None, n_pass=0,
+                                n_fail=0, n_error=0, decision="rejected", decision_reason=rejection,
+                                learnings=learn_note, metrics={"complete": False, "evaluation_skipped": True})
+                        active_iteration_id = None
+                        history.append(HistoryEntry(index, (proposal_json or {}).get("hypothesis"), "rejected", None,
+                                                    decision_reason=rejection))
+                        for task in self.feedback:
+                            scoreboard[task].append(None)
+                        if learn_note:
+                            learnings.append(hypothesis_context(index, learn_note, "rejected", rejection))
+                        if best is None:
+                            raise ValueError("invalid baseline: " + rejection)
+                        no_improve += 1
+                        index += 1
+                        continue
+                await self._event("iteration.started", {"iteration": index, "agent_sha": repo.sha256_text(source)})
+                out = await self._run_iteration(iteration, source, best)
+                out.metrics["feedback_summary"] = summarize_feedback(out.results, self.feedback)
                 if best is None:
-                    decision, reason = "baseline", "first run"
+                    if not out.metrics.get("complete"):
+                        raise RuntimeError("baseline incomplete; no candidate can be compared against missing evidence")
+                    decision, reason = "baseline", "complete baseline on the fixed selection set"
+                elif out.screened:
+                    decision, reason = "rejected", "screened_out: no feedback repair; unexecuted tasks remain unmeasured"
                 else:
-                    prev = best.score or 0.0
-                    cur = out.score or 0.0
-                    flips_up = [t for t in self.tasks if out.results[t]["status"] == "passed" and best.results[t]["status"] != "passed"]
-                    flips_down = [t for t in self.tasks if out.results[t]["status"] != "passed" and best.results[t]["status"] == "passed"]
-                    if cur > prev + min_imp:
-                        decision, reason = "accepted", f"score {cur:.3f} > best {prev:.3f} (+{flips_up} -{flips_down})"
-                    elif cur == prev and len(flips_up) + len(flips_down) == 0 and sum((r['n_steps'] or 0) for r in out.results.values()) < sum((r['n_steps'] or 0) for r in best.results.values()):
-                        decision, reason = "accepted", f"same score, fewer total steps"
-                    else:
-                        decision, reason = "rejected", f"score {cur:.3f} <= best {prev:.3f} (+{flips_up} -{flips_down})"
-                async with self.pool.acquire() as c:
-                    await repo.complete_iteration(c, self.lease, out.iteration_id, score=out.score, n_pass=out.n_pass,
-                                                  n_fail=out.n_fail, n_error=out.n_error, decision=decision, decision_reason=reason,
-                                                  learnings=learn_note)
-                    fields = {}
-                    if decision == "baseline":
-                        fields.update(baseline_score=out.score, best_score=out.score, best_iteration_id=out.iteration_id)
-                    elif decision == "accepted":
-                        fields.update(best_score=out.score, best_iteration_id=out.iteration_id)
-                    if fields:
-                        await repo.update_job_progress(c, self.lease, **fields)
-                    await repo.add_event(c, job_id, "iteration.finished", {"iteration": index, "decision": decision, "score": out.score, "reason": reason})
-                for t in self.tasks:
-                    scoreboard[t].append(out.results[t]["status"] == "passed" if t in out.results else None)
-                history.append(HistoryEntry(index, (it["proposal"] or {}).get("hypothesis"), decision, out.score))
+                    compared_parent = out.metrics.get("incumbent") or best.metrics
+                    accepted, reason = promotion_decision(out.metrics, compared_parent, self.opts)
+                    # Every acceptance needs fresh paired confirmation, even if a preliminary result improved.
+                    if accepted and not out.metrics.get("confirmation_repetitions"):
+                        accepted, reason = False, "confirmation_required"
+                    decision = "accepted" if accepted else "rejected"
+                async with self.pool.acquire() as conn:
+                    await repo.complete_iteration(conn, self.lease, out.iteration_id, score=out.score,
+                        n_pass=out.n_pass, n_fail=out.n_fail, n_error=out.n_error, decision=decision,
+                        decision_reason=reason, learnings=learn_note, metrics=out.metrics)
+                active_iteration_id = None
+                prop = iteration.get("proposal") or {}
+                history.append(HistoryEntry(index, prop.get("hypothesis"), decision, out.score,
+                    decision_reason=reason, change_summary=prop.get("change_summary"),
+                    feedback_summary=out.metrics["feedback_summary"]))
+                for task in self.feedback:
+                    scoreboard[task].append(out.results[task]["status"] == "passed" if task in out.results else None)
                 if learn_note:
-                    learnings.append(learn_note)
+                    learnings.append(hypothesis_context(index, learn_note, decision, reason))
+                if decision == "baseline":
+                    baseline = out
                 if decision in ("baseline", "accepted"):
-                    best = out; no_improve = 0 if decision == "accepted" else no_improve
+                    best, no_improve = out, 0
                 else:
                     no_improve += 1
+                    recent_feedback = bounded_recent_feedback(recent_feedback + rejected_feedback_dossiers(
+                        out.results, self.feedback, source_job_id=self.lease.job_id,
+                        index=index, reason=reason), self.feedback)
                 index += 1
-                if self.max_iterations == 0:
-                    return await self._finish("baseline_only", best)
-
-        except Cancelled:
+        except (Cancelled, repo.JobCancelled):
             await self.executor.cancel()
-            await self._mark_running_iteration("errored", "cancelled")
-            async with self.pool.acquire() as c:
-                await repo.finish_job(c, self.lease, "CANCELLED", "cancelled")
-        except LeaseLost as e:
-            log.warning("job %s: %s — stopping without writing", job_id, e)
+            await self._abandon_iteration(active_iteration_id, "cancelled")
+            async with self.pool.acquire() as conn:
+                await repo.finish_job(conn, self.lease, "CANCELLED", "cancelled",
+                    final_evaluation={"status": "incomplete", "reason": "cancelled", "used_for_selection": False})
+        except LeaseLost:
             await self.executor.cancel()
-        except TimeoutError as e:
+            log.warning("job %s lost ownership; no result promotion", self.lease.job_id)
+        except (TimeoutError, repo.BudgetExceeded):
             await self.executor.cancel()
-            await self._mark_running_iteration("errored", str(e))
-            async with self.pool.acquire() as c:
-                await repo.finish_job(c, self.lease, "SUCCEEDED", "budget_exhausted")
-        except Exception as e:  # infra failure: record and fail the job (retry policy lives in the worker)
-            log.exception("job %s failed", job_id)
+            await self._abandon_iteration(active_iteration_id, "budget_exhausted")
+            async with self.pool.acquire() as conn:
+                # A stopped search is distinct from a completed holdout comparison.
+                await repo.finish_job(conn, self.lease, "SUCCEEDED" if best is not None else "FAILED", "budget_exhausted",
+                    best_iteration_id=best.iteration_id if best else None, best_score=best.score if best else None,
+                    final_evaluation={"status": "incomplete", "reason": "budget_exhausted", "used_for_selection": False})
+        except Exception as exc:
             await self.executor.cancel()
-            await self._mark_running_iteration("errored", repr(e))
-            async with self.pool.acquire() as c:
-                await repo.finish_job(c, self.lease, "FAILED", "error", error=repr(e)[:2000])
-
-    async def _mark_running_iteration(self, status: str, error: str):
-        async with self.pool.acquire() as c:
-            it = await repo.latest_iteration(c, self.lease.job_id)
-            if it and it["status"] == "running":
-                await c.execute("UPDATE iterations SET status=$2, error=$3, finished_at=now(), decision='errored' WHERE id=$1",
-                                it["id"], status, error[:2000])
-
-    async def _finish(self, reason: str, best: IterOutcome | None):
-        async with self.pool.acquire() as c:
-            await repo.finish_job(c, self.lease, "SUCCEEDED", reason,
-                                  best_iteration_id=best.iteration_id if best else None,
-                                  best_score=best.score if best else None)
+            await self._abandon_iteration(active_iteration_id, "execution_error")
+            log.exception("job %s failed", self.lease.job_id)
+            async with self.pool.acquire() as conn:
+                await repo.finish_job(conn, self.lease, "FAILED", "error", error=str(exc)[:1000],
+                    final_evaluation={"status": "incomplete", "reason": "error", "used_for_selection": False})
 
 
-# ── static policy gate for LLM-produced agent code ─────────────────────────────
-import ast
-
-ALLOWED_IMPORTS = {"json", "os", "re", "asyncio", "time", "math", "typing", "dataclasses", "collections", "textwrap",
-                   "litellm", "harbor", "pathlib", "logging", "functools", "itertools", "string", "random"}
-FORBIDDEN_NAMES = {"subprocess", "socket", "shutil", "sys", "ctypes", "importlib", "pickle", "marshal", "eval", "exec",
-                   "compile", "__import__", "requests", "httpx", "urllib"}
-
-
-def validate_agent_source(src: str) -> tuple[bool, str]:
+def validate_agent_source(source: str) -> tuple[bool, str]:
+    """Structural compatibility check ONLY; execution isolation is the sandbox's job."""
+    if not isinstance(source, str) or len(source.encode("utf-8")) > 128_000:
+        return False, "agent source must be text no larger than 128 KB"
     try:
-        tree = ast.parse(src)
-    except SyntaxError as e:
-        return False, f"syntax error: {e}"
-    has_agent = False
-    for node in ast.walk(tree):
-        if isinstance(node, ast.ClassDef) and node.name == "HarnessAgent":
-            has_agent = True
-            if not any(isinstance(b, ast.AsyncFunctionDef) and b.name == "run" for b in node.body):
-                return False, "HarnessAgent.run must be an async def"
-        if isinstance(node, (ast.Import, ast.ImportFrom)):
-            names = [a.name for a in node.names] if isinstance(node, ast.Import) else [node.module or ""]
-            for n in names:
-                root = n.split(".")[0]
-                if root in FORBIDDEN_NAMES:
-                    return False, f"forbidden import: {n}"
-                if root not in ALLOWED_IMPORTS:
-                    return False, f"import not in allowlist: {n}"
-        if isinstance(node, ast.Name) and node.id in {"eval", "exec", "compile", "__import__"}:
-            return False, f"forbidden call: {node.id}"
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "open":
-            # writes only allowed under logs_dir; a plain open('w') elsewhere is rejected
-            for a in node.args[1:] + [k.value for k in node.keywords if k.arg == "mode"]:
-                if isinstance(a, ast.Constant) and isinstance(a.value, str) and "w" in a.value:
-                    first = node.args[0] if node.args else None
-                    if not (isinstance(first, ast.Name) and first.id == "trace_path"):
-                        return False, "file writes outside logs_dir are not allowed"
-        if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Attribute) and node.value.attr == "environ":
-            if isinstance(node.slice, ast.Constant) and node.slice.value not in ("AGENT_MODEL", "AGENT_REASONING_EFFORT", "HARNESS_SAVE_TRACE"):
-                return False, f"os.environ access to {node.slice.value!r} not allowed"
-    if not has_agent:
-        return False, "no HarnessAgent class"
-    return True, "ok"
+        tree = ast.parse(source)
+    except SyntaxError as exc:
+        return False, f"syntax error at line {exc.lineno}: {exc.msg}"
+    classes = [node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "HarnessAgent"]
+    if len(classes) != 1:
+        return False, "exactly one top-level HarnessAgent class is required"
+    agent = classes[0]
+    if not any(isinstance(node, ast.AsyncFunctionDef) and node.name == "run" for node in agent.body):
+        return False, "HarnessAgent.run must be async"
+    if not any((isinstance(base, ast.Name) and base.id == "BaseAgent") or
+               (isinstance(base, ast.Attribute) and base.attr == "BaseAgent") for base in agent.bases):
+        return False, "HarnessAgent must inherit BaseAgent"
+    return True, "structural validation passed; candidate remains untrusted"

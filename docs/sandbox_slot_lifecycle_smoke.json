@@ -1,0 +1,9 @@
+{
+  "real_provider_calls": 0,
+  "provider_id": "docker:bcd388ea-816e-4acf-8dc7-2c3713b5ac25",
+  "repeated_cancel_during_real_db_release_completed": true,
+  "runner_and_container_stopped_before_slot_release": true,
+  "expired_same_daemon_slot_reconciled": true,
+  "foreign_legacy_and_unexpired_slots_retained": true,
+  "unexpired_container_preserved": true
+}

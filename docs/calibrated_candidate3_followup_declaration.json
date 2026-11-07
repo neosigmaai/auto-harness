@@ -1,0 +1,34 @@
+{
+  "recorded_at": "2026-11-07T11:48:58.528141+00:00",
+  "declared_by": "parent_coordinator",
+  "reason": "Candidate3 preliminary selection quality signal (2/3 versus original 1/3) warrants independent matched validation; original automatic rejection is preserved.",
+  "source_job_id": "f37176ef-cff8-4d6b-8af3-2d82cc8c7e56",
+  "baseline_sha256": "575887cfda6d4e2bb1beee371223f1e27cd3b03080daa2eb40115412fd5808e7",
+  "candidate_sha256": "03c9651597773542fa305684ac2e531a17e4c92cc9bae58f19ff1a5f2e1fc828",
+  "candidate_iteration": 3,
+  "selection_tasks": [
+    "nginx-request-logging",
+    "largest-eigenval",
+    "cancel-async-tasks"
+  ],
+  "source_order": [
+    "baseline",
+    "candidate",
+    "candidate",
+    "baseline"
+  ],
+  "repetitions_per_source": 2,
+  "max_total_usd": 2,
+  "max_wall_clock_min": 45,
+  "promotion_policy": "Same predeclared 10% cost/tail guardrails, nondecreasing quality, and quality gain or >=10% efficiency gain at nonzero quality.",
+  "new_proposals": false,
+  "rewrite_prior_job_promotion": false,
+  "holdout_outcome_contents_inspected_before_declaration": false,
+  "holdout_attempts_recorded_when_declaration_file_written": 2,
+  "timing_caveat": "The parent sent the fixed-source followup decision and user-facing protocol before its first holdout outcome inspection at11:48:34Z. The worker last inspected a0-holdout report at11:47:49Z; at file write11:48:58Z a count-only check found2 recorded outcomes, then the worker inspected their contents at11:48:59Z. This establishes declaration before inspection, not before every result was generated. No protocol fields were changed in response to outcomes.",
+  "dependency": "Current run terminal and all owned paid processes/resources stopped; timeout classification fix, tests and updated source proof verified before dispatch.",
+  "paid_dispatch_started": false,
+  "parent_first_holdout_outcome_inspection_at": "2026-11-07T11:48:34Z",
+  "parent_protocol_declared_before_first_outcome_inspection": true,
+  "worker_first_holdout_outcome_inspection_at": "2026-11-07T11:48:59Z"
+}

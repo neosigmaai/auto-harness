@@ -1,4 +1,5 @@
-# Agent Optimization Service: Postgres + API + worker.
+# Deterministic, no-provider-cost service demo: Postgres + API + simulated worker.
+# For real Docker trials, run the worker on the Docker host (see README).
 #   docker compose -f compose.service.yml up --build
 services:
   db:
@@ -26,8 +27,8 @@ services:
     command: uvicorn service.api.app:app --host 0.0.0.0 --port 8000
     environment:
       DATABASE_URL: postgresql://harness:harness@db:5432/harness
-      EXECUTOR: ${EXECUTOR:-simulated}
-      OPTIMIZER: ${OPTIMIZER:-simulated}
+      EXECUTOR: simulated
+      OPTIMIZER: simulated
       BOOTSTRAP_ADMIN_TOKEN: ${BOOTSTRAP_ADMIN_TOKEN:-dev-bootstrap-token}
     ports: ["8000:8000"]
     depends_on: { migrate: { condition: service_completed_successfully } }
@@ -37,15 +38,12 @@ services:
     command: python -m service.worker.main
     environment:
       DATABASE_URL: postgresql://harness:harness@db:5432/harness
-      EXECUTOR: ${EXECUTOR:-simulated}
-      OPTIMIZER: ${OPTIMIZER:-simulated}
-      SANDBOX_PROVIDER: ${SANDBOX_PROVIDER:-e2b}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      E2B_API_KEY: ${E2B_API_KEY:-}
-      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-2}
+      EXECUTOR: simulated
+      OPTIMIZER: simulated
+      SANDBOX_PROVIDER: docker
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-1}
     volumes: ["./runs:/app/runs"]
     depends_on: { migrate: { condition: service_completed_successfully } }
-    deploy: { replicas: 2 }
 
 volumes:
   aos_pgdata: {}

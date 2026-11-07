@@ -1,0 +1,247 @@
+{
+  "recorded_infrastructure_attempts": [
+    {
+      "job_id": "75338dcf-f8a4-4d6a-a8cb-898110bff196",
+      "source": "candidate",
+      "repetition": 1,
+      "task_name": "adaptive-rejection-sampler",
+      "attempt": 1,
+      "failure_class": "infra_error",
+      "exit_reason": "RuntimeError",
+      "duration_s": 191.25883158299257,
+      "model_cost_usd": 0.0
+    },
+    {
+      "job_id": "75338dcf-f8a4-4d6a-a8cb-898110bff196",
+      "source": "candidate",
+      "repetition": 1,
+      "task_name": "adaptive-rejection-sampler",
+      "attempt": 2,
+      "failure_class": "infra_error",
+      "exit_reason": "RuntimeError",
+      "duration_s": 192.8600127910031,
+      "model_cost_usd": 0.0
+    }
+  ],
+  "observed_at": "2026-11-07T10:43:16.413079+00:00",
+  "scope": "Trusted preflight/verifier validity and counts only; no task assertions, traces, or holdout content.",
+  "run_directory": "runs/aos_paired_selection_20261107_d0994fa3",
+  "trials": [
+    {
+      "job_id": "1c428167-b40d-4d67-a5a4-f8894b80ec4e",
+      "source": "baseline",
+      "repetition": 1,
+      "physical_attempt": "attempt1",
+      "task": "adaptive-rejection-sampler",
+      "preflight_status": "passed",
+      "preflight_duration_s": 184.45604966700193,
+      "preflight_attempts": [
+        {
+          "attempt": 1,
+          "return_code": 124,
+          "duration_s": 160.65555941700586,
+          "error_type": null
+        },
+        {
+          "attempt": 2,
+          "return_code": 0,
+          "duration_s": 21.79901154199615,
+          "error_type": null
+        }
+      ],
+      "verifier_valid": true,
+      "verifier_counts": {
+        "tests": 9,
+        "passed": 4,
+        "failed": 5,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "verifier_reason": null,
+      "fresh_session_marker": true,
+      "verifier_duration_s": 16.256394147872925
+    },
+    {
+      "job_id": "1c428167-b40d-4d67-a5a4-f8894b80ec4e",
+      "source": "baseline",
+      "repetition": 1,
+      "physical_attempt": "attempt1",
+      "task": "cancel-async-tasks",
+      "preflight_status": "passed",
+      "preflight_duration_s": 103.12072362497565,
+      "preflight_attempts": [
+        {
+          "attempt": 1,
+          "return_code": 0,
+          "duration_s": 103.12070533400401,
+          "error_type": null
+        }
+      ],
+      "verifier_valid": true,
+      "verifier_counts": {
+        "tests": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "verifier_reason": null,
+      "fresh_session_marker": true,
+      "verifier_duration_s": 37.94506597518921
+    },
+    {
+      "job_id": "1c428167-b40d-4d67-a5a4-f8894b80ec4e",
+      "source": "baseline",
+      "repetition": 1,
+      "physical_attempt": "attempt1",
+      "task": "largest-eigenval",
+      "preflight_status": "passed",
+      "preflight_duration_s": 21.44558587501524,
+      "preflight_attempts": [
+        {
+          "attempt": 1,
+          "return_code": 0,
+          "duration_s": 21.445578708982794,
+          "error_type": null
+        }
+      ],
+      "verifier_valid": true,
+      "verifier_counts": {
+        "tests": 3,
+        "passed": 2,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "verifier_reason": null,
+      "fresh_session_marker": true,
+      "verifier_duration_s": 2.731667995452881
+    },
+    {
+      "job_id": "1c428167-b40d-4d67-a5a4-f8894b80ec4e",
+      "source": "baseline",
+      "repetition": 1,
+      "physical_attempt": "attempt1",
+      "task": "nginx-request-logging",
+      "preflight_status": "passed",
+      "preflight_duration_s": 8.736656083987327,
+      "preflight_attempts": [
+        {
+          "attempt": 1,
+          "return_code": 0,
+          "duration_s": 8.736646624980494,
+          "error_type": null
+        }
+      ],
+      "verifier_valid": true,
+      "verifier_counts": {
+        "tests": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "verifier_reason": null,
+      "fresh_session_marker": true,
+      "verifier_duration_s": 15.757837057113647
+    },
+    {
+      "job_id": "75338dcf-f8a4-4d6a-a8cb-898110bff196",
+      "source": "candidate",
+      "repetition": 1,
+      "physical_attempt": "attempt1",
+      "task": "cancel-async-tasks",
+      "preflight_status": "passed",
+      "preflight_duration_s": 109.08265395800117,
+      "preflight_attempts": [
+        {
+          "attempt": 1,
+          "return_code": 0,
+          "duration_s": 109.08264549999149,
+          "error_type": null
+        }
+      ],
+      "verifier_valid": true,
+      "verifier_counts": {
+        "tests": 6,
+        "passed": 5,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "verifier_reason": null,
+      "fresh_session_marker": true,
+      "verifier_duration_s": 27.62126898765564
+    },
+    {
+      "job_id": "75338dcf-f8a4-4d6a-a8cb-898110bff196",
+      "source": "candidate",
+      "repetition": 1,
+      "physical_attempt": "attempt1",
+      "task": "largest-eigenval",
+      "preflight_status": "passed",
+      "preflight_duration_s": 67.26419662497938,
+      "preflight_attempts": [
+        {
+          "attempt": 1,
+          "return_code": 0,
+          "duration_s": 67.26418962498428,
+          "error_type": null
+        }
+      ],
+      "verifier_valid": true,
+      "verifier_counts": {
+        "tests": 3,
+        "passed": 2,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "verifier_reason": null,
+      "fresh_session_marker": true,
+      "verifier_duration_s": 2.808181047439575
+    },
+    {
+      "job_id": "75338dcf-f8a4-4d6a-a8cb-898110bff196",
+      "source": "candidate",
+      "repetition": 1,
+      "physical_attempt": "attempt1",
+      "task": "nginx-request-logging",
+      "preflight_status": "passed",
+      "preflight_duration_s": 8.821937333006645,
+      "preflight_attempts": [
+        {
+          "attempt": 1,
+          "return_code": 0,
+          "duration_s": 8.821930624981178,
+          "error_type": null
+        }
+      ],
+      "verifier_valid": true,
+      "verifier_counts": {
+        "tests": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "verifier_reason": null,
+      "fresh_session_marker": true,
+      "verifier_duration_s": 27.336992025375366
+    }
+  ],
+  "summary": {
+    "preflights_finished": 7,
+    "verifiers_valid": 7,
+    "verifiers_invalid": 0,
+    "preflight_failed": 0,
+    "recorded_error_attempts": 2
+  }
+}

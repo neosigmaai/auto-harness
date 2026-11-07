@@ -1,0 +1,41 @@
+{
+  "protocol": "verifier-tool-preflight-v1",
+  "task": "adaptive-rejection-sampler",
+  "mode": "uvx",
+  "direct_packages": [
+    "pytest==8.4.1",
+    "numpy==2.3.3",
+    "scipy==1.16.2",
+    "pytest-json-ctrf==0.3.5"
+  ],
+  "cache_mode": "isolated_container_cache_warmed_before_agent",
+  "candidate_visible_tooling": true,
+  "hidden_assertions_copied": false,
+  "max_attempts": 2,
+  "attempts": [
+    {
+      "attempt": 1,
+      "timeout_sec": 160,
+      "return_code": 0,
+      "stdout_tail": "_1.20.1-6ubuntu2.10_amd64.deb ...\r\nUnpacking libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\r\nSelecting previously unselected package libnghttp2-14:amd64.\r\nPreparing to unpack .../08-libnghttp2-14_1.59.0-1ubuntu0.4_amd64.deb ...\r\nUnpacking libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\r\nSelecting previously unselected package libpsl5t64:amd64.\r\nPreparing to unpack .../09-libpsl5t64_0.21.2-1.1build1_amd64.deb ...\r\nUnpacking libpsl5t64:amd64 (0.21.2-1.1build1) ...\r\nSelecting previously unselected package publicsuffix.\r\nPreparing to unpack .../10-publicsuffix_20231001.0357-0.1_all.deb ...\r\nUnpacking publicsuffix (20231001.0357-0.1) ...\r\nSelecting previously unselected package libbrotli1:amd64.\r\nPreparing to unpack .../11-libbrotli1_1.1.0-2ubuntu0.1_amd64.deb ...\r\nUnpacking libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...\r\nSelecting previously unselected package libsasl2-modules-db:amd64.\r\nPreparing to unpack .../12-libsasl2-modules-db_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\r\nUnpacking libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\r\nSelecting previously unselected package libsasl2-2:amd64.\r\nPreparing to unpack .../13-libsasl2-2_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\r\nUnpacking libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\r\nSelecting previously unselected package libldap2:amd64.\r\nPreparing to unpack .../14-libldap2_2.6.10+dfsg-0ubuntu0.24.04.1_amd64.deb ...\r\nUnpacking libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\r\nSelecting previously unselected package librtmp1:amd64.\r\nPreparing to unpack .../15-librtmp1_2.4+20151223.gitfa8646d.1-2build7_amd64.deb ...\r\nUnpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\r\nSelecting previously unselected package libssh-4:amd64.\r\nPreparing to unpack .../16-libssh-4_0.10.6-2ubuntu0.5_amd64.deb ...\r\nUnpacking libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\r\nSelecting previously unselected package libcurl4t64:amd64.\r\nPreparing to unpack .../17-libcurl4t64_8.5.0-2ubuntu10.16_amd64.deb ...\r\nUnpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\r\nSelecting previously unselected package curl.\r\nPreparing to unpack .../18-curl_8.5.0-2ubuntu10.16_amd64.deb ...\r\nUnpacking curl (8.5.0-2ubuntu10.16) ...\r\nSelecting previously unselected package libldap-common.\r\nPreparing to unpack .../19-libldap-common_2.6.10+dfsg-0ubuntu0.24.04.1_all.deb ...\r\nUnpacking libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\r\nSelecting previously unselected package libsasl2-modules:amd64.\r\nPreparing to unpack .../20-libsasl2-modules_2.1.28+dfsg1-5ubuntu3.1_amd64.deb ...\r\nUnpacking libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\r\nSetting up libkeyutils1:amd64 (1.6.3-3build1) ...\r\nSetting up libbrotli1:amd64 (1.1.0-2ubuntu0.1) ...\r\nSetting up libsasl2-modules:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\r\nSetting up libpsl5t64:amd64 (0.21.2-1.1build1) ...\r\nSetting up libnghttp2-14:amd64 (1.59.0-1ubuntu0.4) ...\r\nSetting up krb5-locales (1.20.1-6ubuntu2.10) ...\r\nSetting up libldap-common (2.6.10+dfsg-0ubuntu0.24.04.1) ...\r\nSetting up libkrb5support0:amd64 (1.20.1-6ubuntu2.10) ...\r\nSetting up libsasl2-modules-db:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\r\nSetting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build7) ...\r\nSetting up libk5crypto3:amd64 (1.20.1-6ubuntu2.10) ...\r\nSetting up libsasl2-2:amd64 (2.1.28+dfsg1-5ubuntu3.1) ...\r\nSetting up libkrb5-3:amd64 (1.20.1-6ubuntu2.10) ...\r\nSetting up openssl (3.0.13-0ubuntu3.16) ...\r\nSetting up publicsuffix (20231001.0357-0.1) ...\r\nSetting up libldap2:amd64 (2.6.10+dfsg-0ubuntu0.24.04.1) ...\r\nSetting up ca-certificates (20260816ubuntu0.24.04.2) ...\r\nUpdating certificates in /etc/ssl/certs...\r\n120 added, 0 removed; done.\r\nRunning hooks in /etc/ca-certificates/update.d...\r\ndone.\r\nSetting up libgssapi-krb5-2:amd64 (1.20.1-6ubuntu2.10) ...\r\nSetting up libssh-4:amd64 (0.10.6-2ubuntu0.5) ...\r\nSetting up libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...\r\nSetting up curl (8.5.0-2ubuntu10.16) ...\r\nProcessing triggers for libc-bin (2.39-0ubuntu8.6) ...\r\n/tmp/tmp.NWLYf3ymuF/uv.tar.gz: OK\nuv 0.9.5\npytest 8.4.1\nPython 3.13.9\n",
+      "stderr_tail": "debconf: delaying package configuration, since apt-utils is not installed\nDownloading cpython-3.13.9-linux-x86_64-gnu (download) (32.0MiB)\n Downloading cpython-3.13.9-linux-x86_64-gnu (download)\nDownloading pygments (1.2MiB)\nDownloading scipy (34.0MiB)\nDownloading numpy (15.9MiB)\n Downloading pygments\n Downloading numpy\n Downloading scipy\nInstalled 8 packages in 108ms\n",
+      "duration_s": 114.88555016601458
+    }
+  ],
+  "status": "passed",
+  "uv_archive": {
+    "version": "0.9.5",
+    "architecture": "x86_64",
+    "url": "https://github.com/astral-sh/uv/releases/download/0.9.5/uv-x86_64-unknown-linux-gnu.tar.gz",
+    "sha256": "2cf10babba653310606f8b49876cfb679928669e7ddaa1fb41fb00ce73e64f66"
+  },
+  "observed_versions": [
+    "uv 0.9.5",
+    "pytest 8.4.1",
+    "Python 3.13.9"
+  ],
+  "duration_s": 114.88555895900936,
+  "real_provider_calls": 0,
+  "original_assertions_executed": false,
+  "image_id_architecture": "sha256:985bed39e8448bc95f138b5f766b59003a95c4be171c96af8e76448338f3dd8f amd64"
+}

@@ -1,0 +1,43 @@
+{
+  "observed_at": "2026-11-07T12:29:34.975144+00:00",
+  "mode": "no_paid_calls",
+  "pytest": {
+    "passed": 189,
+    "skipped": 0,
+    "duration_s": 8.0,
+    "database": "disposable databases on isolated PostgreSQL port55433",
+    "files": [
+      "test_workflow.py",
+      "test_policy_and_digest.py",
+      "test_review_budget.py",
+      "test_paired_review_protocol.py",
+      "test_calibrated_review.py",
+      "test_holdout_review.py",
+      "test_persistence.py"
+    ]
+  },
+  "simulated_api_worker_cli": {
+    "status": "passed",
+    "provider_credentials_removed": true,
+    "cli_iterations": 3,
+    "profile": "calibrated12",
+    "split_sizes": [
+      5,
+      3,
+      4
+    ],
+    "holdout": "complete",
+    "cancel_latency_s": 0.082,
+    "prior_candidate_resumed_with_fresh_trials": true,
+    "recovered_lease_epoch": 2,
+    "durable_deadline_preserved": true
+  },
+  "compileall": "passed",
+  "diff_check": "passed",
+  "files": {
+    "service/worker/job_runner.py": "87a4a102bc081488e1c02762383599b60f2632864daff4b22ebdd60ebc6e22ae",
+    "service/tests/test_workflow.py": "ed7de4a4564e97bec0a6515355d7a17d93aab158d69c1329845ab5dcf1ed4819"
+  },
+  "scope": "Separate preliminary confirmation eligibility from unchanged final promotion policy; label pre-evaluation optimizer notes, align skipped scoreboard entries and pass frozen sandbox harness metadata.",
+  "remaining_limitation": "Full rejected-candidate failure dossiers are not supplied to the next optimizer; only its feedback aggregates and parent dossiers. Exact byte hashing does not enforce semantic hypothesis diversity."
+}

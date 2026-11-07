@@ -1,0 +1,501 @@
+{
+  "observed_at": "2026-11-07T09:55:08.418954+00:00",
+  "job_id": "72661d5a-dcd5-410a-b2ee-cd8c9a682f91",
+  "scope": "Completed feedback/selection trials: validity and counts only; no holdout inspection",
+  "notes": [
+    "Missing CTRF alone is insufficient evidence, not proof of a bootstrap failure.",
+    "No assertions, selection traces, or raw verifier output are included.",
+    "Shared-container reports remain subject to the documented tampering limitation."
+  ],
+  "summary": {
+    "completed_trials": 26,
+    "tests_executed": 23,
+    "bootstrap_failures": 3,
+    "insufficient_evidence": 0
+  },
+  "trials": [
+    {
+      "iteration": "iter0",
+      "phase": "confirm_1",
+      "repetition": "rep1",
+      "task": "largest-eigenval",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 3,
+        "passed": 2,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/confirm_1/rep1/attempt1/0-confirm_1-r1-a1-largest-eigenval-5462f4ea/harbor/trial/largest-eigenval__piHWN48/result.json"
+    },
+    {
+      "iteration": "iter0",
+      "phase": "confirm_1",
+      "repetition": "rep1",
+      "task": "nginx-request-logging",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/confirm_1/rep1/attempt1/0-confirm_1-r1-a1-nginx-request-logging-8ad91d7a/harbor/trial/nginx-request-logging__4mdbM9S/result.json"
+    },
+    {
+      "iteration": "iter0",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "adaptive-rejection-sampler",
+      "validity": "confirmed_bootstrap_failure_without_test_report",
+      "ctrf_present": false,
+      "counts": null,
+      "bootstrap_flags": [
+        "uvx_missing",
+        "uv_environment_missing"
+      ],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/main/rep1/attempt1/0-main-r1-a1-adaptive-rejection-sampler-2ca5fb6d/harbor/trial/adaptive-rejection-sampler__VD5NM9C/result.json"
+    },
+    {
+      "iteration": "iter0",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "cancel-async-tasks",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 6,
+        "passed": 5,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/main/rep1/attempt1/0-main-r1-a1-cancel-async-tasks-e6a240a6/harbor/trial/cancel-async-tasks__JNQ4yNJ/result.json"
+    },
+    {
+      "iteration": "iter0",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "chess-best-move",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 1,
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/main/rep1/attempt1/0-main-r1-a1-chess-best-move-80298e68/harbor/trial/chess-best-move__y3ic72A/result.json"
+    },
+    {
+      "iteration": "iter0",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "configure-git-webserver",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/main/rep1/attempt1/0-main-r1-a1-configure-git-webserver-7c53a767/harbor/trial/configure-git-webserver__eiEH9fy/result.json"
+    },
+    {
+      "iteration": "iter0",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "extract-elf",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 2,
+        "passed": 1,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/main/rep1/attempt1/0-main-r1-a1-extract-elf-dd9176eb/harbor/trial/extract-elf__5G3Uc4q/result.json"
+    },
+    {
+      "iteration": "iter0",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "fix-git",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 2,
+        "passed": 1,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/main/rep1/attempt1/0-main-r1-a1-fix-git-f4e53dea/harbor/trial/fix-git__N6zCWgw/result.json"
+    },
+    {
+      "iteration": "iter0",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "gcode-to-text",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 2,
+        "passed": 1,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/main/rep1/attempt1/0-main-r1-a1-gcode-to-text-c540fa4d/harbor/trial/gcode-to-text__VE4yZYK/result.json"
+    },
+    {
+      "iteration": "iter0",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "largest-eigenval",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 3,
+        "passed": 2,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/main/rep1/attempt1/0-main-r1-a1-largest-eigenval-9a2a6420/harbor/trial/largest-eigenval__h5kyZTq/result.json"
+    },
+    {
+      "iteration": "iter0",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "nginx-request-logging",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 8,
+        "passed": 7,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/main/rep1/attempt1/0-main-r1-a1-nginx-request-logging-cd64e021/harbor/trial/nginx-request-logging__KrPpY5p/result.json"
+    },
+    {
+      "iteration": "iter0",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "openssl-selfsigned-cert",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 6,
+        "passed": 5,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/main/rep1/attempt1/0-main-r1-a1-openssl-selfsigned-cert-1e1fe5ac/harbor/trial/openssl-selfsigned-cert__d8bNRRB/result.json"
+    },
+    {
+      "iteration": "iter0",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "sanitize-git-repo",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 3,
+        "passed": 1,
+        "failed": 2,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/main/rep1/attempt1/0-main-r1-a1-sanitize-git-repo-d5383e1d/harbor/trial/sanitize-git-repo__o7DQu3w/result.json"
+    },
+    {
+      "iteration": "iter0",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "sqlite-db-truncate",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 1,
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter0/main/rep1/attempt1/0-main-r1-a1-sqlite-db-truncate-4317420a/harbor/trial/sqlite-db-truncate__JUkRXeE/result.json"
+    },
+    {
+      "iteration": "iter1",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "adaptive-rejection-sampler",
+      "validity": "confirmed_bootstrap_failure_without_test_report",
+      "ctrf_present": false,
+      "counts": null,
+      "bootstrap_flags": [
+        "dependency_fetch_timed_out_before_pytest"
+      ],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter1/main/rep1/attempt1/1-main-r1-a1-adaptive-rejection-sampler-6bf00032/harbor/trial/adaptive-rejection-sampler__yAh7Wqx/result.json"
+    },
+    {
+      "iteration": "iter1",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "cancel-async-tasks",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 6,
+        "passed": 5,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter1/main/rep1/attempt1/1-main-r1-a1-cancel-async-tasks-fc11bc80/harbor/trial/cancel-async-tasks__mMJEniR/result.json"
+    },
+    {
+      "iteration": "iter1",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "chess-best-move",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 1,
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter1/main/rep1/attempt1/1-main-r1-a1-chess-best-move-67849ad8/harbor/trial/chess-best-move__wKXgyZj/result.json"
+    },
+    {
+      "iteration": "iter1",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "configure-git-webserver",
+      "validity": "confirmed_bootstrap_failure_without_test_report",
+      "ctrf_present": false,
+      "counts": null,
+      "bootstrap_flags": [
+        "uvx_missing",
+        "uv_environment_missing",
+        "download_http_403",
+        "download_failed"
+      ],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter1/main/rep1/attempt1/1-main-r1-a1-configure-git-webserver-97798e8e/harbor/trial/configure-git-webserver__2byTC3h/result.json"
+    },
+    {
+      "iteration": "iter1",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "extract-elf",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 2,
+        "passed": 1,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter1/main/rep1/attempt1/1-main-r1-a1-extract-elf-3f1afbe2/harbor/trial/extract-elf__mZsbtaG/result.json"
+    },
+    {
+      "iteration": "iter1",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "fix-git",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter1/main/rep1/attempt1/1-main-r1-a1-fix-git-7fa5fede/harbor/trial/fix-git__4Nby8Di/result.json"
+    },
+    {
+      "iteration": "iter1",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "gcode-to-text",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 2,
+        "passed": 1,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter1/main/rep1/attempt1/1-main-r1-a1-gcode-to-text-35d3b70e/harbor/trial/gcode-to-text__GTgi9Wt/result.json"
+    },
+    {
+      "iteration": "iter1",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "largest-eigenval",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 3,
+        "passed": 2,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter1/main/rep1/attempt1/1-main-r1-a1-largest-eigenval-194ab105/harbor/trial/largest-eigenval__3X9dP6B/result.json"
+    },
+    {
+      "iteration": "iter1",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "nginx-request-logging",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 8,
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter1/main/rep1/attempt1/1-main-r1-a1-nginx-request-logging-33848b03/harbor/trial/nginx-request-logging__k2dJ5me/result.json"
+    },
+    {
+      "iteration": "iter1",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "openssl-selfsigned-cert",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter1/main/rep1/attempt1/1-main-r1-a1-openssl-selfsigned-cert-10503302/harbor/trial/openssl-selfsigned-cert__UfdGJMY/result.json"
+    },
+    {
+      "iteration": "iter1",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "sanitize-git-repo",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 3,
+        "passed": 2,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter1/main/rep1/attempt1/1-main-r1-a1-sanitize-git-repo-0ae30e84/harbor/trial/sanitize-git-repo__iPQwsDL/result.json"
+    },
+    {
+      "iteration": "iter1",
+      "phase": "main",
+      "repetition": "rep1",
+      "task": "sqlite-db-truncate",
+      "validity": "tests_executed",
+      "ctrf_present": true,
+      "counts": {
+        "tests": 1,
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0
+      },
+      "bootstrap_flags": [],
+      "harbor_exception_type": null,
+      "result_artifact": "runs/aos_live_review_20261107_5089f4cc/tasks/72661d5a-dcd5-410a-b2ee-cd8c9a682f91/iter1/main/rep1/attempt1/1-main-r1-a1-sqlite-db-truncate-3f534cc4/harbor/trial/sqlite-db-truncate__8hrbpu7/result.json"
+    }
+  ]
+}

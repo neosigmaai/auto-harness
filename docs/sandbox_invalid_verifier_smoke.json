@@ -1,0 +1,25 @@
+{
+  "model_calls": 2,
+  "real_provider_calls": 0,
+  "production_source_sha256": "7bc8de276922ed2b940ba92f7f51f2826515b9e6baa712e046ace421184a48c7",
+  "expected_outcome": "unscorable",
+  "no_host_bind_mount": true,
+  "single_internal_network": true,
+  "checks_output": "host marker absent; credential env absent; private/metadata proxy denied; direct host denied; public HTTPS works\n",
+  "status": "error",
+  "reward": null,
+  "duration_s": 103.82528375001857,
+  "runner_exit_code": 0,
+  "verifier_validity": {
+    "contract": "pinned-pytest-ctrf-v1",
+    "valid": false,
+    "orchestration_sha256": "9aef6d2797466c4ce1ee70cca2e11e36875753df8d22ab9782cba7a4138ea082",
+    "shell_started_at": 1794052661.695719,
+    "shell_finished_at": 1794052661.811522,
+    "shell_exit_code": 0,
+    "raw_reward": 0.0,
+    "error_type": "VerifierProtocolError",
+    "reason": "missing_or_oversized_ctrf.json"
+  },
+  "production_source_unchanged": true
+}

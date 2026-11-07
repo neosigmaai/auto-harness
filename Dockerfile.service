@@ -3,8 +3,8 @@ WORKDIR /app
 RUN pip install --no-cache-dir uv
 COPY service/requirements.txt service/requirements.txt
 RUN uv pip install --system --no-cache -r service/requirements.txt
-# Harbor CLI (+ E2B SDK) for the real executor. The agent template imports litellm/harbor from this env.
-RUN uv tool install "harbor[e2b]" && ln -s /root/.local/bin/harbor /usr/local/bin/harbor
+# The compose image is the no-cost API/simulator demo. Real workers run on a
+# Docker host with the separately pinned Harbor CLI; see service/requirements-harbor.txt.
 COPY service/ service/
 COPY scripts/ scripts/
 COPY agent/templates/ agent/templates/

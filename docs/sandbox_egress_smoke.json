@@ -1,0 +1,83 @@
+{
+  "mode": "actual_docker_relay_no_model_calls",
+  "model_calls": 0,
+  "requests": [
+    {
+      "endpoint": "pypi_ctrf",
+      "repetition": 1,
+      "user_agent": "Python-urllib/3.12",
+      "status": 200,
+      "bytes_read": 18241,
+      "elapsed_s": 0.211
+    },
+    {
+      "endpoint": "uv_installer",
+      "repetition": 1,
+      "user_agent": "Python-urllib/3.12",
+      "error_type": "HTTPError",
+      "status": 403,
+      "server": "cloudflare",
+      "error_body_prefix": "error code: 1010\n",
+      "elapsed_s": 0.209
+    },
+    {
+      "endpoint": "uv_binary",
+      "repetition": 1,
+      "user_agent": "Python-urllib/3.12",
+      "status": 200,
+      "bytes_read": 65536,
+      "elapsed_s": 0.51
+    },
+    {
+      "endpoint": "pypi_ctrf",
+      "repetition": 2,
+      "user_agent": "curl/8.7.1",
+      "status": 200,
+      "bytes_read": 18241,
+      "elapsed_s": 0.274
+    },
+    {
+      "endpoint": "uv_installer",
+      "repetition": 2,
+      "user_agent": "curl/8.7.1",
+      "status": 200,
+      "bytes_read": 65536,
+      "elapsed_s": 0.362
+    },
+    {
+      "endpoint": "uv_binary",
+      "repetition": 2,
+      "user_agent": "curl/8.7.1",
+      "status": 200,
+      "bytes_read": 65536,
+      "elapsed_s": 0.217
+    },
+    {
+      "endpoint": "pypi_ctrf",
+      "repetition": 3,
+      "user_agent": "uv/0.9.5",
+      "status": 200,
+      "bytes_read": 18241,
+      "elapsed_s": 0.167
+    },
+    {
+      "endpoint": "uv_installer",
+      "repetition": 3,
+      "user_agent": "uv/0.9.5",
+      "status": 200,
+      "bytes_read": 65536,
+      "elapsed_s": 0.202
+    },
+    {
+      "endpoint": "uv_binary",
+      "repetition": 3,
+      "user_agent": "uv/0.9.5",
+      "status": 200,
+      "bytes_read": 65536,
+      "elapsed_s": 0.226
+    }
+  ],
+  "successful_requests": 8,
+  "relay_sha256": "86540d673c4f40b4c45ee5b92f102ca8c1134b9927aed2f61f39db723158a163",
+  "interpretation": "Public PyPI and GitHub requests succeeded. Astral returned Cloudflare 403 for Python-urllib and HTTP 200 for curl/uv user agents. This probe does not prove the cause of earlier intermittent benchmark bootstrap failures."
+}

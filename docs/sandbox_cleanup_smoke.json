@@ -1,0 +1,8 @@
+{
+  "real_provider_calls": 0,
+  "cancel_duration_s": 0.3160697910061572,
+  "cancel_stopped_runner_and_container_and_network": true,
+  "reaper_removed_expired_and_preserved_unexpired": true,
+  "scope": "actual Docker cancellation and expired-only reaping smoke; no model calls",
+  "command": ".venv-service/bin/python -m service.sandbox.cleanup_smoke"
+}
